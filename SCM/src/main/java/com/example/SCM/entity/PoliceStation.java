@@ -7,23 +7,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="division")
+@Table(name="policestations")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Division {
-
+public class PoliceStation {
 
     @Id
-     @GeneratedValue(strategy= GenerationType.IDENTITY)
-   Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(unique=true)
-    String name;
+    @Column(unique = true)
+    private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id")
-    private Country country;
+    @JoinColumn(name = "district_id")
+    private District district;
+
 
 
 }

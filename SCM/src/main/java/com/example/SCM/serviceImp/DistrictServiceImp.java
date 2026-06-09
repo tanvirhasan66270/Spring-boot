@@ -23,6 +23,7 @@ public class DistrictServiceImp implements DistrictService {
     private final DivisionRepository divisionRepository;
 
 
+
     @Override
     public District save(District d) {
         Long divisionId= d.getDivision().getId();
@@ -32,6 +33,7 @@ public class DistrictServiceImp implements DistrictService {
         d.setDivision(dv);
         return districtRepository.save(d);
     }
+
 
     @Override
     public List<District> findAll() {

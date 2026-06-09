@@ -1,6 +1,7 @@
 package com.example.SCM.controller;
 
 import com.example.SCM.dto.DivisionDTO;
+import com.example.SCM.entity.Country;
 import com.example.SCM.entity.Division;
 import com.example.SCM.repository.CountryRepository;
 
@@ -47,5 +48,17 @@ public class DivisionController {
         return divisionService.getDivisionsByCountryName(name);
     }
 
+    @PutMapping("{id}")
+    public  ResponseEntity<Division> update(
+            @PathVariable Long id,
+            @RequestBody Division d
+    ){
+
+        d.setId(id);
+        Division updatedDivision = divisionService.save(d);
+
+        return  ResponseEntity.ok(updatedDivision);
+
+    }
 
 }
