@@ -1,0 +1,64 @@
+package com.example.SCM.controller;
+
+import com.example.SCM.dto.DivisionDTO;
+import com.example.SCM.entity.Country;
+import com.example.SCM.entity.Division;
+import com.example.SCM.repository.CountryRepository;
+
+import com.example.SCM.service.DivisionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/division/")
+public class DivisionController {
+
+
+    @Autowired
+    private CountryRepository countryRepository;
+    @Autowired
+    private DivisionService divisionService;
+
+    @PostMapping
+    public ResponseEntity<Division > save(@RequestBody Division d){
+        Division savedDivision = divisionService.save(d);
+        return  ResponseEntity.ok(savedDivision);
+
+    }
+    @GetMapping
+    public  ResponseEntity<List<Division>> getAll(){
+
+        List<Division> list = divisionService.findAll();
+        return  ResponseEntity.ok(list);
+    }
+
+
+    // Find by Country ID
+    @GetMapping("country/{id}")
+    public List<DivisionDTO> getByCountryId(@PathVariable Long id) {
+        return divisionService.getDivisionsByCountryId(id);
+    }
+
+    // Find by Country Name
+    @GetMapping("country/name/{name}")
+    public List<DivisionDTO> getByCountryName(@PathVariable String name) {
+        return divisionService.getDivisionsByCountryName(name);
+    }
+
+    @PutMapping("{id}")
+    public  ResponseEntity<Division> update(
+            @PathVariable Long id,
+            @RequestBody Division d
+    ){
+
+        d.setId(id);
+        Division updatedDivision = divisionService.save(d);
+
+        return  ResponseEntity.ok(updatedDivision);
+
+    }
+
+}
