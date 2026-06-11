@@ -1,16 +1,27 @@
 package com.example.SCM.service;
+import com.example.SCM.dto.request.CustomerRequestDTO;
+import com.example.SCM.dto.Response.CustomerResponseDTO;
 
-import com.example.SCM.entity.Customer;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public interface CustomerService {
-    Customer save(Customer c, MultipartFile file);
-    List<Customer> findAll();
-    Optional<Customer> getById(Long id);
+
+    CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile file);
+
+    List<CustomerResponseDTO> getAll();
+
+    @Transactional(readOnly = true)
+    List<CustomerResponseDTO> findAll();
+
+    CustomerResponseDTO getById(Long id);
+
+    CustomerResponseDTO update(Long id, CustomerRequestDTO dto, MultipartFile image);
+
     void delete(Long id);
 }
