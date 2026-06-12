@@ -1,9 +1,8 @@
 package com.example.SCM.controller;
 
-import com.example.SCM.dto.Response.PoliceStationResponseDTO;
+import com.example.SCM.dto.response.PoliceStationResponseDTO;
 import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.service.PoliceStationService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

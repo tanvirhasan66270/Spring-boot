@@ -1,7 +1,7 @@
 package com.example.SCM.service;
 
 
-import com.example.SCM.dto.Response.DistrictResponseDTO;
+import com.example.SCM.dto.response.DistrictResponseDTO;
 import com.example.SCM.entity.District;
 import org.springframework.stereotype.Service;
 

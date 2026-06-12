@@ -1,6 +1,6 @@
 package com.example.SCM.service;
 
-import com.example.SCM.dto.Response.CustomerResponseDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

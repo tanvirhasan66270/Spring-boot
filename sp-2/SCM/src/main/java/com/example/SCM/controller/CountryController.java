@@ -46,7 +46,7 @@ public class CountryController {
         return ResponseEntity.ok("Country Deleted Successfully");
     }
 
-    @PutMapping("{id}")
+    @PutMapping("{id}" )
     public  ResponseEntity<Country> update(
             @PathVariable Long id,
             @RequestBody Country c

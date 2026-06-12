@@ -1,9 +1,8 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.dto.Response.DistrictResponseDTO;
+import com.example.SCM.dto.response.DistrictResponseDTO;
 import com.example.SCM.entity.District;
 import com.example.SCM.entity.Division;
-import com.example.SCM.repository.CountryRepository;
 import com.example.SCM.repository.DistrictRepository;
 import com.example.SCM.repository.DivisionRepository;
 import com.example.SCM.service.DistrictService;

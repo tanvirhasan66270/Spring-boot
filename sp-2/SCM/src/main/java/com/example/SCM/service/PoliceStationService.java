@@ -1,6 +1,6 @@
 package com.example.SCM.service;
 
-import com.example.SCM.dto.Response.PoliceStationResponseDTO;
+import com.example.SCM.dto.response.PoliceStationResponseDTO;
 import com.example.SCM.entity.PoliceStation;
 import org.springframework.stereotype.Service;
 

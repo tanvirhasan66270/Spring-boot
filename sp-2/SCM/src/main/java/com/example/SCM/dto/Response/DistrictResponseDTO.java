@@ -1,4 +1,4 @@
-package com.example.SCM.dto.Response;
+package com.example.SCM.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

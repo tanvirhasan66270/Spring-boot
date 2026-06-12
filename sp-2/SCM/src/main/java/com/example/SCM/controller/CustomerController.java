@@ -1,11 +1,10 @@
 package com.example.SCM.controller;
 
-import com.example.SCM.dto.Response.CustomerResponseDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,36 +12,42 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customer/")
-@CrossOrigin("*")
+@RequestMapping("/api/customer")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") // Frontend-এর CORS সমস্যা এড়ানোর জন্য
 public class CustomerController {
 
     private final CustomerService customerService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    // ১. কাস্টমার তৈরি করা (Create / Save)
+    @PostMapping
     public ResponseEntity<CustomerResponseDTO> save(
-            @RequestPart("dto") CustomerRequestDTO dto,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
-        CustomerResponseDTO savedCustomer = customerService.save(dto, file);
-        return new ResponseEntity<>(savedCustomer, HttpStatus.CREATED);
+            @ModelAttribute CustomerRequestDTO dto, // form-data হ্যান্ডেল করার জন্য @ModelAttribute
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+
+        CustomerResponseDTO response = customerService.save(dto, file);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    // ২. সব কাস্টমারের লিস্ট দেখা (Get All)
     @GetMapping
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
-        return ResponseEntity.ok(customerService.findAll());
+        List<CustomerResponseDTO> list = customerService.findAll();
+        return ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
-    public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
-        CustomerResponseDTO customer = customerService.getById(id)
-                .orElseThrow(() -> new RuntimeException("Customer profile not found with ID: " + id));
-        return ResponseEntity.ok(customer);
+    // ৩. নির্দিষ্ট আইডি দিয়ে কাস্টমার খোঁজা (Get By ID)
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerResponseDTO> findById(@PathVariable Long id) {
+        CustomerResponseDTO response = customerService.getById(id)
+                .orElseThrow(() -> new RuntimeException("Customer Not Found with ID: " + id));
+        return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("{id}")
+    // ৪. কাস্টমার প্রোফাইল ডিলিট করা (Delete)
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
-        return ResponseEntity.ok("Customer profile deleted successfully");
+        return ResponseEntity.ok("Customer and associated User account deleted successfully.");
     }
 }

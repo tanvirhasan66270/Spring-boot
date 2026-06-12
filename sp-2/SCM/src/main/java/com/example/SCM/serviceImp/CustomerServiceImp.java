@@ -1,7 +1,7 @@
 package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
-import com.example.SCM.dto.Response.CustomerResponseDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.mapper.CustomerMapper;
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.entity.Customer;
@@ -106,9 +106,8 @@ public class CustomerServiceImp implements CustomerService {
         }
     }
 
-    /**
-     * File management helper using cleaner format naming syntax like Rider service setup
-     */
+    // File management helper using cleaner format naming syntax like Rider service setup
+
     private String uploadImage(MultipartFile file, String customerName) {
         try {
             Path path = Paths.get(uploadDir, "customer");
@@ -135,13 +134,11 @@ public class CustomerServiceImp implements CustomerService {
         }
     }
 
-    /**
-     * Safe Mail handler utility wrapper block
-     */
+     // Safe Mail handler utility wrapper block
 
-        /**
-         * Helper Method: Sends a professionally styled HTML verification mail to the customer.
-         */
+
+    //Helper Method: Sends a professionally styled HTML verification mail to the customer.
+
         private void sendWelcomeEmail(User user) {
             if (user == null || user.getEmail() == null) {
                 return;

@@ -1,11 +1,9 @@
 package com.example.SCM.controller;
 
 
-import com.example.SCM.dto.Response.DistrictResponseDTO;
-import com.example.SCM.entity.Country;
+import com.example.SCM.dto.response.DistrictResponseDTO;
 import com.example.SCM.entity.District;
 import com.example.SCM.service.DistrictService;
-import com.example.SCM.service.DivisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,7 @@
 package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.CustomerRequestDTO;
-import com.example.SCM.dto.Response.CustomerResponseDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.entity.Customer;
 import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;

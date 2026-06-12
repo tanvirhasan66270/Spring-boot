@@ -9,6 +9,9 @@ import com.example.SCM.entity.User;
 import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+
 @Component
 public class CustomerMapper {
 
@@ -80,8 +83,14 @@ public class CustomerMapper {
         customer.setUser(user);
         customer.setAddress(dto.getAddress());
         customer.setGender(dto.getGender());
-        dto.setDob(customer.getDob() != null
-                ? customer.getDob().toString() : null);
+
+        if (dto.getDob() != null && !dto.getDob().isBlank()) {
+            try {
+                customer.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(dto.getDob()));
+            } catch (ParseException e) {
+                throw new RuntimeException("Invalid date format. Use yyyy-MM-dd");
+            }
+        }
         customer.setPoliceStation(policeStation);
 
         return customer;

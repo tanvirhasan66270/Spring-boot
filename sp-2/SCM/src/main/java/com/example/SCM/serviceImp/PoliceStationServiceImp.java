@@ -1,6 +1,6 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.dto.Response.PoliceStationResponseDTO;
+import com.example.SCM.dto.response.PoliceStationResponseDTO;
 import com.example.SCM.entity.District;
 import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.repository.DistrictRepository;
