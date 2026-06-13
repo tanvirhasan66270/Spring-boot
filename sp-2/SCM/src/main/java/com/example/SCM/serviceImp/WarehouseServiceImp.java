@@ -108,7 +108,6 @@ public class WarehouseServiceImp implements WarehouseService {
     }
 
     // 5. Delete Warehouse
-   
     @Override
     @Transactional
     public void delete(Long id) {
