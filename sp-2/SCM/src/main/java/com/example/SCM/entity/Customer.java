@@ -27,7 +27,7 @@ public class Customer {
     private String address;
     private String gender;
 
-    @Temporal(TemporalType.DATE)
+
     private Date dob;
 
     private String image;
@@ -46,4 +46,6 @@ public class Customer {
 //    @JsonIgnore
 //    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
 //    private List<Parcel> parcels = new ArrayList<>();
+
+
 }

@@ -22,15 +22,7 @@ public class PurchaseOrder {
     @Column(name = "po_number", nullable = false, unique = true, length = 50)
     private String poNumber; // অটো-জেনারেটেড ইউনিক পিও নাম্বার (যেমন: PO-2026-001)
 
-    // সাপ্লায়ারের সাথে মেনি-টু-ওয়ান রিলেশন
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier;
 
-    // ১টি রিকুইজিশন থেকে সাধারণত ১টিই ফাইনাল পারচেজ অর্ডার ইস্যু হয়
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_requisition_id", nullable = false)
-    private PurchaseRequisition purchaseRequisition;
 
     @Column(name = "issued_by", nullable = false)
     private Long issuedBy; // লগইন থাকা প্রোকিউরমেন্ট অফিসারের ইউজার আইডি
@@ -47,6 +39,19 @@ public class PurchaseOrder {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private PurchaseOrderStatus status = PurchaseOrderStatus.DRAFT;
+
+
+    // সাপ্লায়ারের সাথে মেনি-টু-ওয়ান রিলেশন
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id", nullable = false)
+    private Supplier supplier;
+
+    // ১টি রিকুইজিশন থেকে সাধারণত ১টিই ফাইনাল পারচেজ অর্ডার ইস্যু হয়
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "purchase_requisition_id", nullable = false)
+    private PurchaseRequisition purchaseRequisition;
+
+
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
