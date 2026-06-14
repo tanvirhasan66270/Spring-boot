@@ -5,8 +5,11 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "purchase_orders")
@@ -20,15 +23,16 @@ public class PurchaseOrder {
     private Long id;
 
     @Column(name = "po_number", nullable = false, unique = true, length = 50)
-    private String poNumber; // অটো-জেনারেটেড ইউনিক পিও নাম্বার (যেমন: PO-2026-001)
-
-
+    private String poNumber;
 
     @Column(name = "issued_by", nullable = false)
-    private Long issuedBy; // লগইন থাকা প্রোকিউরমেন্ট অফিসারের ইউজার আইডি
+    private Long issuedBy;
 
     @Column(name = "total_amount", nullable = false)
-    private double totalAmount;
+    private double totalAmount; // বেস বা ওল্ড লাইন আইটেম ট্র্যাকের ব্যাকআপ
+
+    @Column(name = "grand_total", nullable = false)
+    private double grandTotal; // রোল-আপ লজিকের মাধ্যমে ডাইনামিকালি ক্যালকুলেটেড ফাইনাল অ্যামাউন্ট
 
     @Column(nullable = false, length = 10)
     private String currency = "USD";
@@ -40,18 +44,18 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private PurchaseOrderStatus status = PurchaseOrderStatus.DRAFT;
 
-
-    // সাপ্লায়ারের সাথে মেনি-টু-ওয়ান রিলেশন
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    // ১টি রিকুইজিশন থেকে সাধারণত ১টিই ফাইনাল পারচেজ অর্ডার ইস্যু হয়
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
 
-
+    // 💡 এটি যুক্ত করা হয়েছে: গ্র্যান্ড টোটাল রোল-আপ এবং অটো ডিলিশন (Orphan Removal) এর জন্য
+    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    private List<POLineItem> lineItems = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -62,11 +66,10 @@ public class PurchaseOrder {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-//        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
             this.status = PurchaseOrderStatus.DRAFT;
         }
-        // রিয়েল সিস্টেমে poNumber ফাঁকা থাকলে এখানে UUID বা কাস্টম সিকোয়েন্স লজিক বসানো যায়
         if (this.poNumber == null) {
             this.poNumber = "PO-" + System.currentTimeMillis();
         }

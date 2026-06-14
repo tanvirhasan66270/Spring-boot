@@ -3,6 +3,7 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.dto.mapper.PurchaseOrderMapper;
 import com.example.SCM.dto.request.PurchaseOrderRequestDTO;
 import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
+import com.example.SCM.entity.POLineItem;
 import com.example.SCM.entity.PurchaseOrder;
 import com.example.SCM.entity.PurchaseRequisition;
 import com.example.SCM.entity.Supplier;
@@ -27,8 +28,9 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final PurchaseRequisitionRepository requisitionRepository;
     private final PurchaseOrderMapper purchaseOrderMapper;
 
-    // 1. Save New Purchase Order
-
+    /**
+     * 1. Save New Purchase Order
+     */
     @Override
     @Transactional
     public PurchaseOrderResponseDTO save(PurchaseOrderRequestDTO dto) {
@@ -36,29 +38,30 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             throw new IllegalArgumentException("Purchase Order data cannot be null");
         }
 
-        // বিজনেস লজিক: একই পারচেজ রিকুইজিশন (PR) দিয়ে অলরেডি কোনো PO তৈরি হয়েছে কি না তা চেক করা (ডুপ্লিকেট পিও এড়াতে)
+        // বিজনেস লজিক: ডুপ্লিকেট পিও এড়াতে চেক
         Optional<PurchaseOrder> existingPo = purchaseOrderRepository.findByPurchaseRequisitionId(dto.getPurchaseRequisitionId());
         if (existingPo.isPresent()) {
             throw new RuntimeException("A Purchase Order already exists for this Purchase Requisition ID: " + dto.getPurchaseRequisitionId());
         }
 
-        // রিলেশনাল Supplier অবজেক্ট ডাটাবেজ থেকে খুঁজে বের করা
         Supplier supplier = supplierRepository.findById(dto.getSupplierId())
                 .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + dto.getSupplierId()));
 
-        // রিলেশনাল PurchaseRequisition অবজেক্ট ডাটাবেজ থেকে খুঁজে বের করা
         PurchaseRequisition requisition = requisitionRepository.findById(dto.getPurchaseRequisitionId())
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + dto.getPurchaseRequisitionId()));
 
-        // Mapper দিয়ে DTO -> Entity রূপান্তর
+        // Mapper দিয়ে DTO -> Entity রূপান্তর
         PurchaseOrder po = purchaseOrderMapper.toEntity(dto, supplier, requisition);
 
+        // দ্রষ্টব্য: প্রথমবার সেভ হওয়ার সময় চাইল্ড লাইন আইটেম না থাকলে টোটাল $0 থাকবে।
+        // লাইন আইটেম অ্যাড হওয়ার সাথে সাথে রোল-আপ মেথড গ্র্যান্ড টোটাল আপডেট করবে।
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
         return purchaseOrderMapper.toResponseDTO(savedPo);
     }
 
-    // 2. Update Existing Purchase Order
-
+    /**
+     * 2. Update Existing Purchase Order
+     */
     @Override
     @Transactional
     public PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto) {
@@ -66,23 +69,21 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             throw new IllegalArgumentException("Purchase Order data cannot be null");
         }
 
-        // এক্সিস্টিং পারচেজ অর্ডার রেকর্ড খুঁজে বের করা
-        PurchaseOrder po = purchaseOrderRepository.findById(id)
+        // 💡 অপ্টিমাইজেশন: চাইল্ড লাইন আইটেমসহ রেকর্ড খুঁজে বের করা যাতে ডাটা রিফ্রেশ না হয়
+        PurchaseOrder po = purchaseOrderRepository.findByIdWithLineItems(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with ID: " + id));
 
-        // বিজনেস লজಿಕ: যদি পারচেজ অর্ডারটি অলরেডি RECEIVED বা CANCELLED হয়ে যায়, তবে তার ডেটা মডিফাই করা লক থাকবে
+        // বিজনেস লজিক: RECEIVED বা CANCELLED হলে ডেটা লক থাকবে
         if ("RECEIVED".equals(po.getStatus().name()) || "CANCELLED".equals(po.getStatus().name())) {
             throw new RuntimeException("Closed or Cancelled Purchase Orders cannot be modified!");
         }
 
-        // যদি সাপ্লায়ার পরিবর্তন করার রিকোয়ারমেন্ট আসে
         Supplier supplier = po.getSupplier();
         if (dto.getSupplierId() != null && !dto.getSupplierId().equals(supplier.getId())) {
             supplier = supplierRepository.findById(dto.getSupplierId())
                     .orElseThrow(() -> new RuntimeException("New Supplier not found with ID: " + dto.getSupplierId()));
         }
 
-        // যদি রিকুইজিশন সোর্স পরিবর্তন করার রিকোয়ারমেন্ট আসে
         PurchaseRequisition requisition = po.getPurchaseRequisition();
         if (dto.getPurchaseRequisitionId() != null && !dto.getPurchaseRequisitionId().equals(requisition.getId())) {
             requisition = requisitionRepository.findById(dto.getPurchaseRequisitionId())
@@ -92,12 +93,16 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         // ম্যাপারের মাধ্যমে বেসিক ডেটা, ডেট ও এনাম স্ট্যাটাস আপডেট করা
         purchaseOrderMapper.updateEntity(dto, po, supplier, requisition);
 
+        // 💡 রোল-আপ লজিক ট্রিগার: স্ট্যাটাস পরিবর্তনের কারণে গ্র্যান্ড টোটাল রি-ক্যালকুলেট করা
+        triggerGrandTotalRollUp(po);
+
         PurchaseOrder updatedPo = purchaseOrderRepository.save(po);
         return purchaseOrderMapper.toResponseDTO(updatedPo);
     }
 
-    //3. Find All Purchase Orders
-
+    /**
+     * 3. Find All Purchase Orders
+     */
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseOrderResponseDTO> findAll() {
@@ -106,28 +111,52 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                 .collect(Collectors.toList());
     }
 
-    // 4. Find Purchase Order By ID
-
+    /**
+     * 4. Find Purchase Order By ID
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<PurchaseOrderResponseDTO> getById(Long id) {
-        return purchaseOrderRepository.findById(id)
+        // 💡 অপ্টিমাইজেশন: ড্যাশবোর্ডে চাইল্ড আইটেমের গ্রিড ডেটাসহ একবারে রেন্ডার করার জন্য কাস্টম মেথড ব্যবহার করা হয়েছে
+        return purchaseOrderRepository.findByIdWithLineItems(id)
                 .map(purchaseOrderMapper::toResponseDTO);
     }
 
-    // 5. Delete Purchase Order
-
+    /**
+     * 5. Delete Purchase Order
+     */
     @Override
     @Transactional
     public void delete(Long id) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with ID: " + id));
 
-        // লিগ্যাল অডিট ট্রেইলের জন্য শুধুমাত্র DRAFT অবস্থায় থাকা অর্ডারই ডিলিট করা যাবে। ISSUED বা RECEIVED ডিলিট করা যাবে না।
+        // লিগ্যাল অডিট ট্রেইলের জন্য শুধুমাত্র DRAFT অবস্থায় থাকা অর্ডারই ডিলিট করা যাবে।
         if (!"DRAFT".equals(po.getStatus().name())) {
             throw new RuntimeException("Only DRAFT Purchase Orders can be deleted. Released orders must be CANCELLED instead of deleted!");
         }
 
         purchaseOrderRepository.delete(po);
+    }
+
+    /**
+     * 💡 6. কাস্টম রোল-আপ ট্রিগার মেথড (চাইল্ড লাইনের ক্যানসেলেশন ও যোগফল সিঙ্ক করার জন্য)
+     * এই মেথডটি পাবলিক রাখা হয়েছে যাতে POLineItemServiceImp থেকেও এটিকে সরাসরি কল করা যায়।
+     */
+    @Transactional
+    public void triggerGrandTotalRollUp(PurchaseOrder order) {
+        if (order.getLineItems() == null || order.getLineItems().isEmpty()) {
+            order.setGrandTotal(0.0);
+            order.setTotalAmount(0.0);
+            return;
+        }
+
+        // আপনার চাহিদা অনুযায়ী: একটিভ লাইন আইটেমগুলোর (যা CANCELLED নয়) lineTotal যোগ করা
+        double activeGrandTotal = order.getLineItems().stream()
+                .mapToDouble(POLineItem::getLineTotal)
+                .sum();
+
+        order.setGrandTotal(activeGrandTotal);
+        order.setTotalAmount(activeGrandTotal); // ওল্ড টোটাল ট্র্যাকারের সাথে সিঙ্ক রাখা হলো
     }
 }

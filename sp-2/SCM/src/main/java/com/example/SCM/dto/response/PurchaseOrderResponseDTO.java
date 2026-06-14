@@ -2,9 +2,9 @@ package com.example.SCM.dto.response;
 
 import com.example.SCM.enumClass.PurchaseOrderStatus;
 import lombok.Data;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PurchaseOrderResponseDTO {
@@ -12,18 +12,18 @@ public class PurchaseOrderResponseDTO {
     private String poNumber;
     private Long issuedBy;
     private double totalAmount;
+    private double grandTotal; // ডাইনামিক গ্র্যান্ড টোটাল যা UI স্ক্রিনে মূল টাকা দেখাবে
     private String currency;
     private LocalDate expectedDeliveryDate;
-    private PurchaseOrderStatus status; // এনাম আউটপুট
+    private PurchaseOrderStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Supplier Details Flattening
+    // Flattened Parents
     private Long supplierId;
     private String supplierName;
-
-
-    // Purchase Requisition Details Flattening
     private Long purchaseRequisitionId;
-    private String requisitionUrgencyLevel; // রিকুইজিশনটি কতটা জরুরি ছিল তা পিও স্ক্রিনে দেখানোর জন্য
+
+    // চাইল্ড লাইন আইটেমের কালেকশন গ্রিড
+    private List<POLineItemResponseDTO> lineItems;
 }
