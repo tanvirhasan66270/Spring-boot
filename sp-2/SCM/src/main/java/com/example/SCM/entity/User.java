@@ -30,9 +30,6 @@ public class User {
     @Size(max = 20,min = 4)
     String password;
 
-//    @Size(max = 20,min = 4)
-//    String confirmPassword;
-
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -40,6 +37,11 @@ public class User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
+
+//    @Size(max = 20,min = 4)
+//    String confirmPassword;
+
+
 
 
 
