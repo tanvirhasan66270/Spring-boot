@@ -28,13 +28,9 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     // ৫. নির্দিষ্ট কোনো অফিসার (issuedBy) মোট কতগুলো অর্ডার ইস্যু করেছেন তার তালিকা
     List<PurchaseOrder> findByIssuedBy(Long issuedBy);
 
-    // 💡 অপ্টিমাইজেশন কুয়েরি: এন-প্লাস-ওয়ান (N+1) প্রবলেম এড়াতে এক কুয়েরিতে চাইল্ড লাইন আইটেমসহ PO লোড করা
-    // ড্যাশবোর্ডে বা মাস্টার-ডিটেইল ভিউতে পারফরম্যান্স বুস্ট করার জন্য এটি অত্যন্ত দরকারি
-    @Query("SELECT po FROM PurchaseOrder po LEFT JOIN FETCH po.lineItems WHERE po.id = :id")
-    Optional<PurchaseOrder> findByIdWithLineItems(@Param("id") Long id);
 
-    // ৬. কাস্টম JPQL কুয়েরি: নির্দিষ্ট অ্যামাউন্টের চেয়ে বেশি মূল্যের (Grand Total) বড় পারচেজ অর্ডারগুলো ফিল্টার করা
-    // (যেহেতু আমরা রোল-আপ লজিকের মূল ভ্যালু grandTotal ফিল্ডে রাখছি, তাই কুয়েরিটি grandTotal দিয়ে করা বেশি নিরাপদ)
-    @Query("SELECT po FROM PurchaseOrder po WHERE po.grandTotal >= :amount")
+    @Query("SELECT po FROM PurchaseOrder po WHERE po.totalAmount >= :amount")
     List<PurchaseOrder> findHighValueOrders(@Param("amount") double amount);
+
+
 }

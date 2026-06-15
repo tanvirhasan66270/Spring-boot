@@ -70,7 +70,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         }
 
         // 💡 অপ্টিমাইজেশন: চাইল্ড লাইন আইটেমসহ রেকর্ড খুঁজে বের করা যাতে ডাটা রিফ্রেশ না হয়
-        PurchaseOrder po = purchaseOrderRepository.findByIdWithLineItems(id)
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with ID: " + id));
 
         // বিজনেস লজিক: RECEIVED বা CANCELLED হলে ডেটা লক থাকবে
@@ -94,7 +94,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         purchaseOrderMapper.updateEntity(dto, po, supplier, requisition);
 
         // 💡 রোল-আপ লজিক ট্রিগার: স্ট্যাটাস পরিবর্তনের কারণে গ্র্যান্ড টোটাল রি-ক্যালকুলেট করা
-        triggerGrandTotalRollUp(po);
+//        triggerGrandTotalRollUp(po);
 
         PurchaseOrder updatedPo = purchaseOrderRepository.save(po);
         return purchaseOrderMapper.toResponseDTO(updatedPo);
@@ -118,7 +118,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     @Transactional(readOnly = true)
     public Optional<PurchaseOrderResponseDTO> getById(Long id) {
         // 💡 অপ্টিমাইজেশন: ড্যাশবোর্ডে চাইল্ড আইটেমের গ্রিড ডেটাসহ একবারে রেন্ডার করার জন্য কাস্টম মেথড ব্যবহার করা হয়েছে
-        return purchaseOrderRepository.findByIdWithLineItems(id)
+        return purchaseOrderRepository.findById(id)
                 .map(purchaseOrderMapper::toResponseDTO);
     }
 
@@ -139,24 +139,5 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         purchaseOrderRepository.delete(po);
     }
 
-    /**
-     * 💡 6. কাস্টম রোল-আপ ট্রিগার মেথড (চাইল্ড লাইনের ক্যানসেলেশন ও যোগফল সিঙ্ক করার জন্য)
-     * এই মেথডটি পাবলিক রাখা হয়েছে যাতে POLineItemServiceImp থেকেও এটিকে সরাসরি কল করা যায়।
-     */
-    @Transactional
-    public void triggerGrandTotalRollUp(PurchaseOrder order) {
-        if (order.getLineItems() == null || order.getLineItems().isEmpty()) {
-            order.setGrandTotal(0.0);
-            order.setTotalAmount(0.0);
-            return;
-        }
 
-        // আপনার চাহিদা অনুযায়ী: একটিভ লাইন আইটেমগুলোর (যা CANCELLED নয়) lineTotal যোগ করা
-        double activeGrandTotal = order.getLineItems().stream()
-                .mapToDouble(POLineItem::getLineTotal)
-                .sum();
-
-        order.setGrandTotal(activeGrandTotal);
-        order.setTotalAmount(activeGrandTotal); // ওল্ড টোটাল ট্র্যাকারের সাথে সিঙ্ক রাখা হলো
-    }
 }

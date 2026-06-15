@@ -5,11 +5,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "purchase_orders")
@@ -29,10 +27,7 @@ public class PurchaseOrder {
     private Long issuedBy;
 
     @Column(name = "total_amount", nullable = false)
-    private double totalAmount; // বেস বা ওল্ড লাইন আইটেম ট্র্যাকের ব্যাকআপ
-
-    @Column(name = "grand_total", nullable = false)
-    private double grandTotal; // রোল-আপ লজিকের মাধ্যমে ডাইনামিকালি ক্যালকুলেটেড ফাইনাল অ্যামাউন্ট
+    private double totalAmount; // অর্ডারের মূল মোট টাকার পরিমাণ
 
     @Column(nullable = false, length = 10)
     private String currency = "USD";
@@ -52,11 +47,6 @@ public class PurchaseOrder {
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
 
-    // 💡 এটি যুক্ত করা হয়েছে: গ্র্যান্ড টোটাল রোল-আপ এবং অটো ডিলিশন (Orphan Removal) এর জন্য
-    @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    private List<POLineItem> lineItems = new ArrayList<>();
-
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
@@ -72,6 +62,9 @@ public class PurchaseOrder {
         }
         if (this.poNumber == null) {
             this.poNumber = "PO-" + System.currentTimeMillis();
+        }
+        if (this.totalAmount == 0.0) {
+            this.totalAmount = 0.0;
         }
     }
 

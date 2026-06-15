@@ -15,10 +15,10 @@ import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.PurchaseOrderRepository;
 import com.example.SCM.service.POLineItemService;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class POLineItemServiceImp implements POLineItemService {
 
     private final POLineItemRepository poLineItemRepository;
@@ -34,9 +33,7 @@ public class POLineItemServiceImp implements POLineItemService {
     private final ProductRepository productRepository;
     private final InventoryRepository inventoryRepository;
     private final POLineItemMapper poLineItemMapper;
-    private final TrackingCodeGenerator trackingCodeGenerator; //
-    @Lazy// 💡 আপনার কাস্টম ইউটিল ইনজেকশন
-    private final PurchaseOrderServiceImp purchaseOrderServiceImp; // রোল-আপ ট্রিগারের জন্য
+    private final TrackingCodeGenerator trackingCodeGenerator;
 
     /**
      * 1. Save New PO Line Item
@@ -54,41 +51,40 @@ public class POLineItemServiceImp implements POLineItemService {
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
-        // ইনভেন্টরি চেক পাস (Usable Stock = QuantityOnHand - QuantityReserved)
+        // ইনভেন্টরি এভেইলেবল স্টক চেক (Optional টাইপ সেফটি সিঙ্ক মেনে)
         Inventory inventory = inventoryRepository.findByProductId(product.getId())
                 .stream()
-                .findFirst() // লিস্টের প্রথম ইনভেন্টরি রেকর্ডটি নেবে
+                .findFirst()
                 .orElseThrow(() -> new RuntimeException("Inventory record not found for Product ID: " + product.getId()));
-        int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
 
+        int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
         if (availableStock < dto.getQuantity()) {
-            throw new RuntimeException("InsufficientStockException: Requested quantity (" + dto.getQuantity()
-                    + ") exceeds available usable stock (" + availableStock + ")!");
+            throw new RuntimeException("InsufficientStockException: Low warehouse inventory!");
         }
 
-        // ইনভেন্টরিতে স্টক রিজার্ভেশন লগ (QuantityReserved বাড়িয়ে দেওয়া)
+        // ভার্চুয়ালি স্টক লক করতে Reserved Quantity বাড়ানো
         inventory.setQuantityReserved(inventory.getQuantityReserved() + dto.getQuantity());
         inventoryRepository.save(inventory);
 
-        // Mapping DTO -> Entity
+        // DTO -> Entity কনভার্সন
         POLineItem item = poLineItemMapper.toEntity(dto, order, product);
 
-        // যদি প্রথমবারই SHIPPED স্ট্যাটাসে আসে তবে কাস্টম ট্র্যাকিং কোড সেটআপ
         if (POLineItemStatus.SHIPPED.name().equalsIgnoreCase(dto.getStatus())) {
             item.setTrackingNumber(trackingCodeGenerator.generateTrackingCode());
         }
 
         POLineItem savedItem = poLineItemRepository.save(item);
 
-        // প্যারেন্ট অর্ডারের গ্র্যান্ড টোটাল রোল-আপ আপডেট ট্রিগার
-        order.getLineItems().add(savedItem);
-        purchaseOrderServiceImp.triggerGrandTotalRollUp(order);
+        // 💡 রোল-আপ লজিক: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmount ডাটাবেজে আপডেট করা
+        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
+        order.setTotalAmount(updatedTotal);
+        purchaseOrderRepository.save(order);
 
         return poLineItemMapper.toResponseDTO(savedItem);
     }
 
     /**
-     * 2. Update Existing PO Line Item (State Machine Engine)
+     * 2. Update Existing PO Line Item (State Machine Logic)
      */
     @Override
     @Transactional
@@ -104,19 +100,19 @@ public class POLineItemServiceImp implements POLineItemService {
         PurchaseOrder order = item.getPurchaseOrder();
         Inventory inventory = inventoryRepository.findByProductId(product.getId())
                 .stream()
-                .findFirst() // লিস্টের প্রথম ইনভেন্টরি রেকর্ডটি নেবে
-                .orElseThrow(() -> new RuntimeException("Inventory record not found for Product ID: " + product.getId()));
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Inventory record not found for product."));
 
         POLineItemStatus oldStatus = item.getStatus();
         int oldQuantity = item.getQuantity();
 
-        // কোয়ান্টিটি পরিবর্তনের সাপেক্ষে ইনভেন্টরি ব্যালেন্স করা
+        // কোয়ান্তিটি পরিবর্তনের উপর ভিত্তি করে ইনভেন্টরি রিজার্ভেশন অ্যাডজাস্টমেন্ট
         if (dto.getQuantity() != oldQuantity) {
             int difference = dto.getQuantity() - oldQuantity;
             if (difference > 0) {
                 int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
                 if (availableStock < difference) {
-                    throw new RuntimeException("InsufficientStockException: Low warehouse stock to support change!");
+                    throw new RuntimeException("InsufficientStockException: Low warehouse stock to support update!");
                 }
                 inventory.setQuantityReserved(inventory.getQuantityReserved() + difference);
             } else {
@@ -124,37 +120,34 @@ public class POLineItemServiceImp implements POLineItemService {
             }
         }
 
-        // ম্যাপার দিয়ে ফিল্ড আপডেট
+        // ম্যাপার দিয়ে ফিল্ড আপডেট
         poLineItemMapper.updateEntity(dto, item, product);
         POLineItemStatus newStatus = item.getStatus();
 
-        // 💡 স্টেট মেশিন লজিক ১ (PENDING -> SHIPPED): ট্র্যাকিং কোড বসানো এবং স্টক ফাইনালি মাইনাস করা
+        // 🚚 স্টেট মেশিন লজিক ১ (PENDING -> SHIPPED): ট্র্যাকিং কোড এবং ইনভেন্টরি ফাইনাল ডিডাকশন
         if (oldStatus != POLineItemStatus.SHIPPED && newStatus == POLineItemStatus.SHIPPED) {
             if (item.getTrackingNumber() == null) {
                 item.setTrackingNumber(trackingCodeGenerator.generateTrackingCode());
             }
-            // শিপমেন্ট হয়ে যাওয়ার কারণে ওয়ান-হ্যান্ড এবং রিজার্ভড দুই জায়গা থেকেই স্টক পার্মানেন্টলি কেটে নেওয়া হবে
             inventory.setQuantityOnHand(inventory.getQuantityOnHand() - item.getQuantity());
             inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
         }
 
-
-
-
-        // 💡 স্টেট মেশিন লজিক ২ (স্ট্যাটাস যখন CANCELLED): স্টক রিলিজ ও লাইন টোটাল $0 করা
+        // ❌ স্টেট মেশিন লজিক ২ (CANCELLED): রিজার্ভড স্টক রিলিজ
         if (oldStatus != POLineItemStatus.CANCELLED && newStatus == POLineItemStatus.CANCELLED) {
-            // যদি শিপড হওয়ার আগে ক্যানসেল হয়, তবে আটকে থাকা রিজার্ভড স্টক রিলিজ করা হবে
             if (oldStatus != POLineItemStatus.SHIPPED && oldStatus != POLineItemStatus.DELIVERED) {
                 inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
             }
-            item.setLineTotal(0.0); // ক্যানসেলড হওয়ার কারণে লাইন টোটাল জিরো
+            item.setLineTotal(0.0);
         }
 
         inventoryRepository.save(inventory);
         POLineItem updatedItem = poLineItemRepository.save(item);
 
-        // প্যারেন্ট টেবিলের রোল-আপ গ্র্যান্ড টোটাল রি-ট্রিগার
-        purchaseOrderServiceImp.triggerGrandTotalRollUp(order);
+        // 💡 রোল-আপ লজিক: চাইল্ড আপডেট হওয়ার পর প্যারেন্ট মাস্টার টেবিলের totalAmount সিঙ্ক করা
+        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
+        order.setTotalAmount(updatedTotal);
+        purchaseOrderRepository.save(order);
 
         return poLineItemMapper.toResponseDTO(updatedItem);
     }
@@ -191,12 +184,12 @@ public class POLineItemServiceImp implements POLineItemService {
 
         PurchaseOrder order = item.getPurchaseOrder();
 
-        // ডিলিট করার আগে স্টক রিজার্ভেশন অবমুক্ত করা (যদি আইটেমটি একটিভ থাকে)
+        // ডিলিট করার আগে লক থাকা রিজার্ভড স্টক রিলিজ করা
         if (item.getStatus() != POLineItemStatus.CANCELLED && item.getStatus() != POLineItemStatus.SHIPPED) {
             Inventory inventory = inventoryRepository.findByProductId(item.getProduct().getId())
                     .stream()
-                    .findFirst() // লিস্টের প্রথম রেকর্ডটি অপশনাল হিসেবে নেবে
-                    .orElse(null); // রেকর্ড না পাওয়া গেলে নাল সেট করবে
+                    .findFirst()
+                    .orElse(null);
             if (inventory != null) {
                 inventory.setQuantityReserved(Math.max(0, inventory.getQuantityReserved() - item.getQuantity()));
                 inventoryRepository.save(inventory);
@@ -205,15 +198,26 @@ public class POLineItemServiceImp implements POLineItemService {
 
         poLineItemRepository.delete(item);
 
-        // রোল-আপ গ্র্যান্ড টোটাল রি-ক্যালকুলেশন
-        order.getLineItems().remove(item);
-        purchaseOrderServiceImp.triggerGrandTotalRollUp(order);
+        // 💡 রোল-আপ লজিক: আইটেম চিরতরে মুছে যাওয়ার পর প্যারেন্ট অর্ডারের totalAmount পুনরায় হিসাব করে কমানো
+        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
+        order.setTotalAmount(updatedTotal);
+        purchaseOrderRepository.save(order);
     }
 
+    /**
+     * 💡 6. নতুন যুক্ত হওয়া ট্র্যাকিং এপিআই মেথড (Tracking Operations)
+     * লজিস্টিকস ড্যাশবোর্ডে ট্র্যাকিং নাম্বার দিয়ে আইটেমের স্টেট জানার জন্য
+     */
     @Override
+    @Transactional(readOnly = true)
     public POLineItemResponseDTO tracking(String trackingNumber) {
+        if (trackingNumber == null || trackingNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tracking number cannot be null or empty");
+        }
 
+        POLineItem item = poLineItemRepository.findByTrackingNumber(trackingNumber)
+                .orElseThrow(() -> new RuntimeException("No purchase order item found with Tracking Number: " + trackingNumber));
 
-        return null;
+        return poLineItemMapper.toResponseDTO(item);
     }
 }

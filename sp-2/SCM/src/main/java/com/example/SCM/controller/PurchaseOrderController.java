@@ -20,17 +20,15 @@ public class PurchaseOrderController {
 
     /**
      * 1. Create/Issue New Purchase Order (POST)
-     * URL: POST http://localhost:8085/api/purchase-orders
      */
     @PostMapping
-    public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
+    public ResponseEntity<PurchaseOrderResponseDTO> save(@RequestBody PurchaseOrderRequestDTO dto) {
         PurchaseOrderResponseDTO response = purchaseOrderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
      * 2. Update Existing Purchase Order (PUT)
-     * URL: PUT http://localhost:8085/api/purchase-orders/{id}
      */
     @PutMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
     public ResponseEntity<PurchaseOrderResponseDTO> update(
@@ -42,7 +40,6 @@ public class PurchaseOrderController {
 
     /**
      * 3. Get All Purchase Orders (GET)
-     * URL: GET http://localhost:8085/api/purchase-orders
      */
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
@@ -55,7 +52,6 @@ public class PurchaseOrderController {
 
     /**
      * 4. Get Purchase Order By ID (GET)
-     * URL: GET http://localhost:8085/api/purchase-orders/{id}
      */
     @GetMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
@@ -66,7 +62,6 @@ public class PurchaseOrderController {
 
     /**
      * 5. Delete Purchase Order (DELETE)
-     * URL: DELETE http://localhost:8085/api/purchase-orders/{id}
      */
     @DeleteMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
     public ResponseEntity<String> delete(@PathVariable Long id) {

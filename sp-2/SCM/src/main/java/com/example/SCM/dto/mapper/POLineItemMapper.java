@@ -14,10 +14,11 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class POLineItemMapper {
 
+    // ফ্রন্টএন্ড থেকে আসা "YYYY-MM-DD" স্ট্রিং ডেট পার্স করার জন্য ডেট ফরমেটার
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
-     * RequestDTO, PurchaseOrder, এবং Product অবজেক্ট থেকে নতুন POLineItem Entity-তে রূপান্তর (Create Operation)
+     * 1. RequestDTO, PurchaseOrder, এবং Product থেকে নতুন POLineItem Entity-তে রূপান্তর (Create Operation)
      */
     public POLineItem toEntity(POLineItemRequestDTO dto, PurchaseOrder purchaseOrder, Product product) {
         if (dto == null) {
@@ -32,7 +33,7 @@ public class POLineItemMapper {
         item.setShipmentMethod(dto.getShipmentMethod());
         item.setNotes(dto.getNotes());
 
-        // Delivery Date Mapping (String -> LocalDate)
+        // Delivery Date Conversion (String -> LocalDate)
         if (dto.getDeliveryDate() != null && !dto.getDeliveryDate().trim().isEmpty()) {
             item.setDeliveryDate(LocalDate.parse(dto.getDeliveryDate(), dateFormatter));
         }
@@ -53,7 +54,7 @@ public class POLineItemMapper {
     }
 
     /**
-     * POLineItem Entity থেকে POLineItemResponseDTO-তে রূপান্তর (Read Operations)
+     * 2. POLineItem Entity থেকে POLineItemResponseDTO-তে রূপান্তর (Read Operations)
      * এটি চাইল্ড টেবিলের ডাটা ফ্ল্যাট করে এক লাইনে নিয়ে আসে যাতে UI গ্রিডে সহজে বাইন্ড করা যায়।
      */
     public POLineItemResponseDTO toResponseDTO(POLineItem item) {
@@ -65,7 +66,7 @@ public class POLineItemMapper {
         dto.setId(item.getId());
         dto.setQuantity(item.getQuantity());
         dto.setUnitPrice(item.getUnitPrice());
-        dto.setLineTotal(item.getLineTotal()); // এনটিটি লেভেল থেকে অটো ক্যালকুলেটেড ভ্যালু আসবে
+        dto.setLineTotal(item.getLineTotal()); // এনটিটি লেভেলের অটো ক্যালকুলেটেড ভ্যালু (@PrePersist/PreUpdate থেকে)
         dto.setQuotationRef(item.getQuotationRef());
         dto.setPoNumber(item.getPoNumber());
         dto.setDeliveryDate(item.getDeliveryDate());
@@ -80,16 +81,17 @@ public class POLineItemMapper {
             PurchaseOrder po = item.getPurchaseOrder();
             dto.setPoId(po.getId());
 
-            // 💡 আপনার চাহিদা অনুযায়ী: প্যারেন্ট অর্ডারের কারেন্ট রোল-আপ গ্র্যান্ড টোটালটি
-            // এই চাইল্ড লাইনের totalAmount প্রোপার্টিতে পাস করে দেওয়া হলো
-            dto.setTotalAmount(po.getGrandTotal());
+            // 💡 আপনার চাহিদা অনুযায়ী: প্যারেন্ট অর্ডারের কারেন্ট টোটাল ট্র্যাকার ভ্যালুটি অ্যাসাইন করা হলো।
+            // যেহেতু এনটিটি থেকে সরাসরি লিস্ট বা গ্র্যান্ড টোটাল বাদ গেছে, তাই সার্ভিস লেয়ার থেকে
+            // এই ভ্যালুটি কাস্টম কুয়েরি বা সামেশনের মাধ্যমে রিয়েল-টাইম ক্যালকুলেট হয়ে ডাটাবেজ থেকে রিফ্লেক্ট করবে।
+            dto.setTotalAmount(po.getTotalAmount());
         }
 
-        // Product Details Flattening
+        // Product Details Flattening (নাল সেফটিসহ)
         if (item.getProduct() != null) {
             Product prod = item.getProduct();
             dto.setProductId(prod.getId());
-            dto.setProductName(prod.getName());  // ফ্রন্টএন্ড ড্যাশবোর্ডে সরাসরি নাম দেখানোর জন্য
+            dto.setProductName(prod.getName());      // ফ্রন্টএন্ড ড্যাশবোর্ডে সরাসরি নাম দেখানোর জন্য
             dto.setProductCode(prod.getProductCode());  // কাস্টম প্রোডাক্ট কোড শো করার জন্য
         }
 
@@ -97,7 +99,7 @@ public class POLineItemMapper {
     }
 
     /**
-     * এক্সিস্টিং POLineItem Entity-কে RequestDTO এবং নতুন অবজেক্ট দিয়ে আপডেট করা (Update Operation)
+     * 3. এক্সিস্টিং POLineItem Entity-কে RequestDTO এবং নতুন অবজেক্ট দিয়ে আপডেট করা (Update Operation)
      */
     public void updateEntity(POLineItemRequestDTO dto, POLineItem item, Product product) {
         if (dto == null || item == null) {
@@ -120,7 +122,7 @@ public class POLineItemMapper {
             item.setStatus(POLineItemStatus.valueOf(dto.getStatus().toUpperCase()));
         }
 
-        // যদি প্রোডাক্ট আইটেম পরিবর্তন করার কোনো রিকোয়ারমেন্ট থাকে
+        // যদি প্রোডাক্ট পরিবর্তন করার রিকোয়ারমেন্ট থাকে
         if (product != null) {
             item.setProduct(product);
         }

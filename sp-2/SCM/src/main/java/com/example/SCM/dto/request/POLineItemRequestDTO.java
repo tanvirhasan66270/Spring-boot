@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class POLineItemRequestDTO {
+
     private Long poId;
     private Long productId;
     private int quantity;
