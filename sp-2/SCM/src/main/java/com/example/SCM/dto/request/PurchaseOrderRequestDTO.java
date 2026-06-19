@@ -4,10 +4,11 @@ import lombok.Data;
 
 @Data
 public class PurchaseOrderRequestDTO {
-    private String poNumber;
-    private Long issuedBy;
-    private Long supplierId;
-    private Long purchaseRequisitionId;
-    private String expectedDeliveryDate; // "YYYY-MM-DD"
-    private String status;               // "DRAFT", "ISSUED" ইত্যাদি
+
+    private Long quotationId;              // 🔑 মূল চালিকাশক্তি (TS-এর QuotationId)
+    private Long issuedBy;                 // লগইন করা ইউজারের আইডি
+    private double totalAmount;
+    private String currency;               // Default "USD"
+    private String expectedDeliveryDate;   // "YYYY-MM-DD"
+    private String status;                 // PurchaseOrderStatus (DRAFT, ORDERED, etc.)
 }

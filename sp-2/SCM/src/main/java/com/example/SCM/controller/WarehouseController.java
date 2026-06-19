@@ -1,7 +1,7 @@
 package com.example.SCM.controller;
 
-import com.example.SCM.dto.response.WarehouseResponseDTO;
 import com.example.SCM.dto.request.WarehouseRequestDTO;
+import com.example.SCM.dto.response.WarehouseResponseDTO;
 import com.example.SCM.service.WarehouseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,43 +11,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/warehouses/") // বহুবচন বা Plural নাম ব্যবহার করা স্ট্যান্ডার্ড REST API কনভেনশন
+@RequestMapping("/api/warehouses/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // ফ্রন্টএন্ড থেকে কল করার সময় ব্রাউজারের CORS পলিসি জনিত ব্লকিং এড়াতে
+@CrossOrigin(origins = "*")
 public class WarehouseController {
 
     private final WarehouseService warehouseService;
 
-   // 1. Create New Warehouse (POST)
-
     @PostMapping
     public ResponseEntity<WarehouseResponseDTO> create(@RequestBody WarehouseRequestDTO dto) {
-        WarehouseResponseDTO response = warehouseService.save(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(warehouseService.save(dto), HttpStatus.CREATED);
     }
-
-    // 2. Update Existing Warehouse (PUT)
 
     @PutMapping("{id}")
-    public ResponseEntity<WarehouseResponseDTO> update(
-            @PathVariable Long id,
-            @RequestBody WarehouseRequestDTO dto) {
-        WarehouseResponseDTO response = warehouseService.update(id, dto);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<WarehouseResponseDTO> update(@PathVariable Long id, @RequestBody WarehouseRequestDTO dto) {
+        return ResponseEntity.ok(warehouseService.update(id, dto));
     }
-
-    // 3. Get All Warehouses (GET)
 
     @GetMapping
     public ResponseEntity<List<WarehouseResponseDTO>> getAll() {
         List<WarehouseResponseDTO> list = warehouseService.findAll();
-        if (list.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(list);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
-
-    //4. Get Warehouse By ID (GET)
 
     @GetMapping("{id}")
     public ResponseEntity<WarehouseResponseDTO> getById(@PathVariable Long id) {
@@ -56,12 +41,9 @@ public class WarehouseController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-     //5. Delete Warehouse (DELETE)
-
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         warehouseService.delete(id);
-        return ResponseEntity.ok("Warehouse location and its active configurations deleted successfully!");
+        return ResponseEntity.ok("Warehouse deleted successfully from system tracking");
     }
 }

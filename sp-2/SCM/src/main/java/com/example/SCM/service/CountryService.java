@@ -1,16 +1,15 @@
 package com.example.SCM.service;
 
-import com.example.SCM.entity.Country;
-import org.springframework.stereotype.Service;
+import com.example.SCM.dto.request.CountryRequestDTO;
+import com.example.SCM.dto.response.CountryResponseDTO;
 
 import java.util.List;
 import java.util.Optional;
 
-@Service
 public interface CountryService {
-
-    Country save(Country c);
-    List<Country> findAll();
-    Optional<Country> getById(Long id);
+    CountryResponseDTO save(CountryRequestDTO dto);
+    CountryResponseDTO update(Long id, CountryRequestDTO dto);
+    List<CountryResponseDTO> findAll(boolean onlyActive);
+    Optional<CountryResponseDTO> getById(Long id);
     void delete(Long id);
 }

@@ -1,79 +1,91 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.dto.DivisionDTO;
+import com.example.SCM.dto.mapper.DivisionMapper;
+import com.example.SCM.dto.request.DivisionRequestDTO;
+import com.example.SCM.dto.response.DivisionResponseDTO;
 import com.example.SCM.entity.Country;
 import com.example.SCM.entity.Division;
 import com.example.SCM.repository.CountryRepository;
 import com.example.SCM.repository.DivisionRepository;
 import com.example.SCM.service.DivisionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DivisionServiceImp implements DivisionService {
 
-
-   @Autowired
-   private DivisionRepository divisionRepository;
-
-   @Autowired
-   private CountryRepository countryRepository;
-
+    private final DivisionRepository divisionRepository;
+    private final CountryRepository countryRepository;
+    private final DivisionMapper divisionMapper;
 
     @Override
-    public Division save(Division d) {
+    @Transactional
+    public DivisionResponseDTO save(DivisionRequestDTO dto) {
+        if (dto == null) throw new IllegalArgumentException("Division data cannot be null");
 
-        Long countryId = d.getCountry().getId();
-        Country c = countryRepository.findById(countryId)
-                .orElseThrow(()-> new RuntimeException("Country not found with this ID"));
+        Country country = countryRepository.findById(dto.getCountryId())
+                .orElseThrow(() -> new RuntimeException("Country not found with ID: " + dto.getCountryId()));
 
-        d.setCountry(c);
-        return divisionRepository.save(d);
+        Division division = divisionMapper.toEntity(dto, country);
+        return divisionMapper.toResponseDTO(divisionRepository.save(division));
     }
 
     @Override
-    public List<Division> findAll() {
-        return divisionRepository.findAll();
+    @Transactional
+    public DivisionResponseDTO update(Long id, DivisionRequestDTO dto) {
+        if (dto == null) throw new IllegalArgumentException("Update data cannot be null");
+
+        Division division = divisionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Division not found with ID: " + id));
+
+        Country country = division.getCountry();
+        if (dto.getCountryId() != null && !dto.getCountryId().equals(country.getId())) {
+            country = countryRepository.findById(dto.getCountryId())
+                    .orElseThrow(() -> new RuntimeException("New Country not found with ID: " + dto.getCountryId()));
+        }
+
+        divisionMapper.updateEntity(dto, division, country);
+        return divisionMapper.toResponseDTO(divisionRepository.save(division));
     }
 
     @Override
-    public Optional<Division> getById(Long id) {
-        return divisionRepository.findById(id);
+    @Transactional(readOnly = true)
+    public List<DivisionResponseDTO> findAll(boolean onlyActive) {
+        List<Division> divisions = onlyActive ?
+                divisionRepository.findAllActiveDivisions() :
+                divisionRepository.findAllDivisionsWithDetails();
+
+        return divisions.stream()
+                .map(divisionMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<DivisionResponseDTO> getByCountryId(Long countryId) {
+        return divisionRepository.findByCountryId(countryId).stream()
+                .map(divisionMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<DivisionResponseDTO> getById(Long id) {
+        return divisionRepository.findByIdWithDetails(id).map(divisionMapper::toResponseDTO);
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
+        if (!divisionRepository.existsById(id)) {
+            throw new RuntimeException("Division record not found with ID: " + id);
+        }
         divisionRepository.deleteById(id);
-    }
-
-    @Override
-    public List<DivisionDTO> getDivisionsByCountryId(Long countryId) {
-
-        List<Division> list = divisionRepository.findByCountryId(countryId);
-
-        return  list.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<DivisionDTO> getDivisionsByCountryName(String countryName) {
-
-        List<Division> list = divisionRepository.findByCountryName(countryName);
-
-        return  list.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-
-    private DivisionDTO convertToDTO(Division division) {
-
-        return new DivisionDTO(
-                division.getId(),
-                division.getName(),
-                division.getCountry().getName(),
-                division.getCountry().getId()
-        );
     }
 }

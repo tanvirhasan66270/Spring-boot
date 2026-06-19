@@ -61,7 +61,7 @@ public class Quotation {
     private double unitPrice;
 
     @Column(nullable = false)
-    private int quantity; // রিকুইজিশন থেকে ফ্রন্টএন্ডে লোড হওয়া quantityRequired ভ্যালু এখানে সেভ হবে
+    private Integer quantity; // রিকুইজিশন থেকে ফ্রন্টএন্ডে লোড হওয়া quantityRequired ভ্যালু এখানে সেভ হবে
 
     @Column(name = "total_price", nullable = false)
     private double totalPrice; // অটো ক্যালকুলেটেড ফিল্ড (unitPrice * quantity)

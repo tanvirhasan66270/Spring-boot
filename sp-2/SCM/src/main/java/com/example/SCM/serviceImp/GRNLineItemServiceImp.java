@@ -1,0 +1,121 @@
+package com.example.SCM.serviceImp;
+
+import com.example.SCM.dto.mapper.GRNLineItemMapper;
+import com.example.SCM.dto.request.GRNLineItemRequestDTO;
+import com.example.SCM.dto.response.GRNLineItemResponseDTO;
+import com.example.SCM.entity.GoodsReceivedNote;
+import com.example.SCM.entity.GRNLineItem;
+import com.example.SCM.entity.Product;
+import com.example.SCM.repository.GoodsReceivedNoteRepository;
+import com.example.SCM.repository.GRNLineItemRepository;
+import com.example.SCM.repository.ProductRepository;
+import com.example.SCM.service.GRNLineItemService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class GRNLineItemServiceImp implements GRNLineItemService {
+
+    private final GRNLineItemRepository grnLineItemRepository;
+    private final GoodsReceivedNoteRepository goodsReceivedNoteRepository;
+    private final ProductRepository productRepository;
+    private final GRNLineItemMapper grnLineItemMapper;
+
+    /**
+     * 1. Save New GRN Line Item (Create Operation)
+     */
+    @Override
+    @Transactional
+    public GRNLineItemResponseDTO save(GRNLineItemRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Line item data cannot be null");
+        }
+
+        // প্যারেন্ট GoodsReceivedNote অবজেক্ট কুয়েরি করা
+        GoodsReceivedNote grn = goodsReceivedNoteRepository.findById(dto.getGrnId())
+                .orElseThrow(() -> new RuntimeException("Goods Received Note not found with ID: " + dto.getGrnId()));
+
+        // অ্যাসোসিয়েটেড Product অবজেক্ট কুয়েরি করা
+        Product product = productRepository.findById(dto.getProductId())
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
+
+        // ম্যাপার দিয়ে এনটিটি তৈরি করা
+        GRNLineItem lineItem = grnLineItemMapper.toEntity(dto, grn, product);
+
+        GRNLineItem savedItem = grnLineItemRepository.save(lineItem);
+        return grnLineItemMapper.toResponseDTO(savedItem);
+    }
+
+    /**
+     * 2. Update Existing GRN Line Item (Update Operation)
+     */
+    @Override
+    @Transactional
+    public GRNLineItemResponseDTO update(Long id, GRNLineItemRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Update data cannot be null");
+        }
+
+        // এক্সিস্টিং লাইন আইটেম রেকর্ড খুঁজে বের করা
+        GRNLineItem item = grnLineItemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("GRN Line Item not found with ID: " + id));
+
+        // প্যারেন্ট জিআরএন বা প্রোডাক্ট পরিবর্তন করা হলে তা হ্যান্ডেল করা
+        GoodsReceivedNote grn = item.getGoodsReceivedNote();
+        if (dto.getGrnId() != null && !dto.getGrnId().equals(grn.getId())) {
+            grn = goodsReceivedNoteRepository.findById(dto.getGrnId())
+                    .orElseThrow(() -> new RuntimeException("New Parent GRN not found with ID: " + dto.getGrnId()));
+        }
+
+        Product product = item.getProduct();
+        if (dto.getProductId() != null && !dto.getProductId().equals(product.getId())) {
+            product = productRepository.findById(dto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("New Product not found with ID: " + dto.getProductId()));
+        }
+
+        // ম্যাপার দিয়ে এনটিটি ফিল্ডস আপডেট করা
+        grnLineItemMapper.updateEntity(dto, item, grn, product);
+
+        GRNLineItem updatedItem = grnLineItemRepository.save(item);
+        return grnLineItemMapper.toResponseDTO(updatedItem);
+    }
+
+    /**
+     * 3. Find All GRN Line Items (Read Operation)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<GRNLineItemResponseDTO> findAll() {
+        return grnLineItemRepository.findAll().stream()
+                .map(grnLineItemMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 4. Find GRN Line Item By ID (Read Operation - Single)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<GRNLineItemResponseDTO> getById(Long id) {
+        return grnLineItemRepository.findById(id)
+                .map(grnLineItemMapper::toResponseDTO);
+    }
+
+    /**
+     * 5. Delete GRN Line Item (Delete Operation)
+     */
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (!grnLineItemRepository.existsById(id)) {
+            throw new RuntimeException("GRN Line Item not found with ID: " + id);
+        }
+        grnLineItemRepository.deleteById(id);
+    }
+}

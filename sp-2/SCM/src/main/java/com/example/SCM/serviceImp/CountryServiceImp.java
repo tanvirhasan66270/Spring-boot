@@ -1,43 +1,76 @@
 package com.example.SCM.serviceImp;
 
+import com.example.SCM.dto.mapper.CountryMapper;
+import com.example.SCM.dto.request.CountryRequestDTO;
+import com.example.SCM.dto.response.CountryResponseDTO;
 import com.example.SCM.entity.Country;
 import com.example.SCM.repository.CountryRepository;
 import com.example.SCM.service.CountryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CountryServiceImp implements CountryService {
- @Autowired
- private CountryRepository countryRepository;
+
+    private final CountryRepository countryRepository;
+    private final CountryMapper countryMapper;
 
     @Override
-    public Country save(Country c) {
-
-
-        return countryRepository.save(c);
-    }
-
-
-    @Override
-    public List<Country> findAll() {
-        return countryRepository.findAll();
-    }
-
-    @Override
-    public Optional<Country> getById(Long id) {
-        return countryRepository.findById(id);
+    @Transactional
+    public CountryResponseDTO save(CountryRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Country data cannot be null");
+        }
+        Country country = countryMapper.toEntity(dto);
+        Country savedCountry = countryRepository.save(country);
+        return countryMapper.toResponseDTO(savedCountry);
     }
 
     @Override
-    public void delete(Long id) {
-
+    @Transactional
+    public CountryResponseDTO update(Long id, CountryRequestDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Update data cannot be null");
+        }
         Country country = countryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Country Not Found With ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Country not found with ID: " + id));
 
-        countryRepository.delete(country);
+        countryMapper.updateEntity(dto, country);
+        Country updatedCountry = countryRepository.save(country);
+        return countryMapper.toResponseDTO(updatedCountry);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CountryResponseDTO> findAll(boolean onlyActive) {
+        List<Country> countries = onlyActive ?
+                countryRepository.findAllActiveCountriesWithDivisions() :
+                countryRepository.findAllCountriesWithDivisions();
+
+        return countries.stream()
+                .map(countryMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CountryResponseDTO> getById(Long id) {
+        return countryRepository.findByIdWithDivisions(id)
+                .map(countryMapper::toResponseDTO);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        if (!countryRepository.existsById(id)) {
+            throw new RuntimeException("Country record not found with ID: " + id);
+        }
+        countryRepository.deleteById(id);
     }
 }

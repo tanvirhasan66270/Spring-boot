@@ -1,22 +1,18 @@
 package com.example.SCM.dto.response;
 
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PoliceStationResponseDTO {
+    private Long id;
+    private String name;
+    private String nameBn;
+    private String postalCode;
+    private Boolean active;
 
-    private Long policeStationId;
-    private String policeStationName;
+    // --- 🗺️ Flattened Location Details for UI Grid ---
     private Long districtId;
     private String districtName;
-    private Long divisionId;
-    private  String divisionName;
-    private  String countryName;
-    private  String countryCode;
-    private Long countryId;
+    private String divisionName;
+    private String countryName;
 }

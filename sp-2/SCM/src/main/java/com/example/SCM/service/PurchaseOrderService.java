@@ -12,7 +12,7 @@ import java.util.Optional;
 @Service
 public interface PurchaseOrderService {
     PurchaseOrderResponseDTO save(PurchaseOrderRequestDTO dto);
-    PurchaseOrderResponseDTO update(Long id,PurchaseOrderRequestDTO dto);
+    PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto);
     List<PurchaseOrderResponseDTO> findAll();
     Optional<PurchaseOrderResponseDTO> getById(Long id);
     void delete(Long id);

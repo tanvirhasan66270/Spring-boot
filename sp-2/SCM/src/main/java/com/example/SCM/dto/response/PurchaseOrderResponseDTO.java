@@ -2,6 +2,7 @@ package com.example.SCM.dto.response;
 
 import com.example.SCM.enumClass.PurchaseOrderStatus;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -9,16 +10,22 @@ import java.time.LocalDateTime;
 public class PurchaseOrderResponseDTO {
     private Long id;
     private String poNumber;
-    private Long issuedBy;
-    private double totalAmount; // স্ক্রিন বা ড্যাশবোর্ডে প্রদর্শনের জন্য মূল অ্যামাউন্ট ফিল্ড
+    private Integer quantity; // Quotation থেকে আসা ফ্ল্যাট কোয়ান্টিটি
+    private double totalAmount;
     private String currency;
     private LocalDate expectedDeliveryDate;
     private PurchaseOrderStatus status;
+    private Long issuedBy;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Flattened Parents
+    //Auto Loaded Supplier Details
     private Long supplierId;
-    private String supplierName;
-    private Long purchaseRequisitionId;
+    private String supplierName;           // TS ইন্টারফেসের 'supplierName' ফিল্ডের সাথে সিঙ্কড
+
+    //Auto Loaded Purchase Requisition Details
+    private Long purchaseRequisitionId;    // TS ইন্টারফেসের 'PurchaseRequisitionId' ফিল্ডের সাথে সিঙ্কড
+
+    //Quotation Connection Details
+    private Long quotationId;
 }

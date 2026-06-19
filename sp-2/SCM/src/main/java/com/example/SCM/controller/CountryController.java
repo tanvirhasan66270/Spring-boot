@@ -1,9 +1,9 @@
 package com.example.SCM.controller;
 
-
-import com.example.SCM.entity.Country;
+import com.example.SCM.dto.request.CountryRequestDTO;
+import com.example.SCM.dto.response.CountryResponseDTO;
 import com.example.SCM.service.CountryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,53 +11,49 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/country/")
+@RequestMapping("/api/countries/")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class CountryController {
 
-   @Autowired
-    private CountryService countryService;
-
+    private final CountryService countryService;
 
     @PostMapping
-    public ResponseEntity<Country> save(@RequestBody Country c) {
-        Country savedCountry = countryService.save(c);
-        return new ResponseEntity<>(savedCountry, HttpStatus.CREATED);
+    public ResponseEntity<CountryResponseDTO> create(@RequestBody CountryRequestDTO dto) {
+        CountryResponseDTO response = countryService.save(dto);
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<CountryResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody CountryRequestDTO dto) {
+        CountryResponseDTO response = countryService.update(id, dto);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 💡 ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
+     * URL: /api/countries/ (ডিফল্ট শুধুমাত্র একটিভ ডাটা আসবে)
+     * URL: /api/countries/?onlyActive=false (সব ডাটা আসবে)
+     */
     @GetMapping
-    public ResponseEntity<List<Country>> getAll() {
-        List<Country> list = countryService.findAll();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<CountryResponseDTO>> getAll(
+            @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
+        List<CountryResponseDTO> list = countryService.findAll(onlyActive);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Country> findById(@PathVariable("id") Long id) {
-        Country c = countryService.getById(id)
-                .orElseThrow(() -> new RuntimeException("Country Not Found with this ID"));
-
-        return ResponseEntity.ok(c);
+    public ResponseEntity<CountryResponseDTO> getById(@PathVariable Long id) {
+        return countryService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
-
         countryService.delete(id);
-
-        return ResponseEntity.ok("Country Deleted Successfully");
+        return ResponseEntity.ok("Country deleted successfully with ID: " + id);
     }
-
-    @PutMapping("{id}" )
-    public  ResponseEntity<Country> update(
-            @PathVariable Long id,
-            @RequestBody Country c
-    ){
-
-        c.setId(id);
-        Country updatedCountry = countryService.save(c);
-
-        return  ResponseEntity.ok(updatedCountry);
-
-    }
-
-
 }

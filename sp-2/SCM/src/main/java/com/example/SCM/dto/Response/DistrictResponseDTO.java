@@ -1,20 +1,21 @@
 package com.example.SCM.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class DistrictResponseDTO {
+    private Long id;
+    private String name;
+    private String nameBn;
+    private String districtCode;
+    private Boolean active;
 
-    private Long districtId;
-    private String districtName;
+    // --- 🗺️ Flattened Division & Country Details ---
     private Long divisionId;
-    private  String divisionName;
-    private  String countryName;
-    private  String countryCode;
-    private Long countryId;
+    private String divisionName;
+    private String countryName;
 
+    // --- 👮 Police Stations Breakdown ---
+    private List<String> policeStations; // থানার নামগুলো সরাসরি লিস্ট আকারে UI-তে বাইন্ড করার জন্য
 }

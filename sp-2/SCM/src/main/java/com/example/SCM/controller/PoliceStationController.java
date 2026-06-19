@@ -1,9 +1,9 @@
 package com.example.SCM.controller;
 
+import com.example.SCM.dto.request.PoliceStationRequestDTO;
 import com.example.SCM.dto.response.PoliceStationResponseDTO;
-import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.service.PoliceStationService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,78 +11,48 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/policeStation/")
-@CrossOrigin("*")
-
+@RequestMapping("/api/police-stations/")
+@RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class PoliceStationController {
 
-    @Autowired
-private PoliceStationService policeStationService;
-
-
+    private final PoliceStationService policeStationService;
 
     @PostMapping
-    public ResponseEntity<PoliceStation> save(@RequestBody PoliceStation pk) {
-
-        PoliceStation savedPoliceStation = policeStationService.save(pk);
-        return new ResponseEntity<>(savedPoliceStation, HttpStatus.CREATED);
+    public ResponseEntity<PoliceStationResponseDTO> create(@RequestBody PoliceStationRequestDTO dto) {
+        return new ResponseEntity<>(policeStationService.save(dto), HttpStatus.CREATED);
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<PoliceStationResponseDTO> update(@PathVariable Long id, @RequestBody PoliceStationRequestDTO dto) {
+        return ResponseEntity.ok(policeStationService.update(id, dto));
+    }
 
     @GetMapping
-    public ResponseEntity<List<PoliceStation>> getAll() {
-        List<PoliceStation> list = policeStationService.findAll();
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<PoliceStationResponseDTO>> getAll(
+            @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
+        List<PoliceStationResponseDTO> list = policeStationService.findAll(onlyActive);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+    }
+
+    /**
+     * 💡 নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
+     * URL: /api/police-stations/district/1
+     */
+    @GetMapping("district/{districtId}")
+    public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long districtId) {
+        List<PoliceStationResponseDTO> list = policeStationService.getByDistrictId(districtId);
+        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<PoliceStation> getById(@PathVariable Long id) {
-
-        PoliceStation policeStation =
-                policeStationService.getById(id)
-                        .orElseThrow(() ->
-                                new RuntimeException("Police Station Not Found"));
-
-        return ResponseEntity.ok(policeStation);
+    public ResponseEntity<PoliceStationResponseDTO> getById(@PathVariable Long id) {
+        return policeStationService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<String> deleteById(
-            @PathVariable Long id) {
-
+    public ResponseEntity<String> delete(@PathVariable Long id) {
         policeStationService.delete(id);
-
-        return ResponseEntity.ok(
-                "Police Station Deleted Successfully"
-        );
+        return ResponseEntity.ok("Police Station deleted successfully");
     }
-
-
-    @PutMapping("{id}")
-    public ResponseEntity<PoliceStation> update(
-            @PathVariable Long id,
-            @RequestBody PoliceStation policeStation) {
-
-        policeStation.setId(id);
-
-        PoliceStation updatedPoliceStation =
-                policeStationService.save(policeStation);
-
-        return ResponseEntity.ok(updatedPoliceStation);
-    }
-
-
-    @GetMapping("district/{id}")
-    public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long id) {
-        List<PoliceStationResponseDTO> list = policeStationService.findByDistrictId(id);
-        return ResponseEntity.ok(list);
-    }
-
-    @GetMapping("district/name/{name}")
-    public ResponseEntity<List<PoliceStationResponseDTO>> getByCountryName(@PathVariable String name) {
-        List<PoliceStationResponseDTO> list = policeStationService.findByDistrictName(name);
-        return ResponseEntity.ok(list);
-    }
-
-
 }

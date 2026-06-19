@@ -172,11 +172,11 @@ public class CustomerServiceImp implements CustomerService {
                         <p>Dear <b>%s</b>,</p>
                         <p>Thank you for registering with us. We are excited to have you on board!</p>
                         <p>Please confirm your email address to activate your account and get started.</p>
-                        
+                       \s
                         <div class='btn-container'>
-                            <a href='http://localhost:8080/api/auth/activate?email=%s' class='btn'>Activate Account</a>
+                            <a href='http://localhost:8085/api/auth/activate?email=%s' class='btn'>Activate Account</a>
                         </div>
-                        
+                       \s
                         <p>If you have any questions or need help, feel free to reach out to our support team.</p>
                         <p>Best regards,<br><b>The Support Team</b></p>
                     </div>
@@ -186,7 +186,7 @@ public class CustomerServiceImp implements CustomerService {
                 </div>
             </body>
             </html>
-            """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
+           \s""".formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
             try {
                 // Invokes your MailService component method

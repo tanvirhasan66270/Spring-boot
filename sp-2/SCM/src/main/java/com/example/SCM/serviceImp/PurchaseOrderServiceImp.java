@@ -3,13 +3,9 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.dto.mapper.PurchaseOrderMapper;
 import com.example.SCM.dto.request.PurchaseOrderRequestDTO;
 import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
-import com.example.SCM.entity.POLineItem;
-import com.example.SCM.entity.PurchaseOrder;
-import com.example.SCM.entity.PurchaseRequisition;
-import com.example.SCM.entity.Supplier;
+import com.example.SCM.entity.*;
 import com.example.SCM.repository.PurchaseOrderRepository;
-import com.example.SCM.repository.PurchaseRequisitionRepository;
-import com.example.SCM.repository.SupplierRepository;
+import com.example.SCM.repository.QuotationRepository;
 import com.example.SCM.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,12 +20,13 @@ import java.util.stream.Collectors;
 public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
-    private final SupplierRepository supplierRepository;
-    private final PurchaseRequisitionRepository requisitionRepository;
+    private final QuotationRepository quotationRepository;
     private final PurchaseOrderMapper purchaseOrderMapper;
 
     /**
-     * 1. Save New Purchase Order
+     * 1. Save New Purchase Order (Create Operation)
+     * 💡 জেনুইন রিলেশন চেইন লজিক: QuotationId দিয়ে কোটেশন টেবিল থেকে অটোমেটিক
+     * Supplier, PurchaseRequisition, এবং quantity ব্যাকঅ্যান্ডে লোড হয়ে সেভ হবে।
      */
     @Override
     @Transactional
@@ -38,106 +35,95 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             throw new IllegalArgumentException("Purchase Order data cannot be null");
         }
 
-        // বিজনেস লজিক: ডুপ্লিকেট পিও এড়াতে চেক
-        Optional<PurchaseOrder> existingPo = purchaseOrderRepository.findByPurchaseRequisitionId(dto.getPurchaseRequisitionId());
-        if (existingPo.isPresent()) {
-            throw new RuntimeException("A Purchase Order already exists for this Purchase Requisition ID: " + dto.getPurchaseRequisitionId());
+        // ১. ফ্রন্টঅ্যান্ড থেকে আসা মূল Quotation আইডি কুয়েরি করা
+        Quotation quotation = quotationRepository.findById(dto.getQuotationId())
+                .orElseThrow(() -> new RuntimeException("Quotation not found with ID: " + dto.getQuotationId()));
+
+        // ২. 🔗 ম্যাজিক চেইন লজিক: কোটেশনের ভেতর থেকে অটোমেটিক Supplier এবং Requisition অবজেক্ট বের করা
+        // (আপনার Quotation এনটিটির ফিল্ড নেম অনুযায়ী getSupplier() এবং getPurchaseRequisition() মিলিয়ে নেবেন)
+        Supplier supplier = quotation.getSupplier();
+        if (supplier == null) {
+            throw new RuntimeException("No Supplier is linked with the selected Quotation!");
         }
 
-        Supplier supplier = supplierRepository.findById(dto.getSupplierId())
-                .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + dto.getSupplierId()));
+        PurchaseRequisition purchaseRequisition = quotation.getPurchaseRequisition();
+        if (purchaseRequisition == null) {
+            throw new RuntimeException("No Purchase Requisition is linked with the selected Quotation!");
+        }
 
-        PurchaseRequisition requisition = requisitionRepository.findById(dto.getPurchaseRequisitionId())
-                .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + dto.getPurchaseRequisitionId()));
+        // ৩. ম্যাপার কল করে এনটিটি জেনারেট করা (কোটেশন থেকে কোয়ান্টিটি অটো-লোডিং মেকানিজমসহ)
+        PurchaseOrder po = purchaseOrderMapper.toEntity(dto, quotation, supplier, purchaseRequisition);
 
-        // Mapper দিয়ে DTO -> Entity রূপান্তর
-        PurchaseOrder po = purchaseOrderMapper.toEntity(dto, supplier, requisition);
-
-        // দ্রষ্টব্য: প্রথমবার সেভ হওয়ার সময় চাইল্ড লাইন আইটেম না থাকলে টোটাল $0 থাকবে।
-        // লাইন আইটেম অ্যাড হওয়ার সাথে সাথে রোল-আপ মেথড গ্র্যান্ড টোটাল আপডেট করবে।
+        // ৪. ডাটাবেজে পারচেজ অর্ডার লক/সেভ করা
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
+
         return purchaseOrderMapper.toResponseDTO(savedPo);
     }
 
     /**
-     * 2. Update Existing Purchase Order
+     * 2. Update Existing Purchase Order (Update Operation)
      */
     @Override
     @Transactional
     public PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto) {
         if (dto == null) {
-            throw new IllegalArgumentException("Purchase Order data cannot be null");
+            throw new IllegalArgumentException("Update data cannot be null");
         }
 
-        // 💡 অপ্টিমাইজেশন: চাইল্ড লাইন আইটেমসহ রেকর্ড খুঁজে বের করা যাতে ডাটা রিফ্রেশ না হয়
-        PurchaseOrder po = purchaseOrderRepository.findById(id)
+        // ১. এক্সিস্টিং পারচেজ অর্ডার কাস্টম Fetch Join মেথড দিয়ে লোড করা (N+1 প্রোটেকশন)
+        PurchaseOrder po = purchaseOrderRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order not found with ID: " + id));
 
-        // বিজনেস লজিক: RECEIVED বা CANCELLED হলে ডেটা লক থাকবে
-        if ("RECEIVED".equals(po.getStatus().name()) || "CANCELLED".equals(po.getStatus().name())) {
-            throw new RuntimeException("Closed or Cancelled Purchase Orders cannot be modified!");
-        }
-
+        // ২. যদি আপডেটের সময় কোটেশন আইডি পরিবর্তন হয়, তবে তার ওপর ভিত্তি করে নতুন রিলেশন চেইন লোড করা
+        Quotation quotation = po.getQuotation();
         Supplier supplier = po.getSupplier();
-        if (dto.getSupplierId() != null && !dto.getSupplierId().equals(supplier.getId())) {
-            supplier = supplierRepository.findById(dto.getSupplierId())
-                    .orElseThrow(() -> new RuntimeException("New Supplier not found with ID: " + dto.getSupplierId()));
+        PurchaseRequisition pr = po.getPurchaseRequisition();
+
+        if (dto.getQuotationId() != null && !dto.getQuotationId().equals(quotation.getId())) {
+            quotation = quotationRepository.findById(dto.getQuotationId())
+                    .orElseThrow(() -> new RuntimeException("New selected Quotation not found with ID: " + dto.getQuotationId()));
+            supplier = quotation.getSupplier();
+            pr = quotation.getPurchaseRequisition();
         }
 
-        PurchaseRequisition requisition = po.getPurchaseRequisition();
-        if (dto.getPurchaseRequisitionId() != null && !dto.getPurchaseRequisitionId().equals(requisition.getId())) {
-            requisition = requisitionRepository.findById(dto.getPurchaseRequisitionId())
-                    .orElseThrow(() -> new RuntimeException("New Purchase Requisition not found with ID: " + dto.getPurchaseRequisitionId()));
-        }
-
-        // ম্যাপারের মাধ্যমে বেসিক ডেটা, ডেট ও এনাম স্ট্যাটাস আপডেট করা
-        purchaseOrderMapper.updateEntity(dto, po, supplier, requisition);
-
-        // 💡 রোল-আপ লজিক ট্রিগার: স্ট্যাটাস পরিবর্তনের কারণে গ্র্যান্ড টোটাল রি-ক্যালকুলেট করা
-//        triggerGrandTotalRollUp(po);
+        // ৩. ম্যাপার দিয়ে এক্সিস্টিং এনটিটির স্টেট ও ডাটা চেইন রিফ্রেশ করা
+        purchaseOrderMapper.updateEntity(dto, po, quotation, supplier, pr);
 
         PurchaseOrder updatedPo = purchaseOrderRepository.save(po);
         return purchaseOrderMapper.toResponseDTO(updatedPo);
     }
 
     /**
-     * 3. Find All Purchase Orders
+     * 3. Find All Purchase Orders (Using optimized Repository Fetch Join)
      */
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseOrderResponseDTO> findAll() {
-        return purchaseOrderRepository.findAll().stream()
+        return purchaseOrderRepository.findAllPurchaseOrders().stream()
                 .map(purchaseOrderMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     /**
-     * 4. Find Purchase Order By ID
+     * 4. Find Purchase Order By ID with full detailed graph
      */
     @Override
     @Transactional(readOnly = true)
     public Optional<PurchaseOrderResponseDTO> getById(Long id) {
-        // 💡 অপ্টিমাইজেশন: ড্যাশবোর্ডে চাইল্ড আইটেমের গ্রিড ডেটাসহ একবারে রেন্ডার করার জন্য কাস্টম মেথড ব্যবহার করা হয়েছে
-        return purchaseOrderRepository.findById(id)
+        return purchaseOrderRepository.findByIdWithDetails(id)
                 .map(purchaseOrderMapper::toResponseDTO);
     }
 
     /**
-     * 5. Delete Purchase Order
+     * 5. Hard Delete Purchase Order
      */
     @Override
     @Transactional
     public void delete(Long id) {
-        PurchaseOrder po = purchaseOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Order not found with ID: " + id));
-
-        // লিগ্যাল অডিট ট্রেইলের জন্য শুধুমাত্র DRAFT অবস্থায় থাকা অর্ডারই ডিলিট করা যাবে।
-        if (!"DRAFT".equals(po.getStatus().name())) {
-            throw new RuntimeException("Only DRAFT Purchase Orders can be deleted. Released orders must be CANCELLED instead of deleted!");
+        if (!purchaseOrderRepository.existsById(id)) {
+            throw new RuntimeException("Purchase Order not found with ID: " + id);
         }
-
-        purchaseOrderRepository.delete(po);
+        purchaseOrderRepository.deleteById(id);
     }
-
 
 }

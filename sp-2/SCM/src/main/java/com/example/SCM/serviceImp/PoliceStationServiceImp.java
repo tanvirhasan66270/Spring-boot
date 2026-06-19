@@ -1,5 +1,7 @@
 package com.example.SCM.serviceImp;
 
+import com.example.SCM.dto.mapper.PoliceStationMapper;
+import com.example.SCM.dto.request.PoliceStationRequestDTO;
 import com.example.SCM.dto.response.PoliceStationResponseDTO;
 import com.example.SCM.entity.District;
 import com.example.SCM.entity.PoliceStation;
@@ -8,6 +10,7 @@ import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.service.PoliceStationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,64 +19,73 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PoliceStationServiceImp implements PoliceStationService {
-  private final PoliceStationRepository policeStationRepository;
-  private final DistrictRepository districtRepository;
 
+    private final PoliceStationRepository policeStationRepository;
+    private final DistrictRepository districtRepository;
+    private final PoliceStationMapper policeStationMapper;
 
     @Override
-    public PoliceStation save(PoliceStation p) {
+    @Transactional
+    public PoliceStationResponseDTO save(PoliceStationRequestDTO dto) {
+        if (dto == null) throw new IllegalArgumentException("Station data cannot be null");
 
-        Long districtId=p.getDistrict().getId();
-        District d=districtRepository.findById(districtId)
-                .orElseThrow(()-> new RuntimeException("District not found with this id"));
-        p.setDistrict(d);
+        District district = districtRepository.findById(dto.getDistrictId())
+                .orElseThrow(() -> new RuntimeException("District not found with ID: " + dto.getDistrictId()));
 
-        return policeStationRepository.save(p);
+        PoliceStation station = policeStationMapper.toEntity(dto, district);
+        return policeStationMapper.toResponseDTO(policeStationRepository.save(station));
     }
 
     @Override
-    public List<PoliceStation> findAll() {
-        return policeStationRepository.findAll();
+    @Transactional
+    public PoliceStationResponseDTO update(Long id, PoliceStationRequestDTO dto) {
+        if (dto == null) throw new IllegalArgumentException("Update data cannot be null");
+
+        PoliceStation station = policeStationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Police Station not found with ID: " + id));
+
+        District district = station.getDistrict();
+        if (dto.getDistrictId() != null && !dto.getDistrictId().equals(district.getId())) {
+            district = districtRepository.findById(dto.getDistrictId())
+                    .orElseThrow(() -> new RuntimeException("New District not found with ID: " + dto.getDistrictId()));
+        }
+
+        policeStationMapper.updateEntity(dto, station, district);
+        return policeStationMapper.toResponseDTO(policeStationRepository.save(station));
     }
 
     @Override
-    public Optional<PoliceStation> getById(Long id) {
-        return policeStationRepository.findById(id);
+    @Transactional(readOnly = true)
+    public List<PoliceStationResponseDTO> findAll(boolean onlyActive) {
+        List<PoliceStation> stations = onlyActive ?
+                policeStationRepository.findAllActiveStations() :
+                policeStationRepository.findAllStationsWithDetails();
+
+        return stations.stream()
+                .map(policeStationMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PoliceStationResponseDTO> getByDistrictId(Long districtId) {
+        return policeStationRepository.findByDistrictId(districtId).stream()
+                .map(policeStationMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PoliceStationResponseDTO> getById(Long id) {
+        return policeStationRepository.findByIdWithDetails(id).map(policeStationMapper::toResponseDTO);
+    }
+
+    @Override
+    @Transactional
     public void delete(Long id) {
+        if (!policeStationRepository.existsById(id)) {
+            throw new RuntimeException("Police Station not found with ID: " + id);
+        }
         policeStationRepository.deleteById(id);
-
     }
-
-    @Override
-    public List<PoliceStationResponseDTO> findByDistrictId(Long districtId) {
-        List<PoliceStation> list= policeStationRepository.findByDistrictId(districtId);
-        return list.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<PoliceStationResponseDTO> findByDistrictName(String districtName) {
-        List<PoliceStation> list= policeStationRepository.findByDistrictName(districtName);
-        return list.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-
-
-
-    private PoliceStationResponseDTO convertToDTO(PoliceStation p) {
-
-        return new PoliceStationResponseDTO(
-                p.getId(),
-                p.getName(),
-                p.getDistrict().getId(),
-                p.getDistrict().getName(),
-                p.getDistrict().getDivision().getId(),
-                p.getDistrict().getDivision().getName(),
-                p.getDistrict().getDivision().getCountry().getName(),
-                p.getDistrict().getDivision().getCountry().getCode(),
-                p.getDistrict().getDivision().getCountry().getId()
-        );
-    }
-
 }

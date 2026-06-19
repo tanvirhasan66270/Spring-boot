@@ -24,10 +24,12 @@ public class PurchaseOrder {
     private String poNumber;
 
     @Column(name = "issued_by", nullable = false)
-    private Long issuedBy;
+    private Long issuedBy; // Login User ID (String from TS converted to Long)
+
+    private Integer quantity; // Auto loaded from Quotation Table
 
     @Column(name = "total_amount", nullable = false)
-    private double totalAmount; // অর্ডারের মূল মোট টাকার পরিমাণ
+    private double totalAmount;
 
     @Column(nullable = false, length = 10)
     private String currency = "USD";
@@ -39,13 +41,20 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private PurchaseOrderStatus status = PurchaseOrderStatus.DRAFT;
 
+    // FK → Supplier (Quotation থেকে অটো লোড হবে)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    // FK → PurchaseRequisition (Quotation থেকে অটো লোড হবে)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
+
+    // 💡 নতুন ফরেন কি রিলেশন: FK → Quotation
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "quotation_id", nullable = false)
+    private Quotation quotation;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -63,8 +72,8 @@ public class PurchaseOrder {
         if (this.poNumber == null) {
             this.poNumber = "PO-" + System.currentTimeMillis();
         }
-        if (this.totalAmount == 0.0) {
-            this.totalAmount = 0.0;
+        if (this.currency == null) {
+            this.currency = "USD";
         }
     }
 

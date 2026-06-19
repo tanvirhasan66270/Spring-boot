@@ -13,24 +13,58 @@ import java.util.Optional;
 @Repository
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
 
-    // ১. ইউনিক পিও নাম্বার (poNumber) দিয়ে পারচেজ অর্ডার খুঁজে বের করা (ইনভয়েস বা ট্র্যাকিংয়ের জন্য)
+    /**
+     * 1. অপ্টিমাইজড অল-পারচেজ অর্ডার লিস্ট কুয়েরি (Fetch Join)
+     * 💡 এটি সিঙ্গেল ডাটাবেজ হিটে সম্পূর্ণ রিলেশনাল অবজেক্ট চেইন (Quotation, Supplier, PurchaseRequisition) লোড করে পারফরম্যান্স বহুগুণ বাড়িয়ে দেবে।
+     */
+    @Query("""
+        SELECT DISTINCT p FROM PurchaseOrder p
+        LEFT JOIN FETCH p.supplier s
+        LEFT JOIN FETCH p.purchaseRequisition pr
+        LEFT JOIN FETCH p.quotation q
+    """)
+    List<PurchaseOrder> findAllPurchaseOrders();
+
+    /**
+     * 2. আইডি দিয়ে সিঙ্গেল পারচেজ অর্ডার খোঁজা (Fetch Join মেকানিজম)
+     * আপনার 'RiderRepository'-এর 'findByIdWithZones' প্যাটার্ন অনুযায়ী হুবহু সিঙ্কড।
+     */
+    @Query("""
+        SELECT p FROM PurchaseOrder p
+        LEFT JOIN FETCH p.supplier s
+        LEFT JOIN FETCH p.purchaseRequisition pr
+        LEFT JOIN FETCH p.quotation q
+        WHERE p.id = :id
+    """)
+    Optional<PurchaseOrder> findByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * 3. অটো-জেনারেটেড ইউনিক PO নাম্বার দিয়ে কুয়েরি করা (ট্র্যাকিং ড্যাশবোর্ডের জন্য)
+     */
     Optional<PurchaseOrder> findByPoNumber(String poNumber);
 
-    // ২. নির্দিষ্ট কোনো সাপ্লায়ারের (SupplierId) আন্ডারে তৈরি হওয়া সব পিও লিস্ট বের করা
+    /**
+     * 4. নির্দিষ্ট সাপ্লায়ার (Supplier) আইডি দিয়ে সমস্ত পারচেজ অর্ডার ফিল্টার করা
+     */
     List<PurchaseOrder> findBySupplierId(Long supplierId);
 
-    // ৩. নির্দিষ্ট পারচেজ রিকুইজিশন (PurchaseRequisitionId) দিয়ে পিও চেক করা
-    Optional<PurchaseOrder> findByPurchaseRequisitionId(Long purchaseRequisitionId);
+    /**
+     * 5. নির্দিষ্ট রিকুইজিশন (PurchaseRequisition) আইডি দিয়ে ফিল্টার করা
+     */
+    List<PurchaseOrder> findByPurchaseRequisitionId(Long purchaseRequisitionId);
 
-    // ৪. স্ট্যাটাস অনুযায়ী ফিল্টার করা (যেমন: কোন কোন অর্ডার এখনো ISSUED বা RECEIVED অবস্থায় আছে)
+    /**
+     * 6. নির্দিষ্ট কোটেশন (Quotation) আইডি দিয়ে পারচেজ অর্ডার খুঁজে বের করা
+     */
+    Optional<PurchaseOrder> findByQuotationId(Long quotationId);
+
+    /**
+     * 7. অর্ডারের স্ট্যাটাস অনুযায়ী ফিল্টার করা (যেমন: কতগুলো DRAFT, ORDERED বা DELIVERED অবস্থায় আছে)
+     */
     List<PurchaseOrder> findByStatus(PurchaseOrderStatus status);
 
-    // ৫. নির্দিষ্ট কোনো অফিসার (issuedBy) মোট কতগুলো অর্ডার ইস্যু করেছেন তার তালিকা
+    /**
+     * 8. মাল বা অর্ডার ইস্যুকারী ইউজার (Login User) এর আইডি দিয়ে কুয়েরি করা
+     */
     List<PurchaseOrder> findByIssuedBy(Long issuedBy);
-
-
-    @Query("SELECT po FROM PurchaseOrder po WHERE po.totalAmount >= :amount")
-    List<PurchaseOrder> findHighValueOrders(@Param("amount") double amount);
-
-
 }

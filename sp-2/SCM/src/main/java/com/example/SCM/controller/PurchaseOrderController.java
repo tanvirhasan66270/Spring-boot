@@ -19,10 +19,12 @@ public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
 
     /**
-     * 1. Create/Issue New Purchase Order (POST)
+     * 1. Create New Purchase Order (POST)
+     * 💡 ফ্রন্টঅ্যান্ড টাইপস্ক্রিপ্ট ইন্টারফেস থেকে আসা পিওর JSON অবজেক্ট রিসিভ করার জন্য @RequestBody ব্যবহার করা হয়েছে।
+     * লজিক অনুযায়ী, এখানে শুধুমাত্র quotationId পাঠালেই বাকি সব রিলেশন ব্যাকঅ্যান্ডে অটো-লোড হবে।
      */
     @PostMapping
-    public ResponseEntity<PurchaseOrderResponseDTO> save(@RequestBody PurchaseOrderRequestDTO dto) {
+    public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
         PurchaseOrderResponseDTO response = purchaseOrderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -30,30 +32,34 @@ public class PurchaseOrderController {
     /**
      * 2. Update Existing Purchase Order (PUT)
      */
-    @PutMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
+    @PutMapping("{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
             @RequestBody PurchaseOrderRequestDTO dto) {
+
         PurchaseOrderResponseDTO response = purchaseOrderService.update(id, dto);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 3. Get All Purchase Orders (GET)
+     * 💡 এটি কাস্টম Fetch Join কুয়েরি ব্যবহার করে এক ট্রিপে সব ডাটা অপ্টিমাইজড উপায়ে নিয়ে আসবে।
      */
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
         List<PurchaseOrderResponseDTO> list = purchaseOrderService.findAll();
+
         if (list.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build(); // 204 Content
         }
+
         return ResponseEntity.ok(list);
     }
 
     /**
      * 4. Get Purchase Order By ID (GET)
      */
-    @GetMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
+    @GetMapping("{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
                 .map(ResponseEntity::ok)
@@ -61,11 +67,11 @@ public class PurchaseOrderController {
     }
 
     /**
-     * 5. Delete Purchase Order (DELETE)
+     * 5. Delete Purchase Order By ID (DELETE)
      */
-    @DeleteMapping("{id}") // 💡 কারেকশন: শুরুতে স্ল্যাশ (/{id}) যুক্ত করা হয়েছে
+    @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);
-        return ResponseEntity.ok("Purchase Order deleted successfully from the procurement system!");
+        return ResponseEntity.ok("Deleted successfully");
     }
 }
