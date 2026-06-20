@@ -1,37 +1,37 @@
 package com.example.SCM.entity;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
+import lombok.*;
+import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 
 @Entity
-@Data
+@Table(name = "customers")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "customers")
+@Builder
 public class Customer {
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private  String name;
+    private String name;
     private String address;
     private String gender;
+    private String email;
 
+    @Column(name = "nid_number")
+    private String nidNumber;
 
+    private String phone;
+
+    @Temporal(TemporalType.DATE)
     private Date dob;
 
     private String image;
-
 
     // Auth account — source of truth for name, phone, email, password, role
     @OneToOne(fetch = FetchType.LAZY)
@@ -42,10 +42,21 @@ public class Customer {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
-//
-//    @JsonIgnore
-//    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
-//    private List<Parcel> parcels = new ArrayList<>();
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() { // 💡 মেথডের নাম কনভেনশন অনুযায়ী ফিক্সড করা হলো
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }
