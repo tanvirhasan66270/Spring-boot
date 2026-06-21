@@ -7,75 +7,67 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customer-orders/")
+@RequestMapping("/api/customer-orders")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // 💡 এঙ্গুলার ড্যাশবোর্ডের সাথে CORS পলিসি ব্লকিং এড়াতে
+@CrossOrigin(origins = "*") // 🌐 ফ্রন্টএন্ড এঙ্গুলার পোর্টালের সাথে কানেকশনের জন্য CORS অন করা হলো
 public class CustomerOrderController {
 
-    private final CustomerOrderService orderService;
+    private final CustomerOrderService customerOrderService;
 
     /**
-     * 1. Create New Customer Order (POST)
+     * 🛒 1. Place / Create a New Multi-Item Order
      * URL: POST http://localhost:8080/api/customer-orders
      */
     @PostMapping
-    public ResponseEntity<CustomerOrderResponseDTO> create(@RequestBody CustomerOrderRequestDTO dto) {
-        CustomerOrderResponseDTO response = orderService.save(dto);
+    public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody CustomerOrderRequestDTO dto) {
+        CustomerOrderResponseDTO response = customerOrderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
-     * 2. Update Existing Order Metadata (PUT)
+     * 🔄 2. Update Existing Order Metadata & Recalculate Items
      * URL: PUT http://localhost:8080/api/customer-orders/{id}
      */
     @PutMapping("{id}")
-    public ResponseEntity<CustomerOrderResponseDTO> update(
+    public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
             @RequestBody CustomerOrderRequestDTO dto) {
-        return ResponseEntity.ok(orderService.update(id, dto));
+        CustomerOrderResponseDTO response = customerOrderService.update(id, dto);
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * 3. Get All Orders with Details (GET)
+     * 📋 3. Get All Customer Orders (Fetch Join Optimized)
      * URL: GET http://localhost:8080/api/customer-orders
      */
     @GetMapping
-    public ResponseEntity<List<CustomerOrderResponseDTO>> getAll() {
-        List<CustomerOrderResponseDTO> list = orderService.findAll();
+    public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders() {
+        List<CustomerOrderResponseDTO> list = customerOrderService.findAll();
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
     /**
-     * 4. Get Order By ID (GET)
+     * 🔍 4. Get Single Order Specifications By ID
      * URL: GET http://localhost:8080/api/customer-orders/{id}
      */
     @GetMapping("{id}")
-    public ResponseEntity<CustomerOrderResponseDTO> getById(@PathVariable Long id) {
-        return orderService.getById(id)
+    public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
+        return customerOrderService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
-     * 5. Quick Update Status Node (PATCH)
-     * URL: PATCH http://localhost:8080/api/customer-orders/{id}/status?status=SHIPPED
-     */
-    @PatchMapping("{id}/status")
-    public ResponseEntity<String> updateStatus(@PathVariable Long id, @RequestParam String status) {
-        orderService.updateStatus(id, status);
-        return ResponseEntity.ok("Customer order execution status matrix updated successfully.");
-    }
-
-    /**
-     * 6. Cancel or Delete Order Record (DELETE)
+     * ❌ 5. Cancel and Delete / Purge Order from Node Matrix
      * URL: DELETE http://localhost:8080/api/customer-orders/{id}
      */
     @DeleteMapping("{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        orderService.delete(id);
-        return ResponseEntity.ok("Customer order cluster deployment record purged successfully.");
+    public ResponseEntity<String> cancelAndPurgeOrder(@PathVariable Long id) {
+        customerOrderService.delete(id);
+        return ResponseEntity.ok("Customer order manifest index purged successfully from logistics network.");
     }
 }
