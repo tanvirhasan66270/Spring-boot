@@ -1,14 +1,13 @@
 package com.example.SCM.dto.response;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class CustomerOrderResponseDTO {
     private Long id;
     private String orderNumber;
-    private int quantity;
-    private double unitPrice;
-    private double lineTotal;
+    private double itemSubtotal;
     private double weight;
     private String serviceType;
     private double codAmount;
@@ -19,13 +18,7 @@ public class CustomerOrderResponseDTO {
     private String deliveryAddress;
     private String estimatedDelivery;
     private String createdAt;
-
-    // --- 👥 Flattened Relations for UI ---
     private Long customerId;
     private String customerName;
-    private String customerEmail;
-
-    private Long productId;
-    private String productName;
-    private String productCode;
+    private List<OrderLineItemResponseDTO> lineItems;
 }

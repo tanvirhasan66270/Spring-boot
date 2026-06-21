@@ -5,11 +5,15 @@ import com.example.SCM.dto.mapper.CustomerOrderMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
+
+import com.example.SCM.enumClass.ServiceType;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.CustomerOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -19,41 +23,83 @@ import java.util.stream.Collectors;
 public class CustomerOrderServiceImp implements CustomerOrderService {
 
     private final CustomerOrderRepository orderRepository;
-    private final UserRepository userRepository; // ধরে নেওয়া হচ্ছে আপনার UserRepository আছে
-    private final ProductRepository productRepository; // ধরে নেওয়া হচ্ছে আপনার ProductRepository আছে
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
     private final CustomerOrderMapper orderMapper;
     private final MailService mailService;
 
+    /**
+     * 🛒 1. Save / Place a New Multi-Item Customer Order
+     */
     @Override
     @Transactional
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
+        if (dto == null || dto.getItems() == null || dto.getItems().isEmpty()) {
+            throw new IllegalArgumentException("Order request matrix or cart items cannot be empty");
+        }
+
+        // কাস্টমার প্রোফাইল নোড ভেরিফাই করা
         User customer = userRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target customer node missing mapping profile"));
-        Product product = productRepository.findById(dto.getProductId())
-                .orElseThrow(() -> new RuntimeException("Product master record missing"));
 
-        CustomerOrder order = orderMapper.toEntity(dto, customer, product);
-        // Save করার সাথে সাথে @PrePersist হুক স্বয়ংক্রিয়ভাবে এক্সিকিউট হবে এবং চার্জ ক্যালকুলেট করবে
+        // ম্যাপার দিয়ে মাস্টার ও চাইল্ড রিলেশন তৈরি
+        CustomerOrder order = orderMapper.toEntity(dto, customer);
+
+        // CascadeType.ALL থাকার কারণে মাস্টার সেভ হলে চাইল্ড লাইন আইটেমগুলো ওয়ান-শটে ডাটাবেজে রাইট হবে
+        // সেভ হওয়ার ঠিক পূর্বে এনটিটির @PrePersist হুক থেকে executeCalculations() অটো রান করবে
         CustomerOrder savedOrder = orderRepository.save(order);
 
+        // ব্যাকগ্রাউন্ডে কাস্টমার ইনবক্সে HTML ইনভয়েস মেইল ডিসপ্যাচ করা
         sendOrderConfirmationEmail(customer, savedOrder);
+
         return orderMapper.toResponseDTO(savedOrder);
     }
 
+    /**
+     * 🔄 2. Update Existing Order Metadata & Recalculate Items
+     */
     @Override
     @Transactional
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
+        // ১. এক্সিস্টিং মাস্টার অর্ডার নোড লোড করা
         CustomerOrder order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer order tracking map record index missing"));
+                .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
 
-        User customer = userRepository.findById(dto.getCustomerId()).orElse(order.getCustomer());
-        Product product = productRepository.findById(dto.getProductId()).orElse(order.getProduct());
+        // ২. বেসিক মেটাডাটা আপডেট
+        if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
+        if (dto.getEstimatedDelivery() != null) order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
+        if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
+        order.setCodAmount(dto.getCodAmount());
 
-        orderMapper.updateEntity(dto, order, customer, product);
-        // Save করার সাথে সাথে @PreUpdate হুক স্বয়ংক্রিয়ভাবে এক্সিকিউট হবে এবং নতুন করে হিসাব রি-ক্যালকুলেট করবে
-        return orderMapper.toResponseDTO(orderRepository.save(order));
+        // ৩. চাইল্ড আইটেম আপডেট (যদি নতুন আইটেম লিস্ট পাঠানো হয়)
+        if (dto.getItems() != null && !dto.getItems().isEmpty()) {
+            // এক্সিস্টিং ওল্ড চাইল্ড আইটেম ক্লিয়ার করা (orphanRemoval = true ডাটাবেজ থেকে রো মুছে দেবে)
+            order.getLineItems().clear();
+
+            // নতুন আইটেমগুলো লুপ চালিয়ে পুনরায় মাস্টারে বাইন্ড করা
+            dto.getItems().forEach(itemDto -> {
+                Product product = productRepository.findById(itemDto.getProductId())
+                        .orElseThrow(() -> new RuntimeException("Product master record missing for ID: " + itemDto.getProductId()));
+
+                OrderLineItem item = new OrderLineItem();
+                item.setProduct(product);
+                item.setQuantity(itemDto.getQuantity());
+                item.setUnitPrice(product.getSellingPrice());
+                item.setLineTotal(item.getQuantity() * item.getUnitPrice());
+                item.setItemWeightTotal(product.getWeight() * itemDto.getQuantity());
+
+                order.addLineItem(item); // হেল্পার মেথড দিয়ে নতুন রিলেশন তৈরি
+            });
+        }
+
+        // ৪. ডাটাবেজে আপডেট সেভ (এখানে @PreUpdate হুক থেকে পুনরায় গ্র্যান্ড টোটাল রি-ক্যালকুলেট হবে)
+        CustomerOrder updatedOrder = orderRepository.save(order);
+        return orderMapper.toResponseDTO(updatedOrder);
     }
 
+    /**
+     * 📋 3. Find All Customer Orders with Fetch Join Optimization
+     */
     @Override
     @Transactional(readOnly = true)
     public List<CustomerOrderResponseDTO> findAll() {
@@ -62,37 +108,47 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 🔍 4. Get Single Order Details By ID
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<CustomerOrderResponseDTO> getById(Long id) {
         return orderRepository.findByIdWithDetails(id).map(orderMapper::toResponseDTO);
     }
 
-    @Override
-    @Transactional
-    public void updateStatus(Long id, String status) {
-        CustomerOrder order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Target order row index missing"));
-        order.setStatus(status.toUpperCase());
-        orderRepository.save(order);
-    }
-
+    /**
+     * ❌ 5. Delete / Purge Order from Matrix Cache
+     */
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!orderRepository.existsById(id)) {
-            throw new RuntimeException("Order map footprint index clean error");
-        }
-        orderRepository.deleteById(id);
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Target customer order row missing mapping index"));
+        orderRepository.delete(order);
     }
 
     /**
-     * 📧 কাস্টমারের জন্য কাস্টমাইজড প্রফেশনাল Order Confirmation & Tracking HTML ইমেইল টেমপ্লেট
+     * 📧 Rich HTML Order Confirmation Invoice Email Dispatcher
      */
     private void sendOrderConfirmationEmail(User customer, CustomerOrder order) {
         if (customer == null || customer.getEmail() == null) return;
 
         String subject = "Your SCM Order is Confirmed! Invoice #" + order.getOrderNumber();
+        StringBuilder itemRows = new StringBuilder();
+
+        if (order.getLineItems() != null) {
+            for (OrderLineItem item : order.getLineItems()) {
+                itemRows.append(String.format("""
+                    <tr>
+                        <td><b>%s</b></td>
+                        <td style='text-align: center;'>%d</td>
+                        <td style='text-align: right;'>%s %.2f</td>
+                    </tr>
+                """, item.getProduct().getName(), item.getQuantity(), order.getCurrency(), item.getLineTotal()));
+            }
+        }
+
         String mailText = """
         <!DOCTYPE html>
         <html>
@@ -102,7 +158,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .container { max-width: 600px; margin: 30px auto; padding: 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
                 .header { background-color: #2E7D32; color: white; padding: 30px; text-align: center; }
                 .header h2 { margin: 0; font-size: 26px; font-weight: 600; }
-                .header p { margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; }
                 .content { padding: 30px; }
                 .tracking-box { background-color: #E8F5E9; border-left: 5px solid #2E7D32; padding: 15px; margin: 20px 0; border-radius: 4px; }
                 .tracking-code { font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; color: #1B5E20; letter-spacing: 1px; }
@@ -111,7 +166,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .invoice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
                 .total-row { font-weight: bold; color: #2E7D32; font-size: 16px; background-color: #f8fafc; }
                 .btn-container { text-align: center; margin: 30px 0; }
-                .btn { background-color: #2E7D32; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+                .btn { background-color: #2E7D32; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; }
                 .footer { font-size: 0.85em; color: #64748b; padding: 20px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; }
             </style>
         </head>
@@ -119,19 +174,16 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             <div class='container'>
                 <div class='header'>
                     <h2>Order Confirmed Successfully</h2>
-                    <p>Thank you for choosing SCM Enterprise Cluster</p>
                 </div>
                 <div class='content'>
                     <p>Dear <b>%s</b>,</p>
-                    <p>We are excited to inform you that your purchase order has been logged into our matrix and is currently being processed by our logistics unit.</p>
+                    <p>Thank you for shopping with us! Your multi-item purchase order has been successfully logged into our logistics cluster nodes.</p>
                     
                     <div class='tracking-box'>
-                        <p style='margin: 0 0 5px 0; font-size: 13px; color: #475569;'>YOUR UNIQUE LIVE TRACKING CODE:</p>
+                        <p style='margin: 0 0 5px 0; font-size: 13px;'>YOUR UNIQUE LIVE TRACKING CODE:</p>
                         <span class='tracking-code'>%s</span>
-                        <p style='margin: 5px 0 0 0; font-size: 12px; color: #64748b;'>Use this code in your customer portal console to map your dispatch lifecycle.</p>
                     </div>
 
-                    <p><b>Order Invoice Specification Matrix:</b></p>
                     <table class='invoice-table'>
                         <thead>
                             <tr>
@@ -141,17 +193,13 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                             </tr>
                         </thead>
                         <tbody>
+                            %s
                             <tr>
-                                <td><b>%s</b><br><span style='font-size:12px; color:#64748b;'>Rate: %s %.2f / Service: %s</span></td>
-                                <td style='text-align: center;'>%d</td>
+                                <td colspan='2' style='text-align: right; color:#64748b;'>Cart Item Subtotal:</td>
                                 <td style='text-align: right;'>%s %.2f</td>
                             </tr>
                             <tr>
-                                <td colspan='2' style='text-align: right; color:#64748b;'>Line Item Total:</td>
-                                <td style='text-align: right;'>%s %.2f</td>
-                            </tr>
-                            <tr>
-                                <td colspan='2' style='text-align: right; color:#64748b;'>SCM Delivery Charge (%s):</td>
+                                <td colspan='2' style='text-align: right; color:#64748b;'>Logistics Charge (%s):</td>
                                 <td style='text-align: right;'>%s %.2f</td>
                             </tr>
                             <tr class='total-row'>
@@ -161,15 +209,11 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                         </tbody>
                     </table>
 
-                    <p><b>Consignment Shipping Node:</b><br>
-                    <span style='color:#475569;'>%s</span></p>
+                    <p><b>Consignment Shipping Node Node:</b><br>%s</p>
 
                     <div class='btn-container'>
-                        <a href='http://localhost:4200/track-order?code=%s' class='btn'>Track Your Package Live</a>
+                        <a href='http://localhost:4200/track-order?code=%s' class='btn'>Track Package Live</a>
                     </div>
-
-                    <p>If you have any queries regarding this manifest deployment, please contact our network operations desk.</p>
-                    <p>Best regards,<br><b>SCM Enterprise Logistics Hub</b></p>
                 </div>
                 <div class='footer'>
                     &copy; %d SCM Global Logistics Network. All rights reserved.
@@ -178,27 +222,22 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         </body>
         </html>
         """.formatted(
-                customer.getName(),                         // %s -> কাস্টমারের নাম
-                order.getOrderNumber(),                     // %s -> ইউনিক ট্র্যাকিং কোড (ORD-xxxx)
-                order.getProduct().getName(),               // %s -> প্রোডাক্টের নাম
-                order.getCurrency(), order.getUnitPrice(),  // %s %.2f -> কারেন্সি এবং একক মূল্য
-                order.getServiceType().name(),              // %s -> সার্ভিসের ধরন (যেমন: EXPRESS)
-                order.getQuantity(),                        // %d -> অর্ডারের পরিমাণ
-                order.getCurrency(), order.getLineTotal(),   // %s %.2f -> লাইন টেন টোটাল
-                order.getCurrency(), order.getLineTotal(),   // %s %.2f -> সাবটোটাল
-                order.getServiceType().name(),              // %s -> ডেলিভারি টাইপ নাম
-                order.getCurrency(), order.getDeliveryCharge(), // %s %.2f -> ডেলিভারি চার্জ
-                order.getCurrency(), order.getTotalAmount(), // %s %.2f -> সর্বমোট বিল
-                order.getDeliveryAddress(),                 // %s -> ডেলিভারি ঠিকানা
-                order.getOrderNumber(),                     // %s -> এঙ্গুলার ট্র্যাকিং লিংকের প্যারামিটার কোড
-                java.time.Year.now().getValue()             // %d -> কারেন্ট ইয়ার ডাইনামিক ফুটার
+                customer.getName(),
+                order.getOrderNumber(),
+                itemRows.toString(),
+                order.getCurrency(), order.getItemSubtotal(),
+                order.getServiceType().name(),
+                order.getCurrency(), order.getDeliveryCharge(),
+                order.getCurrency(), order.getTotalAmount(),
+                order.getDeliveryAddress(),
+                order.getOrderNumber(),
+                java.time.Year.now().getValue()
         );
 
         try {
             mailService.SenderGeneralMail(customer.getEmail(), subject, mailText);
-            System.out.println("Customer Invoice Email successfully dispatched to node: " + customer.getEmail());
         } catch (Exception e) {
-            System.err.println("Customer Invoice Email failed to execute: " + e.getMessage());
+            System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
         }
     }
 }

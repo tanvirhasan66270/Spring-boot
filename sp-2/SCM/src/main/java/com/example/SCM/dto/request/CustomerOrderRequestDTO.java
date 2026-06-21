@@ -1,19 +1,16 @@
 package com.example.SCM.dto.request;
 
 import lombok.Data;
+import java.util.List;
 
 @Data
 public class CustomerOrderRequestDTO {
-    private Long id;
-    private Long customerId;   // FK → User (Customer)
-    private Long productId;    // FK → Product
-    private int quantity;
-    private double unitPrice;
-    private double weight;
-    private String serviceType; // STANDARD, EXPRESS, etc.
+    private Long customerId;
+    private String serviceType; // STANDARD, EXPRESS, OVERNIGHT, SAME_DAY
+    private String status;
     private double codAmount;
-    private String currency;    // optional, default 'USD'
-    private String status;      // optional, default 'PENDING'
+    private String currency;
     private String deliveryAddress;
-    private String estimatedDelivery; // ISO Format (yyyy-MM-dd)
+    private String estimatedDelivery; // Format: "yyyy-MM-dd"
+    private List<OrderLineItemRequestDTO> items; // কার্টের প্রোডাক্ট লিস্ট
 }

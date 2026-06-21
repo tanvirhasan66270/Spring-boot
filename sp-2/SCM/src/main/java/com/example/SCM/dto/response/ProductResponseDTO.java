@@ -4,7 +4,6 @@ import lombok.Data;
 
 @Data
 public class ProductResponseDTO {
-
     private Long id;
     private String productCode;
     private String name;
@@ -14,11 +13,10 @@ public class ProductResponseDTO {
     private int quantity;
     private double sellingPrice;
     private String hasExpiryDate;
+    private double weight; // ➕ নতুন ফিল্ড যোগ করা হলো
     private boolean isActive;
     private String availability;
-    private String image; // Base64 String output
-
-
+    private String image;
     private Long categoryId;
-    private String categoryName; // ফ্রন্টএন্ডে ক্যাটাগরির নাম সরাসরি রেন্ডার করার জন্য
+    private String categoryName;
 }

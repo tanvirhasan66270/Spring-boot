@@ -38,19 +38,21 @@ public class Product {
     @Column(name = "has_expiry_date")
     private String hasExpiryDate;
 
+    // ── 🆕 ওজনের নতুন ফিল্ড যা থেকে কাস্টমার অর্ডারের ডেলিভারি চার্জ ক্যালকুলেট হবে ──
+    @Column(name = "weight", nullable = false)
+    private double weight; // কেজিতে হিসাব হবে (যেমন: 0.2 মানে 200 গ্রাম, 1.5 মানে 1.5 KG)
+
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
     private String availability;
 
-
     @Lob
     @Column(columnDefinition = "LONGTEXT")
-    private String image; // Base64 লার্জ স্ট্রিং ডাটা সেভ করার জন্য LONGTEXT ব্যবহার করা হয়েছে
+    private String image; // Base64 লার্জ স্ট্রিং ডাটা সেভ করার জন্য LONGTEXT ব্যবহার করা হয়েছে
 
     // ক্যাটাগরির সাথে রিলেশনশিপ ম্যাপিং
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
-
 }
