@@ -12,4 +12,6 @@ public interface OrderLineItemRepository extends JpaRepository<OrderLineItem, Lo
     // একটি নির্দিষ্ট মাস্টারের অধীনে থাকা সব চাইল্ড আইটেম একসাথে কুয়েরি করার মেথড
     @Query("SELECT i FROM OrderLineItem i LEFT JOIN FETCH i.product WHERE i.customerOrder.id = :orderId")
     List<OrderLineItem> findByCustomerOrderIdWithProduct(@Param("orderId") Long orderId);
+
+
 }

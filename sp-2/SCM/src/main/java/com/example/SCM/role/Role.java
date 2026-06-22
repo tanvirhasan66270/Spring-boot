@@ -10,6 +10,7 @@ public enum Role {
     LOGISTICS_OFFICER,
     COMMERCIAL_OFFICER,
     CUSTOMER,
-    SUPPLIER
+    SUPPLIER,
+    SALES_OFFICER
 
 }

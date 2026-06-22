@@ -1,5 +1,7 @@
 package com.example.SCM.controller;
 
+
+
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.service.CustomerOrderService;
@@ -11,63 +13,74 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customer-orders")
+@RequestMapping("/api/orders/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // 🌐 ফ্রন্টএন্ড এঙ্গুলার পোর্টালের সাথে কানেকশনের জন্য CORS অন করা হলো
+@CrossOrigin(origins = "*") // ফ্রন্টএন্ড (Angular/React) কানেক্টিভিটির ক্রস-অরিজিন পলিসি হ্যান্ডেল করার জন্য
 public class CustomerOrderController {
 
-    private final CustomerOrderService customerOrderService;
+    private final CustomerOrderService orderService;
 
     /**
-     * 🛒 1. Place / Create a New Multi-Item Order
-     * URL: POST http://localhost:8080/api/customer-orders
+     * 🛒 1. Place a New Multi-Item Order
+     * POST http://localhost:8085/api/orders/
      */
     @PostMapping
     public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody CustomerOrderRequestDTO dto) {
-        CustomerOrderResponseDTO response = customerOrderService.save(dto);
+        CustomerOrderResponseDTO response = orderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     /**
-     * 🔄 2. Update Existing Order Metadata & Recalculate Items
-     * URL: PUT http://localhost:8080/api/customer-orders/{id}
+     * 🔄 2. Update Existing Order Metadata & Items
+     * PUT http://localhost:8085/api/orders/{id}
      */
     @PutMapping("{id}")
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
             @RequestBody CustomerOrderRequestDTO dto) {
-        CustomerOrderResponseDTO response = customerOrderService.update(id, dto);
+        CustomerOrderResponseDTO response = orderService.update(id, dto);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 📋 3. Get All Customer Orders (Fetch Join Optimized)
-     * URL: GET http://localhost:8080/api/customer-orders
+     * GET http://localhost:8085/api/orders/
      */
     @GetMapping
     public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders() {
-        List<CustomerOrderResponseDTO> list = customerOrderService.findAll();
-        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+        List<CustomerOrderResponseDTO> responseList = orderService.findAll();
+        return ResponseEntity.ok(responseList);
     }
 
     /**
      * 🔍 4. Get Single Order Specifications By ID
-     * URL: GET http://localhost:8080/api/customer-orders/{id}
+     * GET http://localhost:8085/api/orders/{id}
      */
     @GetMapping("{id}")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
-        return customerOrderService.getById(id)
+        return orderService.getById(id)
                 .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     /**
-     * ❌ 5. Cancel and Delete / Purge Order from Node Matrix
-     * URL: DELETE http://localhost:8080/api/customer-orders/{id}
+     * ❌ 5. Delete / Purge Order Instance
+     * DELETE http://localhost:8085/api/orders/{id}
      */
     @DeleteMapping("{id}")
-    public ResponseEntity<String> cancelAndPurgeOrder(@PathVariable Long id) {
-        customerOrderService.delete(id);
-        return ResponseEntity.ok("Customer order manifest index purged successfully from logistics network.");
+    public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
+        orderService.delete(id);
+        return ResponseEntity.ok("Customer order instance purged successfully from cluster cache mapping.");
+    }
+
+    /**
+     * 📦 6. Live Track Order via Unique Order Number
+     * GET http://localhost:8085/api/orders/track
+     */
+    @GetMapping("track")
+    public ResponseEntity<CustomerOrderResponseDTO> trackOrderByNumber(@RequestParam String orderNumber) {
+        return orderService.trackOrder(orderNumber)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 }

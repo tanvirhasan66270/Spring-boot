@@ -5,7 +5,6 @@ import com.example.SCM.dto.mapper.CustomerOrderMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
-
 import com.example.SCM.enumClass.ServiceType;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.CustomerOrderService;
@@ -38,19 +37,21 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             throw new IllegalArgumentException("Order request matrix or cart items cannot be empty");
         }
 
-        // কাস্টমার প্রোফাইল নোড ভেরিফাই করা
+        // কাস্টমার প্রোফাইল নোড ভেরিফাই করা (সরাসরি মেইন ইউজার টেবিল থেকে)
         User customer = userRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target customer node missing mapping profile"));
 
-        // ম্যাপার দিয়ে মাস্টার ও চাইল্ড রিলেশন তৈরি
+        // ম্যাপার দিয়ে মাস্টার ও চাইল্ড রিলেশন তৈরি
         CustomerOrder order = orderMapper.toEntity(dto, customer);
 
-        // CascadeType.ALL থাকার কারণে মাস্টার সেভ হলে চাইল্ড লাইন আইটেমগুলো ওয়ান-শটে ডাটাবেজে রাইট হবে
-        // সেভ হওয়ার ঠিক পূর্বে এনটিটির @PrePersist হুক থেকে executeCalculations() অটো রান করবে
+        // এনটিটির ইন্টারনাল ক্যালকুলেশন মেথড রান করা
+        order.executeCalculations();
+
+        // CascadeType.ALL এবং @PrePersist হুকের মাধ্যমে ডাটাবেজে রাইট হবে
         CustomerOrder savedOrder = orderRepository.save(order);
 
-        // ব্যাকগ্রাউন্ডে কাস্টমার ইনবক্সে HTML ইনভয়েস মেইল ডিসপ্যাচ করা
-        sendOrderConfirmationEmail(customer, savedOrder);
+        // অর্ডারের নিজস্ব ক্যাশড ডাটা দিয়ে সেফ ইমেইল ডিসপ্যাচ করা হলো
+        sendOrderConfirmationEmail(savedOrder);
 
         return orderMapper.toResponseDTO(savedOrder);
     }
@@ -65,18 +66,27 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
 
+        // 🔗 কাস্টমার আইডি চেঞ্জ হলে মেইন ইউজার টেবিল থেকে প্রোফাইল, নাম ও মেইল রি-সিঙ্ক গেটওয়ে
+        if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer().getId())) {
+            User newCustomer = userRepository.findById(dto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("New target customer profile not found."));
+            order.setCustomer(newCustomer);
+            order.setCustomerName(newCustomer.getName());
+            order.setCustomerEmail(newCustomer.getEmail()); // 🔥 কাস্টমার চেঞ্জ হলেও মেইল সিঙ্ক থাকবে
+        }
+
         // ২. বেসিক মেটাডাটা আপডেট
         if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
         if (dto.getEstimatedDelivery() != null) order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
         order.setCodAmount(dto.getCodAmount());
 
-        // ৩. চাইল্ড আইটেম আপডেট (যদি নতুন আইটেম লিস্ট পাঠানো হয়)
+        // ৩. চাইল্ড আইটেম আপডেট (যদি নতুন আইটেম লিস্ট পাঠানো হয়)
         if (dto.getItems() != null && !dto.getItems().isEmpty()) {
-            // এক্সিস্টিং ওল্ড চাইল্ড আইটেম ক্লিয়ার করা (orphanRemoval = true ডাটাবেজ থেকে রো মুছে দেবে)
+            // orphanRemoval = true ডাটাবেজ থেকে পুরনো আইটেম রোগুলো মুছে দেবে
             order.getLineItems().clear();
 
-            // নতুন আইটেমগুলো লুপ চালিয়ে পুনরায় মাস্টারে বাইন্ড করা
+            // নতুন আইটেমগুলো লুপ চালিয়ে পুনরায় মাস্টারে বাইন্ড করা
             dto.getItems().forEach(itemDto -> {
                 Product product = productRepository.findById(itemDto.getProductId())
                         .orElseThrow(() -> new RuntimeException("Product master record missing for ID: " + itemDto.getProductId()));
@@ -84,15 +94,22 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 OrderLineItem item = new OrderLineItem();
                 item.setProduct(product);
                 item.setQuantity(itemDto.getQuantity());
-                item.setUnitPrice(product.getSellingPrice());
+
+                if (itemDto.getUnitPrice() > 0) {
+                    item.setUnitPrice(itemDto.getUnitPrice());
+                } else {
+                    item.setUnitPrice(product.getSellingPrice());
+                }
+
                 item.setLineTotal(item.getQuantity() * item.getUnitPrice());
                 item.setItemWeightTotal(product.getWeight() * itemDto.getQuantity());
+                item.setRemarks(itemDto.getRemarks());
 
-                order.addLineItem(item); // হেল্পার মেথড দিয়ে নতুন রিলেশন তৈরি
+                order.addLineItem(item); // হেল্পার মেথড দিয়ে রিলেশন তৈরি
             });
         }
 
-        // ৪. ডাটাবেজে আপডেট সেভ (এখানে @PreUpdate হুক থেকে পুনরায় গ্র্যান্ড টোটাল রি-ক্যালকুলেট হবে)
+        // ৪. ডাটাবেজে আপডেট সেভ (এখানে @PreUpdate হুক থেকে গ্র্যান্ড টোটাল রি-ক্যালকুলেট হবে)
         CustomerOrder updatedOrder = orderRepository.save(order);
         return orderMapper.toResponseDTO(updatedOrder);
     }
@@ -129,10 +146,23 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     }
 
     /**
+     * 📦 6. Live Track Order Status by Unique Track Number
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) {
+        if (orderNumber == null || orderNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tracking/Order number cannot be empty");
+        }
+        return orderRepository.findByOrderNumberWithDetails(orderNumber.trim())
+                .map(orderMapper::toResponseDTO);
+    }
+
+    /**
      * 📧 Rich HTML Order Confirmation Invoice Email Dispatcher
      */
-    private void sendOrderConfirmationEmail(User customer, CustomerOrder order) {
-        if (customer == null || customer.getEmail() == null) return;
+    private void sendOrderConfirmationEmail(CustomerOrder order) {
+        if (order.getCustomerEmail() == null || order.getCustomerEmail().contains("no-email")) return;
 
         String subject = "Your SCM Order is Confirmed! Invoice #" + order.getOrderNumber();
         StringBuilder itemRows = new StringBuilder();
@@ -209,7 +239,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                         </tbody>
                     </table>
 
-                    <p><b>Consignment Shipping Node Node:</b><br>%s</p>
+                    <p><b>Consignment Shipping Node:</b><br>%s</p>
 
                     <div class='btn-container'>
                         <a href='http://localhost:4200/track-order?code=%s' class='btn'>Track Package Live</a>
@@ -222,7 +252,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         </body>
         </html>
         """.formatted(
-                customer.getName(),
+                order.getCustomerName(),
                 order.getOrderNumber(),
                 itemRows.toString(),
                 order.getCurrency(), order.getItemSubtotal(),
@@ -235,7 +265,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         );
 
         try {
-            mailService.SenderGeneralMail(customer.getEmail(), subject, mailText);
+            mailService.SenderGeneralMail(order.getCustomerEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
         }

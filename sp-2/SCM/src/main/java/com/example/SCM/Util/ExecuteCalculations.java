@@ -19,22 +19,21 @@ public class ExecuteCalculations {
         double perKg = 0;
         double charge = 0;
 
-        // ১.prefix সার্ভিস টাইপ অনুযায়ী বেস এবং প্রতি কেজির রেট নির্ধারণ
-        switch (serviceType) {
-            case STANDARD -> { base = 60; perKg = 20; }
-            case EXPRESS -> { base = 100; perKg = 35; }
-            case OVERNIGHT -> { base = 180; perKg = 50; }
-            case SAME_DAY -> { base = 250; perKg = 60; }
+        if (serviceType != null) {
+            switch (serviceType) {
+                case STANDARD -> { base = 60; perKg = 20; }
+                case EXPRESS -> { base = 100; perKg = 35; }
+                case OVERNIGHT -> { base = 180; perKg = 50; }
+                case SAME_DAY -> { base = 250; perKg = 60; }
+            }
         }
 
-        // ২. ওজনের ওপর ভিত্তি করে বেস ও অতিরিক্ত কেজির চার্জ হিসাব
         if (weight < 1) {
             charge = base;
         } else {
             charge = base + ((weight - 1) * perKg);
         }
 
-        // ৩. সিওডি ফি (১.৫%) হিসাব করে মূল চার্জের সাথে যোগ করা
         if (codAmount > 0) {
             charge += codAmount * 0.015;
         }
@@ -50,9 +49,7 @@ public class ExecuteCalculations {
     }
 
     /**
-     * 🆕 অর্ডারের সব আইটেমগুলোর দাম যোগ করে itemSubtotal বের করার মেথড
-     * * @param lineItems অর্ডারের আইটেম লিস্ট
-     * @return সব প্রোডাক্টের দামের সমষ্টি
+     * অর্ডারের সব আইটেমগুলোর দাম যোগ করে itemSubtotal বের করার মেথড
      */
     public static double calculateItemSubtotal(List<OrderLineItem> lineItems) {
         if (lineItems == null) return 0.0;
@@ -62,14 +59,21 @@ public class ExecuteCalculations {
     }
 
     /**
-     * 🆕 সব আইটেমের মোট ওজনের যোগফল থেকে পুরো পার্সেলের মোট ওজন বের করার মেথড
-     * * @param lineItems অর্ডারের আইটেম লিস্ট
-     * @return পুরো অর্ডারের সর্বমোট ওজন (KG)
+     * সব আইটেমের মোট ওজনের যোগফল থেকে পুরো পার্সেলের মোট ওজন বের করার মেথড
      */
     public static double calculateTotalOrderWeight(List<OrderLineItem> lineItems) {
         if (lineItems == null) return 0.0;
         return lineItems.stream()
                 .mapToDouble(OrderLineItem::getItemWeightTotal)
                 .sum();
+    }
+
+    /**
+     * 🆕 টোটাল অ্যামাউন্ট থেকে সিওডি অ্যামাউন্ট বাদ দিয়ে পেইড অ্যামাউন্ট স্ট্রিং বের করার মেথড
+     * paidAmount = totalAmount - codAmount
+     */
+    public static String calculatePaidAmount(double totalAmount, double codAmount) {
+        double calculatedPaid = totalAmount - codAmount;
+        return String.format("%.2f", calculatedPaid); // e.g., "8182.50"
     }
 }
