@@ -2,14 +2,12 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
-import com.example.SCM.dto.response.OrderLineItemResponseDTO; // 🔗 ইম্পোর্ট করা হলো
+import com.example.SCM.dto.response.OrderLineItemResponseDTO;
 import com.example.SCM.entity.CustomerOrder;
 import com.example.SCM.entity.OrderLineItem;
-import com.example.SCM.entity.Product;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.CustomerOrderStatus;
 import com.example.SCM.enumClass.ServiceType;
-import com.example.SCM.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,14 +19,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerOrderMapper {
 
-    private final ProductRepository productRepository;
+    // 💡 আপনার তৈরি করা ইন্ডিপেন্ডেন্ট চাইল্ড ম্যাপার ইনজেক্ট করা হলো
+    private final OrderLineItemMapper lineItemMapper;
 
+    /**
+     * 📥 Request DTO থেকে Master Entity-তে কনভার্ট (SRP Optimized)
+     */
     public CustomerOrder toEntity(CustomerOrderRequestDTO dto, User customer) {
         if (dto == null) return null;
 
         CustomerOrder order = new CustomerOrder();
         order.setCustomer(customer);
 
+        // ১. সেফটি গেটওয়ে: ইউজারের প্রোফাইল থেকে কারেন্ট ডেটা অর্ডারে ক্যাশ করা
         if (customer != null) {
             order.setCustomerName(customer.getName());
             order.setCustomerEmail(customer.getEmail());
@@ -37,6 +40,7 @@ public class CustomerOrderMapper {
         order.setDeliveryAddress(dto.getDeliveryAddress());
         order.setCodAmount(dto.getCodAmount());
 
+        // ২. মেটাডাটা ও এনাম পার্সিং
         if (dto.getCurrency() != null && !dto.getCurrency().isBlank()) {
             order.setCurrency(dto.getCurrency());
         }
@@ -50,33 +54,23 @@ public class CustomerOrderMapper {
             order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         }
 
+        // ৩. ডেডিকেটেড চাইল্ড ম্যাপার নোড ব্যবহার করে কার্ট আইটেম প্রসেসিং
         if (dto.getItems() != null) {
             dto.getItems().forEach(itemDto -> {
-                Product product = productRepository.findById(itemDto.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product missing for ID: " + itemDto.getProductId()));
-
-                OrderLineItem item = new OrderLineItem();
-                item.setProduct(product);
-                item.setQuantity(itemDto.getQuantity());
-
-                // 💡 ফ্রন্টএন্ড থেকে unitPrice পাঠালে সেটা লক হবে, না পাঠালে প্রোডাক্ট টেবিল থেকে আসবে
-                if (itemDto.getUnitPrice() > 0) {
-                    item.setUnitPrice(itemDto.getUnitPrice());
-                } else {
-                    item.setUnitPrice(product.getSellingPrice());
+                // সরাসরি চাইল্ড ম্যাপার থেকে এনটিটি তৈরি করে মাস্টারে বাইন্ড করা হচ্ছে
+                OrderLineItem item = lineItemMapper.toEntity(itemDto);
+                if (item != null) {
+                    order.addLineItem(item); // Bidirectional Helper Method কল
                 }
-
-                item.setLineTotal(item.getQuantity() * item.getUnitPrice());
-                item.setItemWeightTotal(product.getWeight() * itemDto.getQuantity());
-                item.setRemarks(itemDto.getRemarks());
-
-                order.addLineItem(item);
             });
         }
 
         return order;
     }
 
+    /**
+     * 📤 Entity থেকে Response DTO-তে কনভার্ট (Clean Output Schema)
+     */
     public CustomerOrderResponseDTO toResponseDTO(CustomerOrder entity) {
         if (entity == null) return null;
 
@@ -85,6 +79,7 @@ public class CustomerOrderMapper {
         dto.setOrderNumber(entity.getOrderNumber());
         dto.setCustomerId(entity.getCustomerId());
 
+        // ওল্ড রিলেশনশিপ ক্যাশ ট্র্যাপ এড়াতে সরাসরি অর্ডারের কলাম নোড থেকে রিড করা হচ্ছে
         dto.setCustomerName(entity.getCustomerName() != null ? entity.getCustomerName() :
                 (entity.getCustomer() != null ? entity.getCustomer().getName() : "Walk-in Customer"));
         dto.setCustomerEmail(entity.getCustomerEmail() != null ? entity.getCustomerEmail() :
@@ -103,22 +98,11 @@ public class CustomerOrderMapper {
         dto.setEstimatedDelivery(entity.getEstimatedDelivery() != null ? entity.getEstimatedDelivery().toString() : null);
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
 
-        // 🎯 আপনার তৈরি করা ইন্ডিপেন্ডেন্ট OrderLineItemResponseDTO-তে রূপান্তর
+        // ৪. চাইল্ড ম্যাপার ব্যবহার করে রেসপন্স ম্যাট্রিক্স তৈরি
         if (entity.getLineItems() != null) {
             List<OrderLineItemResponseDTO> itemDTOs = entity.getLineItems().stream()
-                    .map(item -> {
-                        OrderLineItemResponseDTO itemDto = new OrderLineItemResponseDTO();
-                        itemDto.setId(item.getId());
-                        itemDto.setProductId(item.getProduct().getId());
-                        itemDto.setProductName(item.getProduct().getName());
-                        itemDto.setProductCode(item.getProduct().getProductCode());
-                        itemDto.setQuantity(item.getQuantity());
-                        itemDto.setUnitPrice(item.getUnitPrice());
-                        itemDto.setLineTotal(item.getLineTotal());
-                        itemDto.setItemWeightTotal(item.getItemWeightTotal());
-                        itemDto.setRemarks(item.getRemarks());
-                        return itemDto;
-                    }).collect(Collectors.toList());
+                    .map(lineItemMapper::toResponseDTO) // ওয়ান-লাইনার মেথড রেফারেন্স কল
+                    .collect(Collectors.toList());
             dto.setLineItems(itemDTOs);
         }
 

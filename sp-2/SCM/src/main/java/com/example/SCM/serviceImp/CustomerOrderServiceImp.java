@@ -2,6 +2,7 @@ package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
 import com.example.SCM.dto.mapper.CustomerOrderMapper;
+import com.example.SCM.dto.mapper.OrderLineItemMapper; // 🔗 নতুন চাইল্ড ম্যাপার ইম্পোর্ট
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
@@ -23,8 +24,8 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
     private final CustomerOrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
     private final CustomerOrderMapper orderMapper;
+    private final OrderLineItemMapper lineItemMapper; // 💡 চাইল্ড ম্যাপার ইনজেকশন
     private final MailService mailService;
 
     /**
@@ -37,9 +38,9 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             throw new IllegalArgumentException("Order request matrix or cart items cannot be empty");
         }
 
-        // কাস্টমার প্রোফাইল নোড ভেরিফাই করা (সরাসরি মেইন ইউজার টেবিল থেকে)
-        User customer = userRepository.findById(dto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Target customer node missing mapping profile"));
+        // 🎯 ফিক্সড গেটওয়ে: সরাসরি findById এর বদলে রোল ভিত্তিক সুরক্ষিত কুয়েরি নোড ব্যবহার
+        User customer = userRepository.findCustomerById(dto.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Target profile missing or the user is not a valid CUSTOMER! ID: " + dto.getCustomerId()));
 
         // ম্যাপার দিয়ে মাস্টার ও চাইল্ড রিলেশন তৈরি
         CustomerOrder order = orderMapper.toEntity(dto, customer);
@@ -66,13 +67,13 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
 
-        // 🔗 কাস্টমার আইডি চেঞ্জ হলে মেইন ইউজার টেবিল থেকে প্রোফাইল, নাম ও মেইল রি-সিঙ্ক গেটওয়ে
+        // 🔗 কাস্টমার আইডি চেঞ্জ হলে মেইন ইউজার টেবিল থেকে সঠিক রোলধারী ইউজার রি-সিঙ্ক গেটওয়ে
         if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer().getId())) {
-            User newCustomer = userRepository.findById(dto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("New target customer profile not found."));
+            User newCustomer = userRepository.findCustomerById(dto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("New target profile missing or not a valid CUSTOMER! ID: " + dto.getCustomerId()));
             order.setCustomer(newCustomer);
             order.setCustomerName(newCustomer.getName());
-            order.setCustomerEmail(newCustomer.getEmail()); // 🔥 কাস্টমার চেঞ্জ হলেও মেইল সিঙ্ক থাকবে
+            order.setCustomerEmail(newCustomer.getEmail()); // 🔥 কাস্টমার চেঞ্জ হলেও রিয়েল মেইল সিঙ্ক থাকবে
         }
 
         // ২. বেসিক মেটাডাটা আপডেট
@@ -81,31 +82,17 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
         order.setCodAmount(dto.getCodAmount());
 
-        // ৩. চাইল্ড আইটেম আপডেট (যদি নতুন আইটেম লিস্ট পাঠানো হয়)
+        // ৩. চাইল্ড আইটেম আপডেট (ইন্ডিপেন্ডেন্ট ম্যাপার নোড দ্বারা রিফ্যাক্টর্ড)
         if (dto.getItems() != null && !dto.getItems().isEmpty()) {
             // orphanRemoval = true ডাটাবেজ থেকে পুরনো আইটেম রোগুলো মুছে দেবে
             order.getLineItems().clear();
 
-            // নতুন আইটেমগুলো লুপ চালিয়ে পুনরায় মাস্টারে বাইন্ড করা
+            // নতুন আইটেমগুলো লুপ চালিয়ে ডেডিকেটেড ম্যাপার দিয়ে মাস্টারে বাইন্ড করা
             dto.getItems().forEach(itemDto -> {
-                Product product = productRepository.findById(itemDto.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product master record missing for ID: " + itemDto.getProductId()));
-
-                OrderLineItem item = new OrderLineItem();
-                item.setProduct(product);
-                item.setQuantity(itemDto.getQuantity());
-
-                if (itemDto.getUnitPrice() > 0) {
-                    item.setUnitPrice(itemDto.getUnitPrice());
-                } else {
-                    item.setUnitPrice(product.getSellingPrice());
+                OrderLineItem item = lineItemMapper.toEntity(itemDto);
+                if (item != null) {
+                    order.addLineItem(item); // হেল্পার মেথড দিয়ে বাইডিরেকশনাল রিলেশন তৈরি
                 }
-
-                item.setLineTotal(item.getQuantity() * item.getUnitPrice());
-                item.setItemWeightTotal(product.getWeight() * itemDto.getQuantity());
-                item.setRemarks(itemDto.getRemarks());
-
-                order.addLineItem(item); // হেল্পার মেথড দিয়ে রিলেশন তৈরি
             });
         }
 
