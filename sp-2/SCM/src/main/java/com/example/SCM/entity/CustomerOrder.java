@@ -82,10 +82,10 @@ public class CustomerOrder {
     private LocalDateTime createdAt;
 
     // 🔗 আপনার টপ-লেভেল OrderLineItem ক্লাসের সাথে Bidirectional One-to-Many রিলেশন
+  
     @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<OrderLineItem> lineItems = new ArrayList<>();
-
     // ── 🎯 হাইবারনেট লাইফসাইকেল হুকস ──────────────────
 
     @PrePersist
