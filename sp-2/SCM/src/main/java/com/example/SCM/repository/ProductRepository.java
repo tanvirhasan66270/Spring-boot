@@ -19,11 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // ১. প্রোডাক্ট কোড দিয়ে ইউনিক প্রোডাক্ট খোঁজা
     Optional<Product> findByProductCode(String productCode);
 
-    // ২. নির্দিষ্ট ক্যাটাগরি আইডি (CategoryId) অনুযায়ী সব প্রোডাক্ট ফিল্টার করা
-    List<Product> findByCategoryId(Long categoryId);
 
-    // ৩. শুধুমাত্র একটিভ (Active) প্রোডাক্টগুলোর লিস্ট বের করা
-    List<Product> findByIsActiveTrue();
 
     // ৪. কাস্টম JPQL কুয়েরি: ইনভেন্টরি অ্যালার্ট বা রিঅর্ডার পয়েন্ট ক্রসিং প্রোডাক্ট খোঁজা
     @Query("SELECT p FROM Product p WHERE p.quantity <= p.reorderPoint AND p.isActive = true")

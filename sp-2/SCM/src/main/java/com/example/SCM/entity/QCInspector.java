@@ -21,7 +21,7 @@ public class QCInspector {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔐 Auth account — Source of truth for name, phone, email, password, role
+    // Auth account — Source of truth for name, phone, email, password, role
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -46,7 +46,7 @@ public class QCInspector {
     private GenderStatus gender;
 
     @Column(name = "image_url")
-    private String image; // প্রোফাইল পিকচার ইউআরএল বা পাথ
+    private String image;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;

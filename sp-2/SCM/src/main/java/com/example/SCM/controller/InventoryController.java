@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/inventories/") // REST API কনভেনশন অনুযায়ী Plural নাম ব্যবহার করা হয়েছে
+@RequestMapping("/api/inventories/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Frontend (Angular/React) থেকে কল করার সময় CORS পলিসি জনিত ব্লকিং এড়াতে
+@CrossOrigin(origins = "*")
 public class InventoryController {
 
     private final InventoryService inventoryService;

@@ -70,7 +70,7 @@ public class GoodsReceivedNote {
     private LocalDate inspectionDate;
 
     @OneToMany(mappedBy = "goodsReceivedNote", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<GRNLineItem> lineItems = new ArrayList<>(); // 💡 ডিফল্ট খালি লিস্ট রাখায় এটি এখন সম্পূর্ণ অপশনাল (Null Safe)
+    private List<GRNLineItem> lineItems = new ArrayList<>(); //  ডিফল্ট খালি লিস্ট রাখায় এটি এখন সম্পূর্ণ অপশনাল (Null Safe)
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

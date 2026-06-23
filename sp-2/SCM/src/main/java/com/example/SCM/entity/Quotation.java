@@ -55,7 +55,7 @@ public class Quotation {
     private QuotationStatus status = QuotationStatus.PENDING;
 
     @Column(name = "product_description", columnDefinition = "TEXT", nullable = false)
-    private String productDescription; // লাইন বাই লাইন টেক্সট এরিয়া ইনপুট
+    private String productDescription;
 
     @Column(name = "unit_price", nullable = false)
     private double unitPrice;
@@ -99,7 +99,7 @@ public class Quotation {
         calculateTotalPrice();
     }
 
-    // 💡 বিজনেস লজিক: টোটাল প্রাইস অটো-সিঙ্ক রাখার জন্য
+    // বিজনেস লজিক: টোটাল প্রাইস অটো-সিঙ্ক রাখার জন্য
     private void calculateTotalPrice() {
         this.totalPrice = this.unitPrice * this.quantity;
     }

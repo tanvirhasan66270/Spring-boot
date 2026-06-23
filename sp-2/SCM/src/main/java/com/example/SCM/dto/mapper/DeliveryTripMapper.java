@@ -33,7 +33,7 @@ public class DeliveryTripMapper {
             dto.setCustomerId(entity.getCustomer().getId());
             dto.setRecipientName(entity.getCustomer().getName());
 
-            // 💡 যদি কাস্টমার অবজেক্টের ভেতরে কোনো ইউজার রিলেশন থাকে, তবে সেখান থেকে নাম তুলে অটো-ফিক্স করবে
+            //  যদি কাস্টমার অবজেক্টের ভেতরে কোনো ইউজার রিলেশন থাকে, তবে সেখান থেকে নাম তুলে অটো-ফিক্স করবে
             if (entity.getCustomer().getUser() != null) {
                 dto.setRecipientName(entity.getCustomer().getUser().getName());
             } else {
@@ -41,7 +41,7 @@ public class DeliveryTripMapper {
                 dto.setRecipientName(entity.getCustomer().getName());
             }
         }
-        // 💡 Auto Fixed Driver details from User Node
+        //  Auto Fixed Driver details from User Node
         if (entity.getDriver() != null) {
             dto.setDriverId(entity.getDriver().getId());
             dto.setDriverName(entity.getDriver().getDriverName());

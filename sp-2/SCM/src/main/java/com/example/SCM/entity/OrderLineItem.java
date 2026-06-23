@@ -18,11 +18,11 @@ public class OrderLineItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    private CustomerOrder customerOrder; // FK → CustomerOrder [cite: 1691]
+    private CustomerOrder customerOrder; // FK → CustomerOrder
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
-    private Product product; // FK → Product [cite: 1692]
+    private Product product; // FK → Product
 
     @Column(nullable = false)
     private int quantity; // [cite: 1693]
@@ -31,9 +31,9 @@ public class OrderLineItem {
     private double unitPrice; // [cite: 1694]
 
     @Column(name = "line_total", nullable = false)
-    private double lineTotal; // LineTotal = quantity * unitPrice [cite: 1695]
+    private double lineTotal; // LineTotal = quantity * unitPrice
 
-    // ── 🆕 নতুন যুক্ত করা ফিল্ডস ──────────────────────────────────
+    //  নতুন যুক্ত করা ফিল্ডস ──────────────────────────────────
     @Column(name = "item_weight_total", nullable = false)
     private double itemWeightTotal; // ১টি আইটেমের মোট ওজন = (quantity * Product Weight)
 
@@ -43,8 +43,8 @@ public class OrderLineItem {
     @PrePersist
     @PreUpdate
     protected void preSaveCalculations() {
-        // ১. ডাটাবেসে যাওয়ার আগে প্রতি আইটেমের কোয়ান্টিটি ও প্রাইস গুণ করে টোটাল বের করা [cite: 1696]
-        this.lineTotal = this.quantity * this.unitPrice; // [cite: 1696]
+        // ১. ডাটাবেসে যাওয়ার আগে প্রতি আইটেমের কোয়ান্টিটি ও প্রাইস গুণ করে টোটাল বের
+        this.lineTotal = this.quantity * this.unitPrice;
 
         // ২. প্রোডাক্টের নিজস্ব ওজন থেকে এই আইটেম রো-এর মোট ওজন বের করা
         if (this.product != null) {

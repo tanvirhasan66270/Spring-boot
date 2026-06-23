@@ -8,5 +8,5 @@ public class DivisionRequestDTO {
     private String name;
     private String nameBn;
     private Boolean active;
-    private Long countryId; // 🔗 ফরেন কি আইডি
+    private Long countryId;
 }

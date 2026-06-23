@@ -32,7 +32,7 @@ public class CustomerMapper {
             dto.setRole(entity.getUser().getRole() != null ? entity.getUser().getRole().toString() : null);
         }
 
-        // 📍 Location Hierarchy flattening
+        //  Location Hierarchy flattening
         if (entity.getPoliceStation() != null) {
             PoliceStation ps = entity.getPoliceStation();
             dto.setPoliceStationId(ps.getId());

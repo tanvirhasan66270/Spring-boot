@@ -17,5 +17,5 @@ public class GoodsReceivedNoteRequestDTO {
     private Long inspectedBy;        // ইন্সপেকশন করা ইউজারের আইডি (ঐচ্ছিক)
     private String inspectionDate;   // "YYYY-MM-DD" (ঐচ্ছিক)
 
-    private List<GRNLineItemRequestDTO> lineItems; // 💡 ফ্রন্টএন্ড চাইলে এই অ্যারে পাঠাতেও পারে, আবার ফাক্কা (Null/Empty) রাখতেও পারে
+    private List<GRNLineItemRequestDTO> lineItems;
 }

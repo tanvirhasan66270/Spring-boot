@@ -17,20 +17,16 @@ public class LetterOfCreditController {
 
     private final LetterOfCreditService lcService;
 
-    /**
-     * 📝 1. Issue a New Letter of Credit (Draft Mode)
-     * POST http://localhost:8085/api/lc/
-     */
+    // 1. Issue a New Letter of Credit (Draft Mode)
+
     @PostMapping
     public ResponseEntity<LetterOfCreditResponseDTO> createLC(@RequestBody LetterOfCreditRequestDTO dto) {
         LetterOfCreditResponseDTO response = lcService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * ⚙️ 2. General Update LC Metadata (No Counter Increment)
-     * PUT http://localhost:8085/api/lc/{id}
-     */
+    // ⚙️ 2. General Update LC Metadata (No Counter Increment)
+
     @PutMapping("{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
@@ -40,7 +36,7 @@ public class LetterOfCreditController {
     }
 
     /**
-     * 🔄 3. Official LC Amendment Gateway (Triggers Counter & Status Change)
+     *  3. Official LC Amendment Gateway (Triggers Counter & Status Change)
      * PATCH http://localhost:8085/api/lc/amend/{id}
      */
     @PatchMapping("amend/{id}")
@@ -52,7 +48,7 @@ public class LetterOfCreditController {
     }
 
     /**
-     * 📋 4. Get All Letters of Credit
+     *  4. Get All Letters of Credit
      * GET http://localhost:8085/api/lc/
      */
     @GetMapping
@@ -61,7 +57,7 @@ public class LetterOfCreditController {
     }
 
     /**
-     * 🔍 5. Get LC Profile By ID
+     *  5. Get LC Profile By ID
      * GET http://localhost:8085/api/lc/{id}
      */
     @GetMapping("{id}")
@@ -72,7 +68,7 @@ public class LetterOfCreditController {
     }
 
     /**
-     * ❌ 6. Delete LC Instance
+     *  6. Delete LC Instance
      * DELETE http://localhost:8085/api/lc/{id}
      */
     @DeleteMapping("{id}")

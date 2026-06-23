@@ -21,7 +21,7 @@ public class Category {
     private String categoryName;
 
     @Column(columnDefinition = "TEXT")
-    private String description; // TypeScript মডেলে থাকা deseription টাইপোটি এখানে ঠিক করা হয়েছে
+    private String description;
 
     // একটি ক্যাটাগরির অধীনে অনেক প্রোডাক্ট থাকতে পারে
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

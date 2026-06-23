@@ -19,6 +19,6 @@ public class DailyReportResponseDTO {
     private String generatedAt;
     private String updatedAt;
 
-    // 🎯 আলাদা DTO ছাড়া সরাসরি Map-এর লিস্ট (কোনো নতুন ফাইল লাগবে না)
+    // আলাদা DTO ছাড়া সরাসরি Map-এর লিস্ট (কোনো নতুন ফাইল লাগবে না)
     private List<Map<String, String>> notifiedAuthorities = new ArrayList<>();
 }

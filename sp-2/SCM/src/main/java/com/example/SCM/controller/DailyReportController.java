@@ -17,19 +17,15 @@ public class DailyReportController {
 
     private final DailyReportService reportService;
 
-    /**
-     * 📝 1. Log New Report (By Logistics Officer)
-     * POST http://localhost:8085/api/reports/
-     */
+    //  1. Log New Report (By Logistics Officer)
+
     @PostMapping
     public ResponseEntity<DailyReportResponseDTO> createReport(@RequestBody DailyReportRequestDTO dto) {
         return new ResponseEntity<>(reportService.save(dto), HttpStatus.CREATED);
     }
 
-    /**
-     * ⚙️ 2. Modify Pending Report (Only for DRAFT states)
-     * PUT http://localhost:8085/api/reports/{id}
-     */
+    // 2. Modify Pending Report (Only for DRAFT states)
+
     @PutMapping("{id}")
     public ResponseEntity<DailyReportResponseDTO> updateReport(
             @PathVariable Long id,
@@ -37,19 +33,15 @@ public class DailyReportController {
         return ResponseEntity.ok(reportService.update(id, dto));
     }
 
-    /**
-     * 👑 3. Standard API Lock & Official Approval Node
-     * PATCH http://localhost:8085/api/reports/approve/{id}
-     */
+    // 3. Standard API Lock & Official Approval Node
+
     @PatchMapping("approve/{id}")
     public ResponseEntity<DailyReportResponseDTO> approveReport(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.approveReport(id, null));
     }
 
-    /**
-     * 📧 4. One-Click Email Approval Gateway (Called when Manager clicks button inside Gmail)
-     * GET http://localhost:8085/api/reports/email-approve?id=1&approverId=16
-     */
+    // 4. One-Click Email Approval Gateway (Called when Manager clicks button inside Gmail)
+
     @GetMapping("email-approve")
     public ResponseEntity<String> emailApproveReport(
             @RequestParam Long id,
@@ -70,19 +62,15 @@ public class DailyReportController {
             """.formatted(id));
     }
 
-    /**
-     * 📊 5. Fetch All Reports
-     * GET http://localhost:8085/api/reports/
-     */
+  // 5. Fetch All Reports
+
     @GetMapping
     public ResponseEntity<List<DailyReportResponseDTO>> getAllReports() {
         return ResponseEntity.ok(reportService.findAll());
     }
 
-    /**
-     * 🔍 6. Filter by Warehouse Location Node
-     * GET http://localhost:8085/api/reports/warehouse/{warehouseId}
-     */
+   // 6. Filter by Warehouse Location Node
+
     @GetMapping("warehouse/{warehouseId}")
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
         return ResponseEntity.ok(reportService.getByWarehouse(warehouseId));

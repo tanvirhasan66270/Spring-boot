@@ -9,6 +9,5 @@ public class DailyReportRequestDTO {
     private int totalTasksDone;
     private int issuesLogged;
     private String summary;
-    private String reportStatus; // ফ্রন্টএন্ড থেকে SUBMITTED বা DRAFT পাঠাবে
     private String attachmentUrl;
 }

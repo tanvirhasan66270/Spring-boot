@@ -20,7 +20,7 @@ public class QCInspectorMapper {
 
     /**
      * 1. QCInspector Entity থেকে QCInspectorResponseDTO-তে রূপান্তর (Flattening Relation)
-     * 💡 ফিক্স: Ambiguous সেটার এড়াতে ইউজার একটিভ ফিল্ডের জন্য dto.setUserActive() ব্যবহার করা হয়েছে।
+     *  ফিক্স: Ambiguous সেটার এড়াতে ইউজার একটিভ ফিল্ডের জন্য dto.setUserActive() ব্যবহার করা হয়েছে।
      */
     public QCInspectorResponseDTO toResponseDTO(QCInspector inspector) {
         if (inspector == null) {

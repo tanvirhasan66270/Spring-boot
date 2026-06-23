@@ -26,12 +26,12 @@ public class CustomerOrder {
     @Column(name = "order_number", nullable = false, unique = true, length = 50)
     private String orderNumber;
 
-    // 💡 Lazy Fetch এবং সঠিক ফরেন কি ম্যাপিং যা মেইন ইউজার টেবিলকে পয়েন্ট করে
+    //  Lazy Fetch এবং সঠিক ফরেন কি ম্যাপিং যা মেইন ইউজার টেবিলকে পয়েন্ট করে
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
 
-    // ── 🎯 ডাইনামিক ক্যাশ ফিল্ডস (ইমেইল লিক ও পুরনো ক্যাশ জ্যাম প্রতিরোধ গেটওয়ে) ──
+    //  ডাইনামিক ক্যাশ ফিল্ডস (ইমেইল লিক ও পুরনো ক্যাশ জ্যাম প্রতিরোধ গেটওয়ে) ──
     @Column(name = "customer_name", length = 100)
     private String customerName;
 
@@ -49,6 +49,9 @@ public class CustomerOrder {
     @Builder.Default
     private ServiceType serviceType = ServiceType.STANDARD;
 
+     @Column(nullable = false, length = 10)
+     private String currency;
+
     @Column(name = "cod_amount")
     @Builder.Default
     private double codAmount = 0.0;
@@ -59,13 +62,10 @@ public class CustomerOrder {
     @Column(name = "total_amount", nullable = false)
     private double totalAmount;
 
-    // 🎯 কনসিস্টেন্সির জন্য ডাটা টাইপ String এবং লেন্থ ৩০ রাখা হলো
+    //  কনসিস্টেন্সির জন্য ডাটা টাইপ String এবং লেন্থ ৩০ রাখা হলো
     @Column(name = "paid_amount", nullable = false, length = 30)
     private String paidAmount;
 
-    @Column(nullable = false, length = 10)
-    @Builder.Default
-    private String currency = "BDT";
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -81,12 +81,12 @@ public class CustomerOrder {
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    // 🔗 আপনার টপ-লেভেল OrderLineItem ক্লাসের সাথে Bidirectional One-to-Many রিলেশন
+    //  আপনার টপ-লেভেল OrderLineItem ক্লাসের সাথে Bidirectional One-to-Many রিলেশন
   
     @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<OrderLineItem> lineItems = new ArrayList<>();
-    // ── 🎯 হাইবারনেট লাইফসাইকেল হুকস ──────────────────
+    //  হাইবারনেট লাইফসাইকেল হুকস ──────────────────
 
     @PrePersist
     protected void onCreate() {
@@ -104,7 +104,7 @@ public class CustomerOrder {
         executeCalculations();
     }
 
-    // ── 🛠️ ইন্টারনাল ইউটিলিটি মেথডস ──
+    // ️ ইন্টারনাল ইউটিলিটি মেথডস ──
 
     private void syncCustomerMetadata() {
         if (this.customer != null) {
@@ -138,7 +138,7 @@ public class CustomerOrder {
         }
     }
 
-    // 💡 ম্যাপার ও কন্ট্রোলারের টাইপ ট্র্যাপ সেফটি গেটওয়ে
+    //  ম্যাপার ও কন্ট্রোলারের টাইপ ট্র্যাপ সেফটি গেটওয়ে
     public Long getCustomerId() {
         return this.customer != null ? this.customer.getId() : null;
     }

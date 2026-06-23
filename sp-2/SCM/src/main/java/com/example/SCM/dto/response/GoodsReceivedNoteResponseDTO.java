@@ -19,7 +19,7 @@ public class GoodsReceivedNoteResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // --- 📦 Flattened Relations Details ---
+
     private Long poId;
     private String poNumber;         // UI স্ক্রিনে দেখানোর জন্য পারচেজ অর্ডার নাম্বার
 

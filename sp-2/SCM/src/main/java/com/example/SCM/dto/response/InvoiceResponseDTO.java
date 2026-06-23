@@ -9,7 +9,7 @@ public class InvoiceResponseDTO {
     private Long id;
     private String invoiceNumber;
     private Long customerOrderId;      // TS: CustomerOrderId
-    private String customerEmail;      // 💡 অটো-জেনারেটেড ইমেইল ফিল্ড রেসপন্স নোড
+    private String customerEmail;      // অটো-জেনারেটেড ইমেইল ফিল্ড রেসপন্স নোড
     private Long salesOfficerId;
     private String issuedToName;
     private String currency;

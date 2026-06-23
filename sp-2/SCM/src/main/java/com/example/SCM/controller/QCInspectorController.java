@@ -22,7 +22,7 @@ public class QCInspectorController {
 
     /**
      * 1. Create New QC Inspector with Profile Image (POST)
-     * 💡 আপনার রাইডার কন্ট্রোলারের মতো হুবহু @RequestPart কনভেনশনে সিঙ্ক করা হয়েছে।
+     *  আপনার রাইডার কন্ট্রোলারের মতো হুবহু @RequestPart কনভেনশনে সিঙ্ক করা হয়েছে।
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> create(

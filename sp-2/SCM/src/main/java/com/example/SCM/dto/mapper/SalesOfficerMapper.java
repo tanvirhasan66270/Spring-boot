@@ -21,7 +21,7 @@ public class SalesOfficerMapper {
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(dto.getPassword());
 
-        // 💡 আপনার Role এনামের সাথে সিঙ্ক। (যদি এনামে সরাসরি SALES_OFFICER না থাকে, তবে ব্যবসার লজিক অনুযায়ী ADMIN/MANAGER/LOGISTICS_OFFICER ম্যাপ করতে পারেন)
+        //  আপনার Role এনামের সাথে সিঙ্ক। (যদি এনামে সরাসরি SALES_OFFICER না থাকে, তবে ব্যবসার লজিক অনুযায়ী ADMIN/MANAGER/LOGISTICS_OFFICER ম্যাপ করতে পারেন)
         try {
             user.setRole(Role.valueOf("SALES_OFFICER"));
         } catch (IllegalArgumentException e) {

@@ -4,14 +4,14 @@ import lombok.Data;
 
 @Data
 public class QCInspectorRequestDTO {
-    // --- 🔐 User (Auth) Fields ---
+    //  User (Auth) Fields ---
     private String name;
     private String email;
     private String phone;          // User এনটিটির phoneNumber কলামে বাইন্ড হবে
     private String password;
-    private boolean userActive;    // 💡 নতুন যুক্ত ফিল্ড (User টেবিলের active ফিল্ড কন্ট্রোল করার জন্য)
+    private boolean userActive;    // নতুন যুক্ত ফিল্ড (User টেবিলের active ফিল্ড কন্ট্রোল করার জন্য)
 
-    // --- 📋 QC Inspector Profile Fields ---
+    // QC Inspector Profile Fields ---
     private String contactPerson;
     private String address;
     private String nidNumber;

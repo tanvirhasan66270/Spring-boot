@@ -35,10 +35,8 @@ public class DivisionController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    /**
-     * 💡 নির্দিষ্ট দেশের আইডি পাস করে তার আন্ডারে থাকা সমস্ত স্টেট বা ডিভিশন ফিল্টার করার এন্ডপয়েন্ট।
-     * URL: /api/divisions/country/1
-     */
+    // নির্দিষ্ট দেশের আইডি পাস করে তার আন্ডারে থাকা সমস্ত স্টেট বা ডিভিশন ফিল্টার করার এন্ডপয়েন্ট।
+
     @GetMapping("country/{countryId}")
     public ResponseEntity<List<DivisionResponseDTO>> getByCountryId(@PathVariable Long countryId) {
         List<DivisionResponseDTO> list = divisionService.getByCountryId(countryId);

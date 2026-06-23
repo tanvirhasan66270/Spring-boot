@@ -25,15 +25,15 @@ public class QCInspectorResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // --- 🔑 Flattened User (Source of Truth) Details ---
+    // Flattened User (Source of Truth) Details ---
     private Long userId;
     private String name;
     private String email;
     private String phone;
     private Role role;
-    private boolean userActive;    // 💡 নতুন যুক্ত ফিল্ড (User টেবিল থেকে ফ্ল্যাট হয়ে আউটপুটে দেখাবে)
+    private boolean userActive;    // নতুন যুক্ত ফিল্ড (User টেবিল থেকে ফ্ল্যাট হয়ে আউটপুটে দেখাবে)
 
-    // --- 🗺️ Flattened Location Details ---
+    //  Flattened Location Details ---
     private Long policeStationId;
     private String policeStationName;
     private String districtName;

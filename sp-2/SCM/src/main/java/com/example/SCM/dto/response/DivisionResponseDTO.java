@@ -10,10 +10,10 @@ public class DivisionResponseDTO {
     private String nameBn;
     private Boolean active;
 
-    // --- 🌍 Flattened Country Relation ---
+    //  Flattened Country Relation ---
     private Long countryId;
     private String countryName;
 
-    // --- 📍 Districts Breakdown ---
+    //  Districts Breakdown ---
     private List<String> districts; // ডিস্ট্রিক্টের নামগুলো সরাসরি লিস্ট আকারে UI-তে দেখানোর জন্য
 }

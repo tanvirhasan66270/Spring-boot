@@ -26,5 +26,5 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     """)
     Optional<Shipment> findByIdWithDetails(@Param("id") Long id);
 
-    Optional<Shipment> findByShipmentNumber(String shipmentNumber);
+
 }

@@ -45,8 +45,5 @@ public interface GRNLineItemRepository extends JpaRepository<GRNLineItem, Long> 
     """)
     List<GRNLineItem> findByGoodsReceivedNoteId(@Param("grnId") Long grnId);
 
-    /**
-     * 4. নির্দিষ্ট প্রোডাক্ট আইডি (Product ID) দিয়ে সমস্ত জিআরএন ট্র্যাকিং ফিল্টার
-     */
-    List<GRNLineItem> findByProductId(Long productId);
+
 }

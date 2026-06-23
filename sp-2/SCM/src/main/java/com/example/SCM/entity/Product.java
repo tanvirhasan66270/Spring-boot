@@ -38,7 +38,7 @@ public class Product {
     @Column(name = "has_expiry_date")
     private String hasExpiryDate;
 
-    // ── 🆕 ওজনের নতুন ফিল্ড যা থেকে কাস্টমার অর্ডারের ডেলিভারি চার্জ ক্যালকুলেট হবে ──
+    //  ওজনের নতুন ফিল্ড যা থেকে কাস্টমার অর্ডারের ডেলিভারি চার্জ ক্যালকুলেট হবে ──
     @Column(name = "weight", nullable = false)
     private double weight; // কেজিতে হিসাব হবে (যেমন: 0.2 মানে 200 গ্রাম, 1.5 মানে 1.5 KG)
 

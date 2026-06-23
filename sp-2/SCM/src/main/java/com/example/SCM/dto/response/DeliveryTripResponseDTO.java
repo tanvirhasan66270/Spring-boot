@@ -19,7 +19,7 @@ public class DeliveryTripResponseDTO {
     private String createdAt;
     private String updatedAt;
 
-    // --- 👥 Flattened Relations (Auto Fillup Match with Angular) ---
+    //  Flattened Relations (Auto Fillup Match with Angular) ---
     private Long customerId;
     private String recipientName; // Maps to customerName from Customer table
 

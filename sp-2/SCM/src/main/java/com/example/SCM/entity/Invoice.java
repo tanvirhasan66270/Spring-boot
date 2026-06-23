@@ -24,7 +24,7 @@ public class Invoice {
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
 
-    // 💡 ডাটাবেজ কলাম নেম পরিবর্তন করে 'order_id' এর সাথে ম্যাচ করানো হলো
+    // ডাটাবেজ কলাম নেম পরিবর্তন করে 'order_id' এর সাথে ম্যাচ করানো হলো
     @Column(name = "order_id", nullable = false)
     private Long customerOrderId;
 
@@ -40,7 +40,7 @@ public class Invoice {
     @Column(nullable = false, length = 10)
     private String currency = "BDT";
 
-    // ── Financial Calculation Fields ──
+    // Financial Calculation Fields ──
     @Column(nullable = false)
     private double subtotal;
 
@@ -68,7 +68,7 @@ public class Invoice {
     @Column(name = "due_amount", nullable = false)
     private double dueAmount;
 
-    // ── Status & Payment Details ──
+    // Status & Payment Details ──
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status", nullable = false, length = 20)
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
@@ -84,14 +84,14 @@ public class Invoice {
     @Column(name = "invoice_status", nullable = false, length = 20)
     private InvoiceStatus invoiceStatus = InvoiceStatus.DRAFT;
 
-    // ── Logistics Fields ──
+    // Logistics Fields ──
     @Column(name = "delivery_date")
     private LocalDate deliveryDate;
 
     @Column(name = "delivery_address", columnDefinition = "TEXT", nullable = false)
     private String deliveryAddress;
 
-    // ── Audit Logs & Notes ──
+    // Audit Logs & Notes ──
     @Column(columnDefinition = "TEXT")
     private String notes;
 

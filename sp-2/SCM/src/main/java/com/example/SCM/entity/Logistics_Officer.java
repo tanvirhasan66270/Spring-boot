@@ -21,11 +21,11 @@ public class Logistics_Officer {
     private Long id;
 
     // =========================================================================
-    // 🔐 Authentication & System Security Relations
+    //  Authentication & System Security Relations
     // =========================================================================
 
     // Auth account — Source of truth for name, phone, email, password, role
-    // CascadeType.ALL এবং orphanRemoval যুক্ত করা হয়েছে যাতে কোর ইউজার লাইফসাইকেল সিনক্রোনাইজড থাকে
+
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

@@ -40,7 +40,7 @@ public class QCChecklistController {
 
     /**
      * 3. Get Checklist Items By Master Inspection ID (GET)
-     * 💡 ফ্রন্টএন্ড UI-তে একটি নির্দিষ্ট ইন্সেপশনের গ্রিড ডিটেইলস পপুলেট করার জন্য এটি ব্যবহৃত হবে।
+     *  ফ্রন্টএন্ড UI-তে একটি নির্দিষ্ট ইন্সেপশনের গ্রিড ডিটেইলস পপুলেট করার জন্য এটি ব্যবহৃত হবে।
      */
     @GetMapping("inspection/{inspectionId}")
     public ResponseEntity<List<QCChecklistResponseDTO>> getByInspectionId(@PathVariable Long inspectionId) {

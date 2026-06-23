@@ -20,7 +20,7 @@ public class ManagerMapper {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(dto.getPassword());
-        user.setRole(Role.MANAGER); // 🔗 সিকিউরিটি রোল এসাইন ম্যানেজার হিসেবে
+        user.setRole(Role.MANAGER);
         return user;
     }
 

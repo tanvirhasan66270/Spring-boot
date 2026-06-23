@@ -17,7 +17,7 @@ public class OrderLineItemController {
     private final OrderLineItemService lineItemService;
 
     /**
-     * 📋 1. Get All Items Under a Specific Order ID
+     *  1. Get All Items Under a Specific Order ID
      * URL: GET http://localhost:8080/api/order-items/order/{orderId}
      */
     @GetMapping("/order/{orderId}")
@@ -27,7 +27,7 @@ public class OrderLineItemController {
     }
 
     /**
-     * 🔍 2. Get Single Line Item Specifications By ID
+     *  2. Get Single Line Item Specifications By ID
      * URL: GET http://localhost:8080/api/order-items/{id}
      */
     @GetMapping("{id}")
@@ -38,7 +38,7 @@ public class OrderLineItemController {
     }
 
     /**
-     * ❌ 3. Remove/Delete Single Item from Order Cart Node
+     *  3. Remove/Delete Single Item from Order Cart Node
      * URL: DELETE http://localhost:8080/api/order-items/{id}
      */
     @DeleteMapping("{id}")

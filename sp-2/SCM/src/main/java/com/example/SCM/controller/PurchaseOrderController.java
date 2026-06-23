@@ -20,7 +20,7 @@ public class PurchaseOrderController {
 
     /**
      * 1. Create New Purchase Order (POST)
-     * 💡 ফ্রন্টঅ্যান্ড টাইপস্ক্রিপ্ট ইন্টারফেস থেকে আসা পিওর JSON অবজেক্ট রিসিভ করার জন্য @RequestBody ব্যবহার করা হয়েছে।
+     *  ফ্রন্টঅ্যান্ড টাইপস্ক্রিপ্ট ইন্টারফেস থেকে আসা পিওর JSON অবজেক্ট রিসিভ করার জন্য @RequestBody ব্যবহার করা হয়েছে।
      * লজিক অনুযায়ী, এখানে শুধুমাত্র quotationId পাঠালেই বাকি সব রিলেশন ব্যাকঅ্যান্ডে অটো-লোড হবে।
      */
     @PostMapping
@@ -43,7 +43,7 @@ public class PurchaseOrderController {
 
     /**
      * 3. Get All Purchase Orders (GET)
-     * 💡 এটি কাস্টম Fetch Join কুয়েরি ব্যবহার করে এক ট্রিপে সব ডাটা অপ্টিমাইজড উপায়ে নিয়ে আসবে।
+     *  এটি কাস্টম Fetch Join কুয়েরি ব্যবহার করে এক ট্রিপে সব ডাটা অপ্টিমাইজড উপায়ে নিয়ে আসবে।
      */
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {

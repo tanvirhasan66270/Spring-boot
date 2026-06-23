@@ -30,7 +30,7 @@ public class LetterOfCredit {
     @Column(name = "po_number", length = 50)
     private String poNumber;
 
-    // 📌 LetterOfCredit.java ক্লাসের ভেতর রিলেশন কলাম হিসেবে যুক্ত করুন:
+    //  LetterOfCredit.java ক্লাসের ভেতর রিলেশন কলাম হিসেবে যুক্ত করুন:
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier; // FK → suppliers table
@@ -104,7 +104,7 @@ public class LetterOfCredit {
         }
     }
 
-    // ── 🛠️ বিজনেস ডোমেইন মেথড ──
+    //  বিজনেস ডোমেইন মেথড ──
     public void incrementAmendment() {
         if (this.lcStatus == LcStatus.OPENED || this.lcStatus == LcStatus.AMENDED) {
             this.lcStatus = LcStatus.AMENDED;

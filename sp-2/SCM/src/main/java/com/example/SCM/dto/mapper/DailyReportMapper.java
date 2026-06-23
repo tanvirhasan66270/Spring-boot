@@ -23,9 +23,7 @@ public class DailyReportMapper {
         if (dto.getReportDate() != null && !dto.getReportDate().isBlank()) {
             report.setReportDate(LocalDate.parse(dto.getReportDate()));
         }
-        if (dto.getReportStatus() != null && !dto.getReportStatus().isBlank()) {
-            report.setReportStatus(ReportStatus.valueOf(dto.getReportStatus().toUpperCase()));
-        }
+
 
         return report;
     }

@@ -11,11 +11,11 @@ public class DistrictResponseDTO {
     private String districtCode;
     private Boolean active;
 
-    // --- 🗺️ Flattened Division & Country Details ---
+    //  Flattened Division & Country Details ---
     private Long divisionId;
     private String divisionName;
     private String countryName;
 
-    // --- 👮 Police Stations Breakdown ---
+    // Police Stations Breakdown ---
     private List<String> policeStations; // থানার নামগুলো সরাসরি লিস্ট আকারে UI-তে বাইন্ড করার জন্য
 }

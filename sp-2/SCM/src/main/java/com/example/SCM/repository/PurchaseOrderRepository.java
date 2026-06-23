@@ -38,33 +38,5 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     """)
     Optional<PurchaseOrder> findByIdWithDetails(@Param("id") Long id);
 
-    /**
-     * 3. অটো-জেনারেটেড ইউনিক PO নাম্বার দিয়ে কুয়েরি করা (ট্র্যাকিং ড্যাশবোর্ডের জন্য)
-     */
-    Optional<PurchaseOrder> findByPoNumber(String poNumber);
 
-    /**
-     * 4. নির্দিষ্ট সাপ্লায়ার (Supplier) আইডি দিয়ে সমস্ত পারচেজ অর্ডার ফিল্টার করা
-     */
-    List<PurchaseOrder> findBySupplierId(Long supplierId);
-
-    /**
-     * 5. নির্দিষ্ট রিকুইজিশন (PurchaseRequisition) আইডি দিয়ে ফিল্টার করা
-     */
-    List<PurchaseOrder> findByPurchaseRequisitionId(Long purchaseRequisitionId);
-
-    /**
-     * 6. নির্দিষ্ট কোটেশন (Quotation) আইডি দিয়ে পারচেজ অর্ডার খুঁজে বের করা
-     */
-    Optional<PurchaseOrder> findByQuotationId(Long quotationId);
-
-    /**
-     * 7. অর্ডারের স্ট্যাটাস অনুযায়ী ফিল্টার করা (যেমন: কতগুলো DRAFT, ORDERED বা DELIVERED অবস্থায় আছে)
-     */
-    List<PurchaseOrder> findByStatus(PurchaseOrderStatus status);
-
-    /**
-     * 8. মাল বা অর্ডার ইস্যুকারী ইউজার (Login User) এর আইডি দিয়ে কুয়েরি করা
-     */
-    List<PurchaseOrder> findByIssuedBy(Long issuedBy);
 }

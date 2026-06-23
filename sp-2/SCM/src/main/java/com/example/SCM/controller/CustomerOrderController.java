@@ -63,20 +63,16 @@ public class CustomerOrderController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /**
-     * ❌ 5. Delete / Purge Order Instance
-     * DELETE http://localhost:8085/api/orders/{id}
-     */
+    //  5. Delete / Purge Order Instance
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         orderService.delete(id);
         return ResponseEntity.ok("Customer order instance purged successfully from cluster cache mapping.");
     }
 
-    /**
-     * 📦 6. Live Track Order via Unique Order Number
-     * GET http://localhost:8085/api/orders/track
-     */
+    //  6. Live Track Order via Unique Order Number
+
     @GetMapping("track")
     public ResponseEntity<CustomerOrderResponseDTO> trackOrderByNumber(@RequestParam String orderNumber) {
         return orderService.trackOrder(orderNumber)

@@ -20,10 +20,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    /**
-     * 👤 1. Create/Register New Customer with Profile Image
-     * URL: POST http://localhost:8080/api/customers
-     */
+    // 👤 1. Create/Register New Customer with Profile Image
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> create(
             @RequestPart("customer") CustomerRequestDTO dto,
@@ -32,10 +30,8 @@ public class CustomerController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 🔄 2. Update Customer Metadata & Profile Picture (PUT)
-     * URL: PUT http://localhost:8080/api/customers/{id}
-     */
+    // 🔄 2. Update Customer Metadata & Profile Picture (PUT)
+
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
@@ -44,18 +40,16 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.update(id, dto, image));
     }
 
-    /**
-     * 📋 3. Get All Registered Customers (GET)
-     */
+    // 📋 3. Get All Registered Customers (GET)
+
     @GetMapping
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
         List<CustomerResponseDTO> list = customerService.findAll();
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    /**
-     * 🔍 4. Get Customer Profile By ID (GET)
-     */
+    // 🔍 4. Get Customer Profile By ID (GET)
+
     @GetMapping("{id}")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
         return customerService.getById(id)
@@ -63,9 +57,8 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * ❌ 5. Delete Customer Node and Associated Auth Account (DELETE)
-     */
+    // 5. Delete Customer Node and Associated Auth Account (DELETE)
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);

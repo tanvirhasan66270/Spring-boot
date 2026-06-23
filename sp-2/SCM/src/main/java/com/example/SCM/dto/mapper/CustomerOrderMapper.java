@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,48 +20,33 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerOrderMapper {
 
-    // 💡 আপনার তৈরি করা ইন্ডিপেন্ডেন্ট চাইল্ড ম্যাপার ইনজেক্ট করা হলো
     private final OrderLineItemMapper lineItemMapper;
 
-    /**
-     * 📥 Request DTO থেকে Master Entity-তে কনভার্ট (SRP Optimized)
-     */
     public CustomerOrder toEntity(CustomerOrderRequestDTO dto, User customer) {
         if (dto == null) return null;
 
-        CustomerOrder order = new CustomerOrder();
-        order.setCustomer(customer);
+        //  বিল্ডার প্যাটার্নে ডাইনামিক্যালি কারেন্সি "BDT" এবং ডিফল্ট স্ট্যাটাস ম্যাপ করা হলো
+        CustomerOrder order = CustomerOrder.builder()
+                .customer(customer)
+                .customerName(customer != null ? customer.getName() : null)
+                .customerEmail(customer != null ? customer.getEmail() : null)
+                .deliveryAddress(dto.getDeliveryAddress())
+                .codAmount(dto.getCodAmount())
+                .currency("BDT") // 👈 আপনার রিকোয়ারমেন্ট অনুযায়ী ফিক্সড ডিক্লেয়ারেশন
+                .serviceType(dto.getServiceType() != null && !dto.getServiceType().isBlank() ?
+                        ServiceType.valueOf(dto.getServiceType().toUpperCase()) : ServiceType.STANDARD)
+                .status(dto.getStatus() != null && !dto.getStatus().isBlank() ?
+                        CustomerOrderStatus.valueOf(dto.getStatus().toUpperCase()) : CustomerOrderStatus.PENDING)
+                .estimatedDelivery(dto.getEstimatedDelivery() != null && !dto.getEstimatedDelivery().isBlank() ?
+                        LocalDate.parse(dto.getEstimatedDelivery()) : null)
+                .lineItems(new ArrayList<>()) // নিরাপদ ফাঁকা অবজেক্ট জেনারেশন
+                .build();
 
-        // ১. সেফটি গেটওয়ে: ইউজারের প্রোফাইল থেকে কারেন্ট ডেটা অর্ডারে ক্যাশ করা
-        if (customer != null) {
-            order.setCustomerName(customer.getName());
-            order.setCustomerEmail(customer.getEmail());
-        }
-
-        order.setDeliveryAddress(dto.getDeliveryAddress());
-        order.setCodAmount(dto.getCodAmount());
-
-        // ২. মেটাডাটা ও এনাম পার্সিং
-        if (dto.getCurrency() != null && !dto.getCurrency().isBlank()) {
-            order.setCurrency(dto.getCurrency());
-        }
-        if (dto.getServiceType() != null && !dto.getServiceType().isBlank()) {
-            order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
-        }
-        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
-            order.setStatus(CustomerOrderStatus.valueOf(dto.getStatus().toUpperCase()));
-        }
-        if (dto.getEstimatedDelivery() != null && !dto.getEstimatedDelivery().isBlank()) {
-            order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
-        }
-
-        // ৩. ডেডিকেটেড চাইল্ড ম্যাপার নোড ব্যবহার করে কার্ট আইটেম প্রসেসিং
         if (dto.getItems() != null) {
             dto.getItems().forEach(itemDto -> {
-                // সরাসরি চাইল্ড ম্যাপার থেকে এনটিটি তৈরি করে মাস্টারে বাইন্ড করা হচ্ছে
                 OrderLineItem item = lineItemMapper.toEntity(itemDto);
                 if (item != null) {
-                    order.addLineItem(item); // Bidirectional Helper Method কল
+                    order.addLineItem(item);
                 }
             });
         }
@@ -68,9 +54,6 @@ public class CustomerOrderMapper {
         return order;
     }
 
-    /**
-     * 📤 Entity থেকে Response DTO-তে কনভার্ট (Clean Output Schema)
-     */
     public CustomerOrderResponseDTO toResponseDTO(CustomerOrder entity) {
         if (entity == null) return null;
 
@@ -79,7 +62,6 @@ public class CustomerOrderMapper {
         dto.setOrderNumber(entity.getOrderNumber());
         dto.setCustomerId(entity.getCustomerId());
 
-        // ওল্ড রিলেশনশিপ ক্যাশ ট্র্যাপ এড়াতে সরাসরি অর্ডারের কলাম নোড থেকে রিড করা হচ্ছে
         dto.setCustomerName(entity.getCustomerName() != null ? entity.getCustomerName() :
                 (entity.getCustomer() != null ? entity.getCustomer().getName() : "Walk-in Customer"));
         dto.setCustomerEmail(entity.getCustomerEmail() != null ? entity.getCustomerEmail() :
@@ -87,21 +69,20 @@ public class CustomerOrderMapper {
 
         dto.setItemSubtotal(entity.getItemSubtotal());
         dto.setWeight(entity.getWeight());
-        dto.setServiceType(entity.getServiceType().name());
+        dto.setServiceType(entity.getServiceType() != null ? entity.getServiceType().name() : null);
         dto.setCodAmount(entity.getCodAmount());
         dto.setDeliveryCharge(entity.getDeliveryCharge());
         dto.setTotalAmount(entity.getTotalAmount());
         dto.setPaidAmount(entity.getPaidAmount());
         dto.setCurrency(entity.getCurrency());
-        dto.setStatus(entity.getStatus().name());
+        dto.setStatus(entity.getStatus() != null ? entity.getStatus().name() : null);
         dto.setDeliveryAddress(entity.getDeliveryAddress());
         dto.setEstimatedDelivery(entity.getEstimatedDelivery() != null ? entity.getEstimatedDelivery().toString() : null);
         dto.setCreatedAt(entity.getCreatedAt() != null ? entity.getCreatedAt().toString() : null);
 
-        // ৪. চাইল্ড ম্যাপার ব্যবহার করে রেসপন্স ম্যাট্রিক্স তৈরি
         if (entity.getLineItems() != null) {
             List<OrderLineItemResponseDTO> itemDTOs = entity.getLineItems().stream()
-                    .map(lineItemMapper::toResponseDTO) // ওয়ান-লাইনার মেথড রেফারেন্স কল
+                    .map(lineItemMapper::toResponseDTO)
                     .collect(Collectors.toList());
             dto.setLineItems(itemDTOs);
         }

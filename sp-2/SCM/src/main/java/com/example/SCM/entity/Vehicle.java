@@ -41,7 +41,7 @@ public class Vehicle {
     @Column(name = "fuel_level", nullable = false)
     private Integer fuelLevel; // 0 - 100
 
-    // 🔗 One-to-One or Many-to-One with Driver (FK -> driver_id)
+    // One-to-One or Many-to-One with Driver (FK -> driver_id)
     // ড্রাইভার অ্যাসাইন না থাকলে এটি নাল (null) হতে পারে
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = true)

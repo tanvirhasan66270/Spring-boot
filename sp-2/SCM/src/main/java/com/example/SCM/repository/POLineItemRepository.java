@@ -13,11 +13,7 @@ import java.util.Optional;
 @Repository
 public interface POLineItemRepository extends JpaRepository<POLineItem, Long> {
 
-    // ১. একটি নির্দিষ্ট Purchase Order (poId) এর আন্ডারে থাকা সমস্ত লাইন আইটেম খুঁজে বের করা
-    List<POLineItem> findByPurchaseOrderId(Long poId);
 
-    // ২. নির্দিষ্ট স্ট্যাটাস অনুযায়ী লাইন আইটেম ফিল্টার করা
-    List<POLineItem> findByStatus(POLineItemStatus status);
 
     // ৩. ইউনিক ট্র্যাকিং নাম্বার (trackingNumber) দিয়ে নির্দিষ্ট আইটেম খুঁজে বের করা (Optional টাইপ-সেফ সেটিং)
     Optional<POLineItem> findByTrackingNumber(String trackingNumber);

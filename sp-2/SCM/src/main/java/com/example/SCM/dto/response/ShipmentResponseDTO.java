@@ -8,12 +8,12 @@ public class ShipmentResponseDTO {
     private Long id;
     private String shipmentNumber;      // Auto generated
 
-    // --- 📄 Purchase Order Auto-loads ---
+    //  Purchase Order Auto-loads ---
     private Long poId;
     private Integer poQuantity;
     private Double poTotalAmount;
 
-    // --- 🏢 Supplier Auto-loads ---
+    //  Supplier Auto-loads ---
     private Long supplierId;
     private String supplierName;
     private String supplierContactPerson;
@@ -21,7 +21,7 @@ public class ShipmentResponseDTO {
     private String supplierPhone;
     private String supplierAddress;
 
-    // --- 🚚 Logistics Matrix ---
+    //  Logistics Matrix ---
     private String vehicleNumber;
     private String captainRegistrationNumber;
     private String assignedByEmail;

@@ -11,9 +11,8 @@ import java.util.stream.Collectors;
 @Component
 public class CountryMapper {
 
-    /**
-     * Entity -> Response DTO
-     */
+   // Entity -> Response DTO
+
     public CountryResponseDTO toResponseDTO(Country entity) {
         if (entity == null) return null;
 
@@ -32,9 +31,8 @@ public class CountryMapper {
         return dto;
     }
 
-    /**
-     * Request DTO -> Entity
-     */
+  // Request DTO -> Entity
+
     public Country toEntity(CountryRequestDTO dto) {
         if (dto == null) return null;
 
@@ -48,9 +46,8 @@ public class CountryMapper {
         return entity;
     }
 
-    /**
-     * Update Existing Entity
-     */
+    // Update Existing Entity
+
     public void updateEntity(CountryRequestDTO dto, Country entity) {
         if (dto == null || entity == null) return;
 

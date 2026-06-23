@@ -18,7 +18,7 @@ public class ActivityLog {
     private Long id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId; // যে ইউজার অ্যাকশনটি ঘটিয়েছে
+    private String userId;
 
     @Column(nullable = false, length = 50)
     private String action; // CREATE, UPDATE, DELETE, LOGIN
@@ -42,4 +42,6 @@ public class ActivityLog {
     protected void onCreate() {
         this.performedAt = LocalDateTime.now();
     }
+
+
 }

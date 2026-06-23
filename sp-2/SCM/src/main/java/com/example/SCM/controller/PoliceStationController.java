@@ -36,7 +36,7 @@ public class PoliceStationController {
     }
 
     /**
-     * 💡 নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
+     *  নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
      * URL: /api/police-stations/district/1
      */
     @GetMapping("district/{districtId}")

@@ -32,11 +32,8 @@ public class CountryController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 💡 ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
-     * URL: /api/countries/ (ডিফল্ট শুধুমাত্র একটিভ ডাটা আসবে)
-     * URL: /api/countries/?onlyActive=false (সব ডাটা আসবে)
-     */
+    //💡 ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
+
     @GetMapping
     public ResponseEntity<List<CountryResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {

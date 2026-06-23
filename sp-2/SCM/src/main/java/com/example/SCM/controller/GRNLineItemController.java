@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/grn-line-items/") // প্রজেক্ট কনভেনশন অনুযায়ী এন্ডপয়েন্ট বেস পাথ
+@RequestMapping("/api/grn-line-items/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Frontend CORS ব্লকিং এড়াতে
+@CrossOrigin(origins = "*")
 public class GRNLineItemController {
 
     private final GRNLineItemService grnLineItemService;

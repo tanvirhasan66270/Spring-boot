@@ -18,19 +18,16 @@ public class GoodsReceivedNoteController {
 
     private final GoodsReceivedNoteService goodsReceivedNoteService;
 
-    /**
-     * 1. Create New Goods Received Note (POST)
-     * 💡 ফ্রন্টঅ্যান্ড বা পোস্টম্যান থেকে সরাসরি JSON অবজেক্ট রিসিভ করার জন্য @RequestBody ব্যবহার করা হয়েছে।
-     */
+   // 1. Create New Goods Received Note (POST)
+
     @PostMapping
     public ResponseEntity<GoodsReceivedNoteResponseDTO> create(@RequestBody GoodsReceivedNoteRequestDTO dto) {
         GoodsReceivedNoteResponseDTO response = goodsReceivedNoteService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 2. Update Existing Goods Received Note (PUT)
-     */
+    // 2. Update Existing Goods Received Note (PUT)
+
     @PutMapping("{id}")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> update(
             @PathVariable Long id,
@@ -40,9 +37,8 @@ public class GoodsReceivedNoteController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 3. Get All Goods Received Notes (GET)
-     */
+   // 3. Get All Goods Received Notes (GET)
+
     @GetMapping
     public ResponseEntity<List<GoodsReceivedNoteResponseDTO>> getAll() {
         List<GoodsReceivedNoteResponseDTO> list = goodsReceivedNoteService.findAll();
@@ -54,9 +50,7 @@ public class GoodsReceivedNoteController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * 4. Get Goods Received Note By ID (GET)
-     */
+   // 4. Get Goods Received Note By ID (GET)*/
     @GetMapping("{id}")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> getById(@PathVariable Long id) {
         return goodsReceivedNoteService.getById(id)
@@ -64,9 +58,8 @@ public class GoodsReceivedNoteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 5. Delete Goods Received Note (DELETE)
-     */
+    // 5. Delete Goods Received Note (DELETE)
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         goodsReceivedNoteService.delete(id);

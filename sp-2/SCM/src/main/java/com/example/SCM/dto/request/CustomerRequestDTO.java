@@ -11,7 +11,7 @@ public class CustomerRequestDTO {
     private String password;
     private String address;
     private String gender;
-    private String dob;       // String format "yyyy-MM-dd"
+    private String dob;
     private String nidNumber;
     private String image;
     private Long policeStationId;

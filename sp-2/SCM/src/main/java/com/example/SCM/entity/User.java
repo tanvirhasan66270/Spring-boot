@@ -40,8 +40,7 @@ public class User {
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
 
-//    @Size(max = 20,min = 4)
-//    String confirmPassword;
+
 
 
 

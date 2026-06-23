@@ -35,10 +35,8 @@ public class DistrictController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    /**
-     * 💡 নির্দিষ্ট ডিভিশন আইডির আন্ডারে থাকা জেলাগুলো ক্যাস্কেডিং ড্রপডাউনে ফিল্টার করার এন্ডপয়েন্ট।
-     * URL: /api/districts/division/1
-     */
+    // নির্দিষ্ট ডিভিশন আইডির আন্ডারে থাকা জেলাগুলো ক্যাস্কেডিং ড্রপডাউনে ফিল্টার করার এন্ডপয়েন্ট।
+
     @GetMapping("division/{divisionId}")
     public ResponseEntity<List<DistrictResponseDTO>> getByDivisionId(@PathVariable Long divisionId) {
         List<DistrictResponseDTO> list = districtService.getByDivisionId(divisionId);

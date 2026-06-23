@@ -18,5 +18,4 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     @Query("SELECT d FROM Driver d LEFT JOIN FETCH d.user LEFT JOIN FETCH d.warehouses WHERE d.id = :id")
     Optional<Driver> findByIdWithDetails(@Param("id") Long id);
 
-    Optional<Driver> findByEmail(String email);
 }

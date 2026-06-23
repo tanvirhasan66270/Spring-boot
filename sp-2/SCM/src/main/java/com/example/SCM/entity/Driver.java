@@ -64,7 +64,7 @@ public class Driver {
     private LocalDateTime updatedAt;
 
     // =========================================================================
-    // 🔗 Authentication & System Relations
+    //  Authentication & System Relations
     // =========================================================================
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

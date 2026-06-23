@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/category/") // ফিক্সড: ট্রেইলিং স্ল্যাশ বা শেষের '/' বাদ দেওয়া হয়েছে যেন রিসোর্স হ্যান্ডলিংয়ে নো-রিসোর্স এক্সেপশন না আসে
+@RequestMapping("/api/category/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Frontend বা Angular/React থেকে কল করার সময় CORS পলিসি জনিত এরর এড়াতে
+@CrossOrigin(origins = "*")
 public class CategoryController {
 
     private final CategoryService categoryService;

@@ -7,6 +7,7 @@ import com.example.SCM.dto.response.DailyReportResponseDTO;
 import com.example.SCM.entity.DailyReport;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.ReportStatus;
+import com.example.SCM.role.Role;
 import com.example.SCM.repository.DailyReportRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.service.DailyReportService;
@@ -38,6 +39,9 @@ public class DailyReportServiceImp implements DailyReportService {
         return (userId != null && !userId.isBlank()) ? userId : "16";
     }
 
+    /**
+     * 📝 1. Log New Report & Auto-Submit on Email Confirmation
+     */
     @Override
     @Transactional
     public DailyReportResponseDTO save(DailyReportRequestDTO dto) {
@@ -51,14 +55,21 @@ public class DailyReportServiceImp implements DailyReportService {
         DailyReport report = reportMapper.toEntity(dto);
         report.setUserId(resolveCurrentUserId());
 
+        // 🎯 ইনিশিয়াল স্টেট সবসময় ইন্টারনালি DRAFT থাকবে
+        report.setReportStatus(ReportStatus.DRAFT);
         DailyReport savedReport = reportRepository.save(report);
-        DailyReportResponseDTO responseDTO = reportMapper.toResponseDTO(savedReport);
 
-        // 🎯 কন্ডিশনাল ডাইনামিক নোটিফিকেশন ম্যাপ ইঞ্জিন ট্রিগার
-        if (savedReport.getReportStatus() == ReportStatus.SUBMITTED) {
-            List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(savedReport);
-            responseDTO.setNotifiedAuthorities(notifiedList); // DTO-র সেট মেথড এখন Map-এর লিস্ট নেবে
+        // 📧 রোল-বেসড ম্যানেজার ও এডমিনদের ইমেইল পাঠানো
+        List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(savedReport);
+
+        // 🔥 মেইল সফলভাবে সেন্ট হলে স্ট্যাটাস অটোমেটিক SUBMITTED হবে
+        if (notifiedList != null && !notifiedList.isEmpty()) {
+            savedReport.setReportStatus(ReportStatus.SUBMITTED);
+            savedReport = reportRepository.save(savedReport);
         }
+
+        DailyReportResponseDTO responseDTO = reportMapper.toResponseDTO(savedReport);
+        responseDTO.setNotifiedAuthorities(notifiedList);
 
         activityLogService.log(
                 resolveCurrentUserId(), "CREATE", "DAILY_REPORT",
@@ -70,29 +81,31 @@ public class DailyReportServiceImp implements DailyReportService {
         return responseDTO;
     }
 
+    /**
+     * 🔄 2. Modify Pending/Submitted Report (Only APPROVED is hard-locked)
+     */
     @Override
     @Transactional
     public DailyReportResponseDTO update(Long id, DailyReportRequestDTO dto) {
         DailyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report index missing for ID: " + id));
 
+        // 🎯 রুল ফিক্সড: শুধুমাত্র APPROVED হয়ে গেলে কোনো ডেটাই আর আপডেট করা যাবে না
         if (report.getReportStatus() == ReportStatus.APPROVED) {
             throw new RuntimeException("Locked! Approved records cannot be updated.");
         }
 
+        // 💡 রিকোয়ারমেন্ট অনুসারে: ডাটাবেজে স্ট্যাটাস SUBMITTED বা DRAFT যাই থাকুক না কেন, বাকি সব মেটাডাটা আপডেট করা যাবে
         if (dto.getSummary() != null) report.setSummary(dto.getSummary());
         if (dto.getTotalTasksDone() > 0) report.setTotalTasksDone(dto.getTotalTasksDone());
         if (dto.getIssuesLogged() >= 0) report.setIssuesLogged(dto.getIssuesLogged());
         if (dto.getAttachmentUrl() != null) report.setAttachmentUrl(dto.getAttachmentUrl());
-        if (dto.getReportStatus() != null) report.setReportStatus(ReportStatus.valueOf(dto.getReportStatus().toUpperCase()));
+
+        // ⚠️ লক্ষ্য করুন: এখানে রিকোয়েস্ট ডিটিও থেকে স্ট্যাটাস পরিবর্তনের কোনো কোড নেই।
+        // ফলে ডাটাবেজে স্ট্যাটাস যা ছিল (যেমন SUBMITTED), তা অপরিবর্তিত থাকবে। ইউজার স্ট্যাটাস চেঞ্জ করতে পারবে না।
 
         DailyReport updatedReport = reportRepository.save(report);
         DailyReportResponseDTO responseDTO = reportMapper.toResponseDTO(updatedReport);
-
-        if (updatedReport.getReportStatus() == ReportStatus.SUBMITTED) {
-            List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(updatedReport);
-            responseDTO.setNotifiedAuthorities(notifiedList);
-        }
 
         activityLogService.log(
                 resolveCurrentUserId(), "UPDATE", "DAILY_REPORT",
@@ -104,6 +117,9 @@ public class DailyReportServiceImp implements DailyReportService {
         return responseDTO;
     }
 
+    /**
+     * 👑 3. Official Approval Node (Triggered via One-Click Email Gateway)
+     */
     @Override
     @Transactional
     public DailyReportResponseDTO approveReport(Long id, String approvedByUserId) {
@@ -126,11 +142,12 @@ public class DailyReportServiceImp implements DailyReportService {
     }
 
     // =========================================================================
-    // 📧 অটোমেটেড রোল-বেসড ম্যানেজার ও এডমিন মেইলিং ইঞ্জিন (Returns List of Maps)
+    // 📧 অটোমেটেড রোল-বেসড মেইলিং ইঞ্জিন (Returns List of Maps)
     // =========================================================================
     private List<Map<String, String>> sendReportToManagersAndAdmins(DailyReport report) {
         List<Map<String, String>> successfullyNotified = new ArrayList<>();
-        List<User> targetUsers = userRepository.findUsersByRoles(List.of("MANAGER", "ADMIN"));
+        List<Role> targetRoles = List.of(Role.MANAGER, Role.ADMIN);
+        List<User> targetUsers = userRepository.findUsersByRoles(targetRoles);
 
         if (targetUsers == null || targetUsers.isEmpty()) {
             return successfullyNotified;
@@ -166,7 +183,7 @@ public class DailyReportServiceImp implements DailyReportService {
                         <div class='container'>
                             <div class='header'>
                                 <h2 style='margin:0 0 10px 0;'>Logistics Activity EOD Report</h2>
-                                <div class='status-badge'>Status: %s</div>
+                                <div class='status-badge'>Status: PENDING ROUTING</div>
                             </div>
                             <div class='content'>
                                 <p>Dear <b>%s</b>,</p>
@@ -189,12 +206,12 @@ public class DailyReportServiceImp implements DailyReportService {
                                 </div>
                                 <p style='text-align:center; font-size:12px; color:#A0AEC0; margin-top:5px;'>Clicking the button above will instantly stamp the APPROVED status in database.</p>
                             </div>
-                            <div class='footer'>&copy; 2026 SCM Logistics Network Hub • One-Click Quick Mail Approval Action Service.</div>
+                            .footer { background-color: #F7FAFC; padding: 20px; text-align: center; font-size: 12px; color: #718096; border-top: 1px solid #EDF2F7; }
                         </div>
                     </body>
                     </html>
                     """.formatted(
-                            report.getReportStatus().name(), user.getName(), report.getUserId(), report.getWarehouseId(),
+                            user.getName(), report.getUserId(), report.getWarehouseId(),
                             report.getReportDate().toString(), report.getTotalTasksDone(), report.getIssuesLogged(),
                             report.getAttachmentUrl() != null ? report.getAttachmentUrl() : "#", report.getSummary(),
                             approvalUrl
@@ -202,7 +219,6 @@ public class DailyReportServiceImp implements DailyReportService {
 
                     mailService.SenderGeneralMail(user.getEmail(), subject, mailContent);
 
-                    // 🎯 সরাসরি Map তৈরি করে মেমোরি লিস্টে পুশ করা হলো
                     Map<String, String> authorityInfo = Map.of(
                             "name", user.getName(),
                             "email", user.getEmail(),

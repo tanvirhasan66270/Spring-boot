@@ -22,10 +22,10 @@ public class SalesOfficer {
     private Long id;
 
     // =========================================================================
-    // 🔐 Authentication & System Security Relations
+    // Authentication & System Security Relations
     // =========================================================================
 
-    // 💡 পাসওয়ার্ড, নাম, ফোন এবং ইমেইল এই User অবজেক্টের ভেতরেই সেভ হবে
+    // পাসওয়ার্ড, নাম, ফোন এবং ইমেইল এই User অবজেক্টের ভেতরেই সেভ হবে
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

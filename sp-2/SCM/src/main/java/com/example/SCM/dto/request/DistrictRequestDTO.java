@@ -9,5 +9,5 @@ public class DistrictRequestDTO {
     private String nameBn;
     private String districtCode;
     private Boolean active;
-    private Long divisionId; // 🔗 প্যারেন্ট ডিভিশন আইডি
+    private Long divisionId;
 }

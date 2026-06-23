@@ -9,6 +9,5 @@ import java.util.List;
 @Repository
 public interface DailyReportRepository extends JpaRepository<DailyReport, Long> {
     List<DailyReport> findByWarehouseIdOrderByReportDateDesc(String warehouseId);
-    List<DailyReport> findByUserIdOrderByReportDateDesc(String userId);
     boolean existsByWarehouseIdAndReportDate(String warehouseId, LocalDate reportDate);
 }

@@ -16,7 +16,7 @@ public class GoodsReceivedNoteMapper {
 
     /**
      * 1. GoodsReceivedNote Entity থেকে GoodsReceivedNoteResponseDTO-তে রূপান্তর (Flattening Relation)
-     * 💡 অবজেক্ট গ্রাফ ভেঙে সম্পূর্ণ ফ্ল্যাট ডেটা তৈরি করে যাতে ফ্রন্টঅ্যান্ড গ্রিডে সরাসরি বাইন্ড করা যায়।
+     *  অবজেক্ট গ্রাফ ভেঙে সম্পূর্ণ ফ্ল্যাট ডেটা তৈরি করে যাতে ফ্রন্টঅ্যান্ড গ্রিডে সরাসরি বাইন্ড করা যায়।
      */
     public GoodsReceivedNoteResponseDTO toResponseDTO(GoodsReceivedNote grn) {
         if (grn == null) {
@@ -37,31 +37,31 @@ public class GoodsReceivedNoteMapper {
         dto.setCreatedAt(grn.getCreatedAt());
         dto.setUpdatedAt(grn.getUpdatedAt());
 
-        // --- 📦 Purchase Order Details Flattening ---
+        //  Purchase Order Details Flattening ---
         if (grn.getPurchaseOrder() != null) {
             dto.setPoId(grn.getPurchaseOrder().getId());
             dto.setPoNumber(grn.getPurchaseOrder().getPoNumber());
         }
 
-        // --- 🧵 Product Details Flattening ---
+        //  Product Details Flattening ---
         if (grn.getProduct() != null) {
             dto.setProductId(grn.getProduct().getId());
             dto.setProductName(grn.getProduct().getName());
         }
 
-        // --- 🏢 Warehouse Details Flattening ---
+        //  Warehouse Details Flattening ---
         if (grn.getWarehouse() != null) {
             dto.setWarehouseId(grn.getWarehouse().getId());
             dto.setWarehouseName(grn.getWarehouse().getName());
         }
 
-        // --- 🔑 Received By User Details Flattening ---
+        //  Received By User Details Flattening ---
         if (grn.getReceivedBy() != null) {
             dto.setReceivedBy(grn.getReceivedBy().getId());
             dto.setReceivedByName(grn.getReceivedBy().getName());
         }
 
-        // --- 🕵️‍♂️ Inspected By User Details Flattening ---
+        // -️ Inspected By User Details Flattening ---
         if (grn.getInspectedBy() != null) {
             dto.setInspectedBy(grn.getInspectedBy().getId());
             dto.setInspectedByName(grn.getInspectedBy().getName());
@@ -72,7 +72,7 @@ public class GoodsReceivedNoteMapper {
 
     /**
      * 2. Request DTO এবং অ্যাসোসিয়েটেড Entities থেকে নতুন GoodsReceivedNote Entity-তে রূপান্তর (Create Operation)
-     * 💡 নোট: grnNumber এবং PO থেকে quantity অটো-লোডিং লজিকটি সার্ভিস ইমপ্লিমেন্টেশনে সেট হবে।
+     *  নোট: grnNumber এবং PO থেকে quantity অটো-লোডিং লজিকটি সার্ভিস ইমপ্লিমেন্টেশনে সেট হবে।
      */
     public GoodsReceivedNote toEntity(GoodsReceivedNoteRequestDTO dto, PurchaseOrder po, Product product, User receivedBy, Warehouse warehouse, User inspectedBy) {
         if (dto == null) {
