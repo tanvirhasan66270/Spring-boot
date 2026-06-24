@@ -3,6 +3,7 @@ package com.example.SCM.entity;
 import com.example.SCM.enumClass.ReportStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -61,4 +62,5 @@ public class DailyReport {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

@@ -41,8 +41,8 @@ public class DriverServiceImp implements DriverService {
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
 
-    @Override
     @Transactional
+    @Override
     public DriverResponseDTO save(DriverRequestDTO dto, MultipartFile file) {
         if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
             throw new RuntimeException("Secure password token mandatory for login provision!");
@@ -69,8 +69,8 @@ public class DriverServiceImp implements DriverService {
         return driverMapper.toResponseDTO(savedDriver);
     }
 
-    @Override
     @Transactional
+    @Override
     public DriverResponseDTO update(Long id, DriverRequestDTO dto, MultipartFile file) {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver node signature not resolved at ID: " + id));
@@ -113,22 +113,23 @@ public class DriverServiceImp implements DriverService {
         return driverMapper.toResponseDTO(driverRepository.save(driver));
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<DriverResponseDTO> findAll() {
-        return driverRepository.findAllWithDetails().stream()
+        return driverRepository.findAllWithDetails()
+                .stream()
                 .map(driverMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<DriverResponseDTO> getById(Long id) {
         return driverRepository.findById(id).map(driverMapper::toResponseDTO);
     }
 
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target Driver domain key not found"));
@@ -164,37 +165,37 @@ public class DriverServiceImp implements DriverService {
 
         String subject = "SCM Gateway Activation – Driver Fleet Workspace";
         String mailText = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f9f9f9; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-                    .header { background-color: #2196F3; color: white; padding: 25px; text-align: center; }
-                    .header h2 { margin: 0; font-size: 24px; }
-                    .content { padding: 30px; }
-                    .btn-container { text-align: center; margin: 30px 0; }
-                    .btn { background-color: #2196F3; color: white !important; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; }
-                    .footer { font-size: 0.85em; color: #777777; padding: 20px; background-color: #f1f1f1; text-align: center; border-top: 1px solid #e0e0e0; }
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <div class='header'><h2>SCM Logistics Portal</h2></div>
-                    <div class='content'>
-                        <p>Dear <b>%s</b>,</p>
-                        <p>Your logistics operations gateway profile has been deployed to the enterprise resource platform.</p>
-                        <p>Please authorize your driver device terminal node via the secure URL token below:</p>
-                        <div class='btn-container'>
-                            <a href='http://localhost:8080/api/auth/activate?email=%s' class='btn'>Authorize Fleet Terminal</a>
-                        </div>
-                        <p>Best regards,<br><b>The SCM Logistics Operations</b></p>
-                    </div>
-                    <div class='footer'>&copy; %d SCM Global Supply Chain. All rights reserved.</div>
-                </div>
-            </body>
-            </html>
-            """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f9f9f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { background-color: #2196F3; color: white; padding: 25px; text-align: center; }
+        .header h2 { margin: 0; font-size: 24px; }
+        .content { padding: 30px; }
+        .btn-container { text-align: center; margin: 30px 0; }
+        .btn { background-color: #2196F3; color: white !important; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; }
+        .footer { font-size: 0.85em; color: #777777; padding: 20px; background-color: #f1f1f1; text-align: center; border-top: 1px solid #e0e0e0; }
+        </style>
+        </head>
+        <body>
+        <div class='container'>
+        <div class='header'><h2>SCM Logistics Portal</h2></div>
+        <div class='content'>
+        <p>Dear <b>%s</b>,</p>
+        <p>Your logistics operations gateway profile has been deployed to the enterprise resource platform.</p>
+        <p>Please authorize your driver device terminal node via the secure URL token below:</p>
+        <div class='btn-container'>
+        <a href='http://localhost:8080/api/auth/activate?email=%s' class='btn'>Authorize Fleet Terminal</a>
+        </div>
+        <p>Best regards,<br><b>The SCM Logistics Operations</b></p>
+        </div>
+        <div class='footer'>&copy; %d SCM Global Supply Chain. All rights reserved.</div>
+        </div>
+        </body>
+        </html>
+        """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
             mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
@@ -202,4 +203,5 @@ public class DriverServiceImp implements DriverService {
             System.err.println("Driver Gateway Email delivery fault: " + e.getMessage());
         }
     }
+
 }

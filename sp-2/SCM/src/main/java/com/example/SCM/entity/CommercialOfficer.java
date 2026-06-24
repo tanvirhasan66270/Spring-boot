@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "commercial_officers") // 💡 এন্টারপ্রাইজ কনভেনশন অনুযায়ী স্নেক_কেস প্লুরাল টেবিল নেম
+@Table(name = "commercial_officers")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,15 +20,6 @@ public class CommercialOfficer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    // =========================================================================
-    //  Authentication & System Security Relations
-    // =========================================================================
-
-    //  পাসওয়ার্ড, নাম, ফোন এবং ইমেইল এই User অবজেক্টের ভেতরেই সেভ হবে
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
 
     @Column(columnDefinition = "TEXT")
     private String address;
@@ -61,6 +52,7 @@ public class CommercialOfficer {
     @Column(length = 20)
     private LanguageStatus language;
 
+    // ── Zone management / Station Relations ──────────────────────
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
@@ -70,6 +62,10 @@ public class CommercialOfficer {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
     @PrePersist
     protected void onCreate() {
@@ -81,4 +77,5 @@ public class CommercialOfficer {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

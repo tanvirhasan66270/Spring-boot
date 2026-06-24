@@ -3,6 +3,7 @@ package com.example.SCM.entity;
 import com.example.SCM.enumClass.DeliveryTripStatus;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -58,13 +59,14 @@ public class DeliveryTrip {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // ── System Core Relations ────────────────────────────────────
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = false)
-    private Driver driver; // Represented as User (Driver role)
+    private Driver driver;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
@@ -93,4 +95,5 @@ public class DeliveryTrip {
             this.completedAt = LocalDateTime.now();
         }
     }
+
 }

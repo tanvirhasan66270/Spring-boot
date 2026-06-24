@@ -2,7 +2,7 @@ package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
 import com.example.SCM.dto.mapper.CustomerOrderMapper;
-import com.example.SCM.dto.mapper.OrderLineItemMapper; // 🔗 নতুন চাইল্ড ম্যাপার ইম্পোর্ট
+import com.example.SCM.dto.mapper.OrderLineItemMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
@@ -25,33 +25,26 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final CustomerOrderRepository orderRepository;
     private final UserRepository userRepository;
     private final CustomerOrderMapper orderMapper;
-    private final OrderLineItemMapper lineItemMapper; // 💡 চাইল্ড ম্যাপার ইনজেকশন
+    private final OrderLineItemMapper lineItemMapper;
     private final MailService mailService;
 
     /**
      * 🛒 1. Save / Place a New Multi-Item Customer Order
      */
-    @Override
     @Transactional
+    @Override
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
         if (dto == null || dto.getItems() == null || dto.getItems().isEmpty()) {
             throw new IllegalArgumentException("Order request matrix or cart items cannot be empty");
         }
 
-        // 🎯 ফিক্সড গেটওয়ে: সরাসরি findById এর বদলে রোল ভিত্তিক সুরক্ষিত কুয়েরি নোড ব্যবহার
         User customer = userRepository.findCustomerById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target profile missing or the user is not a valid CUSTOMER! ID: " + dto.getCustomerId()));
 
-        // ম্যাপার দিয়ে মাস্টার ও চাইল্ড রিলেশন তৈরি
         CustomerOrder order = orderMapper.toEntity(dto, customer);
-
-        // এনটিটির ইন্টারনাল ক্যালকুলেশন মেথড রান করা
         order.executeCalculations();
 
-        // CascadeType.ALL এবং @PrePersist হুকের মাধ্যমে ডাটাবেজে রাইট হবে
         CustomerOrder savedOrder = orderRepository.save(order);
-
-        // অর্ডারের নিজস্ব ক্যাশড ডাটা দিয়ে সেফ ইমেইল ডিসপ্যাচ করা হলো
         sendOrderConfirmationEmail(savedOrder);
 
         return orderMapper.toResponseDTO(savedOrder);
@@ -60,43 +53,36 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     /**
      * 🔄 2. Update Existing Order Metadata & Recalculate Items
      */
-    @Override
     @Transactional
+    @Override
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
-        // ১. এক্সিস্টিং মাস্টার অর্ডার নোড লোড করা
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
 
-        // 🔗 কাস্টমার আইডি চেঞ্জ হলে মেইন ইউজার টেবিল থেকে সঠিক রোলধারী ইউজার রি-সিঙ্ক গেটওয়ে
         if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer().getId())) {
             User newCustomer = userRepository.findCustomerById(dto.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("New target profile missing or not a valid CUSTOMER! ID: " + dto.getCustomerId()));
             order.setCustomer(newCustomer);
             order.setCustomerName(newCustomer.getName());
-            order.setCustomerEmail(newCustomer.getEmail()); // 🔥 কাস্টমার চেঞ্জ হলেও রিয়েল মেইল সিঙ্ক থাকবে
+            order.setCustomerEmail(newCustomer.getEmail());
         }
 
-        // ২. বেসিক মেটাডাটা আপডেট
         if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
         if (dto.getEstimatedDelivery() != null) order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
         order.setCodAmount(dto.getCodAmount());
 
-        // ৩. চাইল্ড আইটেম আপডেট (ইন্ডিপেন্ডেন্ট ম্যাপার নোড দ্বারা রিফ্যাক্টর্ড)
         if (dto.getItems() != null && !dto.getItems().isEmpty()) {
-            // orphanRemoval = true ডাটাবেজ থেকে পুরনো আইটেম রোগুলো মুছে দেবে
             order.getLineItems().clear();
 
-            // নতুন আইটেমগুলো লুপ চালিয়ে ডেডিকেটেড ম্যাপার দিয়ে মাস্টারে বাইন্ড করা
             dto.getItems().forEach(itemDto -> {
                 OrderLineItem item = lineItemMapper.toEntity(itemDto);
                 if (item != null) {
-                    order.addLineItem(item); // হেল্পার মেথড দিয়ে বাইডিরেকশনাল রিলেশন তৈরি
+                    order.addLineItem(item);
                 }
             });
         }
 
-        // ৪. ডাটাবেজে আপডেট সেভ (এখানে @PreUpdate হুক থেকে গ্র্যান্ড টোটাল রি-ক্যালকুলেট হবে)
         CustomerOrder updatedOrder = orderRepository.save(order);
         return orderMapper.toResponseDTO(updatedOrder);
     }
@@ -104,10 +90,11 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     /**
      * 📋 3. Find All Customer Orders with Fetch Join Optimization
      */
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<CustomerOrderResponseDTO> findAll() {
-        return orderRepository.findAllOrdersWithDetails().stream()
+        return orderRepository.findAllOrdersWithDetails()
+                .stream()
                 .map(orderMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -115,17 +102,18 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     /**
      * 🔍 4. Get Single Order Details By ID
      */
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<CustomerOrderResponseDTO> getById(Long id) {
-        return orderRepository.findByIdWithDetails(id).map(orderMapper::toResponseDTO);
+        return orderRepository.findByIdWithDetails(id)
+                .map(orderMapper::toResponseDTO);
     }
 
     /**
      * ❌ 5. Delete / Purge Order from Matrix Cache
      */
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target customer order row missing mapping index"));
@@ -135,8 +123,8 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     /**
      * 📦 6. Live Track Order Status by Unique Track Number
      */
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) {
         if (orderNumber == null || orderNumber.trim().isEmpty()) {
             throw new IllegalArgumentException("Tracking/Order number cannot be empty");
@@ -257,4 +245,5 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
         }
     }
+
 }

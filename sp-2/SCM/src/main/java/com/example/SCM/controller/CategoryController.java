@@ -18,38 +18,34 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-
-     // 1. Create New Category (POST)
-
     @PostMapping
     public ResponseEntity<CategoryResponseDTO> save(@RequestBody CategoryRequestDTO dto) {
         CategoryResponseDTO response = categoryService.save(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.CREATED
+        );
     }
 
-
-     // 2. Update Existing Category (PUT)
-
     @PutMapping("{id}")
-    public ResponseEntity<CategoryResponseDTO> update(@PathVariable Long id, @RequestBody CategoryRequestDTO dto) {
+    public ResponseEntity<CategoryResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody CategoryRequestDTO dto
+    ) {
         CategoryResponseDTO response = categoryService.update(id, dto);
         return ResponseEntity.ok(response);
     }
 
-
-     // 3. Get All Categories (GET)
-
-
     @GetMapping
     public ResponseEntity<List<CategoryResponseDTO>> getAll() {
         List<CategoryResponseDTO> list = categoryService.findAll();
+
         if (list.isEmpty()) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build(); // 204
         }
+
         return ResponseEntity.ok(list);
     }
-
-    // 4. Get Category By ID (GET)
 
     @GetMapping("{id}")
     public ResponseEntity<CategoryResponseDTO> getById(@PathVariable Long id) {
@@ -58,11 +54,10 @@ public class CategoryController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-   // 5. Delete Category (DELETE)
-
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.ok("Category and its cascades deleted successfully!");
     }
+
 }

@@ -3,7 +3,6 @@ package com.example.SCM.controller;
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
 import com.example.SCM.service.DriverService;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
-
 
 import java.util.List;
 
@@ -27,11 +25,15 @@ public class DriverController {
     @PostMapping
     public ResponseEntity<DriverResponseDTO> save(
             @RequestPart("driver") String driverJson,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
         try {
             DriverRequestDTO dto = objectMapper.readValue(driverJson, DriverRequestDTO.class);
             DriverResponseDTO response = driverService.save(dto, file);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
+            return new ResponseEntity<>(
+                    response,
+                    HttpStatus.CREATED
+            );
         } catch (Exception e) {
             throw new RuntimeException("Driver profile mapping transaction aborted: " + e.getMessage());
         }
@@ -41,7 +43,8 @@ public class DriverController {
     public ResponseEntity<DriverResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("driver") String driverJson,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
         try {
             DriverRequestDTO dto = objectMapper.readValue(driverJson, DriverRequestDTO.class);
             DriverResponseDTO response = driverService.update(id, dto, file);
@@ -68,4 +71,5 @@ public class DriverController {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

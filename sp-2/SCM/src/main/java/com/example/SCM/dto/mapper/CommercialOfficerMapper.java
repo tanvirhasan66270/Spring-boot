@@ -9,21 +9,46 @@ import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
+
 import java.time.LocalDate;
 
+/**
+ * CommercialOfficerMapper
+ *
+ * Responsible for converting:
+ * 1. CommercialOfficerRequestDTO -> User/CommercialOfficer Entity
+ * 2. CommercialOfficer Entity -> CommercialOfficerResponseDTO
+ *
+ * This class helps separate API models (DTOs)
+ * from database entities.
+ */
 @Component
 public class CommercialOfficerMapper {
 
+    /**
+     * Convert CommercialOfficerRequestDTO to User Entity.
+     *
+     * @param dto Incoming request data from client
+     * @return User entity ready for mapping
+     */
     public User toUserEntity(CommercialOfficerRequestDTO dto) {
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(dto.getPassword());
-        user.setRole(Role.COMMERCIAL_OFFICER); // 🔗 কমার্শিয়াল অফিসার সিকিউরিটি রোল অ্যাসাইন
+        user.setRole(Role.COMMERCIAL_OFFICER);
         return user;
     }
 
+    /**
+     * Convert CommercialOfficerRequestDTO to CommercialOfficer Entity.
+     *
+     * @param dto Incoming request data from client
+     * @param user Associated User account reference
+     * @param policeStation Assigned corporate police station node
+     * @return CommercialOfficer entity ready for persistence
+     */
     public CommercialOfficer toOfficerEntity(CommercialOfficerRequestDTO dto, User user, PoliceStation policeStation) {
         CommercialOfficer officer = new CommercialOfficer();
         officer.setUser(user);
@@ -50,6 +75,12 @@ public class CommercialOfficerMapper {
         return officer;
     }
 
+    /**
+     * Convert CommercialOfficer Entity to CommercialOfficerResponseDTO.
+     *
+     * @param entity CommercialOfficer entity from database
+     * @return CommercialOfficerResponseDTO
+     */
     public CommercialOfficerResponseDTO toResponseDTO(CommercialOfficer entity) {
         if (entity == null) return null;
 
@@ -84,4 +115,5 @@ public class CommercialOfficerMapper {
         }
         return dto;
     }
+
 }

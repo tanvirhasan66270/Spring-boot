@@ -1,6 +1,5 @@
 package com.example.SCM.serviceImp;
 
-
 import com.example.SCM.dto.response.CategoryResponseDTO;
 import com.example.SCM.dto.mapper.CategoryMapper;
 import com.example.SCM.dto.request.CategoryRequestDTO;
@@ -51,8 +50,8 @@ public class CategoryServiceImp implements CategoryService {
      * 2. Update Existing Category
      * ফিক্সড: MultipartFile সরিয়ে দেওয়া হয়েছে
      */
-    @Override
     @Transactional
+    @Override
     public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {
         if (dto == null) {
             throw new IllegalArgumentException("Category request data cannot be null");
@@ -82,10 +81,11 @@ public class CategoryServiceImp implements CategoryService {
     /**
      * 3. Find All Categories
      */
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<CategoryResponseDTO> findAll() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAll()
+                .stream()
                 .map(categoryMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -93,8 +93,8 @@ public class CategoryServiceImp implements CategoryService {
     /**
      * 4. Find Category By ID
      */
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<CategoryResponseDTO> getById(Long id) {
         return categoryRepository.findById(id)
                 .map(categoryMapper::toResponseDTO);
@@ -103,12 +103,13 @@ public class CategoryServiceImp implements CategoryService {
     /**
      * 5. Delete Category
      */
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + id));
 
         categoryRepository.delete(category);
     }
+
 }

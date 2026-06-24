@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/delivery-trips/") // 💡 Trail-slash (/) অপ্টিমাইজ করা হলো
+@RequestMapping("/api/delivery-trips/")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DeliveryTripController {
@@ -22,11 +22,17 @@ public class DeliveryTripController {
 
     @PostMapping
     public ResponseEntity<DeliveryTripResponseDTO> create(@RequestBody DeliveryTripRequestDTO dto) {
-        return new ResponseEntity<>(tripService.save(dto), HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                tripService.save(dto),
+                HttpStatus.CREATED
+        );
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<DeliveryTripResponseDTO> update(@PathVariable Long id, @RequestBody DeliveryTripRequestDTO dto) {
+    public ResponseEntity<DeliveryTripResponseDTO> update(
+            @PathVariable Long id,
+            @RequestBody DeliveryTripRequestDTO dto
+    ) {
         return ResponseEntity.ok(tripService.update(id, dto));
     }
 
@@ -35,15 +41,20 @@ public class DeliveryTripController {
             @PathVariable Long id,
             @RequestParam("status") String status,
             @RequestPart(value = "signature", required = false) MultipartFile signature,
-            @RequestPart(value = "photo", required = false) MultipartFile photo) {
-
+            @RequestPart(value = "photo", required = false) MultipartFile photo
+    ) {
         return ResponseEntity.ok(tripService.updateTripStatus(id, status, signature, photo));
     }
 
     @GetMapping
     public ResponseEntity<List<DeliveryTripResponseDTO>> getAll() {
         List<DeliveryTripResponseDTO> list = tripService.findAll();
-        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("{id}")
@@ -58,4 +69,5 @@ public class DeliveryTripController {
         tripService.delete(id);
         return ResponseEntity.ok("Delivery trip cluster index cleared successfully from control matrix.");
     }
+
 }

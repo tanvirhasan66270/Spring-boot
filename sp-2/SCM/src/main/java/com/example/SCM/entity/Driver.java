@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -63,10 +64,7 @@ public class Driver {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // =========================================================================
-    //  Authentication & System Relations
-    // =========================================================================
-
+    // ── Warehouse / Auth Management ──────────────────────────────
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -90,4 +88,5 @@ public class Driver {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

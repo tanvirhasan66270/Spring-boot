@@ -1,4 +1,4 @@
-package com.example.SCM.dto.mapper;
+package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
@@ -17,7 +17,7 @@ import java.text.SimpleDateFormat;
  * This class helps separate API models (DTOs)
  * from database entities.
  */
-@Component("scmCustomerMapperServiceNode")
+@Component
 public class CustomerMapper {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -39,59 +39,43 @@ public class CustomerMapper {
         dto.setGender(entity.getGender());
         dto.setNidNumber(entity.getNidNumber());
         dto.setImage(entity.getImage());
-
-        if (entity.getDob() != null) {
-            dto.setDob(dateFormat.format(entity.getDob()));
-        }
-        if (entity.getCreatedAt() != null) {
-            dto.setCreatedAt(entity.getCreatedAt().toString());
-        }
+        if (entity.getDob() != null) dto.setDob(dateFormat.format(entity.getDob()));
+        if (entity.getCreatedAt() != null) dto.setCreatedAt(entity.getCreatedAt().toString());
 
         /*
-         * Map User information (Source of truth)
-         * if User relationship exists.
+         * User (Source of truth) mapping
          */
         if (entity.getUser() != null) {
             dto.setUserId(entity.getUser().getId());
             dto.setName(entity.getUser().getName());
             dto.setEmail(entity.getUser().getEmail());
             dto.setPhone(entity.getUser().getPhoneNumber());
-            dto.setRole(
-                    entity.getUser().getRole() != null
-                            ? entity.getUser().getRole().toString()
-                            : null
-            );
+            dto.setRole(entity.getUser().getRole() != null ? entity.getUser().getRole().toString() : null);
         }
 
         /*
-         * Map Location Hierarchy flattening
-         * if PoliceStation relation exists.
+         * Location Hierarchy flattening
          */
         if (entity.getPoliceStation() != null) {
             PoliceStation ps = entity.getPoliceStation();
             dto.setPoliceStationId(ps.getId());
             dto.setPoliceStationName(ps.getName());
-
             if (ps.getDistrict() != null) {
                 dto.setDistrictName(ps.getDistrict().getName());
-
                 if (ps.getDistrict().getDivision() != null) {
                     dto.setDivisionName(ps.getDistrict().getDivision().getName());
                 }
             }
         }
-
         return dto;
     }
 
     /**
      * Update existing Customer and User Entity with request data.
      *
-     * Used during customer profiles sync and manual entity modification.
-     *
      * @param dto Incoming request data containing updates
-     * @param entity Existing customer entity instance to be modified
-     * @param policeStation Assigned corporate location station node reference
+     * @param entity Existing entity instance to be modified
+     * @param policeStation Assigned corporate location station node
      */
     public void updateEntity(CustomerRequestDTO dto, Customer entity, PoliceStation policeStation) {
         if (dto == null || entity == null) return;
@@ -120,7 +104,6 @@ public class CustomerMapper {
             if (dto.getName() != null) user.setName(dto.getName());
             if (dto.getEmail() != null) user.setEmail(dto.getEmail());
             if (dto.getPhone() != null) user.setPhoneNumber(dto.getPhone());
-
             if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
                 user.setPassword(dto.getPassword());
             }

@@ -23,4 +23,5 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     // ৩. ইউনিক অর্ডার নম্বর দিয়ে ট্র্যাকিং ডেটা লোড করা
     @Query("SELECT o FROM CustomerOrder o LEFT JOIN FETCH o.customer LEFT JOIN FETCH o.lineItems i LEFT JOIN FETCH i.product WHERE o.orderNumber = :orderNumber")
     Optional<CustomerOrder> findByOrderNumberWithDetails(@Param("orderNumber") String orderNumber);
+
 }

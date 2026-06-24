@@ -26,30 +26,10 @@ public class GoodsReceivedNote {
     @Column(name = "grn_number", unique = true, nullable = false)
     private String grnNumber; // GoodsReceivedNoteNumber auto generate
 
-    // FK → PurchaseOrder
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "po_id", nullable = false)
-    private PurchaseOrder purchaseOrder;
-
-    // FK → Product
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    private Product product;
-
     private Integer quantity; // Auto loaded from PurchaseOrder
 
     @Column(name = "received_quantity", nullable = false)
     private int receivedQuantity;
-
-    // FK → User (Login User who received the goods)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "received_by", nullable = false)
-    private User receivedBy;
-
-    // FK → Warehouse
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "warehouse_id", nullable = false)
-    private Warehouse warehouse;
 
     @Column(name = "received_at", nullable = false)
     private LocalDate receivedAt;
@@ -61,16 +41,8 @@ public class GoodsReceivedNote {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
-    // FK → User / QCInspector (User who inspected the goods)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inspected_by")
-    private User inspectedBy;
-
     @Column(name = "inspection_date")
     private LocalDate inspectionDate;
-
-    @OneToMany(mappedBy = "goodsReceivedNote", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<GRNLineItem> lineItems = new ArrayList<>(); //  ডিফল্ট খালি লিস্ট রাখায় এটি এখন সম্পূর্ণ অপশনাল (Null Safe)
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -79,8 +51,33 @@ public class GoodsReceivedNote {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // ── System Core / Warehouse Relations ────────────────────────
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "po_id", nullable = false)
+    private PurchaseOrder purchaseOrder;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
+    private Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "received_by", nullable = false)
+    private User receivedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    private Warehouse warehouse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inspected_by")
+    private User inspectedBy;
+
+    @OneToMany(mappedBy = "goodsReceivedNote", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<GRNLineItem> lineItems = new ArrayList<>();
+
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

@@ -1,6 +1,7 @@
 package com.example.SCM.serviceImp;
 
 import com.example.SCM.entity.ActivityLog;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.repository.ActivityLogRepository;
 import com.example.SCM.service.ActivityLogService;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +16,20 @@ public class ActivityLogServiceImp implements ActivityLogService {
 
     @Override
     @Transactional
-    public void log(String userId, String action, String module, String referenceId, String description, String ipAddress) {
+    public void log(String userId, String userEmail, String action, String module,
+                    String referenceId, String description, String oldValue,
+                    String newValue, ActionStatus actionStatus, String ipAddress) {
+
         ActivityLog auditLog = ActivityLog.builder()
                 .userId(userId)
+                .userEmail(userEmail)
                 .action(action)
-                .module(module)
+                .module(module != null ? module.toUpperCase() : "UNKNOWN")
                 .referenceId(referenceId)
                 .description(description)
+                .oldValue(oldValue)
+                .newValue(newValue)
+                .actionStatus(actionStatus != null ? actionStatus : ActionStatus.SUCCESS)
                 .ipAddress(ipAddress != null ? ipAddress : "UNKNOWN_IP")
                 .build();
 

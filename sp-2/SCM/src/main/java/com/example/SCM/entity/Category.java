@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 @Entity
@@ -17,13 +18,13 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "category_name", nullable = false, unique = true)
     private String categoryName;
 
-    @Column(columnDefinition = "TEXT")
     private String description;
 
+    // ── Product Relationship ─────────────────────────────────────
     // একটি ক্যাটাগরির অধীনে অনেক প্রোডাক্ট থাকতে পারে
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
+
 }

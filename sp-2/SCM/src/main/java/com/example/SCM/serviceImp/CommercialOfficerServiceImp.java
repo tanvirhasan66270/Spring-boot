@@ -41,8 +41,8 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
 
-    @Override
     @Transactional
+    @Override
     public CommercialOfficerResponseDTO save(CommercialOfficerRequestDTO dto, MultipartFile file) {
         if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
             throw new RuntimeException("Credential password mandatory for commercial workstation deployment!");
@@ -55,6 +55,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             throw new RuntimeException("This NID number is already registered under another commercial officer!");
         }
 
+        // save user first
         User user = officerMapper.toUserEntity(dto);
         User savedUser = userRepository.save(user);
 
@@ -64,6 +65,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
                     .orElseThrow(() -> new RuntimeException("Police Station not resolved with ID: " + dto.getPoliceStationId()));
         }
 
+        // upload image
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
             dto.setAddress(imagePath);
@@ -80,8 +82,8 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         return officerMapper.toResponseDTO(savedOfficer);
     }
 
-    @Override
     @Transactional
+    @Override
     public CommercialOfficerResponseDTO update(Long id, CommercialOfficerRequestDTO dto, MultipartFile file) {
         CommercialOfficer officer = officerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Commercial Officer instance not found at ID: " + id));
@@ -130,22 +132,24 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         return officerMapper.toResponseDTO(officerRepository.save(officer));
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<CommercialOfficerResponseDTO> findAll() {
-        return officerRepository.findAllWithDetails().stream()
+        return officerRepository.findAllWithDetails()
+                .stream()
                 .map(officerMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<CommercialOfficerResponseDTO> getById(Long id) {
-        return officerRepository.findById(id).map(officerMapper::toResponseDTO);
+        return officerRepository.findById(id)
+                .map(officerMapper::toResponseDTO);
     }
 
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         CommercialOfficer officer = officerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target Commercial Officer key tracking missing"));
@@ -155,12 +159,14 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "commercial_officer");
+
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
 
             String ext = "";
             String original = file.getOriginalFilename();
+
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf("."));
             }
@@ -170,6 +176,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
 
             Files.copy(file.getInputStream(), path.resolve(fileName));
             return fileName;
+
         } catch (Exception e) {
             throw new RuntimeException("Commercial file system node upload fault: " + e.getMessage());
         }
@@ -218,4 +225,5 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             System.err.println("Commercial Activation Mail lay-node broken: " + e.getMessage());
         }
     }
+
 }

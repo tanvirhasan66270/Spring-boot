@@ -24,6 +24,9 @@ public class DriverResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long userId;
+
+    // 🎯 আপনার রিকোয়ারমেন্ট অনুযায়ী এই ফিল্ডে User থেকে আসা Role সেট হবে
     private String role;
+
     private Set<String> warehouseNames;
 }

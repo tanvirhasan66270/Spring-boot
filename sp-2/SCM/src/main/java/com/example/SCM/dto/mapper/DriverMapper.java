@@ -11,9 +11,25 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * DriverMapper
+ *
+ * Responsible for converting:
+ * 1. DriverRequestDTO -> User/Driver Entity
+ * 2. Driver Entity -> DriverResponseDTO
+ *
+ * This class helps separate API models (DTOs)
+ * from database entities.
+ */
 @Component
 public class DriverMapper {
 
+    /**
+     * Convert DriverRequestDTO to User Entity.
+     *
+     * @param dto Incoming request data from client
+     * @return User entity ready for mapping
+     */
     public User toUserEntity(DriverRequestDTO dto) {
         User user = new User();
         user.setName(dto.getDriverName());
@@ -24,6 +40,14 @@ public class DriverMapper {
         return user;
     }
 
+    /**
+     * Convert DriverRequestDTO to Driver Entity.
+     *
+     * @param dto Incoming request data from client
+     * @param user Associated User account reference
+     * @param warehouses Bound monitoring branch storage locations
+     * @return Driver entity instance
+     */
     public Driver toDriverEntity(DriverRequestDTO dto, User user, Set<Warehouse> warehouses) {
         return Driver.builder()
                 .driverName(dto.getDriverName())
@@ -45,6 +69,12 @@ public class DriverMapper {
                 .build();
     }
 
+    /**
+     * Convert Driver Entity to DriverResponseDTO.
+     *
+     * @param driver Driver entity from database
+     * @return DriverResponseDTO
+     */
     public DriverResponseDTO toResponseDTO(Driver driver) {
         if (driver == null) return null;
 
@@ -79,6 +109,8 @@ public class DriverMapper {
                     .map(Warehouse::getName)
                     .collect(Collectors.toSet()));
         }
+
         return dto;
     }
+
 }

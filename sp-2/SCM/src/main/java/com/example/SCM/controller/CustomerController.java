@@ -20,35 +20,37 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    // 👤 1. Create/Register New Customer with Profile Image
-
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> create(
             @RequestPart("customer") CustomerRequestDTO dto,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
         CustomerResponseDTO response = customerService.save(dto, image);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.CREATED
+        );
     }
-
-    // 🔄 2. Update Customer Metadata & Profile Picture (PUT)
 
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("customer") CustomerRequestDTO dto,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
         return ResponseEntity.ok(customerService.update(id, dto, image));
     }
-
-    // 📋 3. Get All Registered Customers (GET)
 
     @GetMapping
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
         List<CustomerResponseDTO> list = customerService.findAll();
-        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
-    }
 
-    // 🔍 4. Get Customer Profile By ID (GET)
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+
+        return ResponseEntity.ok(list);
+    }
 
     @GetMapping("{id}")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
@@ -57,11 +59,10 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 5. Delete Customer Node and Associated Auth Account (DELETE)
-
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");
     }
+
 }

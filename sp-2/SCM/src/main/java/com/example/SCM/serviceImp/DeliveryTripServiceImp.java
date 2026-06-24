@@ -34,8 +34,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    @Override
     @Transactional
+    @Override
     public DeliveryTripResponseDTO save(DeliveryTripRequestDTO dto) {
         Customer customer = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Customer profile mapping failure"));
@@ -50,8 +50,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         return tripMapper.toResponseDTO(savedTrip);
     }
 
-    @Override
     @Transactional
+    @Override
     public DeliveryTripResponseDTO update(Long id, DeliveryTripRequestDTO dto) {
         DeliveryTrip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trip blueprint record missing"));
@@ -64,8 +64,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         return tripMapper.toResponseDTO(tripRepository.save(trip));
     }
 
-    @Override
     @Transactional
+    @Override
     public DeliveryTripResponseDTO updateTripStatus(Long id, String status, MultipartFile signature, MultipartFile deliveryPhoto) {
         DeliveryTrip trip = tripRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target trip row missing"));
@@ -81,22 +81,24 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         return tripMapper.toResponseDTO(tripRepository.save(trip));
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<DeliveryTripResponseDTO> findAll() {
-        return tripRepository.findAllTripsWithDetails().stream()
+        return tripRepository.findAllTripsWithDetails()
+                .stream()
                 .map(tripMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<DeliveryTripResponseDTO> getById(Long id) {
-        return tripRepository.findByIdWithDetails(id).map(tripMapper::toResponseDTO);
+        return tripRepository.findByIdWithDetails(id)
+                .map(tripMapper::toResponseDTO);
     }
 
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         if (!tripRepository.existsById(id)) throw new RuntimeException("Trip tracking map index missing");
         tripRepository.deleteById(id);
@@ -138,7 +140,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
                     <div class='btn-container'>
                         <a href='http://localhost:8080/api/delivery-trips/%d' class='btn'>View Manifest Details</a>
                     </div>
-                    <p>Please log into your console driver terminal to trigger the route deployment status map nodes to IN_TRANSIT.</p>
+                    <p>Your action is required to trigger routing map console nodes to IN_TRANSIT.</p>
                     <p>Best regards,<br><b>SCM Logistics Support Team</b></p>
                 </div>
                 <div class='footer'>
@@ -174,4 +176,5 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
             throw new RuntimeException("Trip document sync operational exception: " + e.getMessage());
         }
     }
+
 }

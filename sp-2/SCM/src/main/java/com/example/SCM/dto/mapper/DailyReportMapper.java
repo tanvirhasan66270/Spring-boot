@@ -3,13 +3,31 @@ package com.example.SCM.dto.mapper;
 import com.example.SCM.dto.request.DailyReportRequestDTO;
 import com.example.SCM.dto.response.DailyReportResponseDTO;
 import com.example.SCM.entity.DailyReport;
-import com.example.SCM.enumClass.ReportStatus;
 import org.springframework.stereotype.Component;
+
 import java.time.LocalDate;
 
+/**
+ * DailyReportMapper
+ *
+ * Responsible for converting:
+ * 1. DailyReportRequestDTO -> DailyReport Entity
+ * 2. DailyReport Entity -> DailyReportResponseDTO
+ *
+ * This class helps separate API models (DTOs)
+ * from database entities.
+ */
 @Component
 public class DailyReportMapper {
 
+    /**
+     * Convert DailyReportRequestDTO to DailyReport Entity.
+     *
+     * Used during report creation.
+     *
+     * @param dto Incoming request data from client
+     * @return DailyReport entity ready for persistence
+     */
     public DailyReport toEntity(DailyReportRequestDTO dto) {
         if (dto == null) return null;
 
@@ -24,10 +42,17 @@ public class DailyReportMapper {
             report.setReportDate(LocalDate.parse(dto.getReportDate()));
         }
 
-
         return report;
     }
 
+    /**
+     * Convert DailyReport Entity to DailyReportResponseDTO.
+     *
+     * Used when sending report information back to the client.
+     *
+     * @param entity DailyReport entity from database
+     * @return DailyReportResponseDTO
+     */
     public DailyReportResponseDTO toResponseDTO(DailyReport entity) {
         if (entity == null) return null;
 
@@ -47,4 +72,5 @@ public class DailyReportMapper {
 
         return dto;
     }
+
 }

@@ -25,10 +25,14 @@ public class CommercialOfficerController {
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<CommercialOfficerResponseDTO> save(
             @RequestPart("commercialOfficer") String officerJson,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
         try {
             CommercialOfficerRequestDTO dto = objectMapper.readValue(officerJson, CommercialOfficerRequestDTO.class);
-            return new ResponseEntity<>(officerService.save(dto, file), HttpStatus.CREATED);
+            return new ResponseEntity<>(
+                    officerService.save(dto, file),
+                    HttpStatus.CREATED
+            );
         } catch (Exception e) {
             throw new RuntimeException("Commercial profile deployment failed: " + e.getMessage());
         }
@@ -38,7 +42,8 @@ public class CommercialOfficerController {
     public ResponseEntity<CommercialOfficerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("officer") String officerJson,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) {
         try {
             CommercialOfficerRequestDTO dto = objectMapper.readValue(officerJson, CommercialOfficerRequestDTO.class);
             return ResponseEntity.ok(officerService.update(id, dto, file));
@@ -64,4 +69,5 @@ public class CommercialOfficerController {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
 }

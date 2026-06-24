@@ -32,11 +32,11 @@ public class CustomerServiceImp implements CustomerService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    @Override
     @Transactional
+    @Override
     public CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile image) {
-        // ১. অ্যাসোসিয়েটেড ইউজার অ্যাকাউন্ট চেক বা ক্রিয়েশন লজিক (প্রজেক্ট রিকোয়ারমেন্ট অনুযায়ী)
-        // এখানে ধরে নেওয়া হচ্ছে কন্ট্রোলার থেকে পাস হওয়া dto-তে অলরেডি সোর্স ইউজার অবজেক্ট তৈরি বা রেডি আছে।
+        // ১. অ্যাসোসিয়েটেড ইউজার অ্যাকাউন্ট চেক বা ক্রিয়েশন লজিক (প্রজেক্ট রিকোয়ারমেন্ট অনুযায়ী)
+        // এখানে ধরে নেওয়া হচ্ছে কন্ট্রোলার থেকে পাস হওয়া dto-তে অলরেডি সোর্স ইউজার অবজেক্ট তৈরি বা রেডি আছে।
         User user = userRepository.findById(dto.getPoliceStationId()) // আপনার ডামি বা এক্সিস্টিং ইউজার হ্যান্ডলার
                 .orElseThrow(() -> new RuntimeException("Associated Auth User Node missing"));
 
@@ -44,7 +44,7 @@ public class CustomerServiceImp implements CustomerService {
                 policeStationRepository.findById(dto.getPoliceStationId())
                 .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
 
-        // ২. ম্যাপার দিয়ে নতুন এনটিটি তৈরি (উপরে তৈরি করা আপনার কাস্টম মেথড অনুযায়ী)
+        // ২. ম্যাপার দিয়ে নতুন এনটিটি তৈরি (উপরে তৈরি করা আপনার কাস্টম মেথড অনুযায়ী)
         Customer customer = new Customer();
         customer.setUser(user);
         customerMapper.updateEntity(dto, customer, policeStation);
@@ -57,14 +57,14 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        // ৪. স্বাগতম জানিয়ে ডাইনামিক HTML মেইল পাঠানো
+        // ৪. স্বাগতম জানিয়ে ডাইনামিক HTML মেইল পাঠানো
         sendCustomerWelcomeEmail(savedCustomer);
 
         return customerMapper.toResponseDTO(savedCustomer);
     }
 
-    @Override
     @Transactional
+    @Override
     public CustomerResponseDTO update(Long id, CustomerRequestDTO dto, MultipartFile image) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer master record missing"));
@@ -84,22 +84,24 @@ public class CustomerServiceImp implements CustomerService {
         return customerMapper.toResponseDTO(customerRepository.save(customer));
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public List<CustomerResponseDTO> findAll() {
-        return customerRepository.findAllCustomersWithDetails().stream()
+        return customerRepository.findAllCustomersWithDetails()
+                .stream()
                 .map(customerMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    @Override
     @Transactional(readOnly = true)
+    @Override
     public Optional<CustomerResponseDTO> getById(Long id) {
-        return customerRepository.findByIdWithDetails(id).map(customerMapper::toResponseDTO);
+        return customerRepository.findByIdWithDetails(id)
+                .map(customerMapper::toResponseDTO);
     }
 
-    @Override
     @Transactional
+    @Override
     public void delete(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target customer node index missing"));
@@ -228,4 +230,5 @@ public class CustomerServiceImp implements CustomerService {
             System.err.println("Registration Onboarding Email failed to execute: " + e.getMessage());
         }
     }
+
 }

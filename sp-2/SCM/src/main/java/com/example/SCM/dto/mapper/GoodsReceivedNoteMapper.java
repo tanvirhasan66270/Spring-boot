@@ -9,14 +9,28 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * GoodsReceivedNoteMapper
+ *
+ * Responsible for converting:
+ * 1. GoodsReceivedNoteRequestDTO -> GoodsReceivedNote Entity
+ * 2. GoodsReceivedNote Entity -> GoodsReceivedNoteResponseDTO
+ *
+ * This class helps separate API models (DTOs)
+ * from database entities.
+ */
 @Component
 public class GoodsReceivedNoteMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
-     * 1. GoodsReceivedNote Entity থেকে GoodsReceivedNoteResponseDTO-তে রূপান্তর (Flattening Relation)
-     *  অবজেক্ট গ্রাফ ভেঙে সম্পূর্ণ ফ্ল্যাট ডেটা তৈরি করে যাতে ফ্রন্টঅ্যান্ড গ্রিডে সরাসরি বাইন্ড করা যায়।
+     * Convert GoodsReceivedNote Entity to GoodsReceivedNoteResponseDTO.
+     *
+     * Used when sending GRN information back to the client.
+     *
+     * @param grn GoodsReceivedNote entity from database
+     * @return GoodsReceivedNoteResponseDTO
      */
     public GoodsReceivedNoteResponseDTO toResponseDTO(GoodsReceivedNote grn) {
         if (grn == null) {
@@ -25,7 +39,6 @@ public class GoodsReceivedNoteMapper {
 
         GoodsReceivedNoteResponseDTO dto = new GoodsReceivedNoteResponseDTO();
 
-        // বেসিক ফিল্ডস ম্যাপিং
         dto.setId(grn.getId());
         dto.setGrnNumber(grn.getGrnNumber());
         dto.setQuantity(grn.getQuantity());
@@ -37,31 +50,26 @@ public class GoodsReceivedNoteMapper {
         dto.setCreatedAt(grn.getCreatedAt());
         dto.setUpdatedAt(grn.getUpdatedAt());
 
-        //  Purchase Order Details Flattening ---
         if (grn.getPurchaseOrder() != null) {
             dto.setPoId(grn.getPurchaseOrder().getId());
             dto.setPoNumber(grn.getPurchaseOrder().getPoNumber());
         }
 
-        //  Product Details Flattening ---
         if (grn.getProduct() != null) {
             dto.setProductId(grn.getProduct().getId());
             dto.setProductName(grn.getProduct().getName());
         }
 
-        //  Warehouse Details Flattening ---
         if (grn.getWarehouse() != null) {
             dto.setWarehouseId(grn.getWarehouse().getId());
             dto.setWarehouseName(grn.getWarehouse().getName());
         }
 
-        //  Received By User Details Flattening ---
         if (grn.getReceivedBy() != null) {
             dto.setReceivedBy(grn.getReceivedBy().getId());
             dto.setReceivedByName(grn.getReceivedBy().getName());
         }
 
-        // -️ Inspected By User Details Flattening ---
         if (grn.getInspectedBy() != null) {
             dto.setInspectedBy(grn.getInspectedBy().getId());
             dto.setInspectedByName(grn.getInspectedBy().getName());
@@ -71,39 +79,43 @@ public class GoodsReceivedNoteMapper {
     }
 
     /**
-     * 2. Request DTO এবং অ্যাসোসিয়েটেড Entities থেকে নতুন GoodsReceivedNote Entity-তে রূপান্তর (Create Operation)
-     *  নোট: grnNumber এবং PO থেকে quantity অটো-লোডিং লজিকটি সার্ভিস ইমপ্লিমেন্টেশনে সেট হবে।
+     * Convert GoodsReceivedNoteRequestDTO to GoodsReceivedNote Entity.
+     *
+     * @param dto Incoming request payload from client
+     * @param po Bound PurchaseOrder entity node
+     * @param product Linked Product identifier reference
+     * @param receivedBy Logged user context tracking reference
+     * @param warehouse Node branch Warehouse destination reference
+     * @param inspectedBy QCInspector entity reference
+     * @return GoodsReceivedNote entity instance
      */
     public GoodsReceivedNote toEntity(GoodsReceivedNoteRequestDTO dto, PurchaseOrder po, Product product, User receivedBy, Warehouse warehouse, User inspectedBy) {
         if (dto == null) {
             return null;
         }
 
+        // Create Note Entity
         GoodsReceivedNote grn = new GoodsReceivedNote();
 
-        // কোর ডাটা ফিল্ডস ম্যাপিং
         grn.setReceivedQuantity(dto.getReceivedQuantity());
         grn.setRemarks(dto.getRemarks());
 
-        // String -> LocalDate ডেট কনভার্সন (নাল ও ব্ল্যাঙ্ক প্রোটেকশনসহ)
         if (dto.getReceivedAt() != null && !dto.getReceivedAt().trim().isEmpty()) {
             grn.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), dateFormatter));
         } else {
-            grn.setReceivedAt(LocalDate.now()); // ডিফল্ট কারেন্ট ডেট
+            grn.setReceivedAt(LocalDate.now());
         }
 
         if (dto.getInspectionDate() != null && !dto.getInspectionDate().trim().isEmpty()) {
             grn.setInspectionDate(LocalDate.parse(dto.getInspectionDate(), dateFormatter));
         }
 
-        // Enum Status Mapping (String -> Enum)
         if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
             grn.setStatus(GRNStatus.valueOf(dto.getStatus().toUpperCase()));
         } else {
-            grn.setStatus(GRNStatus.PENDING); // ডিফল্ট স্ট্যাটাস PENDING
+            grn.setStatus(GRNStatus.PENDING);
         }
 
-        // ফরেন কি/রিলেশন অবজেক্ট ইনজেক্ট করা
         grn.setPurchaseOrder(po);
         grn.setProduct(product);
         grn.setReceivedBy(receivedBy);
@@ -114,18 +126,16 @@ public class GoodsReceivedNoteMapper {
     }
 
     /**
-     * 3. এক্সিস্টিং GoodsReceivedNote Entity আপডেট করার লজিক (Update Operation)
+     * Update existing GoodsReceivedNote Entity with request data.
      */
     public void updateEntity(GoodsReceivedNoteRequestDTO dto, GoodsReceivedNote grn, PurchaseOrder po, Product product, Warehouse warehouse, User inspectedBy) {
         if (dto == null || grn == null) {
             return;
         }
 
-        // কোর প্রোফাইল ফিল্ডস আপডেট
         grn.setReceivedQuantity(dto.getReceivedQuantity());
         grn.setRemarks(dto.getRemarks());
 
-        // ডেট ফিল্ডস আপডেট
         if (dto.getReceivedAt() != null && !dto.getReceivedAt().trim().isEmpty()) {
             grn.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), dateFormatter));
         }
@@ -133,15 +143,14 @@ public class GoodsReceivedNoteMapper {
             grn.setInspectionDate(LocalDate.parse(dto.getInspectionDate(), dateFormatter));
         }
 
-        // এনাম ফিল্ডস আপডেট
         if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
             grn.setStatus(GRNStatus.valueOf(dto.getStatus().toUpperCase()));
         }
 
-        // রিলেশনাল অবজেক্ট চয়েস অ্যাসাইনমেন্ট (নাল সেফটিসহ)
         if (po != null) grn.setPurchaseOrder(po);
         if (product != null) grn.setProduct(product);
         if (warehouse != null) grn.setWarehouse(warehouse);
         if (inspectedBy != null) grn.setInspectedBy(inspectedBy);
     }
+
 }

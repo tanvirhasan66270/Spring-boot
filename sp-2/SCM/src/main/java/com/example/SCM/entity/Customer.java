@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -19,8 +20,11 @@ public class Customer {
     private Long id;
 
     private String name;
+
     private String address;
+
     private String gender;
+
     private String email;
 
     @Column(name = "nid_number")
@@ -33,6 +37,13 @@ public class Customer {
 
     private String image;
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    // ── User Management / Auth Relations ─────────────────────────
     // Auth account — source of truth for name, phone, email, password, role
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -43,14 +54,8 @@ public class Customer {
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @PrePersist
-    protected void onCreate() { // 💡 মেথডের নাম কনভেনশন অনুযায়ী ফিক্সড করা হলো
+    protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -59,4 +64,5 @@ public class Customer {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
 }

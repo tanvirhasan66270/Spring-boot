@@ -16,30 +16,48 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * CustomerOrderMapper
+ *
+ * Responsible for converting:
+ * 1. CustomerOrderRequestDTO -> CustomerOrder Entity
+ * 2. CustomerOrder Entity -> CustomerOrderResponseDTO
+ *
+ * This class helps separate API models (DTOs)
+ * from database entities.
+ */
 @Component
 @RequiredArgsConstructor
 public class CustomerOrderMapper {
 
     private final OrderLineItemMapper lineItemMapper;
 
+    /**
+     * Convert CustomerOrderRequestDTO to CustomerOrder Entity.
+     *
+     * Used during order creation.
+     *
+     * @param dto Incoming request data from client
+     * @param customer Associated Customer account user
+     * @return CustomerOrder entity ready for persistence
+     */
     public CustomerOrder toEntity(CustomerOrderRequestDTO dto, User customer) {
         if (dto == null) return null;
 
-        //  বিল্ডার প্যাটার্নে ডাইনামিক্যালি কারেন্সি "BDT" এবং ডিফল্ট স্ট্যাটাস ম্যাপ করা হলো
         CustomerOrder order = CustomerOrder.builder()
                 .customer(customer)
                 .customerName(customer != null ? customer.getName() : null)
                 .customerEmail(customer != null ? customer.getEmail() : null)
                 .deliveryAddress(dto.getDeliveryAddress())
                 .codAmount(dto.getCodAmount())
-                .currency("BDT") // 👈 আপনার রিকোয়ারমেন্ট অনুযায়ী ফিক্সড ডিক্লেয়ারেশন
+                .currency("BDT")
                 .serviceType(dto.getServiceType() != null && !dto.getServiceType().isBlank() ?
                         ServiceType.valueOf(dto.getServiceType().toUpperCase()) : ServiceType.STANDARD)
                 .status(dto.getStatus() != null && !dto.getStatus().isBlank() ?
                         CustomerOrderStatus.valueOf(dto.getStatus().toUpperCase()) : CustomerOrderStatus.PENDING)
                 .estimatedDelivery(dto.getEstimatedDelivery() != null && !dto.getEstimatedDelivery().isBlank() ?
                         LocalDate.parse(dto.getEstimatedDelivery()) : null)
-                .lineItems(new ArrayList<>()) // নিরাপদ ফাঁকা অবজেক্ট জেনারেশন
+                .lineItems(new ArrayList<>())
                 .build();
 
         if (dto.getItems() != null) {
@@ -54,6 +72,14 @@ public class CustomerOrderMapper {
         return order;
     }
 
+    /**
+     * Convert CustomerOrder Entity to CustomerOrderResponseDTO.
+     *
+     * Used when sending order information back to the client.
+     *
+     * @param entity CustomerOrder entity from database
+     * @return CustomerOrderResponseDTO
+     */
     public CustomerOrderResponseDTO toResponseDTO(CustomerOrder entity) {
         if (entity == null) return null;
 
@@ -89,4 +115,5 @@ public class CustomerOrderMapper {
 
         return dto;
     }
+
 }
