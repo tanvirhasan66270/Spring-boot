@@ -40,7 +40,7 @@ public class DailyReportServiceImp implements DailyReportService {
     }
 
     /**
-     * 📝 1. Log New Report & Auto-Submit on Email Confirmation
+     *  1. Log New Report & Auto-Submit on Email Confirmation
      */
     @Override
     @Transactional
@@ -55,11 +55,11 @@ public class DailyReportServiceImp implements DailyReportService {
         DailyReport report = reportMapper.toEntity(dto);
         report.setUserId(resolveCurrentUserId());
 
-        // 🎯 ইনিশিয়াল স্টেট সবসময় ইন্টারনালি DRAFT থাকবে
+        //  ইনিশিয়াল স্টেট সবসময় ইন্টারনালি DRAFT থাকবে
         report.setReportStatus(ReportStatus.DRAFT);
         DailyReport savedReport = reportRepository.save(report);
 
-        // 📧 রোল-বেসড ম্যানেজার ও এডমিনদের ইমেইল পাঠানো
+        //  রোল-বেসড ম্যানেজার ও এডমিনদের ইমেইল পাঠানো
         List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(savedReport);
 
         // 🔥 মেইল সফলভাবে সেন্ট হলে স্ট্যাটাস অটোমেটিক SUBMITTED হবে
@@ -82,7 +82,7 @@ public class DailyReportServiceImp implements DailyReportService {
     }
 
     /**
-     * 🔄 2. Modify Pending/Submitted Report (Only APPROVED is hard-locked)
+     *  2. Modify Pending/Submitted Report (Only APPROVED is hard-locked)
      */
     @Override
     @Transactional
@@ -90,18 +90,18 @@ public class DailyReportServiceImp implements DailyReportService {
         DailyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report index missing for ID: " + id));
 
-        // 🎯 রুল ফিক্সড: শুধুমাত্র APPROVED হয়ে গেলে কোনো ডেটাই আর আপডেট করা যাবে না
+        //  রুল ফিক্সড: শুধুমাত্র APPROVED হয়ে গেলে কোনো ডেটাই আর আপডেট করা যাবে না
         if (report.getReportStatus() == ReportStatus.APPROVED) {
             throw new RuntimeException("Locked! Approved records cannot be updated.");
         }
 
-        // 💡 রিকোয়ারমেন্ট অনুসারে: ডাটাবেজে স্ট্যাটাস SUBMITTED বা DRAFT যাই থাকুক না কেন, বাকি সব মেটাডাটা আপডেট করা যাবে
+        //  রিকোয়ারমেন্ট অনুসারে: ডাটাবেজে স্ট্যাটাস SUBMITTED বা DRAFT যাই থাকুক না কেন, বাকি সব মেটাডাটা আপডেট করা যাবে
         if (dto.getSummary() != null) report.setSummary(dto.getSummary());
         if (dto.getTotalTasksDone() > 0) report.setTotalTasksDone(dto.getTotalTasksDone());
         if (dto.getIssuesLogged() >= 0) report.setIssuesLogged(dto.getIssuesLogged());
         if (dto.getAttachmentUrl() != null) report.setAttachmentUrl(dto.getAttachmentUrl());
 
-        // ⚠️ লক্ষ্য করুন: এখানে রিকোয়েস্ট ডিটিও থেকে স্ট্যাটাস পরিবর্তনের কোনো কোড নেই।
+        //  লক্ষ্য করুন: এখানে রিকোয়েস্ট ডিটিও থেকে স্ট্যাটাস পরিবর্তনের কোনো কোড নেই।
         // ফলে ডাটাবেজে স্ট্যাটাস যা ছিল (যেমন SUBMITTED), তা অপরিবর্তিত থাকবে। ইউজার স্ট্যাটাস চেঞ্জ করতে পারবে না।
 
         DailyReport updatedReport = reportRepository.save(report);
@@ -116,10 +116,8 @@ public class DailyReportServiceImp implements DailyReportService {
 
         return responseDTO;
     }
+//  3. Official Approval Node (Triggered via One-Click Email Gateway)
 
-    /**
-     * 👑 3. Official Approval Node (Triggered via One-Click Email Gateway)
-     */
     @Override
     @Transactional
     public DailyReportResponseDTO approveReport(Long id, String approvedByUserId) {
@@ -142,7 +140,7 @@ public class DailyReportServiceImp implements DailyReportService {
     }
 
     // =========================================================================
-    // 📧 অটোমেটেড রোল-বেসড মেইলিং ইঞ্জিন (Returns List of Maps)
+    //   (Returns List of Maps)
     // =========================================================================
     private List<Map<String, String>> sendReportToManagersAndAdmins(DailyReport report) {
         List<Map<String, String>> successfullyNotified = new ArrayList<>();
