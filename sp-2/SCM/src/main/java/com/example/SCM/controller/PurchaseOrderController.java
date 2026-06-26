@@ -11,17 +11,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/purchase-orders/") // 💡 কারেকশন: এন্টারপ্রাইজ কনভেনশন অনুযায়ী শেষের "/" বাদ দেওয়া হয়েছে
+@RequestMapping("/api/purchase-orders") // 💡 বেস্ট প্র্যাকটিস: শেষের "/" বাদ দেওয়া হয়েছে
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Frontend (Angular/React) থেকে কল করার সময় CORS পলিসি জনিত ব্লকিং এড়াতে
+@CrossOrigin(origins = "*")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
     /**
      * 1. Create New Purchase Order (POST)
-     *  ফ্রন্টঅ্যান্ড টাইপস্ক্রিপ্ট ইন্টারফেস থেকে আসা পিওর JSON অবজেক্ট রিসিভ করার জন্য @RequestBody ব্যবহার করা হয়েছে।
-     * লজিক অনুযায়ী, এখানে শুধুমাত্র quotationId পাঠালেই বাকি সব রিলেশন ব্যাকঅ্যান্ডে অটো-লোড হবে।
      */
     @PostMapping
     public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
@@ -32,34 +30,30 @@ public class PurchaseOrderController {
     /**
      * 2. Update Existing Purchase Order (PUT)
      */
-    @PutMapping("{id}")
+    @PutMapping("/{id}") // 💡 বেস্ট প্র্যাকটিস: শুরুতে "/" যোগ করা হয়েছে
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
             @RequestBody PurchaseOrderRequestDTO dto) {
-
         PurchaseOrderResponseDTO response = purchaseOrderService.update(id, dto);
         return ResponseEntity.ok(response);
     }
 
     /**
      * 3. Get All Purchase Orders (GET)
-     *  এটি কাস্টম Fetch Join কুয়েরি ব্যবহার করে এক ট্রিপে সব ডাটা অপ্টিমাইজড উপায়ে নিয়ে আসবে।
      */
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
         List<PurchaseOrderResponseDTO> list = purchaseOrderService.findAll();
-
         if (list.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 Content
+            return ResponseEntity.noContent().build();
         }
-
         return ResponseEntity.ok(list);
     }
 
     /**
      * 4. Get Purchase Order By ID (GET)
      */
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
                 .map(ResponseEntity::ok)
@@ -69,9 +63,66 @@ public class PurchaseOrderController {
     /**
      * 5. Delete Purchase Order By ID (DELETE)
      */
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted successfully");
+    }
+
+   //  অপ্টিমাইজেশন: ইমেইল থ্রু-তে সফলভাবে সাবমিট হলে ম্যানেজার যেন একটি সুন্দর এবং পরিচ্ছন্ন স্ক্রিন দেখতে পান
+
+    @GetMapping("/email-issue")
+    public ResponseEntity<String> emailIssueOrder(@RequestParam Long id, @RequestParam Long managerId) {
+        purchaseOrderService.managerIssuedOrder(id, managerId);
+
+        String htmlResponse = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background-color: #F7FAFC; padding: 50px; }
+                    .card { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid #3182CE; }
+                    h1 { color: #2B6CB0; margin-bottom: 10px; font-size: 24px; }
+                    p { color: #4A5568; font-size: 15px; line-height: 1.6; }
+                </style>
+            </head>
+            <body>
+                <div class='card'>
+                    <h1>✔ Order Dispatched Successfully!</h1>
+                    <p>The Purchase Order status has been updated to <b>ISSUED</b> in SCM core matrix, and a live notification tracking stack has been transmitted to the Supplier's profile.</p>
+                </div>
+            </body>
+            </html>
+            """;
+        return ResponseEntity.ok(htmlResponse);
+    }
+
+    /**
+     * 7. 🤝 Supplier One-Click Email / Dashboard Gateway (GET)
+     */
+    @GetMapping("/email-receive")
+    public ResponseEntity<String> emailReceiveOrder(@RequestParam Long id) {
+        purchaseOrderService.supplierReceivedOrder(id);
+
+        String htmlResponse = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background-color: #F7FAFC; padding: 50px; }
+                    .card { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid #38A169; }
+                    h1 { color: #2F855A; margin-bottom: 10px; font-size: 24px; }
+                    p { color: #4A5568; font-size: 15px; line-height: 1.6; }
+                </style>
+            </head>
+            <body>
+                <div class='card'>
+                    <h1>🤝 Order Acknowledged!</h1>
+                    <p>Thank you for your business confirmation. The target procurement order status is now updated to <b>RECEIVED</b> inside our SCM hub.</p>
+                </div>
+            </body>
+            </html>
+            """;
+        return ResponseEntity.ok(htmlResponse);
     }
 }

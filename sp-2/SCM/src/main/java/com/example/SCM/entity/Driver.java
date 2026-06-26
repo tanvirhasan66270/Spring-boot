@@ -3,6 +3,7 @@ package com.example.SCM.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,7 +21,7 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "driver_name", nullable = false)
+    @Column(nullable = false)
     private String driverName;
 
     @Column(nullable = false)
@@ -28,7 +29,6 @@ public class Driver {
 
     private String address;
 
-    @Column(name = "nid_number")
     private String nidNumber;
 
     private String gender; // MALE / FEMALE / OTHER
@@ -36,37 +36,37 @@ public class Driver {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "vehicle_type")
     private String vehicleType;
 
-    @Column(name = "vehicle_number")
     private String vehicleNumber;
 
     private String dob;
 
-    @Column(columnDefinition = "DOUBLE DEFAULT 0.0")
+    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে, columnDefinition বাদ
+    @Builder.Default
     private Double rating = 0.0;
 
-    @Column(name = "total_deliveries", columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
     private Integer totalDeliveries = 0;
 
-    @Column(name = "total_earnings", columnDefinition = "DOUBLE DEFAULT 0.0")
+    @Builder.Default
     private Double totalEarnings = 0.0;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(nullable = false)
+    @Builder.Default
     private Boolean active = true;
 
     private String image;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // ── Warehouse / Auth Management ──────────────────────────────
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "user_id", nullable = false)
+    // unique = true যুক্ত করা হলো ডাটা সুরক্ষার জন্য
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -88,5 +88,4 @@ public class Driver {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 }

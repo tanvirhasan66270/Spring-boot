@@ -18,31 +18,31 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "shipment_number", nullable = false, unique = true, length = 50)
+
+    @Column(nullable = false, unique = true, length = 50)
     private String shipmentNumber;
 
-    @Column(name = "vehicle_number", nullable = false)
+    @Column(nullable = false)
     private String vehicleNumber;
 
-    @Column(name = "captain_reg_number", nullable = false)
+    @Column(nullable = false)
     private String captainRegistrationNumber;
 
-    @Column(name = "assigned_by_email", nullable = false)
+    @Column(nullable = false)
     private String assignedByEmail;
 
     @Column(nullable = false)
     private String origin;
 
-    @Column(name = "send_by_address", nullable = false)
+    @Column(nullable = false)
     private String sendByAddress;
 
-    @Column(name = "estimated_delivery", nullable = false)
+    @Column(nullable = false)
     private LocalDate estimatedDelivery;
 
-    @Column(name = "transport_cost", nullable = false)
+    @Column(nullable = false)
     private Double transportCost;
 
-    @Column(name = "pod_file_url")
     private String podFileUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,15 +53,15 @@ public class Shipment {
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(); // প্রথমবার সেভ হওয়ার সময়ও যেন কারেন্ট টাইম পায়
     }
 
     @PreUpdate

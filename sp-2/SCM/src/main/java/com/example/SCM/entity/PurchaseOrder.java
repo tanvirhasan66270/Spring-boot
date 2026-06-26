@@ -20,7 +20,7 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "po_number", nullable = false, unique = true, length = 50)
+    @Column( nullable = false, unique = true)
     private String poNumber;
 
     @Column(name = "issued_by", nullable = false)
@@ -28,13 +28,13 @@ public class PurchaseOrder {
 
     private Integer quantity; // Auto loaded from Quotation Table
 
-    @Column(name = "total_amount", nullable = false)
+    @Column( nullable = false)
     private double totalAmount;
 
-    @Column(nullable = false, length = 10)
-    private String currency = "USD";
+    @Column(nullable = false)
+    private String currency ; //USD
 
-    @Column(name = "expected_delivery_date", nullable = false)
+    @Column( nullable = false)
     private LocalDate expectedDeliveryDate;
 
     @Enumerated(EnumType.STRING)
@@ -51,15 +51,15 @@ public class PurchaseOrder {
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
 
-    // 💡 নতুন ফরেন কি রিলেশন: FK → Quotation
+    // FK → Quotation
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quotation_id", nullable = false)
     private Quotation quotation;
 
-    @Column(name = "created_at", updatable = false)
+    @Column( updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+
     private LocalDateTime updatedAt;
 
     @PrePersist

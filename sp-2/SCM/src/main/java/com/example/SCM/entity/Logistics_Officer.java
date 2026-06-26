@@ -36,10 +36,10 @@ public class Logistics_Officer {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    @Column(name = "nid_number", nullable = false, unique = true, length = 50)
+    @Column( nullable = false, unique = true)
     private String nidNumber;
 
-    @Column(name = "passport_number", unique = true, length = 50)
+    @Column(unique = true)
     private String passportNumber;
 
     @Column(nullable = false)
@@ -49,19 +49,19 @@ public class Logistics_Officer {
     @Column(nullable = false, length = 20)
     private GenderStatus gender;
 
-    @Column(name = "image_url")
-    private String image; // প্রোফাইল পিকচার ইউআরএল বা পাথ
+
+    private String image;
 
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @Column(name = "joining_date")
+
     private LocalDate joiningDate;
 
     private String designation;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+
     private LanguageStatus language;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,7 +71,7 @@ public class Logistics_Officer {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+
     private LocalDateTime updatedAt;
 
     @PrePersist

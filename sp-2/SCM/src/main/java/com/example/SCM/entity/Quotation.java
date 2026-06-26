@@ -2,26 +2,27 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.QuotationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "quotations")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Quotation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "quotation_number", nullable = false, unique = true, length = 50)
-    private String quotationNumber; // ব্যাকএন্ড থেকে ওয়ান-টাইম অটো জেনারেট হবে
+
+    @Column(nullable = false, unique = true, length = 50)
+    private String quotationNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
@@ -31,54 +32,51 @@ public class Quotation {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(nullable = false)
     private String productName;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
 
-    @Column(name = "valid_until", nullable = false)
+    @Column(nullable = false)
     private LocalDate validUntil;
 
-    @Column(name = "lead_time_days", nullable = false)
     private int leadTimeDays;
 
-    @Column(name = "is_selected", nullable = false)
     private boolean isSelected = false;
 
-    @Column(name = "received_at", nullable = false)
+    @Column(nullable = false)
     private LocalDate receivedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
+    @Builder.Default
     private QuotationStatus status = QuotationStatus.PENDING;
 
-    @Column(name = "product_description", columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String productDescription;
 
-    @Column(name = "unit_price", nullable = false)
     private double unitPrice;
 
     @Column(nullable = false)
-    private Integer quantity; // রিকুইজিশন থেকে ফ্রন্টএন্ডে লোড হওয়া quantityRequired ভ্যালু এখানে সেভ হবে
+    private Integer quantity;
 
-    @Column(name = "total_price", nullable = false)
-    private double totalPrice; // অটো ক্যালকুলেটেড ফিল্ড (unitPrice * quantity)
+    private double totalPrice;
 
-    @Column(name = "delivery_time", nullable = false)
+    @Column(nullable = false)
     private LocalDate deliveryTime;
 
-    @Column(length = 50)
-    private String warranty; // বছর বা ডেসক্রিপশন
+
+    private String warranty;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "attachment_url", length = 512)
+
     private String attachmentUrl;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
@@ -101,6 +99,8 @@ public class Quotation {
 
     // বিজনেস লজিক: টোটাল প্রাইস অটো-সিঙ্ক রাখার জন্য
     private void calculateTotalPrice() {
-        this.totalPrice = this.unitPrice * this.quantity;
+        if (this.quantity != null) {
+            this.totalPrice = this.unitPrice * this.quantity;
+        }
     }
 }

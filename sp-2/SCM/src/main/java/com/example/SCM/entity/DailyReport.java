@@ -20,36 +20,34 @@ public class DailyReport {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false)
-    private String userId; // FK → User (LOGISTICS_OFFICER ID)
+    @Column(nullable = false)
+    private String userId;
 
-    @Column(name = "warehouse_id", nullable = false)
-    private String warehouseId; // FK → Warehouse / Branch Location
+    @Column(nullable = false)
+    private String warehouseId;
 
-    @Column(name = "report_date", nullable = false)
-    private LocalDate reportDate; // Tracking Date (YYYY-MM-DD)
+    @Column(nullable = false)
+    private LocalDate reportDate;
 
-    @Column(name = "total_tasks_done", nullable = false)
     private int totalTasksDone;
 
-    @Column(name = "issues_logged", nullable = false)
     private int issuesLogged;
 
     @Column(columnDefinition = "TEXT")
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "report_status", nullable = false, length = 20)
+    @Column(nullable = false)
     @Builder.Default
     private ReportStatus reportStatus = ReportStatus.DRAFT;
 
-    @Column(name = "attachment_url", length = 512)
+
     private String attachmentUrl;
 
-    @Column(name = "generated_at", nullable = false, updatable = false)
+    // রিপোর্টের জেনারেট হওয়ার অরিজিনাল টাইম যেন লক থাকে
+    @Column(nullable = false, updatable = false)
     private LocalDateTime generatedAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -62,5 +60,4 @@ public class DailyReport {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 }

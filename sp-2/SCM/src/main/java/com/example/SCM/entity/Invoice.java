@@ -21,93 +21,82 @@ public class Invoice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
+    @Column(nullable = false, unique = true)
     private String invoiceNumber;
 
-    // ডাটাবেজ কলাম নেম পরিবর্তন করে 'order_id' এর সাথে ম্যাচ করানো হলো
-    @Column(name = "order_id", nullable = false)
+    @Column(name = "order_id")
     private Long customerOrderId;
 
-    @Column(name = "customer_email", nullable = false)
+    @Column(nullable = false)
     private String customerEmail;
 
-    @Column(name = "sales_officer_id")
     private Long salesOfficerId;
 
-    @Column(name = "issued_to_name", nullable = false)
+    @Column(nullable = false)
     private String issuedToName;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
+    @Builder.Default
     private String currency = "BDT";
 
-    // Financial Calculation Fields ──
-    @Column(nullable = false)
     private double subtotal;
 
-    @Column(name = "tax_rate", nullable = false)
+    @Builder.Default
     private double taxRate = 0.0;
 
-    @Column(name = "tax_amount", nullable = false)
     private double taxAmount;
 
-    @Column(name = "discount_amount")
+    @Builder.Default
     private double discountAmount = 0.0;
 
-    @Column(name = "discount_percentage")
+    @Builder.Default
     private double discountPercentage = 0.0;
 
-    @Column(name = "shipping_fees")
+    @Builder.Default
     private double shippingFees = 0.0;
 
-    @Column(name = "total_amount", nullable = false)
     private double totalAmount;
 
-    @Column(name = "paid_amount", nullable = false)
+    @Builder.Default
     private double paidAmount = 0.0;
 
-    @Column(name = "due_amount", nullable = false)
     private double dueAmount;
 
-    // Status & Payment Details ──
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
+    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", length = 20)
-    private PaymentMethod paymentMethod;
+      private PaymentMethod paymentMethod;
 
-    @Column(name = "transaction_reference")
     private String transactionReference;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "invoice_status", nullable = false, length = 20)
+    @Column(nullable = false)
+    @Builder.Default
     private InvoiceStatus invoiceStatus = InvoiceStatus.DRAFT;
 
-    // Logistics Fields ──
-    @Column(name = "delivery_date")
+    // Logistics Fields
     private LocalDate deliveryDate;
 
-    @Column(name = "delivery_address", columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String deliveryAddress;
 
-    // Audit Logs & Notes ──
+    // Audit Logs & Notes
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "cancelled_reason", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String cancelledReason;
 
-    @Column(name = "issued_at")
     private LocalDate issuedAt;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false) // making time lock
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
     @PrePersist

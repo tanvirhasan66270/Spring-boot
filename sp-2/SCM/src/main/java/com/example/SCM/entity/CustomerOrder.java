@@ -24,53 +24,43 @@ public class CustomerOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_number", nullable = false, unique = true, length = 50)
+
+    @Column(unique = true, nullable = false)
     private String orderNumber;
 
-    @Column(name = "customer_name", length = 100)
-    private String customerName;
 
-    @Column(name = "customer_email", length = 100)
+    private String customerName;
     private String customerEmail;
 
-    @Column(name = "item_subtotal", nullable = false)
-    private double itemSubtotal;
 
-    private double weight; // সব আইটেমের মোট ওজন (KG)
+    private double itemSubtotal;
+    private double weight;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "service_type", nullable = false, length = 20)
     @Builder.Default
     private ServiceType serviceType = ServiceType.STANDARD;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
     private String currency;
 
-    @Column(name = "cod_amount")
-    @Builder.Default
     private double codAmount = 0.0;
-
-    @Column(name = "delivery_charge", nullable = false)
     private double deliveryCharge;
-
-    @Column(name = "total_amount", nullable = false)
     private double totalAmount;
 
-    @Column(name = "paid_amount", nullable = false, length = 30)
+    @Column(nullable = false)
     private String paidAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
     @Builder.Default
     private CustomerOrderStatus status = CustomerOrderStatus.PENDING;
 
-    @Column(name = "delivery_address", columnDefinition = "TEXT", nullable = false)
+
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String deliveryAddress;
 
-    @Column(name = "estimated_delivery")
     private LocalDate estimatedDelivery;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     // ── Zone management / Object Relations ───────────────────────

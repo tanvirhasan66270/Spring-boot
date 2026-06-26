@@ -21,7 +21,8 @@ public class PurchaseOrderResponseDTO {
 
     //Auto Loaded Supplier Details
     private Long supplierId;
-    private String supplierName;           // TS ইন্টারফেসের 'supplierName' ফিল্ডের সাথে সিঙ্কড
+    private String supplierName;
+    private String supplierEmail;// TS ইন্টারফেসের 'supplierName' ফিল্ডের সাথে সিঙ্কড
 
     //Auto Loaded Purchase Requisition Details
     private Long purchaseRequisitionId;    // TS ইন্টারফেসের 'PurchaseRequisitionId' ফিল্ডের সাথে সিঙ্কড

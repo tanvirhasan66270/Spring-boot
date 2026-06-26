@@ -5,9 +5,12 @@ import com.example.SCM.dto.mapper.ProductMapper;
 import com.example.SCM.dto.request.ProductRequestDTO;
 import com.example.SCM.entity.Category;
 import com.example.SCM.entity.Product;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.repository.CategoryRepository;
 import com.example.SCM.repository.ProductRepository;
+import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,13 @@ public class ProductServiceImp implements ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        return (userId != null && !userId.isBlank()) ? userId : "16";
+    }
 
     // application.properties থেকে আপলোড ডিরেক্টরি পাথ লোড হবে
     @Value("${image.upload.dir:uploads}")
@@ -53,7 +63,7 @@ public class ProductServiceImp implements ProductService {
             }
         }
 
-        // 📂 ডাটাবেজ থেকে রিলেশনাল ক্যাটাগরি খুঁজে বের করা
+        // ডাটাবেজ থেকে রিলেশনাল ক্যাটাগরি খুঁজে বের করা
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + dto.getCategoryId()));
 
@@ -66,6 +76,21 @@ public class ProductServiceImp implements ProductService {
         // 🔄 Mapper দিয়ে Entity-তে রূপান্তর এবং ডাটাবেজে সেভ (weight সহ)
         Product product = productMapper.toEntity(dto, category);
         Product savedProduct = productRepository.save(product);
+
+        // ✅ অ্যাক্টিভিটি লগ (CREATE PRODUCT)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "PRODUCT",
+                savedProduct.getId().toString(),
+                "New Product successfully created. Code: "
+                        + savedProduct.getProductCode() + ", Name: " + savedProduct.getName(),
+                null,
+                "{\"productCode\":\"" + savedProduct.getProductCode() + "\", \"name\":\"" + savedProduct.getName() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
 
         return productMapper.toResponseDTO(savedProduct);
     }
@@ -83,6 +108,11 @@ public class ProductServiceImp implements ProductService {
         // 🔍 এক্সিস্টিং প্রোডাক্ট খুঁজে বের করা
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
+
+        // 🔒 ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
+        String oldName = product.getName();
+        String oldCode = product.getProductCode();
+        Long oldCategoryId = product.getCategory() != null ? product.getCategory().getId() : null;
 
         // 🔒 প্রোডাক্ট কোড ইউনিক কি না ভেরিফাই করা (কোড চেইঞ্জ করা হলে)
         if (dto.getProductCode() != null && !dto.getProductCode().equals(product.getProductCode())) {
@@ -110,8 +140,22 @@ public class ProductServiceImp implements ProductService {
 
         // 🛠️ ম্যাপারের মাধ্যমে অবজেক্ট ডেটা আপডেট করা (weight অটো সিঙ্ক হবে)
         productMapper.updateEntity(dto, product, category);
-
         Product updatedProduct = productRepository.save(product);
+
+        // ✅ অ্যাক্টিভিটি লগ (UPDATE PRODUCT)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "PRODUCT",
+                updatedProduct.getId().toString(),
+                "Product metadata updated for Code: " + updatedProduct.getProductCode(),
+                "{\"name\":\"" + oldName + "\", \"code\":\"" + oldCode + "\", \"categoryId\":" + oldCategoryId + "}",
+                "{\"name\":\"" + updatedProduct.getName() + "\", \"code\":\"" + updatedProduct.getProductCode() + "\", \"categoryId\":" + updatedProduct.getCategory().getId() + "}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return productMapper.toResponseDTO(updatedProduct);
     }
 
@@ -145,7 +189,24 @@ public class ProductServiceImp implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
 
+        String deletedProductCode = product.getProductCode();
+        String deletedProductName = product.getName();
+
         productRepository.delete(product);
+
+        // ✅ অ্যাক্টিভিটি লগ (DELETE PRODUCT)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "PRODUCT",
+                id.toString(),
+                "Product permanently deleted from inventory. Code was: " + deletedProductCode + ", Name: " + deletedProductName,
+                "{\"productCode\":\"" + deletedProductCode + "\", \"name\":\"" + deletedProductName + "\"}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     /**
@@ -167,7 +228,7 @@ public class ProductServiceImp implements ProductService {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            // ফাইলের নাম স্যানিটাইজ করা এবং UUID টোকেন যুক্ত করা (ফাইলনেম কনф্লিক্ট এড়াতে)
+            // ফাইলের নাম স্যানিটাইজ করা এবং UUID টোকেন যুক্ত করা (ফাইলনেম কনফ্লিক্ট এড়াতে)
             String cleanedName = (productName != null ? productName : "product").trim().replaceAll("\\s+", "_");
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 

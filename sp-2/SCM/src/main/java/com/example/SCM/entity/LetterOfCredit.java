@@ -20,65 +20,59 @@ public class LetterOfCredit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "lc_number", nullable = false, unique = true, length = 50)
+    // এলসি নাম্বার ইউনিক
+    @Column(nullable = false, unique = true)
     private String lcNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_order_id", nullable = false)
-    private PurchaseOrder purchaseOrder; // FK → purchase_orders
+    private PurchaseOrder purchaseOrder;
 
-    @Column(name = "po_number", length = 50)
     private String poNumber;
 
-    //  LetterOfCredit.java ক্লাসের ভেতর রিলেশন কলাম হিসেবে যুক্ত করুন:
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier; // FK → suppliers table
-    
-    @Column(name = "issuing_bank", nullable = false, length = 100)
+    private Supplier supplier;
+
+    @Column(nullable = false)
     private String issuingBank;
 
-    @Column(name = "shipment_inco_terms", nullable = false, length = 20)
+    @Column(nullable = false)
     private String shipmentIncoTerms; // FOB, CIF, CFR ইত্যাদি
 
-    @Column(name = "latest_shipment_date", nullable = false)
+    @Column(nullable = false)
     private LocalDate latestShipmentDate;
 
-    @Column(name = "port_of_loading", nullable = false, length = 100)
+    @Column(nullable = false)
     private String portOfLoading;
 
-    @Column(name = "port_of_discharge", nullable = false, length = 100)
+    @Column(nullable = false)
     private String portOfDischarge;
 
-    @Column(name = "amendment_count", nullable = false)
     @Builder.Default
     private int amendmentCount = 0;
 
-    @Column(nullable = false)
     private double amount;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
     @Builder.Default
     private String currency = "USD";
 
-    @Column(name = "expiry_date", nullable = false)
+    @Column(nullable = false)
     private LocalDate expiryDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "lc_status", nullable = false, length = 20)
+    @Column(nullable = false)
     @Builder.Default
     private LcStatus lcStatus = LcStatus.DRAFT;
 
-    @Column(name = "document_vault_url", length = 512)
     private String documentVaultUrl;
 
-    @Column(name = "opened_at")
     private LocalDate openedAt;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -104,7 +98,7 @@ public class LetterOfCredit {
         }
     }
 
-    //  বিজনেস ডোমেইন মেথড ──
+    // ── বিজনেস ডোমেইন মেথড ──
     public void incrementAmendment() {
         if (this.lcStatus == LcStatus.OPENED || this.lcStatus == LcStatus.AMENDED) {
             this.lcStatus = LcStatus.AMENDED;

@@ -45,6 +45,7 @@ public class PurchaseOrderMapper {
             dto.setSupplierId(po.getSupplier().getId());
             // যদি সাপ্লায়ারের নাম User টেবিল থেকে আসে তবে po.getSupplier().getUser().getName() ব্যবহার করবেন
             dto.setSupplierName(po.getSupplier().getName());
+            dto.setSupplierEmail(po.getSupplier().getEmail());
         }
 
         // 🔗 Purchase Requisition Details Flattening

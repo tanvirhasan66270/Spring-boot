@@ -43,10 +43,9 @@ public class Procurement {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private GenderStatus gender;
 
-    @Column(name = "image_url")
     private String image;
 
     @Column(name = "is_active", nullable = false)
@@ -58,7 +57,6 @@ public class Procurement {
     private String designation;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
     private LanguageStatus language;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -29,14 +29,15 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
 
-    /**
-     * 🛠️ স্বয়ংক্রিয়ভাবে কারেন্ট লগইন থাকা ইউজার আইডি রিড করার প্রাইভেট মেথড
-     */
+
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
         return (userId != null && !userId.isBlank()) ? userId : "16";
     }
 
+    /**
+     * 1. Save New Letter of Credit
+     */
     @Override
     @Transactional
     public LetterOfCreditResponseDTO save(LetterOfCreditRequestDTO dto) {
@@ -45,18 +46,19 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         LetterOfCredit lc = lcMapper.toEntity(dto);
         LetterOfCredit savedLc = lcRepository.save(lc);
 
-        sendSupplierLcNotification(savedLc);
+        if (savedLc.getLcStatus() == LcStatus.OPENED) {
+            sendSupplierLcNotification(savedLc);
+        }
 
-        // ── 🎯 সমাধান: ডেটাবেজ প্যারামিটারগুলো LC অবজেক্টের সাথে নিখুঁতভাবে ম্যাপ করা হলো ──
         activityLogService.log(
                 resolveCurrentUserId(),
-                null, // userEmail
+                null,
                 "CREATE",
                 "LC",
                 savedLc.getId().toString(),
-                "New Letter of Credit successfully initiated for Bank Reference. LC Number: " + savedLc.getLcNumber(),
-                null, // oldValue
-                "{\"status\":\"" + savedLc.getLcStatus().name() + "\"}", // newValue snapshot
+                "New Letter of Credit successfully initiated by Commercial Officer. LC Number: " + savedLc.getLcNumber(),
+                null,
+                "{\"status\":\"" + savedLc.getLcStatus().name() + "\"}",
                 ActionStatus.SUCCESS,
                 request.getRemoteAddr()
         );
@@ -64,6 +66,9 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return lcMapper.toResponseDTO(savedLc);
     }
 
+    /**
+     * 2. Update Existing Letter of Credit (Status Change to OPENED, EXPIRED etc.)
+     */
     @Override
     @Transactional
     public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto) {
@@ -71,6 +76,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 .orElseThrow(() -> new RuntimeException("Letter of credit index matrix missing for ID: " + id));
 
         String oldBank = lc.getIssuingBank();
+        LcStatus oldStatus = lc.getLcStatus();
 
         if (dto.getIssuingBank() != null) lc.setIssuingBank(dto.getIssuingBank());
         if (dto.getShipmentIncoTerms() != null) lc.setShipmentIncoTerms(dto.getShipmentIncoTerms());
@@ -83,18 +89,22 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         }
 
         LetterOfCredit updatedLc = lcRepository.save(lc);
-        sendSupplierLcNotification(updatedLc);
 
-        // ── 🎯 সমাধান: নতুন এনাম এবং ডাটা ডিফ (Data Diff) অ্যাড করা হলো ──
+
+        if ((oldStatus != LcStatus.OPENED && updatedLc.getLcStatus() == LcStatus.OPENED)
+                || updatedLc.getLcStatus() == LcStatus.EXPIRED) {
+            sendSupplierLcNotification(updatedLc);
+        }
+
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
                 "UPDATE",
                 "LC",
                 updatedLc.getId().toString(),
-                "General metadata fields updated for LC Number: " + updatedLc.getLcNumber(),
-                "{\"issuingBank\":\"" + oldBank + "\"}",
-                "{\"issuingBank\":\"" + updatedLc.getIssuingBank() + "\"}",
+                "General metadata or Status updated for LC Number: " + updatedLc.getLcNumber() + " -> Status: " + updatedLc.getLcStatus(),
+                "{\"issuingBank\":\"" + oldBank + "\", \"status\":\"" + oldStatus + "\"}",
+                "{\"issuingBank\":\"" + updatedLc.getIssuingBank() + "\", \"status\":\"" + updatedLc.getLcStatus() + "\"}",
                 ActionStatus.SUCCESS,
                 request.getRemoteAddr()
         );
@@ -102,6 +112,9 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return lcMapper.toResponseDTO(updatedLc);
     }
 
+    /**
+     * 3. Official Commercial Amendment (Status auto updates to AMENDED)
+     */
     @Override
     @Transactional
     public LetterOfCreditResponseDTO amendLC(Long id, LetterOfCreditRequestDTO dto) {
@@ -114,11 +127,13 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         if (dto.getExpiryDate() != null && !dto.getExpiryDate().isBlank()) lc.setExpiryDate(LocalDate.parse(dto.getExpiryDate()));
         if (dto.getLatestShipmentDate() != null && !dto.getLatestShipmentDate().isBlank()) lc.setLatestShipmentDate(LocalDate.parse(dto.getLatestShipmentDate()));
 
-        lc.incrementAmendment(); // 💡 আপনার এনটিটির কাউন্টার মেথড
+        // এনটিটির ইন্টারনাল মেথড স্ট্যাটাস AMENDED করে দেয় এবং কাউন্টার বাড়ায়
+        lc.incrementAmendment();
+
         LetterOfCredit amendedLc = lcRepository.save(lc);
+
         sendSupplierLcNotification(amendedLc);
 
-        // ── 🎯 সমাধান: নতুন এনাম স্ট্রাকচার সিঙ্ক ──
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -144,7 +159,6 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         String deletedLcNumber = lc.getLcNumber();
         lcRepository.delete(lc);
 
-        // ── 🎯 সমাধান: নতুন এনাম স্ট্রাকচার সিঙ্ক ──
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -159,15 +173,19 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         );
     }
 
-    @Override @Transactional(readOnly = true) public List<LetterOfCreditResponseDTO> findAll() { return lcRepository.findAllWithDetails().stream().map(lcMapper::toResponseDTO).collect(Collectors.toList()); }
+    @Override @Transactional(readOnly = true) public List<LetterOfCreditResponseDTO> findAll() {
+        return lcRepository.findAllWithDetails().stream()
+                .map(lcMapper::toResponseDTO).collect(Collectors.toList()); }
     @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getById(Long id) { return lcRepository.findByIdWithDetails(id).map(lcMapper::toResponseDTO); }
     @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) { return lcRepository.findByLcNumber(lcNumber).map(lcMapper::toResponseDTO); }
 
     // =========================================================================
-    // 📧 ডেডিকেটেড সাপ্লায়ার এলসি নোটিফিকেশন মেইলিং ইঞ্জিন (শতভাগ নির্ভুল)
+    // ডেডিকেটেড সাপ্লায়ার এলসি নোটিফিকেশন মেইলিং ইঞ্জিন (শতভাগ নির্ভুল)
+   // COMMERCIAL_OFFICER যখন কোনো Letter of Credit (LC) তৈরি (save) বা আপডেট (update) করবেন এবং
+   // সেটির স্ট্যাটাস পরিবর্তন হয়ে OPENED হবে, ঠিক তখনই সাপ্লায়ারের কাছে নোটিফিকেশন মেইল যাবে। এছাড়া এলসি অ্যামেন্ড//(amendLC) করলে বা স্ট্যাটাস AMENDED অথবা EXPIRED হলে স্বয়ংক্রিয়ভাবে আপডেটেড মেইল চলে যাবে।
+   // আর স্ট্যাটাস যদি শুধুমাত্র DRAFT থাকে, তবে কোনো মেইল যাবে না।
     // =========================================================================
     private void sendSupplierLcNotification(LetterOfCredit lc) {
-        if (lc.getLcStatus() == LcStatus.DRAFT) return;
         if (lc.getSupplier() == null || lc.getSupplier().getEmail() == null) return;
 
         String supplierEmail = lc.getSupplier().getEmail();
@@ -181,7 +199,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; }
                 .container { max-width: 600px; margin: 20px auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
                 .header { background-color: #1A365D; color: white; padding: 25px; text-align: center; }
-                .status-badge { display: inline-block; padding: 6px 15px; font-weight: bold; border-radius: 20px; font-size: 14px; text-transform: uppercase; }
+                .status-badge { display: inline-block; padding: 6px 15px; font-weight: bold; border-radius: 20px; font-size: 14px; text-transform: uppercase; background-color: #EBF8FF; color: #2B6CB0; }
                 .content { padding: 25px; background-color: #ffffff; }
                 .info-table { width: 100%%; margin-top: 15px; border-collapse: collapse; }
                 .info-table td { padding: 10px; border-bottom: 1px solid #edf2f7; font-size: 14px; }

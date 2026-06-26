@@ -2,9 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.GRNStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -14,24 +12,26 @@ import java.util.List;
 
 @Entity
 @Table(name = "goods_received_notes")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder // ফিউচারে সার্ভিস লেয়ারে সহজে অবজেক্ট ক্রিয়েট করার জন্য যুক্ত করা হলো
 public class GoodsReceivedNote {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "grn_number", unique = true, nullable = false)
-    private String grnNumber; // GoodsReceivedNoteNumber auto generate
+
+    @Column(unique = true, nullable = false)
+    private String grnNumber;
 
     private Integer quantity; // Auto loaded from PurchaseOrder
 
-    @Column(name = "received_quantity", nullable = false)
     private int receivedQuantity;
 
-    @Column(name = "received_at", nullable = false)
+    @Column(nullable = false)
     private LocalDate receivedAt;
 
     @Enumerated(EnumType.STRING)
@@ -41,14 +41,12 @@ public class GoodsReceivedNote {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
-    @Column(name = "inspection_date")
     private LocalDate inspectionDate;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // ── System Core / Warehouse Relations ────────────────────────
@@ -73,11 +71,17 @@ public class GoodsReceivedNote {
     private User inspectedBy;
 
     @OneToMany(mappedBy = "goodsReceivedNote", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<GRNLineItem> lineItems = new ArrayList<>();
+
+    @PrePersist
+    protected void onCreate() {
+
+        this.updatedAt = LocalDateTime.now();
+    }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 }

@@ -7,11 +7,13 @@ import com.example.SCM.dto.response.LogisticsOfficerResponseDTO;
 import com.example.SCM.entity.Logistics_Officer;
 import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.LogisticsOfficerRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.LogisticsOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,9 +38,12 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
     private final PoliceStationRepository policeStationRepository;
     private final LogisticsOfficerMapper officerMapper;
     private final MailService mailService;
+    private final ActivityLogService activityLogService;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
+
+
 
     @Override
     @Transactional
@@ -65,6 +70,8 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
         if (file != null && !file.isEmpty()) {
             officer.setImage(dto.getAddress());
         }
+
+
 
         Logistics_Officer savedOfficer = officerRepository.save(officer);
         sendWelcomeEmail(savedUser);

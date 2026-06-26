@@ -3,26 +3,26 @@ package com.example.SCM.entity;
 import com.example.SCM.enumClass.UrgencyLevel;
 import com.example.SCM.enumClass.PurchaseRequisitionStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "purchase_requisitions")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PurchaseRequisition {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "requested_by", nullable = false)
-    private Long requestedBy; // FK → Login User Id
+    @Column(nullable = false)
+    private Long requestedBy;
 
     // Multi-product selection mapping
     @ManyToMany(fetch = FetchType.LAZY)
@@ -42,41 +42,37 @@ public class PurchaseRequisition {
     )
     private List<Supplier> suppliers;
 
-    @Column(nullable = false, length = 10)
-    private String currency = "USD";
+    @Column(nullable = false)
+    private String currency ;
 
-    @Column(name = "quantity_required", nullable = false)
     private int quantityRequired;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "urgency_level", nullable = false)
-    private UrgencyLevel  urgencyLevel;
+    @Column(nullable = false)
+    private UrgencyLevel urgencyLevel;
 
-    @Column(name = "required_by_date", nullable = false)
+    @Column(nullable = false)
     private LocalDate requiredByDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "approval_status", nullable = false)
+    @Column(nullable = false)
+    @Builder.Default
     private PurchaseRequisitionStatus approvalStatus = PurchaseRequisitionStatus.PENDING;
 
-    @Column(name = "approved_by")
     private Long approvedBy;
 
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "lastUpdated_at", updatable = false)
-    private LocalDateTime lastUpdate;
-
-
-
+    private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now(); // প্রথমবার সেভ হওয়ার সময় কারেন্ট টাইম পাবে
         if (this.approvalStatus == null) {
             this.approvalStatus = PurchaseRequisitionStatus.PENDING;
         }
@@ -84,9 +80,6 @@ public class PurchaseRequisition {
 
     @PreUpdate
     protected void onUpdate() {
-        this.lastUpdate = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
-
-
-
 }

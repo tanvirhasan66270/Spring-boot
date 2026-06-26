@@ -6,13 +6,15 @@ import com.example.SCM.dto.mapper.OrderLineItemMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.ServiceType;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.CustomerOrderService;
+import com.example.SCM.service.ActivityLogService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +29,13 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final CustomerOrderMapper orderMapper;
     private final OrderLineItemMapper lineItemMapper;
     private final MailService mailService;
+    private final ActivityLogService activityLogService; // 1. ActivityLogService ইনজেক্ট করা হয়েছে
+    private final HttpServletRequest request;            // 2. HttpServletRequest ইনজেক্ট করা হয়েছে
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        return (userId != null && !userId.isBlank()) ? userId : "16";
+    }
 
     /**
      * 🛒 1. Save / Place a New Multi-Item Customer Order
@@ -47,6 +56,20 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder savedOrder = orderRepository.save(order);
         sendOrderConfirmationEmail(savedOrder);
 
+        // ✅ অ্যাক্টিভিটি লগ (CREATE ORDER)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "CUSTOMER_ORDER",
+                savedOrder.getId().toString(),
+                "New multi-item customer order placed. Order Number: " + savedOrder.getOrderNumber() + ", Total Amount: " + savedOrder.getTotalAmount() + " " + savedOrder.getCurrency(),
+                null,
+                "{\"orderNumber\":\"" + savedOrder.getOrderNumber() + "\", \"totalAmount\":" + savedOrder.getTotalAmount() + "}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return orderMapper.toResponseDTO(savedOrder);
     }
 
@@ -58,6 +81,11 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
+
+        // 🔒 ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
+        Long oldCustomerId = order.getCustomer() != null ? order.getCustomer().getId() : null;
+        String oldDeliveryAddress = order.getDeliveryAddress();
+        double oldTotalAmount = order.getTotalAmount();
 
         if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer().getId())) {
             User newCustomer = userRepository.findCustomerById(dto.getCustomerId())
@@ -81,9 +109,26 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                     order.addLineItem(item);
                 }
             });
+            // আইটেম রিক্যালকুলেশন মেথড কল করা হতে পারে যদি এনটিটিতে থাকে
+            order.executeCalculations();
         }
 
         CustomerOrder updatedOrder = orderRepository.save(order);
+
+        // ✅ অ্যাক্টিভিটি লগ (UPDATE ORDER)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "CUSTOMER_ORDER",
+                updatedOrder.getId().toString(),
+                "Customer order metadata and items updated. Order Number: " + updatedOrder.getOrderNumber(),
+                "{\"customerId\":" + oldCustomerId + ", \"address\":\"" + oldDeliveryAddress + "\", \"total\":" + oldTotalAmount + "}",
+                "{\"customerId\":" + updatedOrder.getCustomer().getId() + ", \"address\":\"" + updatedOrder.getDeliveryAddress() + "\", \"total\":" + updatedOrder.getTotalAmount() + "}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return orderMapper.toResponseDTO(updatedOrder);
     }
 
@@ -117,7 +162,25 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     public void delete(Long id) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target customer order row missing mapping index"));
+
+        String deletedOrderNumber = order.getOrderNumber();
+        double deletedTotalAmount = order.getTotalAmount();
+
         orderRepository.delete(order);
+
+        // ✅ অ্যাক্টিভিটি লগ (DELETE ORDER)
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "CUSTOMER_ORDER",
+                id.toString(),
+                "Customer order permanently purged from logistics cluster. Order Number was: " + deletedOrderNumber,
+                "{\"orderNumber\":\"" + deletedOrderNumber + "\", \"totalAmount\":" + deletedTotalAmount + "}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     /**
@@ -245,5 +308,4 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
         }
     }
-
 }

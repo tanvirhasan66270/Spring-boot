@@ -24,7 +24,7 @@ public class Country {
     @Column(unique = true)
     private String name;
 
-    @Column(unique = true, length = 3)
+    @Column(unique = true)
     private String code;           // ISO code e.g. BD
 
     private String phoneCode;      // e.g. +880

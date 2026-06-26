@@ -24,26 +24,24 @@ public class CommercialOfficer {
     @Column(columnDefinition = "TEXT")
     private String address;
 
-    @Column(name = "nid_number", nullable = false, unique = true, length = 50)
+
+    @Column(nullable = false, unique = true)
     private String nidNumber;
 
-    @Column(name = "passport_number", unique = true, length = 50)
+    @Column(unique = true)
     private String passportNumber;
 
     @Column(nullable = false)
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false)
     private GenderStatus gender;
 
-    @Column(name = "image_url")
-    private String image;
+    private String image; // কলামের নাম অটোমেটিক image হবে
 
-    @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @Column(name = "joining_date")
     private LocalDate joiningDate;
 
     private String designation;
@@ -57,10 +55,9 @@ public class CommercialOfficer {
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -77,5 +74,4 @@ public class CommercialOfficer {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
 }

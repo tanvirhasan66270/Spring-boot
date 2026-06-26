@@ -1,18 +1,18 @@
 package com.example.SCM.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
 @Table(name = "warehouses")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Warehouse {
 
     @Id
@@ -23,29 +23,26 @@ public class Warehouse {
     private String name;
 
     @Column(nullable = false, unique = true)
-    private String email; // who control Warehouse
+    private String email;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String location;
 
-    @Column(nullable = false)
     private double capacity;
 
-    @Column(name = "manager_id")
     private Long managerId;
 
-    @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
@@ -58,5 +55,6 @@ public class Warehouse {
     private PoliceStation policeStation;
 
     @ManyToMany(mappedBy = "warehouses", fetch = FetchType.LAZY)
+    @Builder.Default
     private Set<Driver> drivers = new HashSet<>();
 }

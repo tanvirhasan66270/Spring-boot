@@ -19,44 +19,36 @@ public class DeliveryTrip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "send_by", nullable = false)
+    @Column(nullable = false)
     private String sendBy;
 
-    @Column(name = "started_at")
     private LocalDateTime startedAt;
 
-    @Column(name = "completed_at")
     private LocalDateTime completedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private DeliveryTripStatus status;
 
-    @Column(name = "recipient_signature")
     private String recipientSignature;
 
-    @Column(name = "delivery_photo_url")
     private String deliveryPhotoUrl;
 
-    @Column(name = "customer_address", nullable = false)
+    @Column(nullable = false)
     private String customerAddress;
 
-    @Column(name = "vehicle_info")
     private String vehicleInfo;
 
-    @Column(name = "destination_info")
     private String destinationInfo;
 
-    @Column(name = "schedule_info")
     private String scheduleInfo;
 
-    @Column(name = "trip_info")
     private String tripInfo;
 
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     // ── System Core Relations ────────────────────────────────────
@@ -95,5 +87,4 @@ public class DeliveryTrip {
             this.completedAt = LocalDateTime.now();
         }
     }
-
 }

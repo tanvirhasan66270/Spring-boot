@@ -1,16 +1,16 @@
 package com.example.SCM.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "qc_checklists")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class QCChecklist {
 
     @Id
@@ -22,19 +22,17 @@ public class QCChecklist {
     @JoinColumn(name = "inspection_id", nullable = false)
     private QCInspection qcInspection;
 
-    @Column(name = "checkpoint_name", nullable = false, length = 150)
+    @Column(nullable = false, length = 150)
     private String checkpointName;
 
-    @Column(name = "is_passed", nullable = false)
     private boolean isPassed;
 
-    @Column(name = "remarks", columnDefinition = "TEXT")
-    private String remarks; // description as requested
+    @Column(columnDefinition = "TEXT")
+    private String remarks;
 
-    @Column(name = "created_at", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist
