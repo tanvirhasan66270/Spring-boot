@@ -18,7 +18,6 @@ public class CategoryResponseDTO {
 
     /**
      * Unique Category ID
-     *
      * This is the primary identifier of the Category entity.
      */
     private Long id;

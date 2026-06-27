@@ -9,9 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QCChecklistMapper {
 
-    /**
-     * Entity -> Response DTO (Flattening Operation)
-     */
+
     public QCChecklistResponseDTO toResponseDTO(QCChecklist entity) {
         if (entity == null) {
             return null;
@@ -33,9 +31,7 @@ public class QCChecklistMapper {
         return dto;
     }
 
-    /**
-     * Request DTO -> Entity (Create Operation)
-     */
+
     public QCChecklist toEntity(QCChecklistRequestDTO dto, QCInspection inspection) {
         if (dto == null) {
             return null;
@@ -51,9 +47,7 @@ public class QCChecklistMapper {
         return entity;
     }
 
-    /**
-     * Update Existing Entity
-     */
+
     public void updateEntity(QCChecklistRequestDTO dto, QCChecklist entity, QCInspection inspection) {
         if (dto == null || entity == null) {
             return;

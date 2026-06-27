@@ -17,5 +17,5 @@ public class DistrictResponseDTO {
     private String countryName;
 
     // Police Stations Breakdown ---
-    private List<String> policeStations; // থানার নামগুলো সরাসরি লিস্ট আকারে UI-তে বাইন্ড করার জন্য
+    private List<String> policeStations;
 }

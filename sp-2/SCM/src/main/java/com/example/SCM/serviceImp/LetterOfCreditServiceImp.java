@@ -35,9 +35,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return (userId != null && !userId.isBlank()) ? userId : "16";
     }
 
-    /**
-     * 1. Save New Letter of Credit
-     */
+
     @Override
     @Transactional
     public LetterOfCreditResponseDTO save(LetterOfCreditRequestDTO dto) {
@@ -66,9 +64,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return lcMapper.toResponseDTO(savedLc);
     }
 
-    /**
-     * 2. Update Existing Letter of Credit (Status Change to OPENED, EXPIRED etc.)
-     */
+
     @Override
     @Transactional
     public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto) {
@@ -112,9 +108,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return lcMapper.toResponseDTO(updatedLc);
     }
 
-    /**
-     * 3. Official Commercial Amendment (Status auto updates to AMENDED)
-     */
+
     @Override
     @Transactional
     public LetterOfCreditResponseDTO amendLC(Long id, LetterOfCreditRequestDTO dto) {

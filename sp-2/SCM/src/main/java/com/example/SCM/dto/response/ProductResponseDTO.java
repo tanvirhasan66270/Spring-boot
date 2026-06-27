@@ -13,7 +13,7 @@ public class ProductResponseDTO {
     private int quantity;
     private double sellingPrice;
     private String hasExpiryDate;
-    private double weight; //  নতুন ফিল্ড যোগ করা হলো
+    private double weight;
     private boolean isActive;
     private String availability;
     private String image;

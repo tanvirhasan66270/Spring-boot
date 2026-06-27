@@ -37,9 +37,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         return (userId != null && !userId.isBlank()) ? userId : "16";
     }
 
-    /**
-     * 🛒 1. Save / Place a New Multi-Item Customer Order
-     */
+
     @Transactional
     @Override
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
@@ -56,7 +54,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder savedOrder = orderRepository.save(order);
         sendOrderConfirmationEmail(savedOrder);
 
-        // ✅ অ্যাক্টিভিটি লগ (CREATE ORDER)
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -73,16 +70,13 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         return orderMapper.toResponseDTO(savedOrder);
     }
 
-    /**
-     * 🔄 2. Update Existing Order Metadata & Recalculate Items
-     */
     @Transactional
     @Override
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
 
-        // 🔒 ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
+        //ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
         Long oldCustomerId = order.getCustomer() != null ? order.getCustomer().getId() : null;
         String oldDeliveryAddress = order.getDeliveryAddress();
         double oldTotalAmount = order.getTotalAmount();
@@ -115,7 +109,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
         CustomerOrder updatedOrder = orderRepository.save(order);
 
-        // ✅ অ্যাক্টিভিটি লগ (UPDATE ORDER)
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -132,9 +125,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         return orderMapper.toResponseDTO(updatedOrder);
     }
 
-    /**
-     * 📋 3. Find All Customer Orders with Fetch Join Optimization
-     */
+
     @Transactional(readOnly = true)
     @Override
     public List<CustomerOrderResponseDTO> findAll() {
@@ -144,9 +135,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 🔍 4. Get Single Order Details By ID
-     */
+
     @Transactional(readOnly = true)
     @Override
     public Optional<CustomerOrderResponseDTO> getById(Long id) {
@@ -154,9 +143,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .map(orderMapper::toResponseDTO);
     }
 
-    /**
-     * ❌ 5. Delete / Purge Order from Matrix Cache
-     */
+
     @Transactional
     @Override
     public void delete(Long id) {
@@ -168,7 +155,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
         orderRepository.delete(order);
 
-        // ✅ অ্যাক্টিভিটি লগ (DELETE ORDER)
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -183,9 +169,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         );
     }
 
-    /**
-     * 📦 6. Live Track Order Status by Unique Track Number
-     */
+
     @Transactional(readOnly = true)
     @Override
     public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) {
@@ -196,9 +180,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 .map(orderMapper::toResponseDTO);
     }
 
-    /**
-     * 📧 Rich HTML Order Confirmation Invoice Email Dispatcher
-     */
     private void sendOrderConfirmationEmail(CustomerOrder order) {
         if (order.getCustomerEmail() == null || order.getCustomerEmail().contains("no-email")) return;
 

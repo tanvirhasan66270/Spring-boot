@@ -20,7 +20,7 @@ public class ProcurementMapper {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(dto.getPassword());
-        user.setRole(Role.PROCUREMENT); // 🔗 সিকিউরিটি রোল অ্যাসাইন
+        user.setRole(Role.PROCUREMENT); // সিকিউরিটি রোল অ্যাসাইন
         return user;
     }
 

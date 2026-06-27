@@ -9,9 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class PoliceStationMapper {
 
-    /**
-     * Entity -> Response DTO (Object Graph Flattening)
-     */
+
     public PoliceStationResponseDTO toResponseDTO(PoliceStation entity) {
         if (entity == null) return null;
 
@@ -38,9 +36,7 @@ public class PoliceStationMapper {
         return dto;
     }
 
-    /**
-     * Request DTO -> Entity
-     */
+
     public PoliceStation toEntity(PoliceStationRequestDTO dto, District district) {
         if (dto == null) return null;
 
@@ -55,9 +51,7 @@ public class PoliceStationMapper {
         return entity;
     }
 
-    /**
-     * Update Existing Entity
-     */
+
     public void updateEntity(PoliceStationRequestDTO dto, PoliceStation entity, District district) {
         if (dto == null || entity == null) return;
 

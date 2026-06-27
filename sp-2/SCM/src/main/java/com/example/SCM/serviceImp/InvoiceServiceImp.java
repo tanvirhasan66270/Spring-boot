@@ -34,14 +34,14 @@ public class InvoiceServiceImp implements InvoiceService {
     public InvoiceResponseDTO save(InvoiceRequestDTO dto) {
         Invoice invoice = mapper.toEntity(dto);
 
-        // ১. অটো ট্র্যাকিং কোড বাইন্ডিং
+        //  অটো ট্র্যাকিং কোড বাইন্ডিং
         invoice.setInvoiceNumber(codeGenerator.generateTrackingCode());
 
-        // ২. আপনার কাস্টম রিপোজিটরি মেথড findByIdWithDetails দিয়ে অবজেক্ট গ্রাফ লোড করা
+        //  আপনার কাস্টম রিপোজিটরি মেথড findByIdWithDetails দিয়ে অবজেক্ট গ্রাফ লোড করা
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order linkage missing for verification ID: " + dto.getCustomerOrderId()));
 
-        // 🔗 নিরাপদ রিলেশন বাইন্ডিং গেটওয়ে
+
         if (order.getCustomer() != null) {
             invoice.setIssuedToName(order.getCustomer().getName());
             invoice.setCustomerEmail(order.getCustomer().getEmail());
@@ -52,7 +52,7 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice savedInvoice = repository.save(invoice);
 
-        // ৩. স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
+        //  স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
         if (savedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !savedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(savedInvoice, savedInvoice.getCustomerEmail());
         }
@@ -69,7 +69,7 @@ public class InvoiceServiceImp implements InvoiceService {
         // এনটিটি ডেটা কন্টেইনার ওভাররাইট/আপডেট করা
         mapper.updateEntityFromDTO(dto, invoice);
 
-        // আপনার কাস্টম রিপোজিটরি মেথড দিয়ে ভেরিফিকেশন
+        //কাস্টম রিপোজিটরি মেথড দিয়ে ভেরিফিকেশন
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order node structural integrity broken."));
 
@@ -114,9 +114,6 @@ public class InvoiceServiceImp implements InvoiceService {
         repository.deleteById(id);
     }
 
-    // =========================================================================
-    // 📧 প্রফেশনাল এইচটিএমএল ইনভয়েস মেইল ইঞ্জিন
-    // =========================================================================
     private void sendInvoiceEmail(Invoice invoice, String customerEmail) {
         String subject = "SCM Official Invoice Bill - " + invoice.getInvoiceNumber();
 

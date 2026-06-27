@@ -45,9 +45,9 @@ public class Product {
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
-    private String image; // Base64 লার্জ স্ট্রিং ডাটা সেভ করার জন্য LONGTEXT ব্যবহার করা হয়েছে
+    private String image; // Base64
 
-    // ক্যাটাগরির সাথে রিলেশনশিপ ম্যাপিং
+    // Relationship mapping with category
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

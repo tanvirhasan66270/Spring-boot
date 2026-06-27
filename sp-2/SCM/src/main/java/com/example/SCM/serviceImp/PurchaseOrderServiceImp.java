@@ -25,11 +25,9 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final QuotationRepository quotationRepository;
     private final PurchaseOrderMapper purchaseOrderMapper;
-    private final MailService mailService; // 💡 মেইল সার্ভিস ডিপেন্ডেন্সি
+    private final MailService mailService;
 
-    /**
-     * 1. Save New Purchase Order (Initial State: DRAFT & Mail to Manager)
-     */
+
     @Override
     @Transactional
     public PurchaseOrderResponseDTO save(PurchaseOrderRequestDTO dto) {
@@ -56,15 +54,14 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         po.setStatus(PurchaseOrderStatus.DRAFT);
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
 
-        // 🎯 ম্যানেজারকে ইমেইলে ওয়ান-ক্লিক ISSUED গেটওয়ে রিকোয়েস্ট পাঠানো
+        //ম্যানেজারকে ইমেইলে ওয়ান-ক্লিক ISSUED গেটওয়ে রিকোয়েস্ট পাঠানো
         sendPoApprovalMailToManager(savedPo);
 
         return purchaseOrderMapper.toResponseDTO(savedPo);
     }
 
-    /**
-     * 🎯 2. Manager One-Click Gateway: Status -> ISSUED & Mail to Supplier
-     */
+    //  Manager One-Click Gateway: Status -> ISSUED & Mail to Supplier
+
     @Transactional
     public PurchaseOrderResponseDTO managerIssueOrder(Long id, Long managerId) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
@@ -74,19 +71,18 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             throw new RuntimeException("Order has already been processed or Issued!");
         }
 
-        // স্ট্যাটাস পরিবর্তন করে ISSUED করা হলো
+
         po.setStatus(PurchaseOrderStatus.ISSUED);
         PurchaseOrder issuedPo = purchaseOrderRepository.save(po);
 
-        // 🎯 সাপ্লায়ারের জিমেইলে অফিশিয়াল ডাইনামিক PO নোটিফিকেশন পাঠানো
+        //সাপ্লায়ারের জিমেইলে অফিশিয়াল ডাইনামিক PO নোটিফিকেশন পাঠানো
         sendPoIssuedMailToSupplier(issuedPo);
 
         return purchaseOrderMapper.toResponseDTO(issuedPo);
     }
 
-    /**
-     * 🎯 3. Supplier Dashboard / One-Click Gateway: Status -> RECEIVED
-     */
+      //Supplier Dashboard / One-Click Gateway: Status -> RECEIVED
+
     @Transactional
     public PurchaseOrderResponseDTO supplierReceiveOrder(Long id) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
@@ -102,9 +98,8 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         return purchaseOrderMapper.toResponseDTO(receivedPo);
     }
 
-    /**
-     * 🎯 4. Smart Cargo Sync Logic: Quantities Match -> PARTIALLY_RECEIVED Trigger
-     */
+      //Quantities Match -> PARTIALLY_RECEIVED Trigger
+
     @Transactional
     public PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
@@ -120,12 +115,9 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         return purchaseOrderMapper.toResponseDTO(purchaseOrderRepository.save(po));
     }
 
-    // =========================================================================
-    // 📧 ইমেইল ইঞ্জিন মডিউল (HTML ১-ক্লিক বাটন টেমপ্লেটসমূহ)
-    // =========================================================================
 
     private void sendPoApprovalMailToManager(PurchaseOrder po) {
-        // বাস্তব প্রজেক্টে কোম্পানির ম্যানেজারের অফিশিয়াল মেইল বসে যাবে
+        //প্রজেক্টে কোম্পানির ম্যানেজারের অফিশিয়াল মেইল বসে যাবে
         String managerEmail = "manager@company.com";
         String subject = "SCM Approval Request: Authorize Purchase Order #" + po.getPoNumber();
 
@@ -221,9 +213,6 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         }
     }
 
-    // =========================================================================
-    // ── 🔒 বাকি মেথডগুলো অপরিবর্তিত রাখা হলো (Unchanged) ──
-    // =========================================================================
     @Override
     @Transactional
     public PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto) {

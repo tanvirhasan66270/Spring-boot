@@ -11,6 +11,6 @@ public class OrderLineItemResponseDTO {
     private int quantity;
     private double unitPrice;
     private double lineTotal;
-    private double itemWeightTotal; // কেজিতে মোট ওজন
+    private double itemWeightTotal;
     private String remarks;
 }

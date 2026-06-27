@@ -28,14 +28,14 @@ public class StockMovementServiceImp implements StockMovementService {
     @Override
     @Transactional
     public StockMovementResponseDTO logMovement(StockMovementRequestDTO dto) {
-        // ১. ট্রানজেকশন পার্সিস্ট করা
+        //  ট্রানজেকশন পার্সিস্ট করা
         StockMovement entity = repository.save(mapper.toEntity(dto));
 
-        // ২. রিলেশন টেবিল থেকে নাম দুটি অটো-ফেচ করা
+        //  রিলেশন টেবিল থেকে নাম দুটি অটো-ফেচ করা
         String productName = productRepository.findNameById(entity.getProductId()).orElse("Unknown Product");
         String warehouseName = warehouseRepository.findNameById(entity.getWarehouseId()).orElse("Unknown Warehouse");
 
-        // ৩. ডিটিওতে ম্যাপ করে পাঠানো
+        //  ডিটিওতে ম্যাপ করে পাঠানো
         return mapper.toResponseDTO(entity, productName, warehouseName);
     }
 

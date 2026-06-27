@@ -90,7 +90,7 @@ public class QCInspectionMapper {
                 chk.setCheckpointName(cDto.getCheckpointName());
                 chk.setPassed(cDto.isPassed());
                 chk.setRemarks(cDto.getRemarks());
-                chk.setQcInspection(entity); // 💡 বাইন্ডিং প্যারেন্ট লিঙ্কিং বাধ্যতামূলক
+                chk.setQcInspection(entity);
                 return chk;
             }).collect(Collectors.toList()));
         }

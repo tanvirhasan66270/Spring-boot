@@ -29,6 +29,5 @@ public class QCInspectionResponseDTO {
     private Long inspectedBy;
     private String inspectedByName;
 
-    //  চাইল্ড চেকলিস্টের রিকোয়েস্ট অ্যারে
     private List<QCChecklistResponseDTO> checklists;
 }

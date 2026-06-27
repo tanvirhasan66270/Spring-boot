@@ -36,9 +36,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
     @Value("${image.upload.dir}")
     private String uploadDir;
 
-    /**
-     * 1. Save New QCInspector & Auth User Account (With Multipart Image)
-     */
+
     @Transactional
     @Override
     public QCInspectorResponseDTO save(QCInspectorRequestDTO dto, MultipartFile image) {
@@ -65,7 +63,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         // ম্যাপার দিয়ে মূল প্রোফাইল এনটিটি তৈরি করা
         QCInspector inspector = qcInspectorMapper.toQCInspectorEntity(dto, savedUser, policeStation);
 
-        // 🖼️ 'qc_inspector' সাব-ফোল্ডারে ইমেজ আপলোড হ্যান্ডেলিং
+        //'qc_inspector' সাব-ফোল্ডারে ইমেজ আপলোড হ্যান্ডেলিং
         if (image != null && !image.isEmpty()) {
             inspector.setImage(uploadImage(image, dto.getName()));
         }
@@ -74,9 +72,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         return qcInspectorMapper.toResponseDTO(savedInspector);
     }
 
-    /**
-     * 2. Update Existing QCInspector Profile & User Security Fields
-     */
+
     @Transactional
     @Override
     public QCInspectorResponseDTO update(Long id, QCInspectorRequestDTO dto, MultipartFile image) {
@@ -103,7 +99,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
             inspector.getUser().setPassword(dto.getPassword());
         }
 
-        // 🖼️ নতুন ইমেজ আসলে পুরানো ইমেজ পাথ আপডেট করা
+        // নতুন ইমেজ আসলে পুরানো ইমেজ পাথ আপডেট করা
         if (image != null && !image.isEmpty()) {
             inspector.setImage(uploadImage(image, dto.getName()));
         }
@@ -112,9 +108,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         return qcInspectorMapper.toResponseDTO(updatedInspector);
     }
 
-    /**
-     * 3. Get All QCInspectors (Using optimized Join Fetch query)
-     */
+
     @Override
     @Transactional(readOnly = true)
     public List<QCInspectorResponseDTO> findAll() {
@@ -123,9 +117,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Get Single QCInspector By ID
-     */
+
     @Override
     @Transactional(readOnly = true)
     public Optional<QCInspectorResponseDTO> getById(Long id) {
@@ -133,9 +125,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
                 .map(qcInspectorMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Secure Cascade Delete (Profile + Auth User Account)
-     */
+
     @Transactional
     @Override
     public void delete(Long id) {
@@ -151,9 +141,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         }
     }
 
-    /**
-     * 🛠️ আপনার রাইডার সার্ভিস প্যাটার্ন অনুযায়ী তৈরি করা প্রাইভেট ইমেজ আপলোড মেথড
-     */
+
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "qc_inspector");

@@ -14,12 +14,10 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class POLineItemMapper {
 
-    // ফ্রন্টএন্ড থেকে আসা "YYYY-MM-DD" স্ট্রিং ডেট পার্স করার জন্য ডেট ফরমেটার
+    //"YYYY-MM-DD" স্ট্রিং
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /**
-     * 1. RequestDTO, PurchaseOrder, এবং Product থেকে নতুন POLineItem Entity-তে রূপান্তর (Create Operation)
-     */
+
     public POLineItem toEntity(POLineItemRequestDTO dto, PurchaseOrder purchaseOrder, Product product) {
         if (dto == null) {
             return null;
@@ -53,10 +51,7 @@ public class POLineItemMapper {
         return item;
     }
 
-    /**
-     * 2. POLineItem Entity থেকে POLineItemResponseDTO-তে রূপান্তর (Read Operations)
-     * এটি চাইল্ড টেবিলের ডাটা ফ্ল্যাট করে এক লাইনে নিয়ে আসে যাতে UI গ্রিডে সহজে বাইন্ড করা যায়।
-     */
+
     public POLineItemResponseDTO toResponseDTO(POLineItem item) {
         if (item == null) {
             return null;
@@ -81,7 +76,6 @@ public class POLineItemMapper {
             PurchaseOrder po = item.getPurchaseOrder();
             dto.setPoId(po.getId());
 
-            // 💡 আপনার চাহিদা অনুযায়ী: প্যারেন্ট অর্ডারের কারেন্ট টোটাল ট্র্যাকার ভ্যালুটি অ্যাসাইন করা হলো।
             // যেহেতু এনটিটি থেকে সরাসরি লিস্ট বা গ্র্যান্ড টোটাল বাদ গেছে, তাই সার্ভিস লেয়ার থেকে
             // এই ভ্যালুটি কাস্টম কুয়েরি বা সামেশনের মাধ্যমে রিয়েল-টাইম ক্যালকুলেট হয়ে ডাটাবেজ থেকে রিফ্লেক্ট করবে।
             dto.setTotalAmount(po.getTotalAmount());
@@ -98,9 +92,7 @@ public class POLineItemMapper {
         return dto;
     }
 
-    /**
-     * 3. এক্সিস্টিং POLineItem Entity-কে RequestDTO এবং নতুন অবজেক্ট দিয়ে আপডেট করা (Update Operation)
-     */
+
     public void updateEntity(POLineItemRequestDTO dto, POLineItem item, Product product) {
         if (dto == null || item == null) {
             return;

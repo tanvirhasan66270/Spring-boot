@@ -17,10 +17,9 @@ public class PurchaseOrderMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /**
-     * 1. PurchaseOrder Entity -> PurchaseOrderResponseDTO (Flattening Operations)
-     * অবজেক্ট চেইন ভেঙে ফ্ল্যাট জেসন ডেটা তৈরি করে যাতে ফ্রন্টঅ্যান্ড গ্রিডে সরাসরি বাইন্ড করা যায়।
-     */
+    // PurchaseOrder Entity -> PurchaseOrderResponseDTO (Flattening Operations)
+
+
     public PurchaseOrderResponseDTO toResponseDTO(PurchaseOrder po) {
         if (po == null) {
             return null;
@@ -40,7 +39,7 @@ public class PurchaseOrderMapper {
         dto.setCreatedAt(po.getCreatedAt());
         dto.setUpdatedAt(po.getUpdatedAt());
 
-        // 🔗 Supplier Details Flattening (কোটিশন টেবিল হয়ে আসা সাপ্লায়ার নাম)
+        // Supplier Details Flattening (কোটিশন টেবিল হয়ে আসা সাপ্লায়ার নাম)
         if (po.getSupplier() != null) {
             dto.setSupplierId(po.getSupplier().getId());
             // যদি সাপ্লায়ারের নাম User টেবিল থেকে আসে তবে po.getSupplier().getUser().getName() ব্যবহার করবেন
@@ -48,12 +47,12 @@ public class PurchaseOrderMapper {
             dto.setSupplierEmail(po.getSupplier().getEmail());
         }
 
-        // 🔗 Purchase Requisition Details Flattening
+        // Purchase Requisition Details Flattening
         if (po.getPurchaseRequisition() != null) {
             dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
         }
 
-        // 🔗 Original Quotation ID Flattening
+        // Original Quotation ID Flattening
         if (po.getQuotation() != null) {
             dto.setQuotationId(po.getQuotation().getId());
         }
@@ -61,9 +60,7 @@ public class PurchaseOrderMapper {
         return dto;
     }
 
-    /**
-     * 2. Request DTO এবং অটো-লোডেড রিলেশনাল Entities থেকে নতুন PurchaseOrder Entity তৈরি (Create Operation)
-     */
+
     public PurchaseOrder toEntity(PurchaseOrderRequestDTO dto, Quotation quotation, Supplier supplier, PurchaseRequisition pr) {
         if (dto == null) {
             return null;
@@ -77,7 +74,7 @@ public class PurchaseOrderMapper {
         po.setIssuedBy(dto.getIssuedBy());
         po.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "USD");
 
-        // 💡 অটো-লোডিং মেকানিজম: কোটেশন টেবিল থেকে কোয়ান্টিটি সরাসরি এসাইন করা হলো
+        // অটো-লোডিং মেকানিজম: কোটেশন টেবিল থেকে কোয়ান্টিটি সরাসরি এসাইন করা হলো
         if (quotation != null && quotation.getQuantity() != null) {
             // আপনার Quotation এনটিটির quantity টাইপ যদি Integer না হয়ে String হয়, তবে Integer.parseInt() করে নেবেন
             po.setQuantity(quotation.getQuantity());
@@ -103,9 +100,8 @@ public class PurchaseOrderMapper {
         return po;
     }
 
-    /**
-     * 3. এক্সিস্টিং PurchaseOrder Entity-কে RequestDTO এবং নতুন অবজেক্ট চেইন দিয়ে আপডেট করা (Update Operation)
-     */
+    // এক্সিস্টিং PurchaseOrder Entity-কে RequestDTO এবং নতুন অবজেক্ট চেইন দিয়ে আপডেট করা (Update Operation)
+
     public void updateEntity(PurchaseOrderRequestDTO dto, PurchaseOrder po, Quotation quotation, Supplier supplier, PurchaseRequisition pr) {
         if (dto == null || po == null) {
             return;

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class WarehouseRequestDTO {
     private String name;
-    private String email; //  নতুন যুক্ত করা ফিল্ড
+    private String email;
     private String location;
     private double capacity;
     private Long managerId;

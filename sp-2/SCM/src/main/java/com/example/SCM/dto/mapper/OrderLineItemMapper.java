@@ -14,9 +14,8 @@ public class OrderLineItemMapper {
 
     private final ProductRepository productRepository;
 
-    /**
-     *  Request DTO থেকে Entity-তে কনভার্ট (আইটেম লেভেল বিল্ডার)
-     */
+   //  Request DTO থেকে Entity-তে কনভার্ট (আইটেম লেভেল বিল্ডার)
+
     public OrderLineItem toEntity(OrderLineItemRequestDTO dto) {
         if (dto == null) return null;
 
@@ -46,9 +45,8 @@ public class OrderLineItemMapper {
         return item;
     }
 
-    /**
-     *  Entity থেকে Response DTO-তে কনভার্ট (ক্লিন জেসন আউটপুট জেনারেটর)
-     */
+   //  Entity থেকে Response DTO-তে কনভার্ট (ক্লিন জেসন আউটপুট জেনারেটর)
+
     public OrderLineItemResponseDTO toResponseDTO(OrderLineItem entity) {
         if (entity == null) return null;
 

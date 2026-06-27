@@ -15,5 +15,5 @@ public class DivisionResponseDTO {
     private String countryName;
 
     //  Districts Breakdown ---
-    private List<String> districts; // ডিস্ট্রিক্টের নামগুলো সরাসরি লিস্ট আকারে UI-তে দেখানোর জন্য
+    private List<String> districts;
 }

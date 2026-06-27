@@ -35,21 +35,21 @@ public class CustomerServiceImp implements CustomerService {
     @Transactional
     @Override
     public CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile image) {
-        // ১. অ্যাসোসিয়েটেড ইউজার অ্যাকাউন্ট চেক বা ক্রিয়েশন লজিক (প্রজেক্ট রিকোয়ারমেন্ট অনুযায়ী)
+        //  অ্যাসোসিয়েটেড ইউজার অ্যাকাউন্ট চেক বা ক্রিয়েশন লজিক (প্রজেক্ট রিকোয়ারমেন্ট অনুযায়ী)
         // এখানে ধরে নেওয়া হচ্ছে কন্ট্রোলার থেকে পাস হওয়া dto-তে অলরেডি সোর্স ইউজার অবজেক্ট তৈরি বা রেডি আছে।
-        User user = userRepository.findById(dto.getPoliceStationId()) // আপনার ডামি বা এক্সিস্টিং ইউজার হ্যান্ডলার
+        User user = userRepository.findById(dto.getPoliceStationId())
                 .orElseThrow(() -> new RuntimeException("Associated Auth User Node missing"));
 
         PoliceStation policeStation = dto.getPoliceStationId() != null ?
                 policeStationRepository.findById(dto.getPoliceStationId())
                 .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
 
-        // ২. ম্যাপার দিয়ে নতুন এনটিটি তৈরি (উপরে তৈরি করা আপনার কাস্টম মেথড অনুযায়ী)
+        // ম্যাপার দিয়ে নতুন এনটিটি তৈরি (উপরে তৈরি করা আপনার কাস্টম মেথড অনুযায়ী)
         Customer customer = new Customer();
         customer.setUser(user);
         customerMapper.updateEntity(dto, customer, policeStation);
 
-        // ৩. ইমেজ আপলোড হ্যান্ডলিং
+        //  ইমেজ আপলোড হ্যান্ডলিং
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
             customer.setImage("uploads/customer/" + uploadedFileName);
@@ -57,7 +57,7 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        // ৪. স্বাগতম জানিয়ে ডাইনামিক HTML মেইল পাঠানো
+        // welcome জানিয়ে ডাইনামিক HTML মেইল পাঠানো
         sendCustomerWelcomeEmail(savedCustomer);
 
         return customerMapper.toResponseDTO(savedCustomer);
@@ -109,9 +109,7 @@ public class CustomerServiceImp implements CustomerService {
         userRepository.delete(customer.getUser());
     }
 
-    /**
-     * 🖼️ প্রোফাইল ইমেজ ডিরেক্টরিতে রাইট করার অপ্টিমাইজড মেথড
-     */
+
     private String uploadImage(MultipartFile file, String customerName) {
         try {
             Path path = Paths.get(uploadDir, "customer");
@@ -137,9 +135,8 @@ public class CustomerServiceImp implements CustomerService {
         }
     }
 
-    /**
-     * 👥 নতুন কাস্টমার রেজিস্ট্রেশন সম্পন্ন হলে স্বাগতম জানিয়ে ডাইনামিক HTML মেইল পাঠানোর মেথড
-     */
+    // নতুন কাস্টমার রেজিস্ট্রেশন সম্পন্ন হলে welcome জানিয়ে ডাইনামিক HTML মেইল পাঠানোর মেথড
+
     private void sendCustomerWelcomeEmail(Customer customer) {
         if (customer == null || customer.getUser() == null || customer.getUser().getEmail() == null) return;
 

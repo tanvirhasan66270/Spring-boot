@@ -18,7 +18,7 @@ public class QCInspectorResponseDTO {
     private LocalDate dob;
     private GenderStatus gender;
     private String image;
-    private boolean isActive;      // প্রোফাইল একটিভ স্টেট
+    private boolean isActive;
     private LocalDate joiningDate;
     private String designation;
     private LanguageStatus language;
@@ -31,7 +31,7 @@ public class QCInspectorResponseDTO {
     private String email;
     private String phone;
     private Role role;
-    private boolean userActive;    // নতুন যুক্ত ফিল্ড (User টেবিল থেকে ফ্ল্যাট হয়ে আউটপুটে দেখাবে)
+    private boolean userActive;
 
     //  Flattened Location Details ---
     private Long policeStationId;

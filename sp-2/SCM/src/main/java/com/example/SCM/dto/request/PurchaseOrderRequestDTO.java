@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class PurchaseOrderRequestDTO {
 
-    private Long quotationId;              //  মূল চালিকাশক্তি (TS-এর QuotationId)
+    private Long quotationId;
     private Long issuedBy;                 // লগইন করা ইউজারের আইডি
     private double totalAmount;
     private String currency;               // Default "USD"

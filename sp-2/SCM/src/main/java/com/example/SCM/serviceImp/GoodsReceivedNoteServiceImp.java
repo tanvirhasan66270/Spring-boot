@@ -29,9 +29,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
     private final GoodsReceivedNoteMapper goodsReceivedNoteMapper;
     private final GRNLineItemMapper gRNLineItemMapper;
 
-    /**
-     * 1. Save New Goods Received Note (Create Operation)
-     */
+
     @Transactional
     @Override
     public GoodsReceivedNoteResponseDTO save(GoodsReceivedNoteRequestDTO dto) {
@@ -83,9 +81,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
         return goodsReceivedNoteMapper.toResponseDTO(savedGrn);
     }
 
-    /**
-     * 2. Update Existing Goods Received Note (Update Operation)
-     */
+
     @Transactional
     @Override
     public GoodsReceivedNoteResponseDTO update(Long id, GoodsReceivedNoteRequestDTO dto) {
@@ -113,9 +109,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
         return goodsReceivedNoteMapper.toResponseDTO(updatedGrn);
     }
 
-    /**
-     * 3. Find All Goods Received Notes (Read Operation)
-     */
+
     @Transactional(readOnly = true)
     @Override
     public List<GoodsReceivedNoteResponseDTO> findAll() {
@@ -125,9 +119,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Get Single Goods Received Note By ID (Read Operation)
-     */
+
     @Transactional(readOnly = true)
     @Override
     public Optional<GoodsReceivedNoteResponseDTO> getById(Long id) {
@@ -135,9 +127,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
                 .map(goodsReceivedNoteMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Hard Delete Goods Received Note (Delete Operation)
-     */
+
     @Transactional
     @Override
     public void delete(Long id) {

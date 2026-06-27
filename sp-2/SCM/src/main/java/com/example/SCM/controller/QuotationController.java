@@ -17,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/quotations/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // আপনার ফ্রন্টএন্ড পোর্ট অনুযায়ী এটি পরিবর্তন করতে পারেন
+@CrossOrigin(origins = "*")
 public class QuotationController {
 
     private final QuotationService quotationService;

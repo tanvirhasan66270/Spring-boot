@@ -24,9 +24,7 @@ public class QuotationMapper {
         this.entityManager = entityManager;
     }
 
-    /**
-     * DTO to Entity: নতুন কোটেশন তৈরি বা আপডেট করার জন্য
-     */
+
     public Quotation toEntity(QuotationRequestDTO dto) {
         if (dto == null) {
             return null;
@@ -45,7 +43,6 @@ public class QuotationMapper {
             quotation.setDeliveryTime(LocalDate.parse(dto.getDeliveryTime(), DATE_FORMATTER));
         }
 
-        // রিলেশনাল অবজেক্ট রেফারেন্স সেট করা (EntityManager proxy ব্যবহার করে কর্মক্ষমতা বাড়ানোর জন্য)
         if (dto.getSupplierId() != null) {
             quotation.setSupplier(entityManager.getReference(Supplier.class, dto.getSupplierId()));
         }
@@ -75,9 +72,7 @@ public class QuotationMapper {
         return quotation;
     }
 
-    /**
-     * Entity to DTO: ফ্রন্টএন্ডে ডেটা রেসপন্স পাঠানোর জন্য (Flattened Data)
-     */
+
     public QuotationResponseDTO toResponseDTO(Quotation quotation) {
         if (quotation == null) {
             return null;

@@ -48,7 +48,7 @@ public class InvoiceMapper {
         dto.setId(entity.getId());
         dto.setInvoiceNumber(entity.getInvoiceNumber());
         dto.setCustomerOrderId(entity.getCustomerOrderId());
-        dto.setCustomerEmail(entity.getCustomerEmail()); // 💡 ফ্রন্টএন্ডের অটো ফিলাপ ট্র্যাক রাখার জন্য সিঙ্কড
+        dto.setCustomerEmail(entity.getCustomerEmail());
         dto.setSalesOfficerId(entity.getSalesOfficerId());
         dto.setIssuedToName(entity.getIssuedToName());
         dto.setCurrency(entity.getCurrency());

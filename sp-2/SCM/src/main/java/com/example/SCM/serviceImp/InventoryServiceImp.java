@@ -27,9 +27,7 @@ public class InventoryServiceImp implements InventoryService {
     private final WarehouseRepository warehouseRepository;
     private final InventoryMapper inventoryMapper;
 
-    /**
-     * 1. Save New Inventory Stock
-     */
+
     @Override
     @Transactional
     public InventoryResponseDTO save(InventoryRequestDTO dto) {
@@ -96,7 +94,7 @@ public class InventoryServiceImp implements InventoryService {
         return inventoryMapper.toResponseDTO(updatedInventory);
     }
 
-    // 3. Find All Inventories
+    //  Find All Inventories
 
     @Override
     @Transactional(readOnly = true)
@@ -106,7 +104,7 @@ public class InventoryServiceImp implements InventoryService {
                 .collect(Collectors.toList());
     }
 
-    // 4. Find Inventory By ID
+    // Find Inventory By ID
 
     @Override
     @Transactional(readOnly = true)
@@ -115,7 +113,7 @@ public class InventoryServiceImp implements InventoryService {
                 .map(inventoryMapper::toResponseDTO);
     }
 
-    // 5. Delete Inventory Record
+    //  Delete Inventory Record
 
     @Override
     @Transactional
@@ -126,10 +124,8 @@ public class InventoryServiceImp implements InventoryService {
         inventoryRepository.delete(inventory);
     }
 
-    /**
-     * 💡 রিয়াল-টাইম ইনভেন্টরি বিজনেস লজিক হেল্পার মেথড
-     * quantityOnHand এবং quantityReserved এর ওপর ভিত্তি করে অটো-স্ট্যাটাস ক্যালকুলেশন
-     */
+    // quantityOnHand এবং quantityReserved এর ওপর ভিত্তি করে অটো-স্ট্যাটাস ক্যালকুলেশন
+
     private void calculateAndSetStockStatus(Inventory inventory, Product product) {
         int availableQuantity = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
 

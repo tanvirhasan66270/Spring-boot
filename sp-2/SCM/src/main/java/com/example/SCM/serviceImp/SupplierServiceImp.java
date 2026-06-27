@@ -42,30 +42,30 @@ public class SupplierServiceImp implements SupplierService {
     @Override
     @Transactional
     public SupplierResponseDTO save(SupplierRequestDTO dto, MultipartFile file) {
-        // ১. পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড ভ্যালিডেশন
+        //  পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড ভ্যালিডেশন
         if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
             throw new RuntimeException("Password cannot be empty!");
         }
 
-        // ২. ম্যাপার দিয়ে Auth User তৈরি ও ডাটাবেজে সেভ
+        //  ম্যাপার দিয়ে Auth User তৈরি ও ডাটাবেজে সেভ
         User user = supplierMapper.toUserEntity(dto);
         User savedUser = userRepository.save(user);
 
-        // ৩. পুলিশ স্টেশন ডাটা খুঁজে বের করা
+        //  পুলিশ স্টেশন ডাটা খুঁজে বের করা
         PoliceStation policeStation = null;
         if (dto.getPoliceStationId() != null) {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not found with ID: " + dto.getPoliceStationId()));
         }
 
-        // ৪. মাল্টিপার্ট ফাইল (ইমেজ) আপলোড হ্যান্ডেল করা
+        //  মাল্টিপার্ট ফাইল (ইমেজ) আপলোড হ্যান্ডেল করা
         if (file != null && !file.isEmpty()) {
             // ফিক্সড: পাস করা হলো dto.getName() ফাইল নেমিং এর জন্য
             String imagePath = uploadImage(file, dto.getName());
             dto.setImage(imagePath);
         }
 
-        // ৫. সাপ্লায়ার এনটিটি তৈরি ও সেভ করা
+        //  সাপ্লায়ার এনটিটি তৈরি ও সেভ করা
         Supplier supplier = supplierMapper.toSupplierEntity(dto, savedUser, policeStation);
         Supplier savedSupplier = supplierRepository.save(supplier);
 
@@ -78,11 +78,11 @@ public class SupplierServiceImp implements SupplierService {
     @Transactional
     @Override
     public SupplierResponseDTO update(Long id, SupplierRequestDTO dto, MultipartFile file) {
-        // ১. ডাটাবেজে সাপ্লায়ার চেক করা
+        //  ডাটাবেজে সাপ্লায়ার চেক করা
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
 
-        // ২. রিলেটেড ইউজার অ্যাকাউন্ট আপডেট করা
+        //  রিলেটেড ইউজার অ্যাকাউন্ট আপডেট করা
         User user = supplier.getUser();
         if (user != null) {
             user.setName(dto.getName());
@@ -90,12 +90,12 @@ public class SupplierServiceImp implements SupplierService {
             user.setPhoneNumber(dto.getPhone());
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 user.setPassword(dto.getPassword());
-//                user.setConfirmPassword(dto.getPassword());
+//
             }
             userRepository.save(user);
         }
 
-        // ৩. সাপ্লায়ার প্রোফাইল ফিল্ডস আপডেট
+        //  সাপ্লায়ার প্রোফাইল ফিল্ডস আপডেট
         supplier.setName(dto.getName());
         supplier.setContactPerson(dto.getContactPerson());
         supplier.setEmail(dto.getEmail());
@@ -120,14 +120,13 @@ public class SupplierServiceImp implements SupplierService {
         supplier.setRating(dto.getRating());
         supplier.setAverageLeadTimeDays(dto.getAverageLeadTimeDays());
 
-        // ৪. নতুন ইমেজ আপলোড দিলে আগেরটা ওভাররাইট/নতুন করে সেট করা
+        //  নতুন ইমেজ আপলোড দিলে আগেরটা ওভাররাইট/নতুন করে সেট করা
         if (file != null && !file.isEmpty()) {
-            // ফিক্সড: এখানেও আপডেটের সময় সাপ্লায়ারের নাম পাস করা হলো
             String newImagePath = uploadImage(file, dto.getName());
             supplier.setImage(newImagePath);
         }
 
-        // ৫. পুলিশ স্টেশন রিলেশন আপডেট করা
+        //  পুলিশ স্টেশন রিলেশন আপডেট করা
         if (dto.getPoliceStationId() != null) {
             PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not found"));
@@ -165,10 +164,7 @@ public class SupplierServiceImp implements SupplierService {
         }
     }
 
-    /**
-     * লোকাল সার্ভারে ইমেজ সেভ করার হেল্পার মেথড
-     * ফিক্সড: নাম ডায়নামিক করার জন্য supplierName প্যারামিটার যুক্ত করা হলো
-     */
+
     private String uploadImage(MultipartFile file, String supplierName) {
         try {
             Path path = Paths.get(uploadDir, "supplier");
@@ -195,7 +191,6 @@ public class SupplierServiceImp implements SupplierService {
         }
     }
 
-    // Helper Method: Sends a professionally styled HTML verification mail to the customer.
 
     private void sendWelcomeEmail(User user) {
         if (user == null || user.getEmail() == null) {

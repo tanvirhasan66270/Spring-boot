@@ -38,33 +38,33 @@ public class QuotationServiceImpl implements QuotationService {
     @Override
     @Transactional
     public QuotationResponseDTO save(QuotationRequestDTO dto, MultipartFile image) {
-        // ১. DTO থেকে Entity-তে কনভার্ট করা
+        //  DTO থেকে Entity-তে কনভার্ট করা
         Quotation quotation = quotationMapper.toEntity(dto);
 
-        // ২. ইমেজ বা ফাইল হ্যান্ডলিং
+        //  ইমেজ বা ফাইল হ্যান্ডলিং
         if (image != null && !image.isEmpty()) {
             String fileUrl = saveImageFile(image,dto.getProductName());
             quotation.setAttachmentUrl(fileUrl); // attachmentUrl ফিল্ডে ফাইলের পাথ সেট করা হচ্ছে
         }
 
-        // ৩. ডেটাবেসে সেভ করা
+        //  ডেটাবেসে সেভ করা
         Quotation savedQuotation = quotationRepository.save(quotation);
 
-        // ৪. Response DTO-তে কনভার্ট করে রিটার্ন করা
+        //  Response DTO-তে কনভার্ট করে রিটার্ন করা
         return quotationMapper.toResponseDTO(savedQuotation);
     }
 
     @Override
     @Transactional
     public QuotationResponseDTO update(Long id, QuotationRequestDTO dto) {
-        // ১. আইডি দিয়ে এক্সিসটিং কোটেশন খুঁজে বের করা
+        //  আইডি দিয়ে এক্সিসটিং কোটেশন খুঁজে বের করা
         Quotation existingQuotation = quotationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Quotation not found with id: " + id));
 
-        // ২. ম্যাপার ব্যবহার করে পুরাতন ডাটার উপর নতুন ডাটা আপডেট করা
+        //  ম্যাপার ব্যবহার করে পুরাতন ডাটার উপর নতুন ডাটা আপডেট করা
         quotationMapper.updateEntityFromDTO(dto, existingQuotation);
 
-        // ৩. আপডেট হওয়া ডাটা সেভ করা
+        // আপডেট হওয়া ডাটা সেভ করা
         Quotation updatedQuotation = quotationRepository.save(existingQuotation);
 
         return quotationMapper.toResponseDTO(updatedQuotation);
@@ -95,9 +95,7 @@ public class QuotationServiceImpl implements QuotationService {
         quotationRepository.deleteById(id);
     }
 
-    /**
-     * হেল্পার মেথড: লোকাল সার্ভারে ফাইল/ইমেজ আপলোড করার জন্য
-     */
+
     private String saveImageFile(MultipartFile file,String productName) {
         try {
             // ডিরেক্টরি না থাকলে তৈরি করবে

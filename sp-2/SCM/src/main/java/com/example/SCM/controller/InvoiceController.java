@@ -26,18 +26,15 @@ public class InvoiceController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 2. Mutate/Update Existing Invoice State Matrix (PUT)
-     */
+    //Mutate/Update Existing Invoice State Matrix (PUT)
+
     @PutMapping("{id}")
     public ResponseEntity<InvoiceResponseDTO> update(@PathVariable Long id, @RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.update(id, dto);
         return ResponseEntity.ok(response);
     }
+    // Fetch All Invoices Register Dataset (GET)
 
-    /**
-     * 3. Fetch All Invoices Register Dataset (GET)
-     */
     @GetMapping
     public ResponseEntity<List<InvoiceResponseDTO>> findAll() {
         List<InvoiceResponseDTO> list = service.findAll();
@@ -47,9 +44,8 @@ public class InvoiceController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * 4. Fetch Invoice Instance Details By Unique Record ID (GET)
-     */
+    // Fetch Invoice Instance Details By Unique Record ID (GET)
+
     @GetMapping("{id}")
     public ResponseEntity<InvoiceResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
@@ -57,9 +53,8 @@ public class InvoiceController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 5. Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
-     */
+    // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
+
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

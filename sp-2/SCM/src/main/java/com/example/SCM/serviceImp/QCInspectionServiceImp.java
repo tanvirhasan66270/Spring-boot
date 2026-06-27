@@ -66,7 +66,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
             inspection.setLabTestReport(uploadLabReport(file, dto.getInspectionType()));
         }
 
-        // 💡 CascadeType.ALL থাকার কারণে ভেতরের চেকলিস্টগুলো একসাথে ওয়ান-শটে ডাটাবেজে রাইট হবে
+        //CascadeType.ALL থাকার কারণে ভেতরের চেকলিস্টগুলো একসাথে ওয়ান-শটে ডাটাবেজে রাইট হবে
         QCInspection saved = qcInspectionRepository.save(inspection);
         return qcInspectionMapper.toResponseDTO(saved);
     }
@@ -84,7 +84,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         // চাইল্ড অবজেক্ট আপডেট হ্যান্ডেলিং (OrphanRemoval এনফোর্সমেন্ট)
         if (dto.getChecklists() != null) {
-            inspection.getChecklists().clear(); // পুরনো ইন্ডেক্সিং রিলিজ করা
+            inspection.getChecklists().clear();
             for (QCChecklistRequestDTO cDto : dto.getChecklists()) {
                 QCChecklist chk = new QCChecklist();
                 chk.setCheckpointName(cDto.getCheckpointName());

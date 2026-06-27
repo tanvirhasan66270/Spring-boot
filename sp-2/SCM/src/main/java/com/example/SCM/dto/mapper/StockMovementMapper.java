@@ -34,9 +34,9 @@ public class StockMovementMapper {
         StockMovementResponseDTO dto = new StockMovementResponseDTO();
         dto.setId(entity.getId());
         dto.setProductId(entity.getProductId());
-        dto.setProductName(fetchedProductName);         // 💡 অটো ফিলআপ ডেটা
+        dto.setProductName(fetchedProductName);         // auto fillup
         dto.setWarehouseId(entity.getWarehouseId());
-        dto.setWarehouseName(fetchedWarehouseName);     // 💡 অটো ফিলআপ ডেটা
+        dto.setWarehouseName(fetchedWarehouseName);     // auto fillup
         dto.setSendWarehouse(entity.getSendWarehouse());
         dto.setQuantity(entity.getQuantity());
         dto.setReferenceId(entity.getReferenceId());

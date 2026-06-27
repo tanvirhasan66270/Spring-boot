@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/purchase-orders") // 💡 বেস্ট প্র্যাকটিস: শেষের "/" বাদ দেওয়া হয়েছে
+@RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class PurchaseOrderController {

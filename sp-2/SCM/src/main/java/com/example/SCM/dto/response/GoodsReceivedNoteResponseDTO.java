@@ -24,14 +24,14 @@ public class GoodsReceivedNoteResponseDTO {
     private String poNumber;         // UI স্ক্রিনে দেখানোর জন্য পারচেজ অর্ডার নাম্বার
 
     private Long productId;
-    private String productName;      // প্রোডাক্টের নাম
+    private String productName;
 
     private Long warehouseId;
-    private String warehouseName;    // ওয়ারহাউজের নাম
+    private String warehouseName;
 
     private Long receivedBy;
-    private String receivedByName;   // রিসিভকারী ইউজারের নাম
+    private String receivedByName;
 
     private Long inspectedBy;
-    private String inspectedByName;  // ইন্সপেকশনকারী ইনস্পেক্টরের নাম
+    private String inspectedByName;
 }

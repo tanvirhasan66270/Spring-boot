@@ -13,5 +13,5 @@ public class GRNLineItemResponseDTO {
     private String grnNumber;       // ট্র্যাকিং ডিসপ্লের জন্য
 
     private Long productId;
-    private String productName;     // প্রোডাক্টের নাম সরাসরি গ্রিডে দেখানোর জন্য
+    private String productName;
 }

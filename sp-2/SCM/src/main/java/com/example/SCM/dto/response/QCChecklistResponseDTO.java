@@ -14,5 +14,5 @@ public class QCChecklistResponseDTO {
 
     //  Flattened QC Inspection Details ---
     private Long inspectionId;
-    private String inspectionType; // UI গ্রিডে কোন ধরনের টেস্ট ছিল তা সহজে ডিসপ্লে করার জন্য
+    private String inspectionType;
 }

@@ -23,6 +23,5 @@ public class CustomerOrderResponseDTO {
     private String estimatedDelivery;
     private String createdAt;
 
-    // আপনার তৈরি করা ইন্ডিপেন্ডেন্ট রেসপন্স DTO লিস্ট
     private List<OrderLineItemResponseDTO> lineItems;
 }

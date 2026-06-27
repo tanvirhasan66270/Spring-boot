@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/po-line-items") // REST API কনভেনশন অনুযায়ী Plural ও Kebab-case ব্যবহার করা হয়েছে
+@RequestMapping("/api/po-line-items")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Frontend (Angular/React) থেকে কল করার সময় CORS পলিসি জনিত ব্লকিং এড়াতে
 public class POLineItemController {

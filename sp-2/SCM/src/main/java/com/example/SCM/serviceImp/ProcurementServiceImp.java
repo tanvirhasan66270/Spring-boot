@@ -48,7 +48,7 @@ public class ProcurementServiceImp implements ProcurementService {
             throw new RuntimeException("Credential password mandatory for procurement node recruitment!");
         }
 
-        // 💡 ডাটাবেজ ক্র্যাশ এড়াতে পাসপোর্ট এবং এনআইডি ডুপ্লিকেট চেক
+        //ডাটাবেজ ক্র্যাশ এড়াতে পাসপোর্ট এবং এনআইডি ডুপ্লিকেট চেক
         if (dto.getPassportNumber() != null && procurementRepository.existsByPassportNumber(dto.getPassportNumber())) {
             throw new RuntimeException("This Passport number is already registered under another officer!");
         }

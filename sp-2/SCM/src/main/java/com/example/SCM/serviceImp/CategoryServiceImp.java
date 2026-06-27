@@ -21,10 +21,7 @@ public class CategoryServiceImp implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
 
-    /**
-     * 1. Create New Category
-     * ফিক্সড: MultipartFile সরিয়ে দেওয়া হয়েছে
-     */
+
     @Transactional
     @Override
     public CategoryResponseDTO save(CategoryRequestDTO dto) {
@@ -46,10 +43,7 @@ public class CategoryServiceImp implements CategoryService {
         return categoryMapper.toResponseDTO(savedCategory);
     }
 
-    /**
-     * 2. Update Existing Category
-     * ফিক্সড: MultipartFile সরিয়ে দেওয়া হয়েছে
-     */
+
     @Transactional
     @Override
     public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {
@@ -78,9 +72,7 @@ public class CategoryServiceImp implements CategoryService {
         return categoryMapper.toResponseDTO(updatedCategory);
     }
 
-    /**
-     * 3. Find All Categories
-     */
+
     @Transactional(readOnly = true)
     @Override
     public List<CategoryResponseDTO> findAll() {
@@ -90,9 +82,7 @@ public class CategoryServiceImp implements CategoryService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Find Category By ID
-     */
+
     @Transactional(readOnly = true)
     @Override
     public Optional<CategoryResponseDTO> getById(Long id) {
@@ -100,9 +90,7 @@ public class CategoryServiceImp implements CategoryService {
                 .map(categoryMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Delete Category
-     */
+
     @Transactional
     @Override
     public void delete(Long id) {

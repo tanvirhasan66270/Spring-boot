@@ -15,7 +15,7 @@ public class POLineItemResponseDTO {
     private int quantity;
     private double unitPrice;
     private double lineTotal;      // quantity * unitPrice
-    private double totalAmount;    //  আপনার চাহিদা অনুযায়ী: oldTotal lineTotal + newUpdateTotal lineTotal ট্র্যাকার
+    private double totalAmount;    //  oldTotal lineTotal + newUpdateTotal lineTotal
     private String quotationRef;
     private String poNumber;
     private LocalDate deliveryDate;

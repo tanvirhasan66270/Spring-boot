@@ -14,16 +14,16 @@ public class PurchaseRequisitionResponseDTO {
     private Long requestedBy;
     private String currency;
     private int quantityRequired;
-    private UrgencyLevel urgencyLevel;            // এনাম আউটপুট
+    private UrgencyLevel urgencyLevel;
     private LocalDate requiredByDate;
-    private PurchaseRequisitionStatus approvalStatus; // এনাম আউটপুট
+    private PurchaseRequisitionStatus approvalStatus;
     private Long approvedBy;
     private String remarks;
     private LocalDateTime createdAt;
 
     // Flattened relational lists for Frontend UI grids
     private List<Long> productIds;
-    private List<String> productNames;   // UI স্ক্রিনে সরাসরি কমা দিয়ে প্রোডাক্টের নাম দেখানোর জন্য
+    private List<String> productNames;
 
     private List<Long> supplierIds;
     private List<String> supplierNames;

@@ -15,10 +15,15 @@ public interface PurchaseRequisitionService {
     PurchaseRequisitionResponseDTO save(PurchaseRequisitionRequestDTO dto);
 
 
+    @Transactional
+    void approveRequisition(Long id);
+
+    @Transactional
+    void rejectOrCancelRequisition(Long id, String actionType);
+
     PurchaseRequisitionResponseDTO update(Long id, PurchaseRequisitionRequestDTO dto);
     List<PurchaseRequisitionResponseDTO> findAll();
     Optional<PurchaseRequisitionResponseDTO> getById(Long id);
     void delete(Long id);
-    void approveRequisition(Long id);
-    void rejectOrCancelRequisition(Long id, String actionType);
+
 }

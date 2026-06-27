@@ -12,9 +12,8 @@ import java.util.stream.Collectors;
 @Component
 public class DivisionMapper {
 
-    /**
-     * Entity -> Response DTO
-     */
+    //Entity -> Response DTO
+
     public DivisionResponseDTO toResponseDTO(Division entity) {
         if (entity == null) return null;
 
@@ -39,9 +38,8 @@ public class DivisionMapper {
         return dto;
     }
 
-    /**
-     * Request DTO -> Entity
-     */
+    // Request DTO -> Entity
+
     public Division toEntity(DivisionRequestDTO dto, Country country) {
         if (dto == null) return null;
 
@@ -55,9 +53,9 @@ public class DivisionMapper {
         return entity;
     }
 
-    /**
-     * Update Existing Entity
-     */
+
+    // Update Existing Entity
+
     public void updateEntity(DivisionRequestDTO dto, Division entity, Country country) {
         if (dto == null || entity == null) return;
 

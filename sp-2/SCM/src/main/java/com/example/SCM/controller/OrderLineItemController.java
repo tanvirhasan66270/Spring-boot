@@ -16,7 +16,7 @@ public class OrderLineItemController {
 
     private final OrderLineItemService lineItemService;
 
-    //  1. Get All Items Under a Specific Order ID
+    //  Get All Items Under a Specific Order ID
     // URL: GET http://localhost:8080/api/order-items/order/{orderId}
 
     @GetMapping("/order/{orderId}")
@@ -25,7 +25,7 @@ public class OrderLineItemController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // 2. Get Single Line Item Specifications By ID
+    //Get Single Line Item Specifications By ID
 
 
     @GetMapping("{id}")
@@ -35,7 +35,7 @@ public class OrderLineItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    //  3. Remove/Delete Single Item from Order Cart Node
+    // Remove/Delete Single Item from Order Cart Node
 
     @DeleteMapping("{id}")
     public ResponseEntity<String> removeLineItem(@PathVariable Long id) {

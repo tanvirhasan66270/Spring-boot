@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class InventoryMapper {
 
-    // ফ্রন্টএন্ড থেকে আসা "YYYY-MM-DD" স্ট্রিং ডেট পার্স করার জন্য ফরমেটার
+    // "YYYY-MM-DD"
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     // InventoryRequestDTO, Product, এবং Warehouse অবজেক্ট থেকে নতুন Inventory Entity-তে রূপান্তর (Create Operation)

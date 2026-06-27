@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "procurement_officers")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Procurement {

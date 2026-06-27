@@ -38,9 +38,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
 
-    /**
-     * 🛒 1. Save New Purchase Requisition (Starts as PENDING - No Supplier Mail yet)
-     */
+
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO save(PurchaseRequisitionRequestDTO dto) {
@@ -66,33 +64,31 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         PurchaseRequisition pr = requisitionMapper.toEntity(dto, products, suppliers);
 
-        // 🎯 সেফটি রুল ১: ইনিশিয়াল স্ট্যাটাস সবসময় PENDING থাকবে এবং ক্রিয়েট হওয়ার সময় সাপ্লায়ার মেইল পাবে না
+        //sefty: ইনিশিয়াল স্ট্যাটাস সবসময় PENDING থাকবে এবং ক্রিয়েট হওয়ার সময় সাপ্লায়ার মেইল পাবে না
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
         PurchaseRequisition savedPr = requisitionRepository.save(pr);
 
         return requisitionMapper.toResponseDTO(savedPr);
     }
 
-    /**
-     * 👑 2. Manager Approval Node (Auto-Mail out to SUPPLIERS on Success)
-     */
-    @Override
+    // Manager Approval Node (Auto-Mail out to SUPPLIERS on Success)
+
     @Transactional
+    @Override
     public void approveRequisition(Long id) {
         PurchaseRequisition requisition = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition missing for ID: " + id));
 
-        // ১. স্ট্যাটাস আপডেট করা
+        // for status update
         requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
 
-        // ২. ডাটাবেজে সেভ করা (একবারই সেভ করা যথেষ্ট)
+        // for database save
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-        // ৩. 🎯 অডিট ট্রেইল: সঠিকভাবে ইউজার আইডি এবং আইপি লগ করা
-        // 🎯 সঠিক ১০টি প্যারামিটার দিয়ে লগ মেথড কল
+
         activityLogService.log(
                 resolveCurrentUserId(),              // 1. userId
-                "system@scm.com",                    // 2. userEmail (যদি বর্তমানে ইমেইল না থাকে, তবে একটি ডামি বা সেশন থেকে নিন)
+                "system@scm.com",                    // 2. userEmail
                 "APPROVE",                           // 3. action
                 "PURCHASE_REQUISITION",              // 4. module
                 savedRequisition.getId().toString(), // 5. referenceId
@@ -103,15 +99,14 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
                 request.getRemoteAddr()              // 10. ipAddress
         );
 
-        // ৪. সাপ্লায়ারদের কাছে মেইল পাঠানো
+        // সাপ্লায়ারদের কাছে মেইল পাঠানো
         if (savedRequisition.getSuppliers() != null && !savedRequisition.getSuppliers().isEmpty()) {
             sendRequisitionEmailToSuppliers(savedRequisition);
         }
     }
 
-    /**
-     * ❌ 3. Manager Disapproval Matrix Node (Back-Mail to PROCUREMENT Officer)
-     */
+      // Manager Disapproval Matrix Node (Back-Mail to PROCUREMENT Officer)
+
     @Transactional
     @Override
     public void rejectOrCancelRequisition(Long id, String actionType) {
@@ -128,23 +123,22 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-        // 📧 ক্রিয়েটর প্রকিউরমেন্ট অফিসারের কাছে স্ট্যাটাস সহ অ্যালার্ট মেইল ব্যাক-রুট করা হলো
+        //ক্রিয়েটর প্রকিউরমেন্ট অফিসারের কাছে স্ট্যাটাস সহ অ্যালার্ট মেইল ব্যাক-রুট করা হলো
         if (savedRequisition.getRequestedBy() != null) {
             userRepository.findById(savedRequisition.getRequestedBy())
                     .ifPresent(officer -> sendAlertEmailToProcurement(savedRequisition, officer));
         }
     }
 
-    /**
-     * 🔒 4. Hard-Locked Update Method (No modification allowed once generated)
-     */
+     //Hard-Locked Update Method (No modification allowed once generated)
+
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO update(Long id, PurchaseRequisitionRequestDTO dto) {
         PurchaseRequisition pr = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + id));
 
-        // 🎯 আপনার রুল অনুযায়ী: একবার জেনারেট হয়ে গেলে এপিআই দিয়ে আর কোনো মেটাডাটা আপডেট করা যাবে না
+        // একবার জেনারেট হয়ে গেলে এপিআই দিয়ে আর কোনো মেটাডাটা আপডেট করা যাবে না
         if (pr.getApprovalStatus() == PurchaseRequisitionStatus.PENDING ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.APPROVED ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.REJECTED ||
@@ -155,9 +149,8 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         return requisitionMapper.toResponseDTO(pr);
     }
 
-    /**
-     * 📧 SUPPLIER HTML Mail Dispatch Engine
-     */
+    //SUPPLIER HTML Mail Dispatch Engine
+
     private void sendRequisitionEmailToSuppliers(PurchaseRequisition pr) {
         if (pr.getSuppliers() == null || pr.getSuppliers().isEmpty()) return;
 
@@ -241,9 +234,8 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         }
     }
 
-    /**
-     * 📧 PROCUREMENT OFFICER HTML Alert Mail Dispatch Engine
-     */
+    //PROCUREMENT OFFICER HTML Alert Mail Dispatch Engine
+
     private void sendAlertEmailToProcurement(PurchaseRequisition requisition, User procurementOfficer) {
         String officerEmail = procurementOfficer.getEmail();
         String currentStatus = requisition.getApprovalStatus().name();
@@ -264,7 +256,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     @Transactional
     public void delete(Long id) {
         PurchaseRequisition pr = requisitionRepository.findById(id).orElseThrow(() -> new RuntimeException("Purchase Requisition not found"));
-        // 🎯 হার্ড-লক পলিসি ফিক্সড: যেকোনো স্ট্যাটাসেই ডিলিট অ্যাকশন ব্লক থাকবে
+        // যেকোনো স্ট্যাটাসেই ডিলিট অ্যাকশন ব্লক থাকবে
         throw new RuntimeException("Hard-Locked! Executed Procurement Requisitions cannot be deleted from matrix index!");
     }
     private String resolveCurrentUserId() {

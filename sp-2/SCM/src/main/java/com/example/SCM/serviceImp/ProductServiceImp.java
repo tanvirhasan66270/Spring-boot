@@ -45,9 +45,7 @@ public class ProductServiceImp implements ProductService {
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
 
-    /**
-     * 1. Save New Product with Multipart Image Upload & Weight Matrix
-     */
+
     @Transactional
     @Override
     public ProductResponseDTO save(ProductRequestDTO dto, MultipartFile image) {
@@ -55,7 +53,7 @@ public class ProductServiceImp implements ProductService {
             throw new IllegalArgumentException("Product request data cannot be null");
         }
 
-        // 🔍 প্রোডাক্ট কোড ডুপ্লিকেট কি না চেক
+        // প্রোডাক্ট কোড ডুপ্লিকেট কি না চেক
         if (dto.getProductCode() != null && !dto.getProductCode().trim().isEmpty()) {
             Optional<Product> existingProduct = productRepository.findByProductCode(dto.getProductCode());
             if (existingProduct.isPresent()) {
@@ -67,17 +65,17 @@ public class ProductServiceImp implements ProductService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + dto.getCategoryId()));
 
-        // 🖼️ ইমেজ ফাইল হ্যান্ডেল করা (যদি ফ্রন্টএন্ড থেকে ফাইল পাঠানো হয়)
+        // ইমেজ ফাইল হ্যান্ডেল করা (যদি ফ্রন্টএন্ড থেকে ফাইল পাঠানো হয়)
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadProductImage(image, dto.getName());
             dto.setImage(uploadedFileName); // জেনারেটেড ফাইল নেম বা পাথটি ডিটিও-তে ইনজেক্ট করা হলো
         }
 
-        // 🔄 Mapper দিয়ে Entity-তে রূপান্তর এবং ডাটাবেজে সেভ (weight সহ)
+        //Mapper দিয়ে Entity-তে রূপান্তর এবং ডাটাবেজে সেভ (weight সহ)
         Product product = productMapper.toEntity(dto, category);
         Product savedProduct = productRepository.save(product);
 
-        // ✅ অ্যাক্টিভিটি লগ (CREATE PRODUCT)
+       //Activity log
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -95,9 +93,7 @@ public class ProductServiceImp implements ProductService {
         return productMapper.toResponseDTO(savedProduct);
     }
 
-    /**
-     * 2. Update Existing Product with Optional Multipart Image Update
-     */
+
     @Transactional
     @Override
     public ProductResponseDTO update(Long id, ProductRequestDTO dto, MultipartFile image) {
@@ -105,16 +101,16 @@ public class ProductServiceImp implements ProductService {
             throw new IllegalArgumentException("Product request data cannot be null");
         }
 
-        // 🔍 এক্সিস্টিং প্রোডাক্ট খুঁজে বের করা
+        //এক্সিস্টিং প্রোডাক্ট খুঁজে বের করা
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
 
-        // 🔒 ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
+        //ওল্ড ভ্যালু ট্র্যাকিং (for log)
         String oldName = product.getName();
         String oldCode = product.getProductCode();
         Long oldCategoryId = product.getCategory() != null ? product.getCategory().getId() : null;
 
-        // 🔒 প্রোডাক্ট কোড ইউনিক কি না ভেরিফাই করা (কোড চেইঞ্জ করা হলে)
+        //প্রোডাক্ট কোড ইউনিক কি না ভেরিফাই করা (কোড চেইঞ্জ করা হলে)
         if (dto.getProductCode() != null && !dto.getProductCode().equals(product.getProductCode())) {
             Optional<Product> duplicateCheck = productRepository.findByProductCode(dto.getProductCode());
             if (duplicateCheck.isPresent()) {
@@ -122,14 +118,14 @@ public class ProductServiceImp implements ProductService {
             }
         }
 
-        // 📂 ক্যাটাগরি পরিবর্তন করা হয়ে থাকলে নতুন ক্যাটাগরি লোড করা
+        //ক্যাটাগরি পরিবর্তন করা হয়ে থাকলে নতুন ক্যাটাগরি লোড করা
         Category category = product.getCategory();
         if (dto.getCategoryId() != null && !dto.getCategoryId().equals(category.getId())) {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("New Category not found with ID: " + dto.getCategoryId()));
         }
 
-        // 🔄 নতুন ইমেজ আপলোড দিলে আগের ইমেজ ওভাররাইট/নতুন পাথ ডিটিও-তে সেট করা
+        //নতুন ইমেজ আপলোড দিলে আগের ইমেজ ওভাররাইট/নতুন পাথ ডিটিও-তে সেট করা
         if (image != null && !image.isEmpty()) {
             String newImageName = uploadProductImage(image, dto.getName());
             dto.setImage(newImageName);
@@ -138,11 +134,11 @@ public class ProductServiceImp implements ProductService {
             dto.setImage(product.getImage());
         }
 
-        // 🛠️ ম্যাপারের মাধ্যমে অবজেক্ট ডেটা আপডেট করা (weight অটো সিঙ্ক হবে)
+        // ্যাপারের মাধ্যমে অবজেক্ট ডেটা আপডেট করা (weight অটো সিঙ্ক হবে)
         productMapper.updateEntity(dto, product, category);
         Product updatedProduct = productRepository.save(product);
 
-        // ✅ অ্যাক্টিভিটি লগ (UPDATE PRODUCT)
+        //Activity log
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -159,9 +155,7 @@ public class ProductServiceImp implements ProductService {
         return productMapper.toResponseDTO(updatedProduct);
     }
 
-    /**
-     * 3. Find All Products (Optimized Read)
-     */
+
     @Override
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAll() {
@@ -170,9 +164,7 @@ public class ProductServiceImp implements ProductService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Find Product By ID
-     */
+
     @Override
     @Transactional(readOnly = true)
     public Optional<ProductResponseDTO> getById(Long id) {
@@ -180,9 +172,7 @@ public class ProductServiceImp implements ProductService {
                 .map(productMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Delete Product Node From Matrix
-     */
+
     @Override
     @Transactional
     public void delete(Long id) {
@@ -194,7 +184,7 @@ public class ProductServiceImp implements ProductService {
 
         productRepository.delete(product);
 
-        // ✅ অ্যাক্টিভিটি লগ (DELETE PRODUCT)
+        //Activity log
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -209,9 +199,7 @@ public class ProductServiceImp implements ProductService {
         );
     }
 
-    /**
-     * 🖼️ লোকাল প্রজেক্ট ডিরেক্টরিতে ইমেজ সেভ করার অপ্টিমাইজড হেল্পার মেথড
-     */
+
     private String uploadProductImage(MultipartFile file, String productName) {
         try {
             // uploads/product ফোল্ডার পাথ তৈরি করা
@@ -232,7 +220,7 @@ public class ProductServiceImp implements ProductService {
             String cleanedName = (productName != null ? productName : "product").trim().replaceAll("\\s+", "_");
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            // 💡 ফাইলটি ডিরেক্টরিতে কপি করা (ওভাররাইট সেফটি মেকানিজম সহ)
+            // ফাইলটি ডিরেক্টরিতে কপি করা (with website sefty macanigom)
             Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
 
             return fileName;

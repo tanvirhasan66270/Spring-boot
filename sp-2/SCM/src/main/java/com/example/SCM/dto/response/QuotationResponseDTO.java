@@ -26,7 +26,7 @@ public class QuotationResponseDTO {
 
     // Flattened Supplier Details
     private Long supplierId;
-    private String supplierName;            // UI স্ক্রিনে সরাসরি সাপ্লায়ারের নাম দেখানোর জন্য
+    private String supplierName;
 
     // Flattened Product Details
     private Long productIds;                // ফ্রন্টএন্ড ইন্টারফেসের 'productIds' এর সাথে সিঙ্কড আইডি

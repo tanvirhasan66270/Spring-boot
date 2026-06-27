@@ -35,9 +35,7 @@ public class POLineItemServiceImp implements POLineItemService {
     private final POLineItemMapper poLineItemMapper;
     private final TrackingCodeGenerator trackingCodeGenerator;
 
-    /**
-     * 1. Save New PO Line Item
-     */
+
     @Override
     @Transactional
     public POLineItemResponseDTO save(POLineItemRequestDTO dto) {
@@ -75,7 +73,7 @@ public class POLineItemServiceImp implements POLineItemService {
 
         POLineItem savedItem = poLineItemRepository.save(item);
 
-        // 💡 রোল-আপ লজিক: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmount ডাটাবেজে আপডেট করা
+        //রোল-আপ লজিক: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmount ডাটাবেজে আপডেট করা
         double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
@@ -83,9 +81,7 @@ public class POLineItemServiceImp implements POLineItemService {
         return poLineItemMapper.toResponseDTO(savedItem);
     }
 
-    /**
-     * 2. Update Existing PO Line Item (State Machine Logic)
-     */
+
     @Override
     @Transactional
     public POLineItemResponseDTO update(Long id, POLineItemRequestDTO dto) {
@@ -124,7 +120,7 @@ public class POLineItemServiceImp implements POLineItemService {
         poLineItemMapper.updateEntity(dto, item, product);
         POLineItemStatus newStatus = item.getStatus();
 
-        // 🚚 স্টেট মেশিন লজিক ১ (PENDING -> SHIPPED): ট্র্যাকিং কোড এবং ইনভেন্টরি ফাইনাল ডিডাকশন
+        // স্টেট মেশিন লজিক ১ (PENDING -> SHIPPED): ট্র্যাকিং কোড এবং ইনভেন্টরি ফাইনাল ডিডাকশন
         if (oldStatus != POLineItemStatus.SHIPPED && newStatus == POLineItemStatus.SHIPPED) {
             if (item.getTrackingNumber() == null) {
                 item.setTrackingNumber(trackingCodeGenerator.generateTrackingCode());
@@ -133,7 +129,7 @@ public class POLineItemServiceImp implements POLineItemService {
             inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
         }
 
-        // ❌ স্টেট মেশিন লজিক ২ (CANCELLED): রিজার্ভড স্টক রিলিজ
+        //স্টেট মেশিন লজিক ২ (CANCELLED): রিজার্ভড স্টক রিলিজ
         if (oldStatus != POLineItemStatus.CANCELLED && newStatus == POLineItemStatus.CANCELLED) {
             if (oldStatus != POLineItemStatus.SHIPPED && oldStatus != POLineItemStatus.DELIVERED) {
                 inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
@@ -152,9 +148,7 @@ public class POLineItemServiceImp implements POLineItemService {
         return poLineItemMapper.toResponseDTO(updatedItem);
     }
 
-    /**
-     * 3. Find All Line Items
-     */
+
     @Override
     @Transactional(readOnly = true)
     public List<POLineItemResponseDTO> findAll() {
@@ -163,9 +157,7 @@ public class POLineItemServiceImp implements POLineItemService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Find Line Item By ID
-     */
+
     @Override
     @Transactional(readOnly = true)
     public Optional<POLineItemResponseDTO> getById(Long id) {
@@ -173,9 +165,7 @@ public class POLineItemServiceImp implements POLineItemService {
                 .map(poLineItemMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Delete Line Item
-     */
+
     @Override
     @Transactional
     public void delete(Long id) {
@@ -198,15 +188,14 @@ public class POLineItemServiceImp implements POLineItemService {
 
         poLineItemRepository.delete(item);
 
-        // 💡 রোল-আপ লজিক: আইটেম চিরতরে মুছে যাওয়ার পর প্যারেন্ট অর্ডারের totalAmount পুনরায় হিসাব করে কমানো
+        // রোল-আপ লজিক: আইটেম চিরতরে মুছে যাওয়ার পর প্যারেন্ট অর্ডারের totalAmount পুনরায় হিসাব করে কমানো
         double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
     }
 
     /**
-     * 💡 6. নতুন যুক্ত হওয়া ট্র্যাকিং এপিআই মেথড (Tracking Operations)
-     * লজিস্টিকস ড্যাশবোর্ডে ট্র্যাকিং নাম্বার দিয়ে আইটেমের স্টেট জানার জন্য
+    * লজিস্টিকস ড্যাশবোর্ডে ট্র্যাকিং নাম্বার দিয়ে আইটেমের স্টেট জানার জন্য
      */
     @Override
     @Transactional(readOnly = true)

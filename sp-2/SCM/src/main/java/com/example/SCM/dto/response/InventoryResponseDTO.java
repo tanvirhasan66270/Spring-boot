@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class InventoryResponseDTO {
     private Long id;
 
-    // Product Details (ফ্ল্যাট করা হয়েছে যেন ফ্রন্টএন্ডে সরাসরি নাম রেন্ডার করা যায়)
+    // Product Details
     private Long productId;
     private String productCode;
     private String productName;
@@ -21,7 +21,7 @@ public class InventoryResponseDTO {
     // Inventory Core Fields
     private int quantityOnHand;
     private int quantityReserved;
-    private int availableQuantity; // (quantityOnHand - quantityReserved) ফ্রন্টএন্ডের সুবিধার জন্য ক্যালকুলেটেড ফিল্ড
+    private int availableQuantity; // (quantityOnHand - quantityReserved)
     private String locationStatus;
     private LocalDate expiryDate;
     private String stockStatus;

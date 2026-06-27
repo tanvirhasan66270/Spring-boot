@@ -27,9 +27,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
     private final ProductRepository productRepository;
     private final GRNLineItemMapper grnLineItemMapper;
 
-    /**
-     * 1. Save New GRN Line Item (Create Operation)
-     */
+
     @Override
     @Transactional
     public GRNLineItemResponseDTO save(GRNLineItemRequestDTO dto) {
@@ -52,9 +50,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
         return grnLineItemMapper.toResponseDTO(savedItem);
     }
 
-    /**
-     * 2. Update Existing GRN Line Item (Update Operation)
-     */
+
     @Override
     @Transactional
     public GRNLineItemResponseDTO update(Long id, GRNLineItemRequestDTO dto) {
@@ -86,9 +82,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
         return grnLineItemMapper.toResponseDTO(updatedItem);
     }
 
-    /**
-     * 3. Find All GRN Line Items (Read Operation)
-     */
+
     @Override
     @Transactional(readOnly = true)
     public List<GRNLineItemResponseDTO> findAll() {
@@ -97,9 +91,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * 4. Find GRN Line Item By ID (Read Operation - Single)
-     */
+
     @Override
     @Transactional(readOnly = true)
     public Optional<GRNLineItemResponseDTO> getById(Long id) {
@@ -107,9 +99,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
                 .map(grnLineItemMapper::toResponseDTO);
     }
 
-    /**
-     * 5. Delete GRN Line Item (Delete Operation)
-     */
+
     @Override
     @Transactional
     public void delete(Long id) {

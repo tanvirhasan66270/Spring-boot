@@ -41,9 +41,7 @@ public class DailyReportServiceImp implements DailyReportService {
         return (userId != null && !userId.isBlank()) ? userId : "16";
     }
 
-    /**
-     * 1. Log New Report & Auto-Submit on Email Confirmation
-     */
+
     @Transactional
     @Override
     public DailyReportResponseDTO save(DailyReportRequestDTO dto) {
@@ -89,9 +87,7 @@ public class DailyReportServiceImp implements DailyReportService {
         return responseDTO;
     }
 
-    /**
-     * 2. Modify Pending/Submitted Report (Only APPROVED is hard-locked)
-     */
+
     @Transactional
     @Override
     public DailyReportResponseDTO update(Long id, DailyReportRequestDTO dto) {
@@ -129,9 +125,7 @@ public class DailyReportServiceImp implements DailyReportService {
         return responseDTO;
     }
 
-    /**
-     * 3. Official Approval Node (Triggered via One-Click Email Gateway)
-     */
+
     @Transactional
     @Override
     public DailyReportResponseDTO approveReport(Long id, String approvedByUserId) {
@@ -159,9 +153,7 @@ public class DailyReportServiceImp implements DailyReportService {
         return reportMapper.toResponseDTO(approvedReport);
     }
 
-    /**
-     * 4. Private Helper Method for Mailing Pipeline (Bug Free HTML Text Block)
-     */
+
     private List<Map<String, String>> sendReportToManagersAndAdmins(DailyReport report) {
         List<Map<String, String>> successfullyNotified = new ArrayList<>();
         List<Role> targetRoles = List.of(Role.MANAGER, Role.ADMIN);

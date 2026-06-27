@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class QuotationRequestDTO {
     private Long supplierId;
-    private Long productIds;               // ফ্রন্টএন্ড ইন্টারফেসের 'productIds' নামের সাথে বাইন্ডিং সিঙ্ক রাখার জন্য
+    private Long productIds;
     private String productName;
     private Long purchaseRequisitionId;    // এই আইডি সিলেক্ট হলে ফ্রন্টএন্ড থ্রু-তে quantity রিড হবে
     private String validUntil;              // "YYYY-MM-DD"

@@ -82,13 +82,13 @@ public class SupplierMapper {
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(dto.getPassword());
-//        user.setConfirmPassword(dto.getPassword()); // পাসওয়ার্ড কনফার্মেশন ইনিশিয়াল ভ্যালু সেট
+//        user.setConfirmPassword(dto.getPassword()); // official value set for password conformation
         user.setRole(Role.SUPPLIER); // রোল অটোমেটিক SUPPLIER হিসেবে সেট হবে
 
         return user;
     }
 
-    // Request DTO থেকে মূল Supplier প্রোফাইল এনটিটি তৈরি (রিলেশন অবজেক্টসহ)
+    // Request DTO থেকে মূল Supplier প্রোফাইল এনটিটি তৈরি (রwith relation objectলেশন অবজেক্টসহ)
 
     public Supplier toSupplierEntity(SupplierRequestDTO dto, User user, PoliceStation policeStation) {
         if (dto == null) {
