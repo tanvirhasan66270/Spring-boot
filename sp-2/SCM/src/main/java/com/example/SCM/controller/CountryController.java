@@ -32,7 +32,7 @@ public class CountryController {
         return ResponseEntity.ok(response);
     }
 
-    //💡 ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
+    //ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
 
     @GetMapping
     public ResponseEntity<List<CountryResponseDTO>> getAll(

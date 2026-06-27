@@ -41,12 +41,12 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private PurchaseOrderStatus status = PurchaseOrderStatus.DRAFT;
 
-    // FK → Supplier (Quotation থেকে অটো লোড হবে)
+    // FK → Supplier ( auto Load from Quotation)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    // FK → PurchaseRequisition (Quotation থেকে অটো লোড হবে)
+    // FK → PurchaseRequisition (auto Load from Quotation)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;

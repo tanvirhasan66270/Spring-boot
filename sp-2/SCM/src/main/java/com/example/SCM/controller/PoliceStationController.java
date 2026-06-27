@@ -35,10 +35,9 @@ public class PoliceStationController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    /**
-     *  নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
-     * URL: /api/police-stations/district/1
-     */
+    // নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
+     // URL: /api/police-stations/district/1
+
     @GetMapping("district/{districtId}")
     public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long districtId) {
         List<PoliceStationResponseDTO> list = policeStationService.getByDistrictId(districtId);

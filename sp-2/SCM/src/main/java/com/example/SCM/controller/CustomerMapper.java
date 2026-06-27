@@ -98,7 +98,7 @@ public class CustomerMapper {
         }
         if (policeStation != null) entity.setPoliceStation(policeStation);
 
-        // ২. ইউজার টেবিল (Source of truth) সিঙ্ক
+        // ইউজার টেবিল (Source of truth) সিঙ্ক
         if (entity.getUser() != null) {
             User user = entity.getUser();
             if (dto.getName() != null) user.setName(dto.getName());

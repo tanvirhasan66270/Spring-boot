@@ -22,9 +22,9 @@ public class PoliceStation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;        // e.g. Mirpur
-    private String nameBn;      // e.g. মিরপুর
-    private String postalCode;  // e.g. 1216
+    private String name;        //  Mirpur
+    private String nameBn;      // মিরপুর
+    private String postalCode;  // 1216
     private Boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)

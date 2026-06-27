@@ -42,7 +42,7 @@ public class Driver {
 
     private String dob;
 
-    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে, columnDefinition বাদ
+    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
     @Builder.Default
     private Double rating = 0.0;
 
@@ -65,7 +65,7 @@ public class Driver {
 
     // ── Warehouse / Auth Management ──────────────────────────────
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    // unique = true যুক্ত করা হলো ডাটা সুরক্ষার জন্য
+    // unique = true add for data safety
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

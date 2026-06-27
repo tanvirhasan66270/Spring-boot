@@ -38,8 +38,7 @@ public class CommercialOfficer {
     @Column(nullable = false)
     private GenderStatus gender;
 
-    private String image; // কলামের নাম অটোমেটিক image হবে
-
+    private String image;
     private boolean isActive = true;
 
     private LocalDate joiningDate;

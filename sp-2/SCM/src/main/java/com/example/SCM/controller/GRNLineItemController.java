@@ -18,19 +18,16 @@ public class GRNLineItemController {
 
     private final GRNLineItemService grnLineItemService;
 
-    /**
-     * 1. Create New GRN Line Item (POST)
-     * 💡 এটি সিঙ্গেল লাইন আইটেম আলাদাভাবে ইনভেন্টরিতে অ্যাড করার জন্য ব্যবহৃত হবে।
-     */
+   // এটি সিঙ্গেল লাইন আইটেম আলাদাভাবে ইনভেন্টরিতে অ্যাড করার জন্য ব্যবহৃত হবে।
+
     @PostMapping
     public ResponseEntity<GRNLineItemResponseDTO> create(@RequestBody GRNLineItemRequestDTO dto) {
         GRNLineItemResponseDTO response = grnLineItemService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 2. Update Existing GRN Line Item (PUT)
-     */
+    // Update Existing GRN Line Item (PUT)
+
     @PutMapping("{id}")
     public ResponseEntity<GRNLineItemResponseDTO> update(
             @PathVariable Long id,
@@ -40,10 +37,8 @@ public class GRNLineItemController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 3. Get All GRN Line Items (GET)
-     * 💡 আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
-     */
+   // আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
+
     @GetMapping
     public ResponseEntity<List<GRNLineItemResponseDTO>> getAll() {
         List<GRNLineItemResponseDTO> list = grnLineItemService.findAll();
@@ -55,9 +50,8 @@ public class GRNLineItemController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * 4. Get GRN Line Item By ID (GET)
-     */
+    // 4. Get GRN Line Item By ID (GET)
+
     @GetMapping("{id}")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
         return grnLineItemService.getById(id)
@@ -65,9 +59,8 @@ public class GRNLineItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 5. Delete GRN Line Item By ID (DELETE)
-     */
+    // Delete GRN Line Item By ID (DELETE)
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         grnLineItemService.delete(id);

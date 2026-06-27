@@ -35,10 +35,9 @@ public class LetterOfCreditController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     *  3. Official LC Amendment Gateway (Triggers Counter & Status Change)
-     * PATCH http://localhost:8085/api/lc/amend/{id}
-     */
+   // Official LC Amendment Gateway (Triggers Counter & Status Change)
+    // PATCH http://localhost:8085/api/lc/amend/{id}
+
     @PatchMapping("amend/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
             @PathVariable Long id,
@@ -47,19 +46,15 @@ public class LetterOfCreditController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     *  4. Get All Letters of Credit
-     * GET http://localhost:8085/api/lc/
-     */
+    //  4. Get All Letters of Credit
+
     @GetMapping
     public ResponseEntity<List<LetterOfCreditResponseDTO>> getAllLCs() {
         return ResponseEntity.ok(lcService.findAll());
     }
 
-    /**
-     *  5. Get LC Profile By ID
-     * GET http://localhost:8085/api/lc/{id}
-     */
+    //  5. Get LC Profile By ID
+
     @GetMapping("{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> getLCById(@PathVariable Long id) {
         return lcService.getById(id)
@@ -67,10 +62,8 @@ public class LetterOfCreditController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /**
-     *  6. Delete LC Instance
-     * DELETE http://localhost:8085/api/lc/{id}
-     */
+   // Delete LC Instance
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {
         lcService.delete(id);

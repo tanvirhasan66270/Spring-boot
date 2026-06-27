@@ -18,18 +18,14 @@ public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-    /**
-     * 1. Create New Purchase Order (POST)
-     */
+
     @PostMapping
     public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
         PurchaseOrderResponseDTO response = purchaseOrderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 2. Update Existing Purchase Order (PUT)
-     */
+
     @PutMapping("/{id}") // 💡 বেস্ট প্র্যাকটিস: শুরুতে "/" যোগ করা হয়েছে
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
@@ -38,9 +34,6 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 3. Get All Purchase Orders (GET)
-     */
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
         List<PurchaseOrderResponseDTO> list = purchaseOrderService.findAll();
@@ -50,9 +43,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * 4. Get Purchase Order By ID (GET)
-     */
+
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
@@ -60,9 +51,7 @@ public class PurchaseOrderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 5. Delete Purchase Order By ID (DELETE)
-     */
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);

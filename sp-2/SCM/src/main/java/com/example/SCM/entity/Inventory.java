@@ -12,19 +12,19 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder // ফিউচারে সার্ভিস লেয়ারে সহজে অবজেক্ট ক্রিয়েট করার জন্য যুক্ত করা হলো
+@Builder
 public class Inventory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // প্রোডাক্টের সাথে মেনি-টু-ওয়ান রিলেশন
+    //many-one relation with product
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    // ওয়ারহাউজের সাথে মেনি-টু-ওয়ান রিলেশন
+    // many-one relation with warehouse
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
     private Warehouse warehouse;

@@ -34,7 +34,7 @@ public class Vehicle {
     @Column(nullable = false)
     private VehicleStatus status;
 
-    private LocalDate lastServiceDate; // অটোমেটিক last_service_date হবে
+    private LocalDate lastServiceDate;
 
     @Column(nullable = false)
     private Integer fuelLevel; // 0 - 100

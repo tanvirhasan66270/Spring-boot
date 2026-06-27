@@ -20,7 +20,7 @@ public class LetterOfCredit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // এলসি নাম্বার ইউনিক
+    // LC number unique
     @Column(nullable = false, unique = true)
     private String lcNumber;
 

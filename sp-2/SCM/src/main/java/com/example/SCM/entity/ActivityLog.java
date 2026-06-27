@@ -18,7 +18,6 @@ public class ActivityLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // name বাদ দেওয়া হয়েছে, CamelCase নিয়মে অটোমেটিক user_id হবে
     @Column(nullable = false)
     private String userId;
 

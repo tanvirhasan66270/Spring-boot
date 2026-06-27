@@ -21,7 +21,7 @@ public class Supplier {
     @Column(nullable = false)
     private String name;
 
-    private String contactPerson; // অটোমেটিক contact_person কলাম হবে
+    private String contactPerson;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -39,23 +39,22 @@ public class Supplier {
 
     private String image;
 
-    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে, columnDefinition বাদ
+    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
     @Builder.Default
     private double rating = 0.0;
 
     private int averageLeadTimeDays;
 
-    private boolean isActive = true; // Primitive boolean হওয়ায় @Column লাগবে না
+    private boolean isActive = true;
 
-    @Column(updatable = false) // তৈরির সময় লক থাকবে
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt; // updatable = false তুলে দেওয়া হলো যেন আপডেট কাজ করে
-
+    private LocalDateTime updatedAt;
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now(); // প্রথমবার সেভ হওয়ার সময়ও যেন কারেন্ট টাইম পায়
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate

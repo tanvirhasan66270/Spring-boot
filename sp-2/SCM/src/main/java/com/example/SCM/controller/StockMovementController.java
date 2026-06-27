@@ -18,18 +18,14 @@ public class StockMovementController {
 
     private final StockMovementService service;
 
-    /**
-     * 1. Log New Stock Movement Ledger (POST)
-     */
+
     @PostMapping
     public ResponseEntity<StockMovementResponseDTO> logMovement(@RequestBody StockMovementRequestDTO dto) {
         StockMovementResponseDTO response = service.logMovement(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    /**
-     * 2. Fetch All Stock Transactions Log (GET)
-     */
+
     @GetMapping
     public ResponseEntity<List<StockMovementResponseDTO>> findAll() {
         List<StockMovementResponseDTO> list = service.findAll();
@@ -39,9 +35,7 @@ public class StockMovementController {
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * 3. Fetch Specific Movement Record By ID (GET)
-     */
+
     @GetMapping("{id}")
     public ResponseEntity<StockMovementResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
@@ -49,9 +43,7 @@ public class StockMovementController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * 4. Wipe Movement Record Pointer (DELETE)
-     */
+
     @DeleteMapping("{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

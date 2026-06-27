@@ -22,10 +22,6 @@ public class QuotationController {
 
     private final QuotationService quotationService;
 
-    /**
-     * ১. নতুন কোটেশন তৈরি এবং ইমেজ আপলোড (Create Operation)
-     * যেহেতু এখানে ডাটা এবং ফাইল একসাথে আসবে, তাই consume টাইপ MULTIPART_FORM_DATA_VALUE হওয়া বাধ্যতামূলক।
-     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QuotationResponseDTO> createQuotation(
             @RequestPart("quotation") String quotationJson,
@@ -40,9 +36,7 @@ public class QuotationController {
         );
     }
 
-    /**
-     * ২. আইডি দিয়ে নির্দিষ্ট কোটেশন খুঁজে বের করা (Read Operation - Single)
-     */
+
     @GetMapping("{id}")
     public ResponseEntity<QuotationResponseDTO> getQuotationById(@PathVariable Long id) {
         return quotationService.getById(id)
@@ -50,19 +44,15 @@ public class QuotationController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * ৩. সব কোটেশনের লিস্ট দেখা (Read Operation - List)
-     */
+
     @GetMapping
     public ResponseEntity<List<QuotationResponseDTO>> getAllQuotations() {
         List<QuotationResponseDTO> list = quotationService.findAll();
         return ResponseEntity.ok(list);
     }
 
-    /**
-     * ৪. এক্সিস্টিং কোটেশন আপডেট করা (Update Operation)
-     * (নোট: আপনার সার্ভিস অনুযায়ী এই মেথডটি শুধু DTO আপডেট করে)
-     */
+
+
     @PutMapping("{id}")
     public ResponseEntity<QuotationResponseDTO> updateQuotation(
             @PathVariable Long id,
@@ -72,9 +62,7 @@ public class QuotationController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * ৫. কোটেশন ডিলিট করা (Delete Operation)
-     */
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteQuotation(@PathVariable Long id) {
         quotationService.delete(id);

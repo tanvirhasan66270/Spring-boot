@@ -23,8 +23,8 @@ public class Division {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;       // e.g. Dhaka
-    private String nameBn;     // e.g. ঢাকা
+    private String name;       // Dhaka
+    private String nameBn;     // ঢাকা
     private Boolean active = true;
 
     @ManyToOne

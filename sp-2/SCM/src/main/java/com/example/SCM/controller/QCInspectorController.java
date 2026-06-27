@@ -20,10 +20,8 @@ public class QCInspectorController {
     @Autowired
     private QCInspectorService qcInspectorService;
 
-    /**
-     * 1. Create New QC Inspector with Profile Image (POST)
-     *  আপনার রাইডার কন্ট্রোলারের মতো হুবহু @RequestPart কনভেনশনে সিঙ্ক করা হয়েছে।
-     */
+    //  রাইডার কন্ট্রোলারের মতো হুবহু @RequestPart কনভেনশনে সিঙ্ক করা
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> create(
             @RequestPart("qcInspector") QCInspectorRequestDTO dto, // আপনার প্যাটার্ন অনুযায়ী নিমিং
@@ -35,9 +33,7 @@ public class QCInspectorController {
         );
     }
 
-    /**
-     * 2. Update Existing QC Inspector Profile & User Data (PUT)
-     */
+
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> update(
             @PathVariable Long id,
@@ -47,9 +43,7 @@ public class QCInspectorController {
         return ResponseEntity.ok(qcInspectorService.update(id, dto, image));
     }
 
-    /**
-     * 3. Get All QC Inspectors (GET)
-     */
+
     @GetMapping
     public ResponseEntity<List<QCInspectorResponseDTO>> getAll() {
         List<QCInspectorResponseDTO> inspectors = qcInspectorService.findAll();
@@ -61,18 +55,14 @@ public class QCInspectorController {
         return ResponseEntity.ok(inspectors);
     }
 
-    /**
-     * 4. Get QC Inspector By ID (GET)
-     */
+
     @GetMapping("{id}")
     public QCInspectorResponseDTO getById(@PathVariable Long id) {
         return qcInspectorService.getById(id)
                 .orElseThrow(() -> new RuntimeException("QC Inspector not found with ID: " + id));
     }
 
-    /**
-     * 5. Delete QC Inspector & Associated Auth User Account (DELETE)
-     */
+
     @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcInspectorService.delete(id);

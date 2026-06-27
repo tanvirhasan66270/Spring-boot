@@ -18,9 +18,8 @@ public class InvoiceController {
 
     private final InvoiceService service;
 
-    /**
-     * 1. Create New Invoice Ledger Node (POST)
-     */
+    // 1. Create New Invoice Ledger Node (POST)
+
     @PostMapping
     public ResponseEntity<InvoiceResponseDTO> create(@RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.save(dto);

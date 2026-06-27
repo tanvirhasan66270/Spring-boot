@@ -11,8 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "procurement_officers") // 💡 ডিবি কনভেনশন অনুযায়ী ফ্ল্যাট প্লুরাল নাম দেওয়া হয়েছে
-@Data
+@Table(name = "procurement_officers")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Procurement {
@@ -22,10 +21,10 @@ public class Procurement {
     private Long id;
 
     // =========================================================================
-    // 🔐 Authentication & System Security Relations
+    // Authentication & System Security Relations
     // =========================================================================
 
-    // 💡 পাসওয়ার্ড, নাম, ফোন এবং ইমেইল এই User অবজেক্টের ভেতরেই সেভ হবে
+    // password , name ,phone,Email this all object save in user
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;

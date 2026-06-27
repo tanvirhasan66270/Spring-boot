@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/suppliers/")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") // Frontend বা Angular/React থেকে কল করার সময় CORS এরর এড়াতে
+@CrossOrigin(origins = "*")
 public class SupplierController {
 
 
