@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.VehicleStatus;
 import com.example.SCM.enumClass.VehicleType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,14 +25,12 @@ public class Vehicle {
     private String plateNumber;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private VehicleType type;
+     private VehicleType type;
 
     @Column(nullable = false)
     private Double capacity;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private VehicleStatus status;
 
     private LocalDate lastServiceDate;
@@ -41,6 +40,7 @@ public class Vehicle {
 
     // One-to-One or Many-to-One with Driver (FK -> driver_id)
     // ড্রাইভার অ্যাসাইন না থাকলে এটি নাল (null) হতে পারে
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = true)
     private Driver driver;

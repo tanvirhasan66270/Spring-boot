@@ -1,6 +1,7 @@
 package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.PurchaseOrderStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -42,16 +43,19 @@ public class PurchaseOrder {
     private PurchaseOrderStatus status = PurchaseOrderStatus.DRAFT;
 
     // FK → Supplier ( auto Load from Quotation)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
     // FK → PurchaseRequisition (auto Load from Quotation)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
 
     // FK → Quotation
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quotation_id", nullable = false)
     private Quotation quotation;

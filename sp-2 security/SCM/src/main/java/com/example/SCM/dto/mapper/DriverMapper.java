@@ -24,23 +24,7 @@ import java.util.stream.Collectors;
 @Component
 public class DriverMapper {
 
-    /**
-     * Convert DriverRequestDTO to User Entity.
-     *
-     * @param dto Incoming request data from client
-     * @return User entity ready for mapping
-     */
-    public User toUserEntity(DriverRequestDTO dto) {
-        User user = new User();
-        user.setName(dto.getDriverName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.DRIVER);
-        return user;
-    }
-
-    /**
+       /**
      * Convert DriverRequestDTO to Driver Entity.
      *
      * @param dto Incoming request data from client
@@ -75,8 +59,7 @@ public class DriverMapper {
      * @param driver Driver entity from database
      * @return DriverResponseDTO
      */
-    public DriverResponseDTO toResponseDTO(Driver driver) {
-        if (driver == null) return null;
+    public DriverResponseDTO convertTOResponseDTO(Driver driver) {
 
         DriverResponseDTO dto = new DriverResponseDTO();
         dto.setId(driver.getId());

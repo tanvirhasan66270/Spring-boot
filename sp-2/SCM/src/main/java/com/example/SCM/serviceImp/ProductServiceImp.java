@@ -90,7 +90,7 @@ public class ProductServiceImp implements ProductService {
                 request.getRemoteAddr()
         );
 
-        return productMapper.toResponseDTO(savedProduct);
+        return productMapper.convertTOResponseDTO(savedProduct);
     }
 
 
@@ -152,7 +152,7 @@ public class ProductServiceImp implements ProductService {
                 request.getRemoteAddr()
         );
 
-        return productMapper.toResponseDTO(updatedProduct);
+        return productMapper.convertTOResponseDTO(updatedProduct);
     }
 
 
@@ -160,7 +160,7 @@ public class ProductServiceImp implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponseDTO> findAll() {
         return productRepository.findAll().stream()
-                .map(productMapper::toResponseDTO)
+                .map(productMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -169,7 +169,7 @@ public class ProductServiceImp implements ProductService {
     @Transactional(readOnly = true)
     public Optional<ProductResponseDTO> getById(Long id) {
         return productRepository.findById(id)
-                .map(productMapper::toResponseDTO);
+                .map(productMapper::convertTOResponseDTO);
     }
 
 

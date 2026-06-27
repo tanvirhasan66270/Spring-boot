@@ -10,6 +10,7 @@ import com.example.SCM.entity.Warehouse;
 import com.example.SCM.repository.DriverRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.repository.WarehouseRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.DriverService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -44,11 +45,13 @@ public class DriverServiceImp implements DriverService {
     @Transactional
     @Override
     public DriverResponseDTO save(DriverRequestDTO dto, MultipartFile file) {
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            throw new RuntimeException("Secure password token mandatory for login provision!");
-        }
 
-        User user = driverMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getDriverName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.DRIVER);
         User savedUser = userRepository.save(user);
 
         Set<Warehouse> warehouses = new HashSet<>();
@@ -66,7 +69,7 @@ public class DriverServiceImp implements DriverService {
 
         sendWelcomeEmail(savedUser);
 
-        return driverMapper.toResponseDTO(savedDriver);
+        return driverMapper.convertTOResponseDTO(savedDriver);
     }
 
     @Transactional
@@ -110,7 +113,7 @@ public class DriverServiceImp implements DriverService {
             driver.setWarehouses(updatedWarehouses);
         }
 
-        return driverMapper.toResponseDTO(driverRepository.save(driver));
+        return driverMapper.convertTOResponseDTO(driverRepository.save(driver));
     }
 
     @Transactional(readOnly = true)
@@ -118,14 +121,14 @@ public class DriverServiceImp implements DriverService {
     public List<DriverResponseDTO> findAll() {
         return driverRepository.findAllWithDetails()
                 .stream()
-                .map(driverMapper::toResponseDTO)
+                .map(driverMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<DriverResponseDTO> getById(Long id) {
-        return driverRepository.findById(id).map(driverMapper::toResponseDTO);
+        return driverRepository.findById(id).map(driverMapper::convertTOResponseDTO);
     }
 
     @Transactional

@@ -10,10 +10,8 @@ import org.springframework.stereotype.Component;
 public class QCChecklistMapper {
 
 
-    public QCChecklistResponseDTO toResponseDTO(QCChecklist entity) {
-        if (entity == null) {
-            return null;
-        }
+    public QCChecklistResponseDTO convertTOResponseDTO(QCChecklist entity) {
+
 
         QCChecklistResponseDTO dto = new QCChecklistResponseDTO();
         dto.setId(entity.getId());
@@ -33,9 +31,7 @@ public class QCChecklistMapper {
 
 
     public QCChecklist toEntity(QCChecklistRequestDTO dto, QCInspection inspection) {
-        if (dto == null) {
-            return null;
-        }
+
 
         QCChecklist entity = new QCChecklist();
         entity.setCheckpointName(dto.getCheckpointName());

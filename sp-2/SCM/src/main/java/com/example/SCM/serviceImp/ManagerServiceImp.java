@@ -12,6 +12,7 @@ import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.ManagerRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.ManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,12 @@ public class ManagerServiceImp implements ManagerService {
             throw new RuntimeException("Credential password cannot be empty for Management creation!");
         }
 
-        User user = managerMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.MANAGER);
         User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
@@ -70,7 +76,7 @@ public class ManagerServiceImp implements ManagerService {
         Manager savedManager = managerRepository.save(manager);
         sendWelcomeEmail(savedUser);
 
-        return managerMapper.toResponseDTO(savedManager);
+        return managerMapper.convertTOResponseDTO(savedManager);
     }
 
     @Override
@@ -120,21 +126,21 @@ public class ManagerServiceImp implements ManagerService {
             manager.setPoliceStation(policeStation);
         }
 
-        return managerMapper.toResponseDTO(managerRepository.save(manager));
+        return managerMapper.convertTOResponseDTO(managerRepository.save(manager));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ManagerResponseDTO> findAll() {
         return managerRepository.findAllWithDetails().stream()
-                .map(managerMapper::toResponseDTO)
+                .map(managerMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ManagerResponseDTO> getById(Long id) {
-        return managerRepository.findById(id).map(managerMapper::toResponseDTO);
+        return managerRepository.findById(id).map(managerMapper::convertTOResponseDTO);
     }
 
     @Override

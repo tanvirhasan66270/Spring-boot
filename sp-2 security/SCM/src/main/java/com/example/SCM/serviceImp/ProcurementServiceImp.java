@@ -12,6 +12,7 @@ import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.ProcurementRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.ProcurementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +57,12 @@ public class ProcurementServiceImp implements ProcurementService {
             throw new RuntimeException("This NID number is already registered under another officer!");
         }
 
-        User user = procurementMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.PROCUREMENT);
         User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
@@ -78,7 +84,7 @@ public class ProcurementServiceImp implements ProcurementService {
         Procurement savedProcurement = procurementRepository.save(procurement);
         sendWelcomeEmail(savedUser);
 
-        return procurementMapper.toResponseDTO(savedProcurement);
+        return procurementMapper.convertTOResponseDTO(savedProcurement);
     }
 
     @Override
@@ -128,21 +134,21 @@ public class ProcurementServiceImp implements ProcurementService {
             procurement.setPoliceStation(policeStation);
         }
 
-        return procurementMapper.toResponseDTO(procurementRepository.save(procurement));
+        return procurementMapper.convertTOResponseDTO(procurementRepository.save(procurement));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ProcurementResponseDTO> findAll() {
         return procurementRepository.findAllWithDetails().stream()
-                .map(procurementMapper::toResponseDTO)
+                .map(procurementMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ProcurementResponseDTO> getById(Long id) {
-        return procurementRepository.findById(id).map(procurementMapper::toResponseDTO);
+        return procurementRepository.findById(id).map(procurementMapper::convertTOResponseDTO);
     }
 
     @Override

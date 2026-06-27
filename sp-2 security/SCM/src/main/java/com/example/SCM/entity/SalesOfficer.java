@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,6 +25,7 @@ public class SalesOfficer {
     // =========================================================================
     // Authentication & System Security Relations
     // =========================================================================
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -38,8 +40,7 @@ public class SalesOfficer {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private GenderStatus gender;
+   private GenderStatus gender;
 
 
     private String image;
@@ -53,6 +54,7 @@ public class SalesOfficer {
     @Enumerated(EnumType.STRING)
     private LanguageStatus language;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;

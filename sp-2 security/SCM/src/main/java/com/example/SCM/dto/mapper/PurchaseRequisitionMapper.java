@@ -23,9 +23,7 @@ public class PurchaseRequisitionMapper {
      // RequestDTO, Product List, এবং Supplier List থেকে নতুন PurchaseRequisition Entity-তে রূপান্তর (Create Operation)
 
     public PurchaseRequisition toEntity(PurchaseRequisitionRequestDTO dto, List<Product> products, List<Supplier> suppliers) {
-        if (dto == null) {
-            return null;
-        }
+
 
         PurchaseRequisition pr = new PurchaseRequisition();
         pr.setRequestedBy(dto.getRequestedBy());
@@ -59,10 +57,8 @@ public class PurchaseRequisitionMapper {
      * PurchaseRequisition Entity থেকে PurchaseRequisitionResponseDTO-তে রূপান্তর (Read Operations)
      * এটি জটিল মেনি-টু-মেনি অবজেক্ট গ্রাফ ভেঙে ফ্ল্যাট জেসন ডেটা তৈরি করে।
      */
-    public PurchaseRequisitionResponseDTO toResponseDTO(PurchaseRequisition pr) {
-        if (pr == null) {
-            return null;
-        }
+    public PurchaseRequisitionResponseDTO convertTOResponseDTO(PurchaseRequisition pr) {
+
 
         PurchaseRequisitionResponseDTO dto = new PurchaseRequisitionResponseDTO();
         dto.setId(pr.getId());

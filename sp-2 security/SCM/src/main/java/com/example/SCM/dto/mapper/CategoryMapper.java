@@ -27,9 +27,7 @@ public class CategoryMapper {
      * @return Category entity ready for persistence
      */
     public Category toEntity(CategoryRequestDTO dto) {
-        if (dto == null) {
-            return null;
-        }
+
 
         Category category = new Category();
         category.setCategoryName(dto.getCategoryName());
@@ -47,9 +45,6 @@ public class CategoryMapper {
      * @return CategoryResponseDTO
      */
     public CategoryResponseDTO toResponseDTO(Category category) {
-        if (category == null) {
-            return null;
-        }
 
         CategoryResponseDTO dto = new CategoryResponseDTO();
         dto.setId(category.getId());
@@ -68,9 +63,6 @@ public class CategoryMapper {
      * @param category Existing entity instance to be modified
      */
     public void updateEntity(CategoryRequestDTO dto, Category category) {
-        if (dto == null || category == null) {
-            return;
-        }
 
         if (dto.getCategoryName() != null && !dto.getCategoryName().trim().isEmpty()) {
             category.setCategoryName(dto.getCategoryName());

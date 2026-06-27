@@ -7,28 +7,12 @@ import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
-import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
 public class SalesOfficerMapper {
 
-    public User toUserEntity(SalesOfficerRequestDTO dto) {
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-
-        //  আপনার Role এনামের সাথে সিঙ্ক। (যদি এনামে সরাসরি SALES_OFFICER না থাকে, তবে ব্যবসার লজিক অনুযায়ী ADMIN/MANAGER/LOGISTICS_OFFICER ম্যাপ করতে পারেন)
-        try {
-            user.setRole(Role.valueOf("SALES_OFFICER"));
-        } catch (IllegalArgumentException e) {
-            user.setRole(Role.MANAGER); // Fallback security setup
-        }
-        return user;
-    }
 
     public SalesOfficer toOfficerEntity(SalesOfficerRequestDTO dto, User user, PoliceStation policeStation) {
         SalesOfficer officer = new SalesOfficer();
@@ -55,8 +39,7 @@ public class SalesOfficerMapper {
         return officer;
     }
 
-    public SalesOfficerResponseDTO toResponseDTO(SalesOfficer entity) {
-        if (entity == null) return null;
+    public SalesOfficerResponseDTO convertTOResponseDTO(SalesOfficer entity) {
 
         SalesOfficerResponseDTO dto = new SalesOfficerResponseDTO();
         dto.setId(entity.getId());

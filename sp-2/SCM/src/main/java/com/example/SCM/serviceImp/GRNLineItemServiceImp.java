@@ -47,7 +47,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
         GRNLineItem lineItem = grnLineItemMapper.toEntity(dto, grn, product);
 
         GRNLineItem savedItem = grnLineItemRepository.save(lineItem);
-        return grnLineItemMapper.toResponseDTO(savedItem);
+        return grnLineItemMapper.convertTOResponseDTO(savedItem);
     }
 
 
@@ -79,7 +79,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
         grnLineItemMapper.updateEntity(dto, item, grn, product);
 
         GRNLineItem updatedItem = grnLineItemRepository.save(item);
-        return grnLineItemMapper.toResponseDTO(updatedItem);
+        return grnLineItemMapper.convertTOResponseDTO(updatedItem);
     }
 
 
@@ -87,7 +87,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
     @Transactional(readOnly = true)
     public List<GRNLineItemResponseDTO> findAll() {
         return grnLineItemRepository.findAll().stream()
-                .map(grnLineItemMapper::toResponseDTO)
+                .map(grnLineItemMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -96,7 +96,7 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
     @Transactional(readOnly = true)
     public Optional<GRNLineItemResponseDTO> getById(Long id) {
         return grnLineItemRepository.findById(id)
-                .map(grnLineItemMapper::toResponseDTO);
+                .map(grnLineItemMapper::convertTOResponseDTO);
     }
 
 

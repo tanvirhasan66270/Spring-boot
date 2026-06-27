@@ -11,8 +11,7 @@ import java.time.LocalDate;
 @Component
 public class ShipmentMapper {
 
-    public ShipmentResponseDTO toResponseDTO(Shipment entity) {
-        if (entity == null) return null;
+    public ShipmentResponseDTO convertTOResponseDTO(Shipment entity) {
 
         ShipmentResponseDTO dto = new ShipmentResponseDTO();
         dto.setId(entity.getId());
@@ -50,7 +49,6 @@ public class ShipmentMapper {
     }
 
     public Shipment toEntity(ShipmentRequestDTO dto, PurchaseOrder po, Supplier supplier) {
-        if (dto == null) return null;
 
         Shipment entity = new Shipment();
         entity.setVehicleNumber(dto.getVehicleNumber());

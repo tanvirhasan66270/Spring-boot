@@ -38,7 +38,7 @@ public class VehicleServiceImp implements VehicleService {
         }
 
         Vehicle vehicle = vehicleMapper.toEntity(dto, driver);
-        return vehicleMapper.toResponseDTO(vehicleRepository.save(vehicle));
+        return vehicleMapper.convertTOResponseDTO(vehicleRepository.save(vehicle));
     }
 
     @Override
@@ -58,21 +58,21 @@ public class VehicleServiceImp implements VehicleService {
         }
 
         vehicleMapper.updateEntity(dto, vehicle, driver);
-        return vehicleMapper.toResponseDTO(vehicleRepository.save(vehicle));
+        return vehicleMapper.convertTOResponseDTO(vehicleRepository.save(vehicle));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<VehicleResponseDTO> findAll() {
         return vehicleRepository.findAllWithDriverDetails().stream()
-                .map(vehicleMapper::toResponseDTO)
+                .map(vehicleMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<VehicleResponseDTO> getById(Long id) {
-        return vehicleRepository.findByIdWithDriverDetails(id).map(vehicleMapper::toResponseDTO);
+        return vehicleRepository.findByIdWithDriverDetails(id).map(vehicleMapper::convertTOResponseDTO);
     }
 
     @Override

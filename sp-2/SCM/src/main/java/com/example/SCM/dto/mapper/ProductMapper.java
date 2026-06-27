@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProductMapper {
 
-    public ProductResponseDTO toResponseDTO(Product entity) {
-        if (entity == null) return null;
+    public ProductResponseDTO convertTOResponseDTO(Product entity) {
 
         ProductResponseDTO dto = new ProductResponseDTO();
         dto.setId(entity.getId());
@@ -35,7 +34,6 @@ public class ProductMapper {
     }
 
     public Product toEntity(ProductRequestDTO dto, Category category) {
-        if (dto == null) return null;
 
         Product entity = new Product();
         entity.setProductCode(dto.getProductCode());

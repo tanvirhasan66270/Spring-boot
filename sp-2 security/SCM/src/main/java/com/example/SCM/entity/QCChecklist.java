@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public class QCChecklist {
     private Long id;
 
     // FK → QCInspection (Parent Relationship)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inspection_id", nullable = false)
     private QCInspection qcInspection;
@@ -43,6 +45,7 @@ public class QCChecklist {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.updatedAt = LocalDateTime.now();
     }
 }

@@ -35,10 +35,15 @@ public class CustomerServiceImp implements CustomerService {
     @Transactional
     @Override
     public CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile image) {
-        //  অ্যাসোসিয়েটেড ইউজার অ্যাকাউন্ট চেক বা ক্রিয়েশন লজিক (প্রজেক্ট রিকোয়ারমেন্ট অনুযায়ী)
-        // এখানে ধরে নেওয়া হচ্ছে কন্ট্রোলার থেকে পাস হওয়া dto-তে অলরেডি সোর্স ইউজার অবজেক্ট তৈরি বা রেডি আছে।
-        User user = userRepository.findById(dto.getPoliceStationId())
-                .orElseThrow(() -> new RuntimeException("Associated Auth User Node missing"));
+
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(com.example.SCM.role.Role.CUSTOMER);
+
+        User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = dto.getPoliceStationId() != null ?
                 policeStationRepository.findById(dto.getPoliceStationId())
@@ -46,7 +51,7 @@ public class CustomerServiceImp implements CustomerService {
 
         // ম্যাপার দিয়ে নতুন এনটিটি তৈরি (উপরে তৈরি করা আপনার কাস্টম মেথড অনুযায়ী)
         Customer customer = new Customer();
-        customer.setUser(user);
+        customer.setUser(savedUser);
         customerMapper.updateEntity(dto, customer, policeStation);
 
         //  ইমেজ আপলোড হ্যান্ডলিং
@@ -60,7 +65,7 @@ public class CustomerServiceImp implements CustomerService {
         // welcome জানিয়ে ডাইনামিক HTML মেইল পাঠানো
         sendCustomerWelcomeEmail(savedCustomer);
 
-        return customerMapper.toResponseDTO(savedCustomer);
+        return customerMapper.convertTOResponseDTO(savedCustomer);
     }
 
     @Transactional
@@ -81,7 +86,7 @@ public class CustomerServiceImp implements CustomerService {
         }
 
         userRepository.save(customer.getUser());
-        return customerMapper.toResponseDTO(customerRepository.save(customer));
+        return customerMapper.convertTOResponseDTO(customerRepository.save(customer));
     }
 
     @Transactional(readOnly = true)
@@ -89,7 +94,7 @@ public class CustomerServiceImp implements CustomerService {
     public List<CustomerResponseDTO> findAll() {
         return customerRepository.findAllCustomersWithDetails()
                 .stream()
-                .map(customerMapper::toResponseDTO)
+                .map(customerMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -97,7 +102,7 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public Optional<CustomerResponseDTO> getById(Long id) {
         return customerRepository.findByIdWithDetails(id)
-                .map(customerMapper::toResponseDTO);
+                .map(customerMapper::convertTOResponseDTO);
     }
 
     @Transactional

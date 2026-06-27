@@ -9,6 +9,7 @@ import com.example.SCM.entity.User;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.QCInspectorRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.QCInspectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,8 +45,13 @@ public class QCInspectorServiceImp implements QCInspectorService {
             throw new IllegalArgumentException("QC Inspector data cannot be null");
         }
 
-        // ম্যাপার স্ট্রাকচার ব্যবহার করে সোর্স অফ ট্রুথ User অবজেক্ট তৈরি
-        User user = qcInspectorMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setActive(dto.isUserActive());
+        user.setRole(Role.QC_INSPECTOR);
 
         // প্লেইন টেক্সট পাসওয়ার্ড এবং ইউজার অ্যাকাউন্ট ডিটিও-র কনফ্লিক্ট-ফ্রি ফিল্ড 'userActive' থেকে সিঙ্কড
         user.setPassword(dto.getPassword());
@@ -69,7 +75,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         }
 
         QCInspector savedInspector = qcInspectorRepository.save(inspector);
-        return qcInspectorMapper.toResponseDTO(savedInspector);
+        return qcInspectorMapper.convertTOResponseDTO(savedInspector);
     }
 
 
@@ -105,7 +111,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
         }
 
         QCInspector updatedInspector = qcInspectorRepository.save(inspector);
-        return qcInspectorMapper.toResponseDTO(updatedInspector);
+        return qcInspectorMapper.convertTOResponseDTO(updatedInspector);
     }
 
 
@@ -113,7 +119,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
     @Transactional(readOnly = true)
     public List<QCInspectorResponseDTO> findAll() {
         return qcInspectorRepository.findAllInspectors().stream()
-                .map(qcInspectorMapper::toResponseDTO)
+                .map(qcInspectorMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -122,7 +128,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
     @Transactional(readOnly = true)
     public Optional<QCInspectorResponseDTO> getById(Long id) {
         return qcInspectorRepository.findByIdWithDetails(id)
-                .map(qcInspectorMapper::toResponseDTO);
+                .map(qcInspectorMapper::convertTOResponseDTO);
     }
 
 

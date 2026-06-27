@@ -32,10 +32,8 @@ public class GoodsReceivedNoteMapper {
      * @param grn GoodsReceivedNote entity from database
      * @return GoodsReceivedNoteResponseDTO
      */
-    public GoodsReceivedNoteResponseDTO toResponseDTO(GoodsReceivedNote grn) {
-        if (grn == null) {
-            return null;
-        }
+    public GoodsReceivedNoteResponseDTO convertTOResponseDTO(GoodsReceivedNote grn) {
+
 
         GoodsReceivedNoteResponseDTO dto = new GoodsReceivedNoteResponseDTO();
 
@@ -90,9 +88,6 @@ public class GoodsReceivedNoteMapper {
      * @return GoodsReceivedNote entity instance
      */
     public GoodsReceivedNote toEntity(GoodsReceivedNoteRequestDTO dto, PurchaseOrder po, Product product, User receivedBy, Warehouse warehouse, User inspectedBy) {
-        if (dto == null) {
-            return null;
-        }
 
         // Create Note Entity
         GoodsReceivedNote grn = new GoodsReceivedNote();

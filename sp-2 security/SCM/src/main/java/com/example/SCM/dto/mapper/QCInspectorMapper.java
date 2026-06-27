@@ -7,7 +7,6 @@ import com.example.SCM.entity.QCInspector;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
-import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -18,10 +17,8 @@ public class QCInspectorMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-     public QCInspectorResponseDTO toResponseDTO(QCInspector inspector) {
-        if (inspector == null) {
-            return null;
-        }
+     public QCInspectorResponseDTO convertTOResponseDTO(QCInspector inspector) {
+
 
         QCInspectorResponseDTO dto = new QCInspectorResponseDTO();
 
@@ -71,27 +68,10 @@ public class QCInspectorMapper {
     }
 
 
-    public User toUserEntity(QCInspectorRequestDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setActive(dto.isUserActive());
-        user.setRole(Role.QC_INSPECTOR);    // রোল অটোমেটিক QC_INSPECTOR হিসেবে সেট হবে
-
-        return user;
-    }
 
 
     public QCInspector toQCInspectorEntity(QCInspectorRequestDTO dto, User user, PoliceStation policeStation) {
-        if (dto == null) {
-            return null;
-        }
+
 
         QCInspector inspector = new QCInspector();
 
@@ -129,9 +109,6 @@ public class QCInspectorMapper {
 
 
     public void updateEntity(QCInspectorRequestDTO dto, QCInspector inspector, PoliceStation policeStation) {
-        if (dto == null || inspector == null) {
-            return;
-        }
 
         // ১. সোর্স অফ ট্রুথ (User Entity) আপডেট
         User user = inspector.getUser();

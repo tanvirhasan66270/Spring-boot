@@ -1,6 +1,7 @@
 package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.POLineItemStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -19,10 +20,12 @@ public class POLineItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "po_id", nullable = false)
     private PurchaseOrder purchaseOrder;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -48,7 +51,6 @@ public class POLineItem {
     private String notes;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private POLineItemStatus status = POLineItemStatus.PENDING;
 
@@ -69,7 +71,6 @@ public class POLineItem {
         calculateLineTotal();
     }
 
-    // 💡 লজিক: স্ট্যাটাস CANCELLED হলে lineTotal = 0 করার কন্ডিশন
     private void calculateLineTotal() {
         if (this.status == POLineItemStatus.CANCELLED) {
             this.lineTotal = 0.0;

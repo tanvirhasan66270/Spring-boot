@@ -27,8 +27,7 @@ public class DeliveryTripMapper {
      * @param entity DeliveryTrip entity from database
      * @return DeliveryTripResponseDTO
      */
-    public DeliveryTripResponseDTO toResponseDTO(DeliveryTrip entity) {
-        if (entity == null) return null;
+    public DeliveryTripResponseDTO convertTOResponseDTO(DeliveryTrip entity) {
 
         DeliveryTripResponseDTO dto = new DeliveryTripResponseDTO();
         dto.setId(entity.getId());
@@ -84,7 +83,6 @@ public class DeliveryTripMapper {
      * @return DeliveryTrip entity instance
      */
     public DeliveryTrip toEntity(DeliveryTripRequestDTO dto, Customer customer, Driver driver, Vehicle vehicle) {
-        if (dto == null) return null;
 
         DeliveryTrip entity = new DeliveryTrip();
         entity.setSendBy(dto.getSendBy());

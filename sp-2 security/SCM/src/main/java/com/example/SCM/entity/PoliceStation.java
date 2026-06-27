@@ -27,6 +27,7 @@ public class PoliceStation {
     private String postalCode;  // 1216
     private Boolean active = true;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "district_id")
     private District district;

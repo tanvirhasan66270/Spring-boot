@@ -36,7 +36,7 @@ public class StockMovementServiceImp implements StockMovementService {
         String warehouseName = warehouseRepository.findNameById(entity.getWarehouseId()).orElse("Unknown Warehouse");
 
         //  ডিটিওতে ম্যাপ করে পাঠানো
-        return mapper.toResponseDTO(entity, productName, warehouseName);
+        return mapper.convertTOResponseDTO(entity, productName, warehouseName);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class StockMovementServiceImp implements StockMovementService {
         return repository.findAll().stream().map(entity -> {
             String productName = productRepository.findNameById(entity.getProductId()).orElse("Unknown Product");
             String warehouseName = warehouseRepository.findNameById(entity.getWarehouseId()).orElse("Unknown Warehouse");
-            return mapper.toResponseDTO(entity, productName, warehouseName);
+            return mapper.convertTOResponseDTO(entity, productName, warehouseName);
         }).collect(Collectors.toList());
     }
 
@@ -55,7 +55,7 @@ public class StockMovementServiceImp implements StockMovementService {
         return repository.findById(id).map(entity -> {
             String productName = productRepository.findNameById(entity.getProductId()).orElse("Unknown Product");
             String warehouseName = warehouseRepository.findNameById(entity.getWarehouseId()).orElse("Unknown Warehouse");
-            return mapper.toResponseDTO(entity, productName, warehouseName);
+            return mapper.convertTOResponseDTO(entity, productName, warehouseName);
         });
     }
 

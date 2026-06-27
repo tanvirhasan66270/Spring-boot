@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,7 +43,6 @@ public class QCInspector {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private GenderStatus gender;
 
 
@@ -57,6 +57,7 @@ public class QCInspector {
     @Enumerated(EnumType.STRING)
     private LanguageStatus language;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
@@ -74,6 +75,7 @@ public class QCInspector {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.updatedAt = LocalDateTime.now();
     }
 }

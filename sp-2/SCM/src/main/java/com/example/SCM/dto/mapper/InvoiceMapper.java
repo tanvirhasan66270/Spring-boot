@@ -12,7 +12,6 @@ import java.time.LocalDate;
 public class InvoiceMapper {
 
     public Invoice toEntity(InvoiceRequestDTO dto) {
-        if (dto == null) return null;
 
         Invoice invoice = new Invoice();
         invoice.setCustomerOrderId(dto.getCustomerOrderId());
@@ -42,7 +41,6 @@ public class InvoiceMapper {
     }
 
     public InvoiceResponseDTO toResponseDTO(Invoice entity) {
-        if (entity == null) return null;
 
         InvoiceResponseDTO dto = new InvoiceResponseDTO();
         dto.setId(entity.getId());
@@ -80,7 +78,6 @@ public class InvoiceMapper {
 
     //  এক্সিস্টিং ইনভয়েস আপডেট করার জন্য ইউটিলিটি ম্যাপার মেথড
     public void updateEntityFromDTO(InvoiceRequestDTO dto, Invoice invoice) {
-        if (dto == null || invoice == null) return;
 
         invoice.setCustomerOrderId(dto.getCustomerOrderId());
         invoice.setSalesOfficerId(dto.getSalesOfficerId());

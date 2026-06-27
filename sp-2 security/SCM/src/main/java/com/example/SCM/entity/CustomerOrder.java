@@ -3,6 +3,7 @@ package com.example.SCM.entity;
 import com.example.SCM.Util.ExecuteCalculations;
 import com.example.SCM.enumClass.CustomerOrderStatus;
 import com.example.SCM.enumClass.ServiceType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -64,6 +65,7 @@ public class CustomerOrder {
     private LocalDateTime createdAt;
 
     // ── Zone management / Object Relations ───────────────────────
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private User customer;

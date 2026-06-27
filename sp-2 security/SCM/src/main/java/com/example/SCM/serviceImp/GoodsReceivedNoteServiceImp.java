@@ -78,7 +78,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
         grn.setGrnNumber(generatedGrnNumber);
 
         GoodsReceivedNote savedGrn = goodsReceivedNoteRepository.save(grn);
-        return goodsReceivedNoteMapper.toResponseDTO(savedGrn);
+        return goodsReceivedNoteMapper.convertTOResponseDTO(savedGrn);
     }
 
 
@@ -106,7 +106,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
         }
 
         GoodsReceivedNote updatedGrn = goodsReceivedNoteRepository.save(grn);
-        return goodsReceivedNoteMapper.toResponseDTO(updatedGrn);
+        return goodsReceivedNoteMapper.convertTOResponseDTO(updatedGrn);
     }
 
 
@@ -115,7 +115,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
     public List<GoodsReceivedNoteResponseDTO> findAll() {
         return goodsReceivedNoteRepository.findAll()
                 .stream()
-                .map(goodsReceivedNoteMapper::toResponseDTO)
+                .map(goodsReceivedNoteMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -124,7 +124,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
     @Override
     public Optional<GoodsReceivedNoteResponseDTO> getById(Long id) {
         return goodsReceivedNoteRepository.findById(id)
-                .map(goodsReceivedNoteMapper::toResponseDTO);
+                .map(goodsReceivedNoteMapper::convertTOResponseDTO);
     }
 
 

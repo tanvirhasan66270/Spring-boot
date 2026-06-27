@@ -35,10 +35,10 @@ public class CommercialOfficer {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private GenderStatus gender;
 
     private String image;
+
     private boolean isActive = true;
 
     private LocalDate joiningDate;
@@ -46,7 +46,6 @@ public class CommercialOfficer {
     private String designation;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
     private LanguageStatus language;
 
     // ── Zone management / Station Relations ──────────────────────

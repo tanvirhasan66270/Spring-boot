@@ -1,7 +1,6 @@
 package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.QCInspectionRequestDTO;
-import com.example.SCM.dto.request.QCChecklistRequestDTO;
 import com.example.SCM.dto.response.QCInspectionResponseDTO;
 import com.example.SCM.dto.response.QCChecklistResponseDTO;
 import com.example.SCM.entity.*;
@@ -9,14 +8,12 @@ import com.example.SCM.enumClass.ResultStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Component
 public class QCInspectionMapper {
 
-    public QCInspectionResponseDTO toResponseDTO(QCInspection entity) {
-        if (entity == null) return null;
+    public QCInspectionResponseDTO convertTOResponseDTO(QCInspection entity) {
 
         QCInspectionResponseDTO dto = new QCInspectionResponseDTO();
         dto.setId(entity.getId());
@@ -62,7 +59,6 @@ public class QCInspectionMapper {
     }
 
     public QCInspection toEntity(QCInspectionRequestDTO dto, GoodsReceivedNote grn, Product product, User inspector) {
-        if (dto == null) return null;
 
         QCInspection entity = new QCInspection();
         entity.setInspectionType(dto.getInspectionType());
@@ -84,22 +80,13 @@ public class QCInspectionMapper {
         entity.setInspectedBy(inspector);
 
         // চাইল্ড ডিটিও টু এনটিটি বাইন্ডিং (Cascade Ready)
-        if (dto.getChecklists() != null) {
-            entity.setChecklists(dto.getChecklists().stream().map(cDto -> {
-                QCChecklist chk = new QCChecklist();
-                chk.setCheckpointName(cDto.getCheckpointName());
-                chk.setPassed(cDto.isPassed());
-                chk.setRemarks(cDto.getRemarks());
-                chk.setQcInspection(entity);
-                return chk;
-            }).collect(Collectors.toList()));
-        }
+        if (dto.getResult() != null) entity.setResult(ResultStatus.valueOf(dto.getResult().toUpperCase()));
+        if (dto.getInspectedAt() != null && !dto.getInspectedAt().isEmpty()) entity.setInspectedAt(LocalDate.parse(dto.getInspectedAt()));
 
         return entity;
     }
 
     public void updateEntity(QCInspectionRequestDTO dto, QCInspection entity, GoodsReceivedNote grn, Product product, User inspector) {
-        if (dto == null || entity == null) return;
 
         entity.setInspectionType(dto.getInspectionType());
         entity.setSampleSize(dto.getSampleSize());

@@ -12,6 +12,7 @@ import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.CommercialOfficerRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.CommercialOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,7 +57,12 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         }
 
         // save user first
-        User user = officerMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.COMMERCIAL_OFFICER);
         User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
@@ -79,7 +85,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         CommercialOfficer savedOfficer = officerRepository.save(officer);
         sendWelcomeEmail(savedUser);
 
-        return officerMapper.toResponseDTO(savedOfficer);
+        return officerMapper.convertTOResponseDTO(savedOfficer);
     }
 
     @Transactional
@@ -129,7 +135,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             officer.setPoliceStation(policeStation);
         }
 
-        return officerMapper.toResponseDTO(officerRepository.save(officer));
+        return officerMapper.convertTOResponseDTO(officerRepository.save(officer));
     }
 
     @Transactional(readOnly = true)
@@ -137,7 +143,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     public List<CommercialOfficerResponseDTO> findAll() {
         return officerRepository.findAllWithDetails()
                 .stream()
-                .map(officerMapper::toResponseDTO)
+                .map(officerMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -145,7 +151,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     @Override
     public Optional<CommercialOfficerResponseDTO> getById(Long id) {
         return officerRepository.findById(id)
-                .map(officerMapper::toResponseDTO);
+                .map(officerMapper::convertTOResponseDTO);
     }
 
     @Transactional

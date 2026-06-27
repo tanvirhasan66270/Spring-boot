@@ -12,6 +12,7 @@ import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.SalesOfficerRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.SalesOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,8 +52,18 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
         if (officerRepository.existsByNidNumber(dto.getNidNumber())) {
             throw new RuntimeException("This NID number is already assigned to another staff profile!");
         }
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
 
-        User user = officerMapper.toUserEntity(dto);
+        try {
+            user.setRole(Role.valueOf("SALES_OFFICER"));
+        } catch (IllegalArgumentException e) {
+            user.setRole(Role.MANAGER);
+        }
+
         User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
@@ -74,7 +85,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
         SalesOfficer savedOfficer = officerRepository.save(officer);
         sendWelcomeEmail(savedUser);
 
-        return officerMapper.toResponseDTO(savedOfficer);
+        return officerMapper.convertTOResponseDTO(savedOfficer);
     }
 
     @Override
@@ -123,21 +134,21 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
             officer.setPoliceStation(policeStation);
         }
 
-        return officerMapper.toResponseDTO(officerRepository.save(officer));
+        return officerMapper.convertTOResponseDTO(officerRepository.save(officer));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SalesOfficerResponseDTO> findAll() {
         return officerRepository.findAllWithDetails().stream()
-                .map(officerMapper::toResponseDTO)
+                .map(officerMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<SalesOfficerResponseDTO> getById(Long id) {
-        return officerRepository.findById(id).map(officerMapper::toResponseDTO);
+        return officerRepository.findById(id).map(officerMapper::convertTOResponseDTO);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class PoliceStationServiceImp implements PoliceStationService {
                 .orElseThrow(() -> new RuntimeException("District not found with ID: " + dto.getDistrictId()));
 
         PoliceStation station = policeStationMapper.toEntity(dto, district);
-        return policeStationMapper.toResponseDTO(policeStationRepository.save(station));
+        return policeStationMapper.convertTOResponseDTO(policeStationRepository.save(station));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PoliceStationServiceImp implements PoliceStationService {
         }
 
         policeStationMapper.updateEntity(dto, station, district);
-        return policeStationMapper.toResponseDTO(policeStationRepository.save(station));
+        return policeStationMapper.convertTOResponseDTO(policeStationRepository.save(station));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class PoliceStationServiceImp implements PoliceStationService {
                 policeStationRepository.findAllStationsWithDetails();
 
         return stations.stream()
-                .map(policeStationMapper::toResponseDTO)
+                .map(policeStationMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -70,14 +70,14 @@ public class PoliceStationServiceImp implements PoliceStationService {
     @Transactional(readOnly = true)
     public List<PoliceStationResponseDTO> getByDistrictId(Long districtId) {
         return policeStationRepository.findByDistrictId(districtId).stream()
-                .map(policeStationMapper::toResponseDTO)
+                .map(policeStationMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<PoliceStationResponseDTO> getById(Long id) {
-        return policeStationRepository.findByIdWithDetails(id).map(policeStationMapper::toResponseDTO);
+        return policeStationRepository.findByIdWithDetails(id).map(policeStationMapper::convertTOResponseDTO);
     }
 
     @Override

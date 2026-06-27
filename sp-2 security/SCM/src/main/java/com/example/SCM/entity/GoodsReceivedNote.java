@@ -35,7 +35,6 @@ public class GoodsReceivedNote {
     private LocalDate receivedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private GRNStatus status;
 
     @Column(columnDefinition = "TEXT")

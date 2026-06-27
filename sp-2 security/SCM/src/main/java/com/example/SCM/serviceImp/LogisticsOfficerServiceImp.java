@@ -7,12 +7,12 @@ import com.example.SCM.dto.response.LogisticsOfficerResponseDTO;
 import com.example.SCM.entity.Logistics_Officer;
 import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
-import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.repository.LogisticsOfficerRepository;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.LogisticsOfficerService;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,13 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
             throw new RuntimeException("Credential password cannot be empty for recruitment allocation!");
         }
 
-        User user = officerMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.LOGISTICS_OFFICER);
+
         User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
@@ -76,7 +82,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
         Logistics_Officer savedOfficer = officerRepository.save(officer);
         sendWelcomeEmail(savedUser);
 
-        return officerMapper.toResponseDTO(savedOfficer);
+        return officerMapper.convertTOResponseDTO(savedOfficer);
     }
 
     @Override
@@ -127,21 +133,21 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
             officer.setPoliceStation(policeStation);
         }
 
-        return officerMapper.toResponseDTO(officerRepository.save(officer));
+        return officerMapper.convertTOResponseDTO(officerRepository.save(officer));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<LogisticsOfficerResponseDTO> findAll() {
         return officerRepository.findAllWithDetails().stream()
-                .map(officerMapper::toResponseDTO)
+                .map(officerMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<LogisticsOfficerResponseDTO> getById(Long id) {
-        return officerRepository.findById(id).map(officerMapper::toResponseDTO);
+        return officerRepository.findById(id).map(officerMapper::convertTOResponseDTO);
     }
 
     @Override

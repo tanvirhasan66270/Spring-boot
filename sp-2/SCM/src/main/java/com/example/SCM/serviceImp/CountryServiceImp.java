@@ -29,7 +29,7 @@ public class CountryServiceImp implements CountryService {
         }
         Country country = countryMapper.toEntity(dto);
         Country savedCountry = countryRepository.save(country);
-        return countryMapper.toResponseDTO(savedCountry);
+        return countryMapper.convertTOResponseDTO(savedCountry);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class CountryServiceImp implements CountryService {
 
         countryMapper.updateEntity(dto, country);
         Country updatedCountry = countryRepository.save(country);
-        return countryMapper.toResponseDTO(updatedCountry);
+        return countryMapper.convertTOResponseDTO(updatedCountry);
     }
 
     @Override
@@ -54,7 +54,7 @@ public class CountryServiceImp implements CountryService {
                 countryRepository.findAllCountriesWithDivisions();
 
         return countries.stream()
-                .map(countryMapper::toResponseDTO)
+                .map(countryMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -62,7 +62,7 @@ public class CountryServiceImp implements CountryService {
     @Transactional(readOnly = true)
     public Optional<CountryResponseDTO> getById(Long id) {
         return countryRepository.findByIdWithDivisions(id)
-                .map(countryMapper::toResponseDTO);
+                .map(countryMapper::convertTOResponseDTO);
     }
 
     @Override

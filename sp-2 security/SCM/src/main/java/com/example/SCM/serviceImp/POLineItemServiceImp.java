@@ -78,7 +78,7 @@ public class POLineItemServiceImp implements POLineItemService {
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
 
-        return poLineItemMapper.toResponseDTO(savedItem);
+        return poLineItemMapper.convertTOResponseDTO(savedItem);
     }
 
 
@@ -145,7 +145,7 @@ public class POLineItemServiceImp implements POLineItemService {
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
 
-        return poLineItemMapper.toResponseDTO(updatedItem);
+        return poLineItemMapper.convertTOResponseDTO(updatedItem);
     }
 
 
@@ -153,7 +153,7 @@ public class POLineItemServiceImp implements POLineItemService {
     @Transactional(readOnly = true)
     public List<POLineItemResponseDTO> findAll() {
         return poLineItemRepository.findAll().stream()
-                .map(poLineItemMapper::toResponseDTO)
+                .map(poLineItemMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -162,7 +162,7 @@ public class POLineItemServiceImp implements POLineItemService {
     @Transactional(readOnly = true)
     public Optional<POLineItemResponseDTO> getById(Long id) {
         return poLineItemRepository.findById(id)
-                .map(poLineItemMapper::toResponseDTO);
+                .map(poLineItemMapper::convertTOResponseDTO);
     }
 
 
@@ -207,6 +207,6 @@ public class POLineItemServiceImp implements POLineItemService {
         POLineItem item = poLineItemRepository.findByTrackingNumber(trackingNumber)
                 .orElseThrow(() -> new RuntimeException("No purchase order item found with Tracking Number: " + trackingNumber));
 
-        return poLineItemMapper.toResponseDTO(item);
+        return poLineItemMapper.convertTOResponseDTO(item);
     }
 }

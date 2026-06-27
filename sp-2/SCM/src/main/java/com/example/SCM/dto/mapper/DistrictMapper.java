@@ -14,8 +14,7 @@ public class DistrictMapper {
 
     // Entity -> Response DTO
 
-    public DistrictResponseDTO toResponseDTO(District entity) {
-        if (entity == null) return null;
+    public DistrictResponseDTO convertTOResponseDTO(District entity) {
 
         DistrictResponseDTO dto = new DistrictResponseDTO();
         dto.setId(entity.getId());
@@ -45,7 +44,6 @@ public class DistrictMapper {
    // Request DTO -> Entity
 
     public District toEntity(DistrictRequestDTO dto, Division division) {
-        if (dto == null) return null;
 
         District entity = new District();
         entity.setName(dto.getName());

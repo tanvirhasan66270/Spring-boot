@@ -19,9 +19,7 @@ public class POLineItemMapper {
 
 
     public POLineItem toEntity(POLineItemRequestDTO dto, PurchaseOrder purchaseOrder, Product product) {
-        if (dto == null) {
-            return null;
-        }
+
 
         POLineItem item = new POLineItem();
         item.setQuantity(dto.getQuantity());
@@ -52,10 +50,8 @@ public class POLineItemMapper {
     }
 
 
-    public POLineItemResponseDTO toResponseDTO(POLineItem item) {
-        if (item == null) {
-            return null;
-        }
+    public POLineItemResponseDTO convertTOResponseDTO(POLineItem item) {
+
 
         POLineItemResponseDTO dto = new POLineItemResponseDTO();
         dto.setId(item.getId());

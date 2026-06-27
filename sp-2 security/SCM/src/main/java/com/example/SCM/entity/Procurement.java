@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,6 +27,7 @@ public class Procurement {
     // =========================================================================
 
     // password , name ,phone,Email this all object save in user
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -43,7 +45,6 @@ public class Procurement {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private GenderStatus gender;
 
     private String image;
@@ -59,6 +60,7 @@ public class Procurement {
     @Enumerated(EnumType.STRING)
     private LanguageStatus language;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
@@ -77,6 +79,7 @@ public class Procurement {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.updatedAt = LocalDateTime.now();
     }
 }

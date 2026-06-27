@@ -17,7 +17,6 @@ public class OrderLineItemMapper {
    //  Request DTO থেকে Entity-তে কনভার্ট (আইটেম লেভেল বিল্ডার)
 
     public OrderLineItem toEntity(OrderLineItemRequestDTO dto) {
-        if (dto == null) return null;
 
         OrderLineItem item = new OrderLineItem();
         item.setId(dto.getId()); // আপডেট লাইফসাইকেলের ট্র্যাকিং আইডি
@@ -47,8 +46,7 @@ public class OrderLineItemMapper {
 
    //  Entity থেকে Response DTO-তে কনভার্ট (ক্লিন জেসন আউটপুট জেনারেটর)
 
-    public OrderLineItemResponseDTO toResponseDTO(OrderLineItem entity) {
-        if (entity == null) return null;
+    public OrderLineItemResponseDTO convertTOResponseDTO(OrderLineItem entity) {
 
         OrderLineItemResponseDTO dto = new OrderLineItemResponseDTO();
         dto.setId(entity.getId());

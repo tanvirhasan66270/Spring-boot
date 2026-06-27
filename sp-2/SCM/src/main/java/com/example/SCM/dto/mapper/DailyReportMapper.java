@@ -29,7 +29,6 @@ public class DailyReportMapper {
      * @return DailyReport entity ready for persistence
      */
     public DailyReport toEntity(DailyReportRequestDTO dto) {
-        if (dto == null) return null;
 
         DailyReport report = new DailyReport();
         report.setWarehouseId(dto.getWarehouseId());
@@ -53,8 +52,7 @@ public class DailyReportMapper {
      * @param entity DailyReport entity from database
      * @return DailyReportResponseDTO
      */
-    public DailyReportResponseDTO toResponseDTO(DailyReport entity) {
-        if (entity == null) return null;
+    public DailyReportResponseDTO convertTOResponseDTO(DailyReport entity) {
 
         DailyReportResponseDTO dto = new DailyReportResponseDTO();
         dto.setId(entity.getId());

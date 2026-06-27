@@ -55,7 +55,7 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory savedInventory = inventoryRepository.save(inventory);
-        return inventoryMapper.toResponseDTO(savedInventory);
+        return inventoryMapper.convertTOResponseDTO(savedInventory);
     }
 
     // 2. Update Existing Inventory Stock
@@ -91,7 +91,7 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory updatedInventory = inventoryRepository.save(inventory);
-        return inventoryMapper.toResponseDTO(updatedInventory);
+        return inventoryMapper.convertTOResponseDTO(updatedInventory);
     }
 
     //  Find All Inventories
@@ -100,7 +100,7 @@ public class InventoryServiceImp implements InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryResponseDTO> findAll() {
         return inventoryRepository.findAll().stream()
-                .map(inventoryMapper::toResponseDTO)
+                .map(inventoryMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -110,7 +110,7 @@ public class InventoryServiceImp implements InventoryService {
     @Transactional(readOnly = true)
     public Optional<InventoryResponseDTO> getById(Long id) {
         return inventoryRepository.findById(id)
-                .map(inventoryMapper::toResponseDTO);
+                .map(inventoryMapper::convertTOResponseDTO);
     }
 
     //  Delete Inventory Record

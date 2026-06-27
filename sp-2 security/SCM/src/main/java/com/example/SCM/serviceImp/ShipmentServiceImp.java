@@ -50,7 +50,7 @@ public class ShipmentServiceImp implements ShipmentService {
         Shipment shipment = shipmentMapper.toEntity(dto, po, supplier);
         shipment.setShipmentNumber("SH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
-        return shipmentMapper.toResponseDTO(shipmentRepository.save(shipment));
+        return shipmentMapper.convertTOResponseDTO(shipmentRepository.save(shipment));
     }
 
     @Override
@@ -69,21 +69,21 @@ public class ShipmentServiceImp implements ShipmentService {
         }
 
         shipmentMapper.updateEntity(dto, shipment, po, supplier);
-        return shipmentMapper.toResponseDTO(shipmentRepository.save(shipment));
+        return shipmentMapper.convertTOResponseDTO(shipmentRepository.save(shipment));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ShipmentResponseDTO> findAll() {
         return shipmentRepository.findAllShipmentsWithDetails().stream()
-                .map(shipmentMapper::toResponseDTO)
+                .map(shipmentMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<ShipmentResponseDTO> getById(Long id) {
-        return shipmentRepository.findByIdWithDetails(id).map(shipmentMapper::toResponseDTO);
+        return shipmentRepository.findByIdWithDetails(id).map(shipmentMapper::convertTOResponseDTO);
     }
 
     @Override

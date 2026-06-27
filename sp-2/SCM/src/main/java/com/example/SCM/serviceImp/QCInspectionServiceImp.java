@@ -32,26 +32,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-    private String uploadLabReport(MultipartFile file, String inspectionType) {
-        try {
-            Path path = Paths.get(uploadDir, "qc");
-            if (!Files.exists(path)) {
-                Files.createDirectories(path);
-            }
-            String ext = "";
-            String original = file.getOriginalFilename();
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf("."));
-            }
-            String cleanedName = inspectionType.trim().replaceAll("\\s+", "_");
-            String fileName = "QC_" + cleanedName + "_" + UUID.randomUUID() + ext;
 
-            Files.copy(file.getInputStream(), path.resolve(fileName));
-            return fileName;
-        } catch (Exception e) {
-            throw new RuntimeException("File upload failed: " + e.getMessage());
-        }
-    }
 
     @Override
     @Transactional
@@ -68,7 +49,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         //CascadeType.ALL থাকার কারণে ভেতরের চেকলিস্টগুলো একসাথে ওয়ান-শটে ডাটাবেজে রাইট হবে
         QCInspection saved = qcInspectionRepository.save(inspection);
-        return qcInspectionMapper.toResponseDTO(saved);
+        return qcInspectionMapper.convertTOResponseDTO(saved);
     }
 
     @Override
@@ -100,21 +81,21 @@ public class QCInspectionServiceImp implements QCInspectionService {
         }
 
         QCInspection updated = qcInspectionRepository.save(inspection);
-        return qcInspectionMapper.toResponseDTO(updated);
+        return qcInspectionMapper.convertTOResponseDTO(updated);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<QCInspectionResponseDTO> findAll() {
         return qcInspectionRepository.findAllInspectionsWithDetails().stream()
-                .map(qcInspectionMapper::toResponseDTO)
+                .map(qcInspectionMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<QCInspectionResponseDTO> getById(Long id) {
-        return qcInspectionRepository.findByIdWithDetails(id).map(qcInspectionMapper::toResponseDTO);
+        return qcInspectionRepository.findByIdWithDetails(id).map(qcInspectionMapper::convertTOResponseDTO);
     }
 
     @Override
@@ -122,5 +103,25 @@ public class QCInspectionServiceImp implements QCInspectionService {
     public void delete(Long id) {
         if (!qcInspectionRepository.existsById(id)) throw new RuntimeException("QC record not found");
         qcInspectionRepository.deleteById(id);
+    }
+    private String uploadLabReport(MultipartFile file, String inspectionType) {
+        try {
+            Path path = Paths.get(uploadDir, "qc");
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+            String ext = "";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
+            }
+            String cleanedName = inspectionType.trim().replaceAll("\\s+", "_");
+            String fileName = "QC_" + cleanedName + "_" + UUID.randomUUID() + ext;
+
+            Files.copy(file.getInputStream(), path.resolve(fileName));
+            return fileName;
+        } catch (Exception e) {
+            throw new RuntimeException("File upload failed: " + e.getMessage());
+        }
     }
 }

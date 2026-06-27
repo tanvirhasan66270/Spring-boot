@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -50,10 +51,12 @@ public class Warehouse {
         this.updatedAt = LocalDateTime.now();
     }
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "warehouses", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Driver> drivers = new HashSet<>();

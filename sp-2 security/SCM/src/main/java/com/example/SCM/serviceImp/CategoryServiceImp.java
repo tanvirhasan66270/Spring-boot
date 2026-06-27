@@ -25,9 +25,6 @@ public class CategoryServiceImp implements CategoryService {
     @Transactional
     @Override
     public CategoryResponseDTO save(CategoryRequestDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("Category request data cannot be null");
-        }
 
         // ইউনিক ক্যাটাগরি নেম চেক (ডুপ্লিকেট এড়াতে)
         Optional<Category> existingCategory = categoryRepository.findByCategoryName(dto.getCategoryName());
@@ -47,9 +44,7 @@ public class CategoryServiceImp implements CategoryService {
     @Transactional
     @Override
     public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {
-        if (dto == null) {
-            throw new IllegalArgumentException("Category request data cannot be null");
-        }
+
 
         // আইডি দিয়ে ডাটাবেজে চেক করা
         Category category = categoryRepository.findById(id)

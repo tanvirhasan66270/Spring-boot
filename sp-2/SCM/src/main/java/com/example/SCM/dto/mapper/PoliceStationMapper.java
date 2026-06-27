@@ -10,8 +10,7 @@ import org.springframework.stereotype.Component;
 public class PoliceStationMapper {
 
 
-    public PoliceStationResponseDTO toResponseDTO(PoliceStation entity) {
-        if (entity == null) return null;
+    public PoliceStationResponseDTO convertTOResponseDTO(PoliceStation entity) {
 
         PoliceStationResponseDTO dto = new PoliceStationResponseDTO();
         dto.setId(entity.getId());
@@ -38,7 +37,6 @@ public class PoliceStationMapper {
 
 
     public PoliceStation toEntity(PoliceStationRequestDTO dto, District district) {
-        if (dto == null) return null;
 
         PoliceStation entity = new PoliceStation();
         entity.setName(dto.getName());

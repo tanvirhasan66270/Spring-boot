@@ -61,7 +61,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 request.getRemoteAddr()
         );
 
-        return lcMapper.toResponseDTO(savedLc);
+        return lcMapper.convertTOResponseDTO(savedLc);
     }
 
 
@@ -105,7 +105,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 request.getRemoteAddr()
         );
 
-        return lcMapper.toResponseDTO(updatedLc);
+        return lcMapper.convertTOResponseDTO(updatedLc);
     }
 
 
@@ -141,7 +141,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 request.getRemoteAddr()
         );
 
-        return lcMapper.toResponseDTO(amendedLc);
+        return lcMapper.convertTOResponseDTO(amendedLc);
     }
 
     @Override
@@ -169,9 +169,9 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
 
     @Override @Transactional(readOnly = true) public List<LetterOfCreditResponseDTO> findAll() {
         return lcRepository.findAllWithDetails().stream()
-                .map(lcMapper::toResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getById(Long id) { return lcRepository.findByIdWithDetails(id).map(lcMapper::toResponseDTO); }
-    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) { return lcRepository.findByLcNumber(lcNumber).map(lcMapper::toResponseDTO); }
+                .map(lcMapper::convertTOResponseDTO).collect(Collectors.toList()); }
+    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getById(Long id) { return lcRepository.findByIdWithDetails(id).map(lcMapper::convertTOResponseDTO); }
+    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) { return lcRepository.findByLcNumber(lcNumber).map(lcMapper::convertTOResponseDTO); }
 
     // =========================================================================
     // ডেডিকেটেড সাপ্লায়ার এলসি নোটিফিকেশন মেইলিং ইঞ্জিন (শতভাগ নির্ভুল)

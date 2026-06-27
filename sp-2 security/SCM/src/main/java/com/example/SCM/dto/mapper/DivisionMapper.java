@@ -14,8 +14,7 @@ public class DivisionMapper {
 
     //Entity -> Response DTO
 
-    public DivisionResponseDTO toResponseDTO(Division entity) {
-        if (entity == null) return null;
+    public DivisionResponseDTO convertTOResponseDTO(Division entity) {
 
         DivisionResponseDTO dto = new DivisionResponseDTO();
         dto.setId(entity.getId());
@@ -41,7 +40,6 @@ public class DivisionMapper {
     // Request DTO -> Entity
 
     public Division toEntity(DivisionRequestDTO dto, Country country) {
-        if (dto == null) return null;
 
         Division entity = new Division();
         entity.setName(dto.getName());
@@ -57,7 +55,6 @@ public class DivisionMapper {
     // Update Existing Entity
 
     public void updateEntity(DivisionRequestDTO dto, Division entity, Country country) {
-        if (dto == null || entity == null) return;
 
         entity.setName(dto.getName());
         entity.setNameBn(dto.getNameBn());

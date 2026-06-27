@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -41,9 +42,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     @Transactional
     @Override
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
-        if (dto == null || dto.getItems() == null || dto.getItems().isEmpty()) {
-            throw new IllegalArgumentException("Order request matrix or cart items cannot be empty");
-        }
 
         User customer = userRepository.findCustomerById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target profile missing or the user is not a valid CUSTOMER! ID: " + dto.getCustomerId()));
@@ -67,7 +65,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 request.getRemoteAddr()
         );
 
-        return orderMapper.toResponseDTO(savedOrder);
+        return orderMapper.convertTOResponseDTO(savedOrder);
     }
 
     @Transactional
@@ -81,7 +79,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         String oldDeliveryAddress = order.getDeliveryAddress();
         double oldTotalAmount = order.getTotalAmount();
 
-        if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer().getId())) {
+        if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer() != null ? order.getCustomer().getId() : null)) {
             User newCustomer = userRepository.findCustomerById(dto.getCustomerId())
                     .orElseThrow(() -> new RuntimeException("New target profile missing or not a valid CUSTOMER! ID: " + dto.getCustomerId()));
             order.setCustomer(newCustomer);
@@ -122,7 +120,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 request.getRemoteAddr()
         );
 
-        return orderMapper.toResponseDTO(updatedOrder);
+        return orderMapper.convertTOResponseDTO(updatedOrder);
     }
 
 
@@ -131,7 +129,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     public List<CustomerOrderResponseDTO> findAll() {
         return orderRepository.findAllOrdersWithDetails()
                 .stream()
-                .map(orderMapper::toResponseDTO)
+                .map(orderMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -140,7 +138,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     @Override
     public Optional<CustomerOrderResponseDTO> getById(Long id) {
         return orderRepository.findByIdWithDetails(id)
-                .map(orderMapper::toResponseDTO);
+                .map(orderMapper::convertTOResponseDTO);
     }
 
 
@@ -177,7 +175,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             throw new IllegalArgumentException("Tracking/Order number cannot be empty");
         }
         return orderRepository.findByOrderNumberWithDetails(orderNumber.trim())
-                .map(orderMapper::toResponseDTO);
+                .map(orderMapper::convertTOResponseDTO);
     }
 
     private void sendOrderConfirmationEmail(CustomerOrder order) {
@@ -280,7 +278,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
                 order.getCurrency(), order.getTotalAmount(),
                 order.getDeliveryAddress(),
                 order.getOrderNumber(),
-                java.time.Year.now().getValue()
+                Year.now().getValue()
         );
 
         try {

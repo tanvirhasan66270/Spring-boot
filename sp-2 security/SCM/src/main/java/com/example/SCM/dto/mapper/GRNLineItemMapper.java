@@ -13,10 +13,7 @@ public class GRNLineItemMapper {
     /**
      * 1. GRNLineItem Entity -> GRNLineItemResponseDTO (Read / Flattening Operation)
      */
-    public GRNLineItemResponseDTO toResponseDTO(GRNLineItem item) {
-        if (item == null) {
-            return null;
-        }
+    public GRNLineItemResponseDTO convertTOResponseDTO(GRNLineItem item) {
 
         GRNLineItemResponseDTO dto = new GRNLineItemResponseDTO();
         dto.setId(item.getId());
@@ -42,9 +39,7 @@ public class GRNLineItemMapper {
      * 2. Request DTO -> GRNLineItem Entity (Create Operation)
      */
     public GRNLineItem toEntity(GRNLineItemRequestDTO dto, GoodsReceivedNote grn, Product product) {
-        if (dto == null) {
-            return null;
-        }
+
 
         GRNLineItem item = new GRNLineItem();
         item.setQuantityOrdered(dto.getQuantityOrdered());

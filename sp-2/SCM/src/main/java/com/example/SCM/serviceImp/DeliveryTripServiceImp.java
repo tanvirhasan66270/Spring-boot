@@ -47,7 +47,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         DeliveryTrip savedTrip = tripRepository.save(trip);
 
         sendTripAssignmentEmail(driver, savedTrip);
-        return tripMapper.toResponseDTO(savedTrip);
+        return tripMapper.convertTOResponseDTO(savedTrip);
     }
 
     @Transactional
@@ -61,7 +61,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         Vehicle vehicle = dto.getVehicleId() != null ? vehicleRepository.findById(dto.getVehicleId()).orElse(null) : trip.getVehicle();
 
         tripMapper.updateEntity(dto, trip, customer, driver, vehicle);
-        return tripMapper.toResponseDTO(tripRepository.save(trip));
+        return tripMapper.convertTOResponseDTO(tripRepository.save(trip));
     }
 
     @Transactional
@@ -78,7 +78,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
             if (deliveryPhoto != null && !deliveryPhoto.isEmpty()) trip.setDeliveryPhotoUrl(uploadFile(deliveryPhoto, "deliveries"));
         }
 
-        return tripMapper.toResponseDTO(tripRepository.save(trip));
+        return tripMapper.convertTOResponseDTO(tripRepository.save(trip));
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +86,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     public List<DeliveryTripResponseDTO> findAll() {
         return tripRepository.findAllTripsWithDetails()
                 .stream()
-                .map(tripMapper::toResponseDTO)
+                .map(tripMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -94,7 +94,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     @Override
     public Optional<DeliveryTripResponseDTO> getById(Long id) {
         return tripRepository.findByIdWithDetails(id)
-                .map(tripMapper::toResponseDTO);
+                .map(tripMapper::convertTOResponseDTO);
     }
 
     @Transactional

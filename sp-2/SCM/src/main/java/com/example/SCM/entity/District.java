@@ -27,7 +27,7 @@ public class District {
     private Boolean active = true;
 
 
-
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "division_id")
     private Division division;

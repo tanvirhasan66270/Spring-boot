@@ -7,22 +7,13 @@ import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
-import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
 public class ManagerMapper {
 
-    public User toUserEntity(ManagerRequestDTO dto) {
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.MANAGER);
-        return user;
-    }
+
 
     public Manager toManagerEntity(ManagerRequestDTO dto, User user, PoliceStation policeStation) {
         Manager manager = new Manager();
@@ -50,8 +41,7 @@ public class ManagerMapper {
         return manager;
     }
 
-    public ManagerResponseDTO toResponseDTO(Manager manager) {
-        if (manager == null) return null;
+    public ManagerResponseDTO convertTOResponseDTO(Manager manager) {
 
         ManagerResponseDTO dto = new ManagerResponseDTO();
         dto.setId(manager.getId());

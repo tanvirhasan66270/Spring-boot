@@ -7,22 +7,12 @@ import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
-import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
 public class ProcurementMapper {
 
-    public User toUserEntity(ProcurementRequestDTO dto) {
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.PROCUREMENT); // সিকিউরিটি রোল অ্যাসাইন
-        return user;
-    }
 
     public Procurement toProcurementEntity(ProcurementRequestDTO dto, User user, PoliceStation policeStation) {
         Procurement procurement = new Procurement();
@@ -50,8 +40,7 @@ public class ProcurementMapper {
         return procurement;
     }
 
-    public ProcurementResponseDTO toResponseDTO(Procurement entity) {
-        if (entity == null) return null;
+    public ProcurementResponseDTO convertTOResponseDTO(Procurement entity) {
 
         ProcurementResponseDTO dto = new ProcurementResponseDTO();
         dto.setId(entity.getId());

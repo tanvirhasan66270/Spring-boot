@@ -33,7 +33,7 @@ public class DivisionServiceImp implements DivisionService {
                 .orElseThrow(() -> new RuntimeException("Country not found with ID: " + dto.getCountryId()));
 
         Division division = divisionMapper.toEntity(dto, country);
-        return divisionMapper.toResponseDTO(divisionRepository.save(division));
+        return divisionMapper.convertTOResponseDTO(divisionRepository.save(division));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DivisionServiceImp implements DivisionService {
         }
 
         divisionMapper.updateEntity(dto, division, country);
-        return divisionMapper.toResponseDTO(divisionRepository.save(division));
+        return divisionMapper.convertTOResponseDTO(divisionRepository.save(division));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DivisionServiceImp implements DivisionService {
                 divisionRepository.findAllDivisionsWithDetails();
 
         return divisions.stream()
-                .map(divisionMapper::toResponseDTO)
+                .map(divisionMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -70,14 +70,14 @@ public class DivisionServiceImp implements DivisionService {
     @Transactional(readOnly = true)
     public List<DivisionResponseDTO> getByCountryId(Long countryId) {
         return divisionRepository.findByCountryId(countryId).stream()
-                .map(divisionMapper::toResponseDTO)
+                .map(divisionMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<DivisionResponseDTO> getById(Long id) {
-        return divisionRepository.findByIdWithDetails(id).map(divisionMapper::toResponseDTO);
+        return divisionRepository.findByIdWithDetails(id).map(divisionMapper::convertTOResponseDTO);
     }
 
     @Override

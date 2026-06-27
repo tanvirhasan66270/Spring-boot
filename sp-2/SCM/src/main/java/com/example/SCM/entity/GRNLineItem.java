@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,11 +18,13 @@ public class GRNLineItem {
     private Long id;
 
     // FK → GoodsReceivedNote (Parent)
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grn_id", nullable = false)
     private GoodsReceivedNote goodsReceivedNote;
 
     // FK → Product
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

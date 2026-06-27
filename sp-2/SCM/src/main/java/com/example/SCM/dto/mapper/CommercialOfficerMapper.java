@@ -25,21 +25,6 @@ import java.time.LocalDate;
 @Component
 public class CommercialOfficerMapper {
 
-    /**
-     * Convert CommercialOfficerRequestDTO to User Entity.
-     *
-     * @param dto Incoming request data from client
-     * @return User entity ready for mapping
-     */
-    public User toUserEntity(CommercialOfficerRequestDTO dto) {
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.COMMERCIAL_OFFICER);
-        return user;
-    }
 
     /**
      * Convert CommercialOfficerRequestDTO to CommercialOfficer Entity.
@@ -81,8 +66,7 @@ public class CommercialOfficerMapper {
      * @param entity CommercialOfficer entity from database
      * @return CommercialOfficerResponseDTO
      */
-    public CommercialOfficerResponseDTO toResponseDTO(CommercialOfficer entity) {
-        if (entity == null) return null;
+    public CommercialOfficerResponseDTO convertTOResponseDTO(CommercialOfficer entity) {
 
         CommercialOfficerResponseDTO dto = new CommercialOfficerResponseDTO();
         dto.setId(entity.getId());

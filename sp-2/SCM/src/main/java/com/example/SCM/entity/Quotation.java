@@ -1,6 +1,7 @@
 package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.QuotationStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,10 +25,12 @@ public class Quotation {
     @Column(nullable = false, unique = true, length = 50)
     private String quotationNumber;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -35,6 +38,7 @@ public class Quotation {
     @Column(nullable = false)
     private String productName;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_requisition_id", nullable = false)
     private PurchaseRequisition purchaseRequisition;
@@ -50,7 +54,6 @@ public class Quotation {
     private LocalDate receivedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private QuotationStatus status = QuotationStatus.PENDING;
 

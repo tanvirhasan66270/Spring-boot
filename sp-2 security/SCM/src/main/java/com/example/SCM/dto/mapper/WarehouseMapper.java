@@ -10,7 +10,6 @@ import org.springframework.stereotype.Component;
 public class WarehouseMapper {
 
     public Warehouse toEntity(WarehouseRequestDTO dto, PoliceStation policeStation) {
-        if (dto == null) return null;
 
         Warehouse warehouse = new Warehouse();
         warehouse.setName(dto.getName());
@@ -25,7 +24,6 @@ public class WarehouseMapper {
     }
 
     public WarehouseResponseDTO toResponseDTO(Warehouse warehouse) {
-        if (warehouse == null) return null;
 
         WarehouseResponseDTO dto = new WarehouseResponseDTO();
         dto.setId(warehouse.getId());
@@ -55,7 +53,6 @@ public class WarehouseMapper {
     }
 
     public void updateEntity(WarehouseRequestDTO dto, Warehouse warehouse, PoliceStation policeStation) {
-        if (dto == null || warehouse == null) return;
 
         if (dto.getName() != null) warehouse.setName(dto.getName());
         if (dto.getEmail() != null) warehouse.setEmail(dto.getEmail()); // 🔗 Updating Email

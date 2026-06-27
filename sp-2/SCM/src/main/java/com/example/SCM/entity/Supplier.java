@@ -59,6 +59,7 @@ public class Supplier {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.updatedAt = LocalDateTime.now();
     }
 

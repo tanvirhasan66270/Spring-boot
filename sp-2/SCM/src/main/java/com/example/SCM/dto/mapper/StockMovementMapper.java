@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 public class StockMovementMapper {
 
     public StockMovement toEntity(StockMovementRequestDTO dto) {
-        if (dto == null) return null;
-
         StockMovement entity = new StockMovement();
         entity.setProductId(dto.getProductId());
         entity.setWarehouseId(dto.getWarehouseId());
@@ -28,8 +26,7 @@ public class StockMovementMapper {
         return entity;
     }
 
-    public StockMovementResponseDTO toResponseDTO(StockMovement entity, String fetchedProductName, String fetchedWarehouseName) {
-        if (entity == null) return null;
+    public StockMovementResponseDTO convertTOResponseDTO(StockMovement entity, String fetchedProductName, String fetchedWarehouseName) {
 
         StockMovementResponseDTO dto = new StockMovementResponseDTO();
         dto.setId(entity.getId());

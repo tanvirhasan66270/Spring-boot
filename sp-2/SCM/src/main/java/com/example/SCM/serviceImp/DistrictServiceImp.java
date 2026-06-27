@@ -33,7 +33,7 @@ public class DistrictServiceImp implements DistrictService {
                 .orElseThrow(() -> new RuntimeException("Division not found with ID: " + dto.getDivisionId()));
 
         District district = districtMapper.toEntity(dto, division);
-        return districtMapper.toResponseDTO(districtRepository.save(district));
+        return districtMapper.convertTOResponseDTO(districtRepository.save(district));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DistrictServiceImp implements DistrictService {
         }
 
         districtMapper.updateEntity(dto, district, division);
-        return districtMapper.toResponseDTO(districtRepository.save(district));
+        return districtMapper.convertTOResponseDTO(districtRepository.save(district));
     }
 
     @Override
@@ -62,7 +62,7 @@ public class DistrictServiceImp implements DistrictService {
                 districtRepository.findAllDistrictsWithDetails();
 
         return districts.stream()
-                .map(districtMapper::toResponseDTO)
+                .map(districtMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -70,14 +70,14 @@ public class DistrictServiceImp implements DistrictService {
     @Transactional(readOnly = true)
     public List<DistrictResponseDTO> getByDivisionId(Long divisionId) {
         return districtRepository.findByDivisionId(divisionId).stream()
-                .map(districtMapper::toResponseDTO)
+                .map(districtMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<DistrictResponseDTO> getById(Long id) {
-        return districtRepository.findByIdWithDetails(id).map(districtMapper::toResponseDTO);
+        return districtRepository.findByIdWithDetails(id).map(districtMapper::convertTOResponseDTO);
     }
 
     @Override

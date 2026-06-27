@@ -37,7 +37,6 @@ public class DailyReport {
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private ReportStatus reportStatus = ReportStatus.DRAFT;
 

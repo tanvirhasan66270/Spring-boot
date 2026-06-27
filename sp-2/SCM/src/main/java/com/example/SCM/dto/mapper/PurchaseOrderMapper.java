@@ -20,10 +20,8 @@ public class PurchaseOrderMapper {
     // PurchaseOrder Entity -> PurchaseOrderResponseDTO (Flattening Operations)
 
 
-    public PurchaseOrderResponseDTO toResponseDTO(PurchaseOrder po) {
-        if (po == null) {
-            return null;
-        }
+    public PurchaseOrderResponseDTO convertTOResponseDTO(PurchaseOrder po) {
+
 
         PurchaseOrderResponseDTO dto = new PurchaseOrderResponseDTO();
 
@@ -62,9 +60,6 @@ public class PurchaseOrderMapper {
 
 
     public PurchaseOrder toEntity(PurchaseOrderRequestDTO dto, Quotation quotation, Supplier supplier, PurchaseRequisition pr) {
-        if (dto == null) {
-            return null;
-        }
 
         PurchaseOrder po = new PurchaseOrder();
 

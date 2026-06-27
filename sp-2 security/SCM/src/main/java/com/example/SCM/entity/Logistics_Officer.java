@@ -1,6 +1,7 @@
 package com.example.SCM.entity;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,12 +21,10 @@ public class Logistics_Officer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // =========================================================================
-    //  Authentication & System Security Relations
-    // =========================================================================
 
     // Auth account — Source of truth for name, phone, email, password, role
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
@@ -46,8 +45,7 @@ public class Logistics_Officer {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private GenderStatus gender;
+     private GenderStatus gender;
 
 
     private String image;

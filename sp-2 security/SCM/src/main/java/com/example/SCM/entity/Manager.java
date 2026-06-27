@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -41,10 +42,9 @@ public class Manager {
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private GenderStatus gender;
 
-    @Column(name = "image_url")
+
     private String image;
 
     private boolean isActive = true;
@@ -54,9 +54,9 @@ public class Manager {
     private String designation;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
     private LanguageStatus language;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
@@ -74,6 +74,7 @@ public class Manager {
 
     @PreUpdate
     protected void onUpdate() {
+
         this.updatedAt = LocalDateTime.now();
     }
 }

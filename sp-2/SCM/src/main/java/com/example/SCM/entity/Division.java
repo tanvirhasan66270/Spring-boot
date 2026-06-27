@@ -27,6 +27,7 @@ public class Division {
     private String nameBn;     // ঢাকা
     private Boolean active = true;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "country_id", nullable = false)
     private Country country;

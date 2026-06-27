@@ -15,9 +15,7 @@ public class SupplierMapper {
     // Supplier Entity থেকে SupplierResponseDTO-তে রূপান্তর (Flattening Relation)
 
     public SupplierResponseDTO toResponseDTO(Supplier supplier) {
-        if (supplier == null) {
-            return null;
-        }
+
 
         SupplierResponseDTO dto = new SupplierResponseDTO();
 
@@ -70,30 +68,12 @@ public class SupplierMapper {
         return dto;
     }
 
-    // Request DTO থেকে প্রধান Auth User অ্যাকাউন্ট এনটিটি তৈরি
 
-    public User toUserEntity(SupplierRequestDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-//        user.setConfirmPassword(dto.getPassword()); // official value set for password conformation
-        user.setRole(Role.SUPPLIER); // রোল অটোমেটিক SUPPLIER হিসেবে সেট হবে
-
-        return user;
-    }
 
     // Request DTO থেকে মূল Supplier প্রোফাইল এনটিটি তৈরি (রwith relation objectলেশন অবজেক্টসহ)
 
     public Supplier toSupplierEntity(SupplierRequestDTO dto, User user, PoliceStation policeStation) {
-        if (dto == null) {
-            return null;
-        }
+
 
         Supplier supplier = new Supplier();
 

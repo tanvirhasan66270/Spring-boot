@@ -1,6 +1,7 @@
 package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.ResultStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,14 +23,17 @@ public class QCInspection {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grn_id", nullable = false)
     private GoodsReceivedNote goodsReceivedNote;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inspected_by", nullable = false)
     private User inspectedBy;
@@ -45,7 +49,6 @@ public class QCInspection {
     private String defectDescription;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
     private ResultStatus result;
 
 
@@ -57,11 +60,12 @@ public class QCInspection {
     @Column(nullable = false)
     private LocalDate inspectedAt;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "qcInspection", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default
     private List<QCChecklist> checklists = new ArrayList<>();
 
-    @Column(updatable = false, nullable = false) // তৈরির সময় লক থাকবে
+    @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)

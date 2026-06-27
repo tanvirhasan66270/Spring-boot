@@ -20,7 +20,6 @@ public class LetterOfCreditMapper {
     private final SupplierRepository supplierRepository;
 
     public LetterOfCredit toEntity(LetterOfCreditRequestDTO dto) {
-        if (dto == null) return null;
 
         LetterOfCredit lc = new LetterOfCredit();
         lc.setIssuingBank(dto.getIssuingBank());
@@ -54,8 +53,7 @@ public class LetterOfCreditMapper {
         return lc;
     }
 
-    public LetterOfCreditResponseDTO toResponseDTO(LetterOfCredit entity) {
-        if (entity == null) return null;
+    public LetterOfCreditResponseDTO convertTOResponseDTO(LetterOfCredit entity) {
 
         LetterOfCreditResponseDTO dto = new LetterOfCreditResponseDTO();
         dto.setId(entity.getId());

@@ -24,14 +24,14 @@ public class OrderLineItemServiceImp implements OrderLineItemService {
     @Transactional(readOnly = true)
     public List<OrderLineItemResponseDTO> findByOrderId(Long orderId) {
         return lineItemRepository.findByCustomerOrderIdWithProduct(orderId).stream()
-                .map(lineItemMapper::toResponseDTO)
+                .map(lineItemMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<OrderLineItemResponseDTO> getById(Long id) {
-        return lineItemRepository.findById(id).map(lineItemMapper::toResponseDTO);
+        return lineItemRepository.findById(id).map(lineItemMapper::convertTOResponseDTO);
     }
 
     @Override

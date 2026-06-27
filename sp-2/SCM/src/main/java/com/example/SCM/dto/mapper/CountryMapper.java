@@ -13,8 +13,7 @@ public class CountryMapper {
 
    // Entity -> Response DTO
 
-    public CountryResponseDTO toResponseDTO(Country entity) {
-        if (entity == null) return null;
+    public CountryResponseDTO convertTOResponseDTO(Country entity) {
 
         CountryResponseDTO dto = new CountryResponseDTO();
         dto.setId(entity.getId());
@@ -34,7 +33,6 @@ public class CountryMapper {
   // Request DTO -> Entity
 
     public Country toEntity(CountryRequestDTO dto) {
-        if (dto == null) return null;
 
         Country entity = new Country();
         entity.setName(dto.getName());
@@ -49,7 +47,6 @@ public class CountryMapper {
     // Update Existing Entity
 
     public void updateEntity(CountryRequestDTO dto, Country entity) {
-        if (dto == null || entity == null) return;
 
         entity.setName(dto.getName());
         entity.setCode(dto.getCode());

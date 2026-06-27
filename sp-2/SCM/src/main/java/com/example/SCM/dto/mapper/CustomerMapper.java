@@ -30,8 +30,7 @@ public class CustomerMapper {
      * @param entity Customer entity from database
      * @return CustomerResponseDTO
      */
-    public CustomerResponseDTO toResponseDTO(Customer entity) {
-        if (entity == null) return null;
+    public CustomerResponseDTO convertTOResponseDTO(Customer entity) {
 
         CustomerResponseDTO dto = new CustomerResponseDTO();
         dto.setId(entity.getId());
@@ -94,7 +93,6 @@ public class CustomerMapper {
      * @param policeStation Assigned corporate location station node reference
      */
     public void updateEntity(CustomerRequestDTO dto, Customer entity, PoliceStation policeStation) {
-        if (dto == null || entity == null) return;
 
         // ১. কাস্টমার টেবিল সিঙ্ক
         if (dto.getName() != null) entity.setName(dto.getName());

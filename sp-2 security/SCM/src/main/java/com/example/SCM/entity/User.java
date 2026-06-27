@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 
 import com.example.SCM.role.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;

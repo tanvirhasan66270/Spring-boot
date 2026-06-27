@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.Util.TrakingCode.TrackingCodeGenerator;
 import com.example.SCM.enumClass.LcStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -24,12 +25,14 @@ public class LetterOfCredit {
     @Column(nullable = false, unique = true)
     private String lcNumber;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_order_id", nullable = false)
     private PurchaseOrder purchaseOrder;
 
     private String poNumber;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
@@ -62,7 +65,6 @@ public class LetterOfCredit {
     private LocalDate expiryDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     @Builder.Default
     private LcStatus lcStatus = LcStatus.DRAFT;
 
@@ -98,7 +100,6 @@ public class LetterOfCredit {
         }
     }
 
-    // ── বিজনেস ডোমেইন মেথড ──
     public void incrementAmendment() {
         if (this.lcStatus == LcStatus.OPENED || this.lcStatus == LcStatus.AMENDED) {
             this.lcStatus = LcStatus.AMENDED;

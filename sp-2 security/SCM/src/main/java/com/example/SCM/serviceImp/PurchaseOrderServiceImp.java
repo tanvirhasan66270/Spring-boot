@@ -57,7 +57,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         //ম্যানেজারকে ইমেইলে ওয়ান-ক্লিক ISSUED গেটওয়ে রিকোয়েস্ট পাঠানো
         sendPoApprovalMailToManager(savedPo);
 
-        return purchaseOrderMapper.toResponseDTO(savedPo);
+        return purchaseOrderMapper.convertTOResponseDTO(savedPo);
     }
 
     //  Manager One-Click Gateway: Status -> ISSUED & Mail to Supplier
@@ -78,7 +78,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         //সাপ্লায়ারের জিমেইলে অফিশিয়াল ডাইনামিক PO নোটিফিকেশন পাঠানো
         sendPoIssuedMailToSupplier(issuedPo);
 
-        return purchaseOrderMapper.toResponseDTO(issuedPo);
+        return purchaseOrderMapper.convertTOResponseDTO(issuedPo);
     }
 
       //Supplier Dashboard / One-Click Gateway: Status -> RECEIVED
@@ -95,7 +95,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         po.setStatus(PurchaseOrderStatus.RECEIVED);
         PurchaseOrder receivedPo = purchaseOrderRepository.save(po);
 
-        return purchaseOrderMapper.toResponseDTO(receivedPo);
+        return purchaseOrderMapper.convertTOResponseDTO(receivedPo);
     }
 
       //Quantities Match -> PARTIALLY_RECEIVED Trigger
@@ -112,7 +112,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             po.setStatus(PurchaseOrderStatus.RECEIVED);
         }
 
-        return purchaseOrderMapper.toResponseDTO(purchaseOrderRepository.save(po));
+        return purchaseOrderMapper.convertTOResponseDTO(purchaseOrderRepository.save(po));
     }
 
 
@@ -224,11 +224,11 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
             supplier = quotation.getSupplier(); pr = quotation.getPurchaseRequisition();
         }
         purchaseOrderMapper.updateEntity(dto, po, quotation, supplier, pr);
-        return purchaseOrderMapper.toResponseDTO(purchaseOrderRepository.save(po));
+        return purchaseOrderMapper.convertTOResponseDTO(purchaseOrderRepository.save(po));
     }
 
-    @Override @Transactional(readOnly = true) public List<PurchaseOrderResponseDTO> findAll() { return purchaseOrderRepository.findAllPurchaseOrders().stream().map(purchaseOrderMapper::toResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<PurchaseOrderResponseDTO> getById(Long id) { return purchaseOrderRepository.findByIdWithDetails(id).map(purchaseOrderMapper::toResponseDTO); }
+    @Override @Transactional(readOnly = true) public List<PurchaseOrderResponseDTO> findAll() { return purchaseOrderRepository.findAllPurchaseOrders().stream().map(purchaseOrderMapper::convertTOResponseDTO).collect(Collectors.toList()); }
+    @Override @Transactional(readOnly = true) public Optional<PurchaseOrderResponseDTO> getById(Long id) { return purchaseOrderRepository.findByIdWithDetails(id).map(purchaseOrderMapper::convertTOResponseDTO); }
     @Override @Transactional public void delete(Long id) { if (!purchaseOrderRepository.existsById(id)) throw new RuntimeException("PO not found with ID: " + id); purchaseOrderRepository.deleteById(id); }
 
     @Override

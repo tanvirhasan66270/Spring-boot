@@ -13,8 +13,7 @@ import java.time.LocalDate;
 @Component
 public class VehicleMapper {
 
-    public VehicleResponseDTO toResponseDTO(Vehicle entity) {
-        if (entity == null) return null;
+    public VehicleResponseDTO convertTOResponseDTO(Vehicle entity) {
 
         VehicleResponseDTO dto = new VehicleResponseDTO();
         dto.setId(entity.getId());
@@ -36,7 +35,6 @@ public class VehicleMapper {
     }
 
     public Vehicle toEntity(VehicleRequestDTO dto, Driver driver) {
-        if (dto == null) return null;
 
         Vehicle entity = new Vehicle();
         entity.setPlateNumber(dto.getPlateNumber());

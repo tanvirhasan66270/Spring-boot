@@ -28,7 +28,6 @@ public class StockMovement {
     private String sendWarehouse;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private StockMovementType movementType;
 
     private int quantity;

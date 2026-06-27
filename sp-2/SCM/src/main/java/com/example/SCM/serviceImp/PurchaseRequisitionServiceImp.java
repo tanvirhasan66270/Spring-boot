@@ -68,7 +68,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
         PurchaseRequisition savedPr = requisitionRepository.save(pr);
 
-        return requisitionMapper.toResponseDTO(savedPr);
+        return requisitionMapper.convertTOResponseDTO(savedPr);
     }
 
     // Manager Approval Node (Auto-Mail out to SUPPLIERS on Success)
@@ -146,7 +146,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             throw new RuntimeException("Locked! Requisitions in " + pr.getApprovalStatus() + " state cannot be modified.");
         }
 
-        return requisitionMapper.toResponseDTO(pr);
+        return requisitionMapper.convertTOResponseDTO(pr);
     }
 
     //SUPPLIER HTML Mail Dispatch Engine
@@ -249,8 +249,8 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         try { mailService.SenderGeneralMail(officerEmail, subject, mailContent); } catch (Exception e) { System.err.println("Back routing alert mail failed."); }
     }
 
-    @Override @Transactional(readOnly = true) public List<PurchaseRequisitionResponseDTO> findAll() { return requisitionRepository.findAll().stream().map(requisitionMapper::toResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<PurchaseRequisitionResponseDTO> getById(Long id) { return requisitionRepository.findById(id).map(requisitionMapper::toResponseDTO); }
+    @Override @Transactional(readOnly = true) public List<PurchaseRequisitionResponseDTO> findAll() { return requisitionRepository.findAll().stream().map(requisitionMapper::convertTOResponseDTO).collect(Collectors.toList()); }
+    @Override @Transactional(readOnly = true) public Optional<PurchaseRequisitionResponseDTO> getById(Long id) { return requisitionRepository.findById(id).map(requisitionMapper::convertTOResponseDTO); }
 
     @Override
     @Transactional

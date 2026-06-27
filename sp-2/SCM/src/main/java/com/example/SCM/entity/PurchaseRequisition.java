@@ -2,6 +2,7 @@ package com.example.SCM.entity;
 
 import com.example.SCM.enumClass.UrgencyLevel;
 import com.example.SCM.enumClass.PurchaseRequisitionStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ public class PurchaseRequisition {
     private Long requestedBy;
 
     // Multi-product selection mapping
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "requisition_products",
@@ -48,15 +50,13 @@ public class PurchaseRequisition {
     private int quantityRequired;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private UrgencyLevel urgencyLevel;
 
     @Column(nullable = false)
     private LocalDate requiredByDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Builder.Default
+     @Builder.Default
     private PurchaseRequisitionStatus approvalStatus = PurchaseRequisitionStatus.PENDING;
 
     private Long approvedBy;
@@ -72,7 +72,7 @@ public class PurchaseRequisition {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now(); // প্রথমবার সেভ হওয়ার সময় কারেন্ট টাইম পাবে
+        this.updatedAt = LocalDateTime.now();
         if (this.approvalStatus == null) {
             this.approvalStatus = PurchaseRequisitionStatus.PENDING;
         }

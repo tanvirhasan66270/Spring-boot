@@ -42,7 +42,6 @@ public class CustomerOrderMapper {
      * @return CustomerOrder entity ready for persistence
      */
     public CustomerOrder toEntity(CustomerOrderRequestDTO dto, User customer) {
-        if (dto == null) return null;
 
         CustomerOrder order = CustomerOrder.builder()
                 .customer(customer)
@@ -80,8 +79,7 @@ public class CustomerOrderMapper {
      * @param entity CustomerOrder entity from database
      * @return CustomerOrderResponseDTO
      */
-    public CustomerOrderResponseDTO toResponseDTO(CustomerOrder entity) {
-        if (entity == null) return null;
+    public CustomerOrderResponseDTO convertTOResponseDTO(CustomerOrder entity) {
 
         CustomerOrderResponseDTO dto = new CustomerOrderResponseDTO();
         dto.setId(entity.getId());
@@ -108,7 +106,7 @@ public class CustomerOrderMapper {
 
         if (entity.getLineItems() != null) {
             List<OrderLineItemResponseDTO> itemDTOs = entity.getLineItems().stream()
-                    .map(lineItemMapper::toResponseDTO)
+                    .map(lineItemMapper::convertTOResponseDTO)
                     .collect(Collectors.toList());
             dto.setLineItems(itemDTOs);
         }

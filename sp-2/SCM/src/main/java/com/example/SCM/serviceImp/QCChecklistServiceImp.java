@@ -36,7 +36,7 @@ public class QCChecklistServiceImp implements QCChecklistService {
 
         QCChecklist checklist = qcChecklistMapper.toEntity(dto, inspection);
         QCChecklist savedChecklist = qcChecklistRepository.save(checklist);
-        return qcChecklistMapper.toResponseDTO(savedChecklist);
+        return qcChecklistMapper.convertTOResponseDTO(savedChecklist);
     }
 
     @Override
@@ -57,14 +57,14 @@ public class QCChecklistServiceImp implements QCChecklistService {
 
         qcChecklistMapper.updateEntity(dto, checklist, inspection);
         QCChecklist updatedChecklist = qcChecklistRepository.save(checklist);
-        return qcChecklistMapper.toResponseDTO(updatedChecklist);
+        return qcChecklistMapper.convertTOResponseDTO(updatedChecklist);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<QCChecklistResponseDTO> findByInspectionId(Long inspectionId) {
         return qcChecklistRepository.findByInspectionId(inspectionId).stream()
-                .map(qcChecklistMapper::toResponseDTO)
+                .map(qcChecklistMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -72,7 +72,7 @@ public class QCChecklistServiceImp implements QCChecklistService {
     @Transactional(readOnly = true)
     public Optional<QCChecklistResponseDTO> getById(Long id) {
         return qcChecklistRepository.findById(id)
-                .map(qcChecklistMapper::toResponseDTO);
+                .map(qcChecklistMapper::convertTOResponseDTO);
     }
 
     @Override

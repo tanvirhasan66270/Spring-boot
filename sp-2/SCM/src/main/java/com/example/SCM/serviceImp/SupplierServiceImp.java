@@ -10,6 +10,7 @@ import com.example.SCM.entity.User;
 import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.SupplierRepository;
 import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.SupplierService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -47,8 +48,12 @@ public class SupplierServiceImp implements SupplierService {
             throw new RuntimeException("Password cannot be empty!");
         }
 
-        //  ম্যাপার দিয়ে Auth User তৈরি ও ডাটাবেজে সেভ
-        User user = supplierMapper.toUserEntity(dto);
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(dto.getPassword());
+        user.setRole(Role.SUPPLIER);
         User savedUser = userRepository.save(user);
 
         //  পুলিশ স্টেশন ডাটা খুঁজে বের করা

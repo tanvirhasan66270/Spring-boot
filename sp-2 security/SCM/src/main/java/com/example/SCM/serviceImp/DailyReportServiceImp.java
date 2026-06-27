@@ -68,7 +68,7 @@ public class DailyReportServiceImp implements DailyReportService {
             savedReport = reportRepository.save(savedReport);
         }
 
-        DailyReportResponseDTO responseDTO = reportMapper.toResponseDTO(savedReport);
+        DailyReportResponseDTO responseDTO = reportMapper.convertTOResponseDTO(savedReport);
         responseDTO.setNotifiedAuthorities(notifiedList);
 
         activityLogService.log(
@@ -107,7 +107,7 @@ public class DailyReportServiceImp implements DailyReportService {
         if (dto.getAttachmentUrl() != null) report.setAttachmentUrl(dto.getAttachmentUrl());
 
         DailyReport updatedReport = reportRepository.save(report);
-        DailyReportResponseDTO responseDTO = reportMapper.toResponseDTO(updatedReport);
+        DailyReportResponseDTO responseDTO = reportMapper.convertTOResponseDTO(updatedReport);
 
         activityLogService.log(
                 resolveCurrentUserId(),
@@ -150,7 +150,7 @@ public class DailyReportServiceImp implements DailyReportService {
                 request.getRemoteAddr()
         );
 
-        return reportMapper.toResponseDTO(approvedReport);
+        return reportMapper.convertTOResponseDTO(approvedReport);
     }
 
 
@@ -246,19 +246,20 @@ public class DailyReportServiceImp implements DailyReportService {
     @Transactional(readOnly = true)
     @Override
     public List<DailyReportResponseDTO> findAll() {
-        return reportRepository.findAll().stream().map(reportMapper::toResponseDTO).collect(Collectors.toList());
+        return reportRepository.findAll().stream().map(reportMapper::convertTOResponseDTO).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     @Override
     public Optional<DailyReportResponseDTO> getById(Long id) {
-        return reportRepository.findById(id).map(reportMapper::toResponseDTO);
+        return reportRepository.findById(id).map(reportMapper::convertTOResponseDTO);
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<DailyReportResponseDTO> getByWarehouse(String warehouseId) {
-        return reportRepository.findByWarehouseIdOrderByReportDateDesc(warehouseId).stream().map(reportMapper::toResponseDTO).collect(Collectors.toList());
+        return reportRepository.findByWarehouseIdOrderByReportDateDesc(warehouseId).stream()
+                .map(reportMapper::convertTOResponseDTO).collect(Collectors.toList());
     }
 
     @Transactional

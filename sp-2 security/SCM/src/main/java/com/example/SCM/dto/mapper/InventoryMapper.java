@@ -19,9 +19,7 @@ public class InventoryMapper {
     // InventoryRequestDTO, Product, এবং Warehouse অবজেক্ট থেকে নতুন Inventory Entity-তে রূপান্তর (Create Operation)
 
     public Inventory toEntity(InventoryRequestDTO dto, Product product, Warehouse warehouse) {
-        if (dto == null) {
-            return null;
-        }
+
 
         Inventory inventory = new Inventory();
         inventory.setQuantityOnHand(dto.getQuantityOnHand());
@@ -45,10 +43,8 @@ public class InventoryMapper {
      * Inventory Entity থেকে InventoryResponseDTO-তে রূপান্তর (Read/All Operations)
      * এই মেথডটি রিলেশনাল অবজেক্ট গ্রাফ ভেঙে ডাটা ফ্ল্যাটেনিং সম্পন্ন করে।
      */
-    public InventoryResponseDTO toResponseDTO(Inventory inventory) {
-        if (inventory == null) {
-            return null;
-        }
+    public InventoryResponseDTO convertTOResponseDTO(Inventory inventory) {
+
 
         InventoryResponseDTO dto = new InventoryResponseDTO();
         dto.setId(inventory.getId());
@@ -84,9 +80,7 @@ public class InventoryMapper {
     // এক্সিস্টিং Inventory Entity-কে Request DTO, নতুন Product এবং Warehouse দিয়ে আপডেট করা (Update Operation)
 
     public void updateEntity(InventoryRequestDTO dto, Inventory inventory, Product product, Warehouse warehouse) {
-        if (dto == null || inventory == null) {
-            return;
-        }
+
 
         inventory.setQuantityOnHand(dto.getQuantityOnHand());
         inventory.setQuantityReserved(dto.getQuantityReserved());
