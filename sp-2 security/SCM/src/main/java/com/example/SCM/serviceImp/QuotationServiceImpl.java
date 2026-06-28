@@ -3,7 +3,7 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;
 import com.example.SCM.entity.Quotation;
-import com.example.SCM.mapper.QuotationMapper;
+import com.example.SCM.dto.mapper.QuotationMapper;
 import com.example.SCM.repository.QuotationRepository;
 import com.example.SCM.service.QuotationService;
 import jakarta.persistence.EntityNotFoundException;

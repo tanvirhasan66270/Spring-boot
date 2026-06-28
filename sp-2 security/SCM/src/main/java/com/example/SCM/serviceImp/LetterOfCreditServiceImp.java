@@ -12,6 +12,8 @@ import com.example.SCM.service.LetterOfCreditService;
 import com.example.SCM.service.ActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -32,7 +34,18 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
 
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
-        return (userId != null && !userId.isBlank()) ? userId : "16";
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+
+        // ব্যাকআপ হিসেবে স্প্রিং সিকিউরিটির কনটেক্সট চেক করা
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+
+        return "UNKNOWN_USER";
     }
 
 

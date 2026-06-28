@@ -3,6 +3,7 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.entity.User;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +11,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImp implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+
+    private final UserRepository userRepository;
 
     @Override
     public User save(User u) {

@@ -1,4 +1,4 @@
-package com.example.SCM.mapper;
+package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;

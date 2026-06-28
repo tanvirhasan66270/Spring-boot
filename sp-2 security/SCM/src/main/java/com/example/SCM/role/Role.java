@@ -11,6 +11,11 @@ public enum Role {
     COMMERCIAL_OFFICER,
     CUSTOMER,
     SUPPLIER,
-    SALES_OFFICER
+    SALES_OFFICER;
+
+    // Returns Spring Security compatible authority string
+    public String getAuthority() {
+        return "ROLE_" + this.name();
+    }
 
 }

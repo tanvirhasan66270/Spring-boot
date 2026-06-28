@@ -1,6 +1,6 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.mapper.QuotationMapper;
+import com.example.SCM.dto.mapper.QuotationMapper;
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.PurchaseRequisitionRepository;
