@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/inventories/")
+@RequestMapping("/api/inventories")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class InventoryController {
@@ -28,7 +28,7 @@ public class InventoryController {
 
     // 2. Update Existing Inventory Stock (PUT)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<InventoryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody InventoryRequestDTO dto) {
@@ -49,7 +49,7 @@ public class InventoryController {
 
     //4. Get Inventory Record By ID (GET)
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<InventoryResponseDTO> getById(@PathVariable Long id) {
         return inventoryService.getById(id)
                 .map(ResponseEntity::ok)
@@ -58,7 +58,7 @@ public class InventoryController {
 
     // 5. Delete Inventory Record (DELETE)
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         inventoryService.delete(id);
         return ResponseEntity.ok("Inventory record deleted successfully from the tracking system!");

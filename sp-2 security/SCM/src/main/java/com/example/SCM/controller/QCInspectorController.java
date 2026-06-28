@@ -13,8 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/qc-inspectors/") // আপনার কনভেনশন অনুযায়ী এন্ডপয়েন্ট বেস পাথ
-@CrossOrigin(origins = "*") // Frontend CORS ব্লকিং এড়াতে
+@RequestMapping("/api/qc-inspectors")
+@CrossOrigin(origins = "*")
 public class QCInspectorController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class QCInspectorController {
     }
 
 
-    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("qcInspector") QCInspectorRequestDTO dto,
@@ -56,14 +56,14 @@ public class QCInspectorController {
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public QCInspectorResponseDTO getById(@PathVariable Long id) {
         return qcInspectorService.getById(id)
                 .orElseThrow(() -> new RuntimeException("QC Inspector not found with ID: " + id));
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcInspectorService.delete(id);
         return ResponseEntity.ok("Deleted successfully");

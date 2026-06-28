@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/logs/")
+@RequestMapping("/api/admin/logs")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ActivityLogController {
@@ -24,19 +24,19 @@ public class ActivityLogController {
     }
 
     // 2. Filter Audit Trail By Module Name
-    @GetMapping("module/{moduleName}")
+    @GetMapping("/module/{moduleName}")
     public ResponseEntity<List<ActivityLog>> getLogsByModule(@PathVariable String moduleName) {
         return ResponseEntity.ok(logRepository.findByModuleOrderByPerformedAtDesc(moduleName.toUpperCase()));
     }
 
     // 3. Track Specific Employee By ID
-    @GetMapping("user/{userId}")
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<ActivityLog>> getLogsByUserId(@PathVariable String userId) {
         return ResponseEntity.ok(logRepository.findByUserIdOrderByPerformedAtDesc(userId));
     }
 
     // 4. Filter Logs By Action Status Enum (e.g., SUCCESS, FAILED)
-    @GetMapping("status/{status}")
+    @GetMapping("/status/{status}")
     public ResponseEntity<List<ActivityLog>> getLogsByStatus(@PathVariable String status) {
         try {
             ActionStatus actionStatus = ActionStatus.valueOf(status.toUpperCase());

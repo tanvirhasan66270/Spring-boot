@@ -36,7 +36,7 @@ public class StockMovementController {
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<StockMovementResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
@@ -44,7 +44,7 @@ public class StockMovementController {
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

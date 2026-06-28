@@ -14,7 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/shipments/")
+@RequestMapping("/api/shipments")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class ShipmentController {
@@ -31,7 +31,7 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("shipment") String shipmentJson,
@@ -48,14 +48,14 @@ public class ShipmentController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         shipmentService.delete(id);
         return ResponseEntity.ok("Shipment record successfully removed from enterprise cluster");

@@ -15,7 +15,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/quotations/")
+@RequestMapping("/api/quotations")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class QuotationController {
@@ -37,7 +37,7 @@ public class QuotationController {
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<QuotationResponseDTO> getQuotationById(@PathVariable Long id) {
         return quotationService.getById(id)
                 .map(ResponseEntity::ok)
@@ -53,7 +53,7 @@ public class QuotationController {
 
 
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<QuotationResponseDTO> updateQuotation(
             @PathVariable Long id,
             @RequestBody QuotationRequestDTO dto) {
@@ -63,7 +63,7 @@ public class QuotationController {
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteQuotation(@PathVariable Long id) {
         quotationService.delete(id);
         return ResponseEntity.ok("Quotation deleted successfully with id: " + id);

@@ -24,10 +24,10 @@ import java.util.List;
 public class User implements UserDetails {
 
     @Id
-     @GeneratedValue(strategy = GenerationType.IDENTITY)
-   private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-   private String name;
+    private String name;
 
     @Column(unique = true)
     private String email;
@@ -35,15 +35,15 @@ public class User implements UserDetails {
     private boolean active;
 
     @Column(unique = true)
-   private String phoneNumber;
+    private String phoneNumber;
 
-    @Size(max = 20,min = 4)
-    String password;
+
+    private String password;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @JsonIgnore
+   
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
@@ -61,16 +61,24 @@ public class User implements UserDetails {
 
 
     @Override
-    public boolean isAccountNonExpired() { return true; }
+    public boolean isAccountNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isAccountNonLocked() { return active; }
+    public boolean isAccountNonLocked() {
+        return active;
+    }
 
     @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
 
     @Override
-    public boolean isEnabled() { return active; }
+    public boolean isEnabled() {
+        return active;
+    }
 
 
 }

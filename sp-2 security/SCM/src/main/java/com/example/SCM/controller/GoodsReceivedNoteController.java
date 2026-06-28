@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/goods-received-notes/")
+@RequestMapping("/api/goods-received-notes")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class GoodsReceivedNoteController {
@@ -27,7 +27,7 @@ public class GoodsReceivedNoteController {
         );
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> update(
             @PathVariable Long id,
             @RequestBody GoodsReceivedNoteRequestDTO dto
@@ -47,14 +47,14 @@ public class GoodsReceivedNoteController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> getById(@PathVariable Long id) {
         return goodsReceivedNoteService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         goodsReceivedNoteService.delete(id);
         return ResponseEntity.ok("Deleted successfully");

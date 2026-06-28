@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/grn-line-items/")
+@RequestMapping("/api/grn-line-items")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class GRNLineItemController {
@@ -28,7 +28,7 @@ public class GRNLineItemController {
 
     // Update Existing GRN Line Item (PUT)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<GRNLineItemResponseDTO> update(
             @PathVariable Long id,
             @RequestBody GRNLineItemRequestDTO dto) {
@@ -52,7 +52,7 @@ public class GRNLineItemController {
 
     // 4. Get GRN Line Item By ID (GET)
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
         return grnLineItemService.getById(id)
                 .map(ResponseEntity::ok)
@@ -61,7 +61,7 @@ public class GRNLineItemController {
 
     // Delete GRN Line Item By ID (DELETE)
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         grnLineItemService.delete(id);
         return ResponseEntity.ok("GRN Line Item deleted successfully with ID: " + id);

@@ -16,6 +16,7 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.ManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder; // ➕ ইম্পোর্ট করা হলো
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class ManagerServiceImp implements ManagerService {
     private final PoliceStationRepository policeStationRepository;
     private final ManagerMapper managerMapper;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -49,19 +51,22 @@ public class ManagerServiceImp implements ManagerService {
             throw new RuntimeException("Credential password cannot be empty for Management creation!");
         }
 
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.MANAGER);
-        User savedUser = userRepository.save(user);
-
         PoliceStation policeStation = null;
         if (dto.getPoliceStationId() != null) {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not resolved with ID: " + dto.getPoliceStationId()));
         }
+
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.MANAGER);
+        user.setActive(true);
+        user.setPoliceStation(policeStation);
+
+        User savedUser = userRepository.save(user);
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
@@ -85,13 +90,21 @@ public class ManagerServiceImp implements ManagerService {
         Manager manager = managerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Manager profile not found at ID: " + id));
 
+        PoliceStation policeStation = manager.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
+            manager.setPoliceStation(policeStation);
+        }
+
         User user = manager.getUser();
         if (user != null) {
             user.setName(dto.getName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword())); 
             }
             userRepository.save(user);
         }
@@ -120,12 +133,6 @@ public class ManagerServiceImp implements ManagerService {
             manager.setImage(newImagePath);
         }
 
-        if (dto.getPoliceStationId() != null) {
-            PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
-            manager.setPoliceStation(policeStation);
-        }
-
         return managerMapper.convertTOResponseDTO(managerRepository.save(manager));
     }
 
@@ -149,6 +156,9 @@ public class ManagerServiceImp implements ManagerService {
         Manager manager = managerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target Manager key mapping missing"));
         managerRepository.delete(manager);
+        if (manager.getUser() != null) {
+            userRepository.delete(manager.getUser());
+        }
     }
 
     private String uploadImage(MultipartFile file, String name) {

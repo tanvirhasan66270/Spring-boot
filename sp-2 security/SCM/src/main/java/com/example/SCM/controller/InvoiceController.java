@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/invoices/")
+@RequestMapping("/api/invoices")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class InvoiceController {
@@ -28,7 +28,7 @@ public class InvoiceController {
 
     //Mutate/Update Existing Invoice State Matrix (PUT)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<InvoiceResponseDTO> update(@PathVariable Long id, @RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.update(id, dto);
         return ResponseEntity.ok(response);
@@ -46,7 +46,7 @@ public class InvoiceController {
 
     // Fetch Invoice Instance Details By Unique Record ID (GET)
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<InvoiceResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
@@ -55,7 +55,7 @@ public class InvoiceController {
 
     // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

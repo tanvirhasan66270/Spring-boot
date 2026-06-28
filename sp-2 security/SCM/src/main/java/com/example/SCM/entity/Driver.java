@@ -52,7 +52,7 @@ public class Driver {
     @Builder.Default
     private Double totalEarnings = 0.0;
 
-    @Column(nullable = false)
+    @Column(name = "active",nullable = false)
     @Builder.Default
     private Boolean active = true;
 

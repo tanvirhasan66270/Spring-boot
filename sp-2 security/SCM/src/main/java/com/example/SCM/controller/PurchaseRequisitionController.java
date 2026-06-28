@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/purchase-requisitions/")
+@RequestMapping("/api/purchase-requisitions")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class PurchaseRequisitionController {
@@ -28,7 +28,7 @@ public class PurchaseRequisitionController {
 
     // 2. Update Existing Purchase Requisition (PUT)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> update(
             @PathVariable Long id,
             @RequestBody PurchaseRequisitionRequestDTO dto) {
@@ -49,7 +49,7 @@ public class PurchaseRequisitionController {
 
     // 4. Get Purchase Requisition By ID (GET)
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> getById(@PathVariable Long id) {
         return purchaseRequisitionService.getById(id)
                 .map(ResponseEntity::ok)
@@ -58,7 +58,7 @@ public class PurchaseRequisitionController {
 
    // 5. Delete Purchase Requisition (DELETE)
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseRequisitionService.delete(id);
         return ResponseEntity.ok("Purchase Requisition deleted successfully from procurement records!");

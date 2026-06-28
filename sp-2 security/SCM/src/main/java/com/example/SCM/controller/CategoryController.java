@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/category/")
+@RequestMapping("/api/category")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class CategoryController {
@@ -27,7 +27,7 @@ public class CategoryController {
         );
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody CategoryRequestDTO dto
@@ -47,14 +47,14 @@ public class CategoryController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> getById(@PathVariable Long id) {
         return categoryService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.ok("Category and its cascades deleted successfully!");

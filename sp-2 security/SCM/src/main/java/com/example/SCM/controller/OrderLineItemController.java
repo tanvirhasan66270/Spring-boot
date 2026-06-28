@@ -28,7 +28,7 @@ public class OrderLineItemController {
     //Get Single Line Item Specifications By ID
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<OrderLineItemResponseDTO> getItemById(@PathVariable Long id) {
         return lineItemService.getById(id)
                 .map(ResponseEntity::ok)
@@ -37,7 +37,7 @@ public class OrderLineItemController {
 
     // Remove/Delete Single Item from Order Cart Node
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> removeLineItem(@PathVariable Long id) {
         lineItemService.deleteItem(id);
         return ResponseEntity.ok("Target line item node removed and order subtotal recalculated.");

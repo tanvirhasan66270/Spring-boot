@@ -24,7 +24,7 @@ public class CountryController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<CountryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody CountryRequestDTO dto) {
@@ -41,14 +41,14 @@ public class CountryController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CountryResponseDTO> getById(@PathVariable Long id) {
         return countryService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         countryService.delete(id);
         return ResponseEntity.ok("Country deleted successfully with ID: " + id);

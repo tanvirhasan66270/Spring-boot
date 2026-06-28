@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/delivery-trips/")
+@RequestMapping("/api/delivery-trips")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DeliveryTripController {
@@ -28,7 +28,7 @@ public class DeliveryTripController {
         );
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<DeliveryTripResponseDTO> update(
             @PathVariable Long id,
             @RequestBody DeliveryTripRequestDTO dto
@@ -36,7 +36,7 @@ public class DeliveryTripController {
         return ResponseEntity.ok(tripService.update(id, dto));
     }
 
-    @PatchMapping(value = "{id}/status", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{id}/status", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DeliveryTripResponseDTO> changeStatus(
             @PathVariable Long id,
             @RequestParam("status") String status,
@@ -57,14 +57,14 @@ public class DeliveryTripController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<DeliveryTripResponseDTO> getById(@PathVariable Long id) {
         return tripService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         tripService.delete(id);
         return ResponseEntity.ok("Delivery trip cluster index cleared successfully from control matrix.");

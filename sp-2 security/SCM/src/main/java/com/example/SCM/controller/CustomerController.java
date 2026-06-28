@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/customers/")
+@RequestMapping("/api/customers")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class CustomerController {
@@ -32,7 +32,7 @@ public class CustomerController {
         );
     }
 
-    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("customer") CustomerRequestDTO dto,
@@ -52,14 +52,14 @@ public class CustomerController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
         return customerService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");

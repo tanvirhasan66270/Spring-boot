@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/suppliers/")
+@RequestMapping("/api/suppliers")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class SupplierController {
@@ -40,7 +40,7 @@ public class SupplierController {
         );
     }
     @Transactional
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public SupplierResponseDTO update(
             @PathVariable Long id,
             @RequestPart("suppliers") SupplierRequestDTO dto,
@@ -61,7 +61,7 @@ public class SupplierController {
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<SupplierResponseDTO> getById(@PathVariable Long id) {
         return supplierService.getById(id)
                 .map(ResponseEntity::ok)
@@ -69,7 +69,7 @@ public class SupplierController {
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return ResponseEntity.ok("Supplier profile and associated auth account deleted successfully!");

@@ -15,6 +15,7 @@ import com.example.SCM.service.DriverService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,8 @@ public class DriverServiceImp implements DriverService {
     private final DriverMapper driverMapper;
     private final MailService mailService;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
 
@@ -50,7 +53,7 @@ public class DriverServiceImp implements DriverService {
         user.setName(dto.getDriverName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.DRIVER);
         User savedUser = userRepository.save(user);
 

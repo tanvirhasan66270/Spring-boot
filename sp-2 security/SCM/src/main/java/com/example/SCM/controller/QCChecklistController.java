@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/qc-checklists/")
+@RequestMapping("/api/qc-checklists")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class QCChecklistController {
@@ -25,7 +25,7 @@ public class QCChecklistController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<QCChecklistResponseDTO> update(
             @PathVariable Long id,
             @RequestBody QCChecklistRequestDTO dto) {
@@ -36,14 +36,14 @@ public class QCChecklistController {
     // 3. Get Checklist Items By Master Inspection ID (GET)
      //  ফ্রন্টএন্ড UI-তে একটি নির্দিষ্ট ইন্সেপশনের গ্রিড ডিটেইলস পপুলেট করার জন্য এটি ব্যবহৃত হবে।
 
-    @GetMapping("inspection/{inspectionId}")
+    @GetMapping("/inspection/{inspectionId}")
     public ResponseEntity<List<QCChecklistResponseDTO>> getByInspectionId(@PathVariable Long inspectionId) {
         List<QCChecklistResponseDTO> list = qcChecklistService.findByInspectionId(inspectionId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<QCChecklistResponseDTO> getById(@PathVariable Long id) {
         return qcChecklistService.getById(id)
                 .map(ResponseEntity::ok)
@@ -51,7 +51,7 @@ public class QCChecklistController {
     }
 
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcChecklistService.delete(id);
         return ResponseEntity.ok("QC Checklist item deleted successfully with ID: " + id);

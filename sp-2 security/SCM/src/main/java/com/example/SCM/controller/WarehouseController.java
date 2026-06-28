@@ -23,7 +23,7 @@ public class WarehouseController {
         return new ResponseEntity<>(warehouseService.save(dto), HttpStatus.CREATED);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<WarehouseResponseDTO> update(@PathVariable Long id, @RequestBody WarehouseRequestDTO dto) {
         return ResponseEntity.ok(warehouseService.update(id, dto));
     }
@@ -34,14 +34,14 @@ public class WarehouseController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<WarehouseResponseDTO> getById(@PathVariable Long id) {
         return warehouseService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         warehouseService.delete(id);
         return ResponseEntity.ok("Warehouse deleted successfully from system tracking");

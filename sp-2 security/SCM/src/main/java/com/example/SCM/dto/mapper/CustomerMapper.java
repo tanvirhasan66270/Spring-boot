@@ -119,9 +119,7 @@ public class CustomerMapper {
             if (dto.getEmail() != null) user.setEmail(dto.getEmail());
             if (dto.getPhone() != null) user.setPhoneNumber(dto.getPhone());
 
-            if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
-                user.setPassword(dto.getPassword());
-            }
+
         }
     }
 

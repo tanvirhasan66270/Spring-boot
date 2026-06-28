@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/vehicles/")
+@RequestMapping("/api/vehicles")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class VehicleController {
@@ -23,7 +23,7 @@ public class VehicleController {
         return new ResponseEntity<>(vehicleService.save(dto), HttpStatus.CREATED);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> update(@PathVariable Long id, @RequestBody VehicleRequestDTO dto) {
         return ResponseEntity.ok(vehicleService.update(id, dto));
     }
@@ -34,14 +34,14 @@ public class VehicleController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<VehicleResponseDTO> getById(@PathVariable Long id) {
         return vehicleService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         vehicleService.delete(id);
         return ResponseEntity.ok("Vehicle successfully decommissioned from active tracking logistics");

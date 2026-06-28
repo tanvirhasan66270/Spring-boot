@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/lc/")
+@RequestMapping("/api/lc")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class LetterOfCreditController {
@@ -27,7 +27,7 @@ public class LetterOfCreditController {
 
     // ⚙️ 2. General Update LC Metadata (No Counter Increment)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
             @RequestBody LetterOfCreditRequestDTO dto) {
@@ -38,7 +38,7 @@ public class LetterOfCreditController {
    // Official LC Amendment Gateway (Triggers Counter & Status Change)
     // PATCH http://localhost:8085/api/lc/amend/{id}
 
-    @PatchMapping("amend/{id}")
+    @PatchMapping("/amend/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
             @PathVariable Long id,
             @RequestBody LetterOfCreditRequestDTO dto) {
@@ -55,7 +55,7 @@ public class LetterOfCreditController {
 
     //  5. Get LC Profile By ID
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> getLCById(@PathVariable Long id) {
         return lcService.getById(id)
                 .map(ResponseEntity::ok)
@@ -64,7 +64,7 @@ public class LetterOfCreditController {
 
    // Delete LC Instance
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {
         lcService.delete(id);
         return ResponseEntity.ok("Letter of credit cluster mapping wiped successfully.");

@@ -14,7 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/drivers/")
+@RequestMapping("/api/drivers")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class DriverController {
@@ -39,7 +39,7 @@ public class DriverController {
         }
     }
 
-    @PutMapping(value = "{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<DriverResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("driver") String driverJson,
@@ -59,14 +59,14 @@ public class DriverController {
         return ResponseEntity.ok(driverService.findAll());
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<DriverResponseDTO> getById(@PathVariable Long id) {
         return driverService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         driverService.delete(id);
         return ResponseEntity.noContent().build();

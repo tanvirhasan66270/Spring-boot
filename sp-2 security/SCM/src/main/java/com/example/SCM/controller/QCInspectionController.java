@@ -14,7 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/qc-inspections/")
+@RequestMapping("/api/qc-inspections")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class QCInspectionController {
@@ -31,7 +31,7 @@ public class QCInspectionController {
         return new ResponseEntity<>(qcInspectionService.save(dto, file), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectionResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("inspection") String inspectionJson,
@@ -48,12 +48,12 @@ public class QCInspectionController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<QCInspectionResponseDTO> getById(@PathVariable Long id) {
         return qcInspectionService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcInspectionService.delete(id);
         return ResponseEntity.ok("QC Record with checklist chain deleted successfully");

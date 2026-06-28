@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders/")
+@RequestMapping("/api/customerOrders")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class CustomerOrderController {
@@ -27,7 +27,7 @@ public class CustomerOrderController {
         );
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
             @RequestBody CustomerOrderRequestDTO dto
@@ -42,20 +42,20 @@ public class CustomerOrderController {
         return ResponseEntity.ok(responseList);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
         return orderService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         orderService.delete(id);
         return ResponseEntity.ok("Customer order instance purged successfully from cluster cache mapping.");
     }
 
-    @GetMapping("track")
+    @GetMapping("/track")
     public ResponseEntity<CustomerOrderResponseDTO> trackOrderByNumber(@RequestParam String orderNumber) {
         return orderService.trackOrder(orderNumber)
                 .map(ResponseEntity::ok)

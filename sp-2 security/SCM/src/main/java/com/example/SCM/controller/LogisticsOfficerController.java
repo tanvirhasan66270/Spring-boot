@@ -15,7 +15,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/logistics-officers/")
+@RequestMapping("/api/logistics-officers")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class LogisticsOfficerController {
@@ -35,7 +35,7 @@ public class LogisticsOfficerController {
         }
     }
 
-    @PutMapping(value = "{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<LogisticsOfficerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("officer") String officerJson,
@@ -53,14 +53,14 @@ public class LogisticsOfficerController {
         return ResponseEntity.ok(officerService.findAll());
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<LogisticsOfficerResponseDTO> getById(@PathVariable Long id) {
         return officerService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();

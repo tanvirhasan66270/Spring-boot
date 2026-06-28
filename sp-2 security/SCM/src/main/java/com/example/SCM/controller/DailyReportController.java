@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports/")
+@RequestMapping("/api/reports")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DailyReportController {
@@ -26,7 +26,7 @@ public class DailyReportController {
         );
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<DailyReportResponseDTO> updateReport(
             @PathVariable Long id,
             @RequestBody DailyReportRequestDTO dto
@@ -34,12 +34,12 @@ public class DailyReportController {
         return ResponseEntity.ok(reportService.update(id, dto));
     }
 
-    @PatchMapping("approve/{id}")
+    @PatchMapping("/approve/{id}")
     public ResponseEntity<DailyReportResponseDTO> approveReport(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.approveReport(id, null));
     }
 
-    @GetMapping("email-approve")
+    @GetMapping("/email-approve")
     public ResponseEntity<String> emailApproveReport(
             @RequestParam Long id,
             @RequestParam String approverId
@@ -63,7 +63,7 @@ public class DailyReportController {
         return ResponseEntity.ok(reportService.findAll());
     }
 
-    @GetMapping("warehouse/{warehouseId}")
+    @GetMapping("/warehouse/{warehouseId}")
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
         return ResponseEntity.ok(reportService.getByWarehouse(warehouseId));
     }

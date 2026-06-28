@@ -13,7 +13,7 @@ import tools.jackson.databind.ObjectMapper; // আপনার প্রজে�
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/products/")
+@RequestMapping("/api/products")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*") // Frontend (Angular/React) থেকে কল করার সময় CORS এরর এড়াতে
 public class ProductController {
@@ -37,7 +37,7 @@ public class ProductController {
 
     // 2. Update Existing Product (PUT)
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("productJson") String productJson,
@@ -63,7 +63,7 @@ public class ProductController {
 
     // 4. Get Product By ID (GET)
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
         return productService.getById(id)
                 .map(ResponseEntity::ok)
@@ -72,7 +72,7 @@ public class ProductController {
 
     //5. Delete Product (DELETE)
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.ok("Product deleted successfully!");
