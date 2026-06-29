@@ -42,7 +42,6 @@ public class CustomerServiceImp implements CustomerService {
                 policeStationRepository.findById(dto.getPoliceStationId())
                 .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
 
-        // ২. নতুন ইউজার অবজেক্ট তৈরি করুন
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -52,15 +51,12 @@ public class CustomerServiceImp implements CustomerService {
 
         user.setPoliceStation(policeStation);
 
-        // ৩. ইউজার ডাটাবেজে সেভ করুন
         User savedUser = userRepository.save(user);
 
-        // ৪. কাস্টমার এনটিটি তৈরি ও ম্যাপিং করুন
         Customer customer = new Customer();
         customer.setUser(savedUser);
         customerMapper.updateEntity(dto, customer, policeStation);
 
-        // ৫. ইমেজ আপলোড হ্যান্ডলিং
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
             customer.setImage("uploads/customer/" + uploadedFileName);
@@ -68,7 +64,6 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        // welcome জানিয়ে ডাইনামিক HTML মেইল পাঠানো
         sendCustomerWelcomeEmail(savedCustomer);
 
         return customerMapper.convertTOResponseDTO(savedCustomer);
@@ -97,14 +92,13 @@ public class CustomerServiceImp implements CustomerService {
             user.setPhoneNumber(dto.getPhone());
             user.setPoliceStation(policeStation);
 
-
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             userRepository.save(user);
         }
 
-            return customerMapper.convertTOResponseDTO(customerRepository.save(customer));
+        return customerMapper.convertTOResponseDTO(customerRepository.save(customer));
     }
 
     @Transactional(readOnly = true)
@@ -129,7 +123,9 @@ public class CustomerServiceImp implements CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target customer node index missing"));
         customerRepository.delete(customer);
-        userRepository.delete(customer.getUser());
+        if (customer.getUser() != null) {
+            userRepository.delete(customer.getUser());
+        }
     }
 
     private String uploadImage(MultipartFile file, String customerName) {
@@ -161,7 +157,7 @@ public class CustomerServiceImp implements CustomerService {
         if (customer == null || customer.getUser() == null || customer.getUser().getEmail() == null) return;
 
         User authUser = customer.getUser();
-        String subject = "Welcome to SCM Enterprise! Your Account is Ready 🎉";
+        String subject = "Welcome to SCM Enterprise! Your Account is Ready ";
 
         String mailText = """
 <!DOCTYPE html>
