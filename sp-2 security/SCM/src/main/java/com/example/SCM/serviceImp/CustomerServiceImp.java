@@ -38,12 +38,10 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile image) {
 
-        // 🔗 ১. প্রথমে ডাটাবেজ থেকে থানা অবজেক্টটি লোড করে নিন (লজিক্যাল অর্ডার ফিক্স)
         PoliceStation policeStation = dto.getPoliceStationId() != null ?
                 policeStationRepository.findById(dto.getPoliceStationId())
                 .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
 
-        // ২. নতুন ইউজার অবজেক্ট তৈরি করুন
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -51,18 +49,14 @@ public class CustomerServiceImp implements CustomerService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(com.example.SCM.role.Role.CUSTOMER);
 
-        // 🔄 জাদুকরী লাইন: ইউজারের ভেতর থানা অ্যাসাইন করা হলো, যা ডাটাবেজের 'police_station_id' কলাম পূরণ করবে
         user.setPoliceStation(policeStation);
 
-        // ৩. ইউজার ডাটাবেজে সেভ করুন
         User savedUser = userRepository.save(user);
 
-        // ৪. কাস্টমার এনটিটি তৈরি ও ম্যাপিং করুন
         Customer customer = new Customer();
         customer.setUser(savedUser);
         customerMapper.updateEntity(dto, customer, policeStation);
 
-        // ৫. ইমেজ আপলোড হ্যান্ডলিং
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
             customer.setImage("uploads/customer/" + uploadedFileName);
@@ -70,7 +64,6 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        // welcome জানিয়ে ডাইনামিক HTML মেইল পাঠানো
         sendCustomerWelcomeEmail(savedCustomer);
 
         return customerMapper.convertTOResponseDTO(savedCustomer);
@@ -87,13 +80,11 @@ public class CustomerServiceImp implements CustomerService {
 
         customerMapper.updateEntity(dto, customer, policeStation);
 
-        // কাস্টম ইমেজ আপডেট হ্যান্ডলিং
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
             customer.setImage("uploads/customer/" + uploadedFileName);
         }
 
-        // 🔄 আপডেট করার সময়ও ইউজারের থানা সিঙ্ক নিশ্চিত করা
         if (customer.getUser() != null) {
             customer.getUser().setPoliceStation(policeStation);
             userRepository.save(customer.getUser());
