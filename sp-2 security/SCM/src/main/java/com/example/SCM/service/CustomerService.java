@@ -4,6 +4,7 @@ import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.request.DeliveryTripRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.response.DeliveryTripResponseDTO;
+import com.example.SCM.entity.Customer;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -17,5 +18,5 @@ public interface CustomerService {
     Optional<CustomerResponseDTO> getById(Long id);
     void delete(Long id);
 
-//    String verifyEmailToken(String token);
+    void sendCustomerWelcomeEmail(Customer customer);
 }

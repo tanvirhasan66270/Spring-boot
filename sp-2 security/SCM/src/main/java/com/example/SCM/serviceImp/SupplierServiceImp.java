@@ -1,6 +1,7 @@
 package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
+import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.SupplierMapper;
 import com.example.SCM.dto.response.SupplierResponseDTO;
 import com.example.SCM.dto.request.SupplierRequestDTO;
@@ -12,9 +13,8 @@ import com.example.SCM.repository.SupplierRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.role.Role;
 import com.example.SCM.service.SupplierService;
-import jakarta.mail.MessagingException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,13 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class SupplierServiceImp implements SupplierService {
 
     private final SupplierRepository supplierRepository;
@@ -38,8 +38,21 @@ public class SupplierServiceImp implements SupplierService {
     private final SupplierMapper supplierMapper;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    @Value("${image.upload.dir}")
+    public SupplierServiceImp(SupplierRepository supplierRepository, UserRepository userRepository,
+                              PoliceStationRepository policeStationRepository, SupplierMapper supplierMapper,
+                              MailService mailService, PasswordEncoder passwordEncoder, @Lazy AuthService authService) {
+        this.supplierRepository = supplierRepository;
+        this.userRepository = userRepository;
+        this.policeStationRepository = policeStationRepository;
+        this.supplierMapper = supplierMapper;
+        this.mailService = mailService;
+        this.passwordEncoder = passwordEncoder;
+        this.authService = authService;
+    }
+
+    @Value("${image.upload.dir:uploads}")
     private String uploadDir;
 
     @Override
@@ -50,7 +63,6 @@ public class SupplierServiceImp implements SupplierService {
             throw new RuntimeException("Password cannot be empty!");
         }
 
-        //  পুলিশ স্টেশন ডাটা খুঁজে বের করা
         PoliceStation policeStation = null;
         if (dto.getPoliceStationId() != null) {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
@@ -63,24 +75,22 @@ public class SupplierServiceImp implements SupplierService {
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.SUPPLIER);
-        User savedUser = userRepository.save(user);
+        user.setActive(false);
         user.setPoliceStation(policeStation);
+        User savedUser = userRepository.save(user);
 
-
-
-        //  মাল্টিপার্ট ফাইল (ইমেজ) আপলোড হ্যান্ডেল করা
         if (file != null && !file.isEmpty()) {
-            // ফিক্সড: পাস করা হলো dto.getName() ফাইল নেমিং এর জন্য
             String imagePath = uploadImage(file, dto.getName());
-            dto.setImage(imagePath);
+            dto.setImage("uploads/supplier/" + imagePath);
         }
 
-        //  সাপ্লায়ার এনটিটি তৈরি ও সেভ করা
         Supplier supplier = supplierMapper.toSupplierEntity(dto, savedUser, policeStation);
+        if (file != null && !file.isEmpty()) {
+            supplier.setImage(dto.getImage());
+        }
         Supplier savedSupplier = supplierRepository.save(supplier);
 
-        // ফিক্সড: নতুন সাপ্লায়ার সেভ হওয়ার পর তাকে ওয়েলকাম ইমেইল পাঠানো হলো
-        sendWelcomeEmail(savedUser);
+        authService.sendVerificationEmail(savedUser.getEmail());
 
         return supplierMapper.toResponseDTO(savedSupplier);
     }
@@ -88,20 +98,16 @@ public class SupplierServiceImp implements SupplierService {
     @Transactional
     @Override
     public SupplierResponseDTO update(Long id, SupplierRequestDTO dto, MultipartFile image) {
-        //  ডাটাবেজে সাপ্লায়ার চেক করা
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
 
-
-        //  পুলিশ স্টেশন রিলেশন আপডেট করা
-        PoliceStation policeStation=supplier.getPoliceStation();
+        PoliceStation policeStation = supplier.getPoliceStation();
         if (dto.getPoliceStationId() != null) {
-             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not found"));
             supplier.setPoliceStation(policeStation);
         }
 
-        //  রিলেটেড ইউজার অ্যাকাউন্ট আপডেট করা
         User user = supplier.getUser();
         if (user != null) {
             user.setName(dto.getName());
@@ -110,12 +116,10 @@ public class SupplierServiceImp implements SupplierService {
             user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
                 user.setPassword(passwordEncoder.encode(dto.getPassword()));
-//
             }
             userRepository.save(user);
         }
 
-        //  সাপ্লায়ার প্রোফাইল ফিল্ডস আপডেট
         supplier.setName(dto.getName());
         supplier.setContactPerson(dto.getContactPerson());
         supplier.setEmail(dto.getEmail());
@@ -140,12 +144,10 @@ public class SupplierServiceImp implements SupplierService {
         supplier.setRating(dto.getRating());
         supplier.setAverageLeadTimeDays(dto.getAverageLeadTimeDays());
 
-        //  নতুন ইমেজ আপলোড দিলে আগেরটা ওভাররাইট/নতুন করে সেট করা
         if (image != null && !image.isEmpty()) {
             String newImagePath = uploadImage(image, dto.getName());
-            supplier.setImage(newImagePath);
+            supplier.setImage("uploads/supplier/" + newImagePath);
         }
-
 
         Supplier updatedSupplier = supplierRepository.save(supplier);
         return supplierMapper.toResponseDTO(updatedSupplier);
@@ -178,7 +180,6 @@ public class SupplierServiceImp implements SupplierService {
         }
     }
 
-
     private String uploadImage(MultipartFile file, String supplierName) {
         try {
             Path path = Paths.get(uploadDir, "supplier");
@@ -193,11 +194,15 @@ public class SupplierServiceImp implements SupplierService {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            // ফিক্সড: অজানা customerName এর বদলে এখন মেথড প্যারামিটারের supplierName ব্যবহার হবে
-            String cleanedName = supplierName.trim().replaceAll("\\s+", "_");
+            String cleanedName = "supplier";
+            if (supplierName != null) {
+                cleanedName = supplierName.trim()
+                        .replaceAll("[^a-zA-Z0-9\\s]", "")
+                        .replaceAll("\\s+", "_");
+            }
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            Files.copy(file.getInputStream(), path.resolve(fileName));
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
             return fileName;
 
         } catch (Exception e) {
@@ -206,58 +211,94 @@ public class SupplierServiceImp implements SupplierService {
     }
 
 
-    private void sendWelcomeEmail(User user) {
-        if (user == null || user.getEmail() == null) {
-            return;
-        }
+    public void sendSupplierWelcomeEmail(Supplier supplier) {
+        if (supplier == null || supplier.getUser() == null || supplier.getUser().getEmail() == null) return;
 
-        String subject = "Welcome to Our Service – Confirm Your Registration";
+        User authUser = supplier.getUser();
+        String subject = "Welcome to Our Platform – Supplier Node Activated";
 
         String mailText = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f9f9f9; margin: 0; padding: 0; }
-                    .container { max-width: 600px; margin: 20px auto; padding: 0; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-                    .header { background-color: #4CAF50; color: white; padding: 25px; text-align: center; }
-                    .header h2 { margin: 0; font-size: 24px; font-weight: 600; }
-                    .content { padding: 30px; }
-                    .btn-container { text-align: center; margin: 30px 0; }
-                    .btn { background-color: #4CAF50; color: white !important; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; transition: background-color 0.3s ease; }
-                    .btn:hover { background-color: #45a049; }
-                    .footer { font-size: 0.85em; color: #777777; padding: 20px; background-color: #f1f1f1; text-align: center; border-top: 1px solid #e0e0e0; }
-                </style>
-            </head>
-            <body>
-                <div class='container'>
-                    <div class='header'>
-                        <h2>Welcome to Our Platform</h2>
-                    </div>
-                    <div class='content'>
-                        <p>Dear <b>%s</b>,</p>
-                        <p>Thank you for registering with us. We are excited to have you on board!</p>
-                        <p>Please confirm your email address to activate your account and get started.</p>
-                        
-                        <div class='btn-container'>
-                            <a href='http://localhost:8080/api/auth/activate?email=%s' class='btn'>Activate Account</a>
-                        </div>
-                        
-                        <p>If you have any questions or need help, feel free to reach out to our support team.</p>
-                        <p>Best regards,<br><b>The Support Team</b></p>
-                    </div>
-                    <div class='footer'>
-                        &copy; %d YourCompany. All rights reserved.
-                    </div>
-                </div>
-            </body>
-            </html>
-            """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 30px auto; padding: 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .header { background-color: #388e3c; color: white; padding: 35px 25px; text-align: center; }
+        .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+        .header p { margin: 5px 0 0 0; opacity: 0.9; font-size: 15px; }
+        .content { padding: 30px; }
+        .welcome-box { background-color: #e8f5e9; border-left: 5px solid #388e3c; padding: 18px; margin: 20px 0; border-radius: 4px; }
+        .profile-details { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .profile-details td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .profile-details td.label { font-weight: bold; color: #64748b; width: 30%; }
+        .btn-container { text-align: center; margin: 35px 0; }
+        .btn { background-color: #388e3c; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .footer { font-size: 0.85em; color: #64748b; padding: 20px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>Congratulations {{supplierName}}!</h1>
+            <p>Your SCM Supplier Profile is Active</p>
+        </div>
+        <div class='content'>
+            <p>Dear <b>{{supplierName}}</b>,</p>
+            <p>A warm welcome to <b>SCM Global Supply Chain Ecosystem</b>! We are excited to collaborate with you as an authorized enterprise supply node partner.</p>
+            
+            <div class='welcome-box'>
+                <p style='margin: 0; font-size: 15px; color: #2e7d32; font-weight: bold;'>Your supply tier integration is live.</p>
+                <p style='margin: 5px 0 0 0; font-size: 13px; color: #475569;'>You can now log into your merchant center to process material procurement requests, update inventory lead times, and dispatch shipping invoices.</p>
+            </div>
+
+            <p><b>Your Registered SCM Network Credentials:</b></p>
+            <table class='profile-details'>
+                <tr>
+                    <td class='label'>Vendor Name:</td>
+                    <td>{{supplierName}}</td>
+                </tr>
+                <tr>
+                    <td class='label'>Primary Email/User:</td>
+                    <td>{{userEmail}}</td>
+                </tr>
+                <tr>
+                    <td class='label'>Contact Phone:</td>
+                    <td>{{supplierPhone}}</td>
+                </tr>
+                <tr>
+                    <td class='label'>Registered Node Role:</td>
+                    <td><span style='background-color:#E2E8F0; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:bold;'>{{userRole}}</span></td>
+                </tr>
+            </table>
+
+            <div class='btn-container'>
+                <a href='http://localhost:4200/login' class='btn'>Launch Merchant Console</a>
+            </div>
+
+            <p>If you need catalog integration help or have pipeline connectivity questions, our commercial desk is at your disposal.</p>
+            <p>Best regards,<br><b>SCM Global Sourcing Operations</b></p>
+        </div>
+        <div class='footer'>
+            &copy; {{currentYear}} SCM Global Logistics Network Cluster. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>
+""";
+
+        mailText = mailText
+                .replace("{{supplierName}}", authUser.getName() != null ? authUser.getName() : "")
+                .replace("{{userEmail}}", authUser.getEmail())
+                .replace("{{supplierPhone}}", authUser.getPhoneNumber() != null ? authUser.getPhoneNumber() : "")
+                .replace("{{userRole}}", authUser.getRole() != null ? authUser.getRole().toString() : "SUPPLIER")
+                .replace("{{currentYear}}", String.valueOf(java.time.Year.now().getValue()));
 
         try {
-            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
-        } catch (MessagingException e) {
-            System.err.println("Advanced Email Layout failed to deliver: " + e.getMessage());
+            mailService.senderGeneralMail(authUser.getEmail(), subject, mailText);
+            System.out.println("Supplier Merchant Welcome Email successfully dispatched to node: " + authUser.getEmail());
+        } catch (Exception e) {
+            System.err.println("Supplier Activation Engine exception caught: " + e.getMessage());
         }
     }
 }

@@ -11,7 +11,6 @@ public class LogisticsOfficerRequestDTO {
     private String passportNumber;
     private String dob; // Multi-format parsing handler
     private String gender; // MALE, FEMALE, OTHER
-    private boolean isActive = true;
     private String joiningDate; // "YYYY-MM-DD"
     private String designation;
     private String language; // BANGLA, ENGLISH

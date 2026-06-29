@@ -15,7 +15,6 @@ import com.example.SCM.repository.WarehouseRepository;
 import com.example.SCM.role.Role;
 import com.example.SCM.service.DriverService;
 import jakarta.mail.MessagingException;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +33,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class DriverServiceImp implements DriverService {
 
     private final DriverRepository driverRepository;
@@ -43,6 +42,18 @@ public class DriverServiceImp implements DriverService {
     private final DriverMapper driverMapper;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+
+    public DriverServiceImp(DriverRepository driverRepository, UserRepository userRepository,
+                            PoliceStationRepository policeStationRepository, WarehouseRepository warehouseRepository,
+                            DriverMapper driverMapper, MailService mailService, PasswordEncoder passwordEncoder) {
+        this.driverRepository = driverRepository;
+        this.userRepository = userRepository;
+        this.policeStationRepository = policeStationRepository;
+        this.warehouseRepository = warehouseRepository;
+        this.driverMapper = driverMapper;
+        this.mailService = mailService;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -61,7 +72,7 @@ public class DriverServiceImp implements DriverService {
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.DRIVER);
-        user.setActive(true);
+        user.setActive(false);
         user.setPoliceStation(policeStation);
         User savedUser = userRepository.save(user);
 
@@ -177,10 +188,15 @@ public class DriverServiceImp implements DriverService {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            String cleanedName = driverName.trim().replaceAll("\\s+", "_");
+            String cleanedName = "driver";
+            if (driverName != null) {
+                cleanedName = driverName.trim()
+                        .replaceAll("[^a-zA-Z0-9\\s]", "")
+                        .replaceAll("\\s+", "_");
+            }
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            Files.copy(file.getInputStream(), path.resolve(fileName));
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
             return fileName;
         } catch (Exception e) {
             throw new RuntimeException("Driver file upload sequence dropped: " + e.getMessage());

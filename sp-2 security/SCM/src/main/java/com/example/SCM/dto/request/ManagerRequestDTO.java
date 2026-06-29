@@ -10,8 +10,7 @@ public class ManagerRequestDTO {
     private String passportNumber;
     private String dob;
     private String gender;
-    private boolean isActive = true;
-    private String joiningDate;
+     private String joiningDate;
     private String designation;
     private String language;
     private Long policeStationId;

@@ -2,6 +2,7 @@ package com.example.SCM.service;
 
 import com.example.SCM.dto.request.QCInspectorRequestDTO;
 import com.example.SCM.dto.response.QCInspectorResponseDTO;
+import com.example.SCM.entity.QCInspector;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public interface QCInspectorService {
     Optional<QCInspectorResponseDTO> getById(Long id);
     void delete(Long id);
 
+    void sendQCInspectorWelcomeEmail(QCInspector inspector);
 }

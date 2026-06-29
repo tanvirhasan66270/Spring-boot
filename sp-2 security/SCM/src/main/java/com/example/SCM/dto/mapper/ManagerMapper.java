@@ -22,7 +22,7 @@ public class ManagerMapper {
         manager.setNidNumber(dto.getNidNumber());
         manager.setPassportNumber(dto.getPassportNumber());
         manager.setDesignation(dto.getDesignation());
-        manager.setActive(dto.isActive());
+
 
         if (dto.getDob() != null && !dto.getDob().isBlank()) {
             manager.setDob(LocalDate.parse(dto.getDob()));

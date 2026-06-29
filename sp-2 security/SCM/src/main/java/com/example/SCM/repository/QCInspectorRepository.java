@@ -12,6 +12,9 @@ import java.util.Optional;
 @Repository
 public interface QCInspectorRepository extends JpaRepository<QCInspector, Long> {
 
+
+    Optional<QCInspector> findByUserId(Long userId);
+
     /**
      * 1. অপ্টিমাইজড অল-ইনস্পেক্টর লিস্ট কুয়েরি (Fetch Join)
      *  এটি সিঙ্গেল ডেটাবেজ হিটে সম্পূর্ণ রিলেশনাল অবজেক্ট চেইন (User এবং Location) লোড করে পারফরম্যান্স বাড়াবে।

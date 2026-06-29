@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @Repository
 public interface SupplierRepository extends JpaRepository<Supplier, Long> {
+    Optional<Supplier> findByUserId(Long userId);
 
     // ১. ইমেইল দিয়ে সাপ্লায়ার খোঁজা (ইউনিক চেক বা লগইনের সোর্স ট্র্যাকিংয়ের জন্য)
     Optional<Supplier> findByEmail(String email);

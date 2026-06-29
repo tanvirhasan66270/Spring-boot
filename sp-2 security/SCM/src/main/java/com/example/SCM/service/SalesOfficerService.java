@@ -2,6 +2,7 @@ package com.example.SCM.service;
 
 import com.example.SCM.dto.request.SalesOfficerRequestDTO;
 import com.example.SCM.dto.response.SalesOfficerResponseDTO;
+import com.example.SCM.entity.SalesOfficer;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
@@ -12,4 +13,6 @@ public interface SalesOfficerService {
     List<SalesOfficerResponseDTO> findAll();
     Optional<SalesOfficerResponseDTO> getById(Long id);
     void delete(Long id);
+
+    void sendSalesOfficerWelcomeEmail(SalesOfficer salesOfficer);
 }

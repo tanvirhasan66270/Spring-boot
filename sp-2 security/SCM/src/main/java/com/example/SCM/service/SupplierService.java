@@ -4,6 +4,7 @@ package com.example.SCM.service;
 import com.example.SCM.dto.response.SupplierResponseDTO;
 import com.example.SCM.dto.request.SupplierRequestDTO;
 
+import com.example.SCM.entity.Supplier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,5 +25,5 @@ public interface SupplierService {
     void delete(Long id);
 
 
-
+    void sendSupplierWelcomeEmail(Supplier supplier);
 }
