@@ -159,7 +159,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         );
 
         try {
-            mailService.SenderGeneralMail(driver.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(driver.getEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Advanced Email Layout failed to deliver: " + e.getMessage());
         }

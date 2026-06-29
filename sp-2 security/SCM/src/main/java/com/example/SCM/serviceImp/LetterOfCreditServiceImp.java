@@ -249,7 +249,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         );
 
         try {
-            mailService.SenderGeneralMail(supplierEmail, subject, mailContent);
+            mailService.senderGeneralMail(supplierEmail, subject, mailContent);
         } catch (Exception e) {
             System.err.println("Supplier Notification Cluster Mail delivery failed: " + e.getMessage());
         }

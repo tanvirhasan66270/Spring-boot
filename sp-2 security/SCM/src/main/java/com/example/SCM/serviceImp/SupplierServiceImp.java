@@ -255,7 +255,7 @@ public class SupplierServiceImp implements SupplierService {
             """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (MessagingException e) {
             System.err.println("Advanced Email Layout failed to deliver: " + e.getMessage());
         }

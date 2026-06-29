@@ -232,7 +232,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
             """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Officer Activation Mail layout broken: " + e.getMessage());
         }

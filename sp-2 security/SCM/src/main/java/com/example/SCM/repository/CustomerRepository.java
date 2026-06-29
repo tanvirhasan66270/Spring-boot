@@ -1,6 +1,7 @@
 package com.example.SCM.repository;
 
 import com.example.SCM.entity.Customer;
+import com.example.SCM.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
+
+    Optional<Customer> findByUserId(Long userId);
 
     @Query("""
         SELECT DISTINCT c FROM Customer c 
@@ -29,4 +32,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
         WHERE c.id = :id
     """)
     Optional<Customer> findByIdWithDetails(@Param("id") Long id);
+
+    Long userId(Long userId);
 }

@@ -1,11 +1,13 @@
 package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
+import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.CustomerMapper;
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.entity.*;
 import com.example.SCM.repository.*;
+import com.example.SCM.security.JwtUtil;
 import com.example.SCM.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,9 @@ public class CustomerServiceImp implements CustomerService {
     private final CustomerMapper customerMapper;
     private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
+
+//    private final JwtUtil  jwtUtil;
 
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
@@ -45,6 +50,7 @@ public class CustomerServiceImp implements CustomerService {
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
+        user.setActive(false);
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(com.example.SCM.role.Role.CUSTOMER);
@@ -64,10 +70,40 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        sendCustomerWelcomeEmail(savedCustomer);
+        authService.sendVerificationEmail(savedCustomer.getUser().getEmail());
+
+//        String token = jwtUtil.generateVerificationToken(savedUser.getEmail());
+//        try {
+//            mailService.sendVerificationEmail(savedUser.getEmail(), savedUser.getName(), token);
+//            System.out.println("Verification email dispatched to endpoint: " + savedUser.getEmail());
+//        } catch (Exception e) {
+//            System.err.println("Verification Email delivery failed: " + e.getMessage()); }
 
         return customerMapper.convertTOResponseDTO(savedCustomer);
+
     }
+
+//    @Transactional
+//    public String verifyEmailToken(String token) {
+//        String email = jwtUtil.extractEmail(token);
+//
+//        User user = userRepository.findByEmail(email)
+//                .orElseThrow(() -> new RuntimeException("User authorization structure broken"));
+//
+//        if (user.isActive()) {
+//            return "Account is already verified. Please log in to your dashboard.";
+//        }
+//
+//        user.setActive(true);
+//        userRepository.save(user);
+//
+//        Customer customer = customerRepository.findByUserId(user.getId())
+//                .orElseThrow(() -> new RuntimeException("Customer profile send matrix link missing"));
+//
+//        sendCustomerWelcomeEmail(customer);
+//
+//        return "Email successfully verified! Your SCM network console is now active.";
+//    }
 
     @Transactional
     @Override
@@ -237,7 +273,7 @@ public class CustomerServiceImp implements CustomerService {
                 .replace("{{currentYear}}", String.valueOf(java.time.Year.now().getValue()));
 
         try {
-            mailService.SenderGeneralMail(authUser.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(authUser.getEmail(), subject, mailText);
             System.out.println("Customer Registration Congratulation Email successfully dispatched to node: " + authUser.getEmail());
         } catch (Exception e) {
             System.err.println("Registration Onboarding Email failed to execute: " + e.getMessage());

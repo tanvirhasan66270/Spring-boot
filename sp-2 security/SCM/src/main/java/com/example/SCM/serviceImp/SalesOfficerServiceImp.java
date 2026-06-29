@@ -232,7 +232,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
             """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Sales Officer Activation Engine exception caught: " + e.getMessage());
         }

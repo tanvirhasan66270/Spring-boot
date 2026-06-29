@@ -225,7 +225,7 @@ public class DriverServiceImp implements DriverService {
         """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (MessagingException e) {
             System.err.println("Driver Gateway Email delivery fault: " + e.getMessage());
         }

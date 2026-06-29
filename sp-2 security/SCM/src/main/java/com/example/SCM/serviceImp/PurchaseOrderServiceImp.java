@@ -158,7 +158,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                 po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(), issueUrl);
 
         try {
-            mailService.SenderGeneralMail(managerEmail, subject, mailContent);
+            mailService.senderGeneralMail(managerEmail, subject, mailContent);
         } catch (Exception e) {
             System.err.println("Manager PO Dispatch Pipeline Failed: " + e.getMessage());
         }
@@ -207,7 +207,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                 po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(), receiveUrl);
 
         try {
-            mailService.SenderGeneralMail(supplierEmail, subject, mailContent);
+            mailService.senderGeneralMail(supplierEmail, subject, mailContent);
         } catch (Exception e) {
             System.err.println("Supplier PO Dispatch Pipeline Failed: " + e.getMessage());
         }

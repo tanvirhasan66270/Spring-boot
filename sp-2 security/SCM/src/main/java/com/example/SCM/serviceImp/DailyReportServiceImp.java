@@ -227,7 +227,7 @@ public class DailyReportServiceImp implements DailyReportService {
                             approvalUrl
                     );
 
-                    mailService.SenderGeneralMail(user.getEmail(), subject, mailContent);
+                    mailService.senderGeneralMail(user.getEmail(), subject, mailContent);
 
                     Map<String, String> authorityInfo = Map.of(
                             "name", user.getName(),

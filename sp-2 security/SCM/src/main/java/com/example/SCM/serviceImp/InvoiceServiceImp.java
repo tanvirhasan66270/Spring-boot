@@ -208,7 +208,7 @@ public class InvoiceServiceImp implements InvoiceService {
         );
 
         try {
-            mailService.SenderGeneralMail(customerEmail, subject, mailText);
+            mailService.senderGeneralMail(customerEmail, subject, mailText);
         } catch (Exception e) {
             System.err.println("Invoice Notification Dispatch engine error: " + e.getMessage());
         }

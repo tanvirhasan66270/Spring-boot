@@ -282,7 +282,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         );
 
         try {
-            mailService.SenderGeneralMail(order.getCustomerEmail(), subject, mailText);
+            mailService.senderGeneralMail(order.getCustomerEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
         }

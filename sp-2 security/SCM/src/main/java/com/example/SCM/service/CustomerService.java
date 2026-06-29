@@ -16,4 +16,6 @@ public interface CustomerService {
     List<CustomerResponseDTO> findAll();
     Optional<CustomerResponseDTO> getById(Long id);
     void delete(Long id);
+
+//    String verifyEmailToken(String token);
 }

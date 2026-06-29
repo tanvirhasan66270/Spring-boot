@@ -227,7 +227,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             );
 
             try {
-                mailService.SenderGeneralMail(supplier.getEmail(), subject, mailContent);
+                mailService.senderGeneralMail(supplier.getEmail(), subject, mailContent);
             } catch (Exception e) {
                 System.err.println("Failed to route notice: " + supplier.getEmail());
             }
@@ -246,7 +246,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         <body><div class='container'><div class='header-alert'><h2 style='margin:0;'>Requisition Tracking Node</h2></div><div class='content'><p>Dear SCM Procurement Node (<b>%s</b>),</p><p>Your generated purchase requisition profile has been locked with the following parameter matrix:</p><div class='alert-box'>Requisition ID: #%d<br>Evaluation State: %s</div><p>Please check your warehouse catalog guidelines before initiating any new pipeline requests.</p></div><div class='footer'>&copy; 2026 SCM Sourcing Engine.</div></div></body></html>
         """.formatted(procurementOfficer.getName(), requisition.getId(), currentStatus);
 
-        try { mailService.SenderGeneralMail(officerEmail, subject, mailContent); } catch (Exception e) { System.err.println("Back routing alert mail failed."); }
+        try { mailService.senderGeneralMail(officerEmail, subject, mailContent); } catch (Exception e) { System.err.println("Back routing alert mail failed."); }
     }
 
     @Override @Transactional(readOnly = true) public List<PurchaseRequisitionResponseDTO> findAll() { return requisitionRepository.findAll().stream().map(requisitionMapper::convertTOResponseDTO).collect(Collectors.toList()); }

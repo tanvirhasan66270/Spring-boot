@@ -222,7 +222,7 @@ public class ManagerServiceImp implements ManagerService {
             """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Manager Activation Mail layout broken: " + e.getMessage());
         }

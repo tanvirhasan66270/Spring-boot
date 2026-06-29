@@ -226,7 +226,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
 
         try {
-            mailService.SenderGeneralMail(user.getEmail(), subject, mailText);
+            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Commercial Activation Mail lay-node broken: " + e.getMessage());
         }
