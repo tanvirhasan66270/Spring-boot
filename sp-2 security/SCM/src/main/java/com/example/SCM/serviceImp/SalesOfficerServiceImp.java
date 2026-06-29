@@ -16,6 +16,7 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.SalesOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
     private final PoliceStationRepository policeStationRepository;
     private final SalesOfficerMapper officerMapper;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -45,18 +47,23 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
     @Override
     @Transactional
     public SalesOfficerResponseDTO save(SalesOfficerRequestDTO dto, MultipartFile file) {
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            throw new RuntimeException("Credential password mandatory for secure identity allocation!");
-        }
 
-        if (officerRepository.existsByNidNumber(dto.getNidNumber())) {
+       if (officerRepository.existsByNidNumber(dto.getNidNumber())) {
             throw new RuntimeException("This NID number is already assigned to another staff profile!");
         }
+
+        PoliceStation policeStation = null;
+        if (dto.getPoliceStationId() != null) {
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station node missing with ID: " + dto.getPoliceStationId()));
+        }
+
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setPoliceStation(policeStation);
 
         try {
             user.setRole(Role.valueOf("SALES_OFFICER"));
@@ -66,11 +73,6 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
 
         User savedUser = userRepository.save(user);
 
-        PoliceStation policeStation = null;
-        if (dto.getPoliceStationId() != null) {
-            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station node missing with ID: " + dto.getPoliceStationId()));
-        }
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
@@ -85,6 +87,11 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
         SalesOfficer savedOfficer = officerRepository.save(officer);
         sendWelcomeEmail(savedUser);
 
+
+        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+            throw new RuntimeException("Credential password mandatory for secure identity allocation!");
+        }
+
         return officerMapper.convertTOResponseDTO(savedOfficer);
     }
 
@@ -94,13 +101,22 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
         SalesOfficer officer = officerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Sales Officer instance mismatch at key index: " + id));
 
+
+        PoliceStation policeStation=officer.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+           policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station link failure"));
+            officer.setPoliceStation(policeStation);
+        }
+
         User user = officer.getUser();
         if (user != null) {
             user.setName(dto.getName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             userRepository.save(user);
         }
@@ -128,11 +144,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
             officer.setImage(newImagePath);
         }
 
-        if (dto.getPoliceStationId() != null) {
-            PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station link failure"));
-            officer.setPoliceStation(policeStation);
-        }
+
 
         return officerMapper.convertTOResponseDTO(officerRepository.save(officer));
     }

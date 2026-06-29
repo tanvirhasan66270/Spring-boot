@@ -15,6 +15,7 @@ import com.example.SCM.service.SupplierService;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,6 +37,7 @@ public class SupplierServiceImp implements SupplierService {
     private final PoliceStationRepository policeStationRepository;
     private final SupplierMapper supplierMapper;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
@@ -43,18 +45,10 @@ public class SupplierServiceImp implements SupplierService {
     @Override
     @Transactional
     public SupplierResponseDTO save(SupplierRequestDTO dto, MultipartFile file) {
-        //  পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড ভ্যালিডেশন
+
         if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
             throw new RuntimeException("Password cannot be empty!");
         }
-
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.SUPPLIER);
-        User savedUser = userRepository.save(user);
 
         //  পুলিশ স্টেশন ডাটা খুঁজে বের করা
         PoliceStation policeStation = null;
@@ -62,6 +56,17 @@ public class SupplierServiceImp implements SupplierService {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not found with ID: " + dto.getPoliceStationId()));
         }
+
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.SUPPLIER);
+        User savedUser = userRepository.save(user);
+        user.setPoliceStation(policeStation);
+
+
 
         //  মাল্টিপার্ট ফাইল (ইমেজ) আপলোড হ্যান্ডেল করা
         if (file != null && !file.isEmpty()) {
@@ -82,10 +87,19 @@ public class SupplierServiceImp implements SupplierService {
 
     @Transactional
     @Override
-    public SupplierResponseDTO update(Long id, SupplierRequestDTO dto, MultipartFile file) {
+    public SupplierResponseDTO update(Long id, SupplierRequestDTO dto, MultipartFile image) {
         //  ডাটাবেজে সাপ্লায়ার চেক করা
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Supplier not found with ID: " + id));
+
+
+        //  পুলিশ স্টেশন রিলেশন আপডেট করা
+        PoliceStation policeStation=supplier.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station not found"));
+            supplier.setPoliceStation(policeStation);
+        }
 
         //  রিলেটেড ইউজার অ্যাকাউন্ট আপডেট করা
         User user = supplier.getUser();
@@ -93,8 +107,9 @@ public class SupplierServiceImp implements SupplierService {
             user.setName(dto.getName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
 //
             }
             userRepository.save(user);
@@ -126,17 +141,11 @@ public class SupplierServiceImp implements SupplierService {
         supplier.setAverageLeadTimeDays(dto.getAverageLeadTimeDays());
 
         //  নতুন ইমেজ আপলোড দিলে আগেরটা ওভাররাইট/নতুন করে সেট করা
-        if (file != null && !file.isEmpty()) {
-            String newImagePath = uploadImage(file, dto.getName());
+        if (image != null && !image.isEmpty()) {
+            String newImagePath = uploadImage(image, dto.getName());
             supplier.setImage(newImagePath);
         }
 
-        //  পুলিশ স্টেশন রিলেশন আপডেট করা
-        if (dto.getPoliceStationId() != null) {
-            PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station not found"));
-            supplier.setPoliceStation(policeStation);
-        }
 
         Supplier updatedSupplier = supplierRepository.save(supplier);
         return supplierMapper.toResponseDTO(updatedSupplier);

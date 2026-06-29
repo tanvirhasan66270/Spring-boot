@@ -5,9 +5,11 @@ import com.example.SCM.dto.mapper.DriverMapper;
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
 import com.example.SCM.entity.Driver;
+import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
 import com.example.SCM.entity.Warehouse;
 import com.example.SCM.repository.DriverRepository;
+import com.example.SCM.repository.PoliceStationRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.repository.WarehouseRepository;
 import com.example.SCM.role.Role;
@@ -36,10 +38,10 @@ public class DriverServiceImp implements DriverService {
 
     private final DriverRepository driverRepository;
     private final UserRepository userRepository;
+    private final PoliceStationRepository policeStationRepository;
     private final WarehouseRepository warehouseRepository;
     private final DriverMapper driverMapper;
     private final MailService mailService;
-
     private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
@@ -49,12 +51,18 @@ public class DriverServiceImp implements DriverService {
     @Override
     public DriverResponseDTO save(DriverRequestDTO dto, MultipartFile file) {
 
+        PoliceStation policeStation = dto.getPoliceStationId() != null ?
+                policeStationRepository.findById(dto.getPoliceStationId())
+                .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
+
         User user = new User();
         user.setName(dto.getDriverName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.DRIVER);
+        user.setActive(true);
+        user.setPoliceStation(policeStation);
         User savedUser = userRepository.save(user);
 
         Set<Warehouse> warehouses = new HashSet<>();
@@ -64,10 +72,10 @@ public class DriverServiceImp implements DriverService {
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getDriverName());
-            dto.setImage(imagePath);
+            dto.setImage("uploads/driver/" + imagePath);
         }
 
-        Driver driver = driverMapper.toDriverEntity(dto, savedUser, warehouses);
+        Driver driver = driverMapper.toDriverEntity(dto, savedUser, warehouses, policeStation);
         Driver savedDriver = driverRepository.save(driver);
 
         sendWelcomeEmail(savedUser);
@@ -81,13 +89,21 @@ public class DriverServiceImp implements DriverService {
         Driver driver = driverRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Driver node signature not resolved at ID: " + id));
 
+        PoliceStation policeStation = driver.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("New target location police station node not found"));
+            driver.setPoliceStation(policeStation);
+        }
+
         User user = driver.getUser();
         if (user != null) {
             user.setName(dto.getDriverName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             userRepository.save(user);
         }
@@ -104,11 +120,13 @@ public class DriverServiceImp implements DriverService {
         driver.setRating(dto.getRating());
         driver.setTotalDeliveries(dto.getTotalDeliveries());
         driver.setTotalEarnings(dto.getTotalEarnings());
-        driver.setActive(dto.getActive());
+        if (dto.getActive() != null) {
+            driver.setActive(dto.getActive());
+        }
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getDriverName());
-            driver.setImage(newImagePath);
+            driver.setImage("uploads/driver/" + newImagePath);
         }
 
         if (dto.getWarehouseIds() != null) {
@@ -131,7 +149,7 @@ public class DriverServiceImp implements DriverService {
     @Transactional(readOnly = true)
     @Override
     public Optional<DriverResponseDTO> getById(Long id) {
-        return driverRepository.findById(id).map(driverMapper::convertTOResponseDTO);
+        return driverRepository.findByIdWithDetails(id).map(driverMapper::convertTOResponseDTO);
     }
 
     @Transactional
@@ -141,6 +159,9 @@ public class DriverServiceImp implements DriverService {
                 .orElseThrow(() -> new RuntimeException("Target Driver domain key not found"));
 
         driverRepository.delete(driver);
+        if (driver.getUser() != null) {
+            userRepository.delete(driver.getUser());
+        }
     }
 
     private String uploadImage(MultipartFile file, String driverName) {
@@ -209,5 +230,4 @@ public class DriverServiceImp implements DriverService {
             System.err.println("Driver Gateway Email delivery fault: " + e.getMessage());
         }
     }
-
 }

@@ -27,5 +27,11 @@ public class DriverResponseDTO {
 
     private String role;
 
+    // --- Location Nodes ---
+    private Long policeStationId;
+    private String policeStationName;
+    private String districtName;
+    private String divisionName;
+
     private Set<String> warehouseNames;
 }

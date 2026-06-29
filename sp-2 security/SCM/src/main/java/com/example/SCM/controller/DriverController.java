@@ -25,7 +25,7 @@ public class DriverController {
     @PostMapping
     public ResponseEntity<DriverResponseDTO> save(
             @RequestPart("driver") String driverJson,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "image", required = false) MultipartFile file
     ) {
         try {
             DriverRequestDTO dto = objectMapper.readValue(driverJson, DriverRequestDTO.class);

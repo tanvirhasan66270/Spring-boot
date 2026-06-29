@@ -13,6 +13,7 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.QCInspectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +34,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
     private final UserRepository userRepository;
     private final PoliceStationRepository policeStationRepository;
     private final QCInspectorMapper qcInspectorMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
@@ -41,17 +43,25 @@ public class QCInspectorServiceImp implements QCInspectorService {
     @Transactional
     @Override
     public QCInspectorResponseDTO save(QCInspectorRequestDTO dto, MultipartFile image) {
-        if (dto == null) {
-            throw new IllegalArgumentException("QC Inspector data cannot be null");
+//        if (dto == null) {
+//            throw new IllegalArgumentException("QC Inspector data cannot be null");
+//        }
+
+        PoliceStation policeStation = null;
+        if (dto.getPoliceStationId() != null) {
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station not found with ID: " + dto.getPoliceStationId()));
         }
+
 
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setActive(dto.isUserActive());
         user.setRole(Role.QC_INSPECTOR);
+        user.setPoliceStation(policeStation);
 
         // প্লেইন টেক্সট পাসওয়ার্ড এবং ইউজার অ্যাকাউন্ট ডিটিও-র কনফ্লিক্ট-ফ্রি ফিল্ড 'userActive' থেকে সিঙ্কড
         user.setPassword(dto.getPassword());
@@ -59,12 +69,6 @@ public class QCInspectorServiceImp implements QCInspectorService {
 
         User savedUser = userRepository.save(user);
 
-        // পুলিশ স্টেশন কুয়েরি করা
-        PoliceStation policeStation = null;
-        if (dto.getPoliceStationId() != null) {
-            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station not found with ID: " + dto.getPoliceStationId()));
-        }
 
         // ম্যাপার দিয়ে মূল প্রোফাইল এনটিটি তৈরি করা
         QCInspector inspector = qcInspectorMapper.toQCInspectorEntity(dto, savedUser, policeStation);
@@ -82,9 +86,6 @@ public class QCInspectorServiceImp implements QCInspectorService {
     @Transactional
     @Override
     public QCInspectorResponseDTO update(Long id, QCInspectorRequestDTO dto, MultipartFile image) {
-        if (dto == null) {
-            throw new IllegalArgumentException("Update data cannot be null");
-        }
 
         // N+1 কোয়েরি অপ্টিমাইজড কাস্টম রিপোজিটরি মেথড দিয়ে ডেটা লোড
         QCInspector inspector = qcInspectorRepository.findByIdWithDetails(id)
@@ -100,18 +101,29 @@ public class QCInspectorServiceImp implements QCInspectorService {
         // ম্যাপার দিয়ে কোর প্রোফাইল ও ইউজার এনটিটি একসাথে ক্যাসকেড আপডেট
         qcInspectorMapper.updateEntity(dto, inspector, policeStation);
 
-        // যদি নতুন পাসওয়ার্ড আসে তবে তা সরাসরি অ্যাসাইন করা
-        if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
-            inspector.getUser().setPassword(dto.getPassword());
-        }
-
         // নতুন ইমেজ আসলে পুরানো ইমেজ পাথ আপডেট করা
         if (image != null && !image.isEmpty()) {
             inspector.setImage(uploadImage(image, dto.getName()));
         }
 
-        QCInspector updatedInspector = qcInspectorRepository.save(inspector);
-        return qcInspectorMapper.convertTOResponseDTO(updatedInspector);
+
+        User user =inspector.getUser();
+        if (user != null) {
+            user.setName(dto.getName());
+            user.setEmail(dto.getEmail());
+            user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
+
+            if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
+                inspector.getUser().setPassword(passwordEncoder.encode(dto.getPassword()));
+            }
+            userRepository.save(user);
+        }
+
+
+
+
+        return qcInspectorMapper.convertTOResponseDTO(inspector);
     }
 
 

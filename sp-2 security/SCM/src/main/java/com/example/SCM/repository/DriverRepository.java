@@ -12,10 +12,21 @@ import java.util.Optional;
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Long> {
 
-    @Query("SELECT DISTINCT d FROM Driver d LEFT JOIN FETCH d.user LEFT JOIN FETCH d.warehouses")
+    @Query("""
+        SELECT DISTINCT d FROM Driver d 
+        LEFT JOIN FETCH d.user 
+        LEFT JOIN FETCH d.policeStation 
+        LEFT JOIN FETCH d.warehouses
+    """)
     List<Driver> findAllWithDetails();
 
-    @Query("SELECT d FROM Driver d LEFT JOIN FETCH d.user LEFT JOIN FETCH d.warehouses WHERE d.id = :id")
+    // 🔄 d.policeStation ফেচিং যুক্ত করা হলো
+    @Query("""
+        SELECT d FROM Driver d 
+        LEFT JOIN FETCH d.user 
+        LEFT JOIN FETCH d.policeStation 
+        LEFT JOIN FETCH d.warehouses 
+        WHERE d.id = :id
+    """)
     Optional<Driver> findByIdWithDetails(@Param("id") Long id);
-
 }

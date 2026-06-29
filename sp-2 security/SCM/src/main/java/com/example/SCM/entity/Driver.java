@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -69,6 +70,12 @@ public class Driver {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "police_station_id")
+    private PoliceStation policeStation;
+
+    @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "driver_warehouses",

@@ -3,6 +3,7 @@ package com.example.SCM.dto.mapper;
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
 import com.example.SCM.entity.Driver;
+import com.example.SCM.entity.PoliceStation;
 import com.example.SCM.entity.User;
 import com.example.SCM.entity.Warehouse;
 import com.example.SCM.role.Role;
@@ -32,7 +33,7 @@ public class DriverMapper {
      * @param warehouses Bound monitoring branch storage locations
      * @return Driver entity instance
      */
-    public Driver toDriverEntity(DriverRequestDTO dto, User user, Set<Warehouse> warehouses) {
+    public Driver toDriverEntity(DriverRequestDTO dto, User user, Set<Warehouse> warehouses , PoliceStation policeStation) {
         return Driver.builder()
                 .driverName(dto.getDriverName())
                 .phone(dto.getPhone())
@@ -49,8 +50,11 @@ public class DriverMapper {
                 .active(dto.getActive() != null ? dto.getActive() : true)
                 .image(dto.getImage())
                 .user(user)
+                .policeStation(policeStation)
                 .warehouses(warehouses)
-                .build();
+                .build()
+               ;
+
     }
 
     /**
@@ -80,8 +84,16 @@ public class DriverMapper {
         dto.setCreatedAt(driver.getCreatedAt());
         dto.setUpdatedAt(driver.getUpdatedAt());
 
+        if (driver.getPoliceStation() != null) {
+            dto.setPoliceStationId(driver.getPoliceStation().getId());
+            dto.setPoliceStationName(driver.getPoliceStation().getName());
+        }
+
         if (driver.getUser() != null) {
             dto.setUserId(driver.getUser().getId());
+            dto.setDriverName(driver.getUser().getName());
+            dto.setEmail(driver.getUser().getEmail());
+            dto.setPhone(driver.getUser().getPhoneNumber());
             if (driver.getUser().getRole() != null) {
                 dto.setRole(driver.getUser().getRole().name());
             }

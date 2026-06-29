@@ -16,6 +16,7 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.ProcurementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class ProcurementServiceImp implements ProcurementService {
     private final PoliceStationRepository policeStationRepository;
     private final ProcurementMapper procurementMapper;
     private final MailService mailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -57,19 +59,22 @@ public class ProcurementServiceImp implements ProcurementService {
             throw new RuntimeException("This NID number is already registered under another officer!");
         }
 
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.PROCUREMENT);
-        User savedUser = userRepository.save(user);
-
         PoliceStation policeStation = null;
         if (dto.getPoliceStationId() != null) {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not resolved with ID: " + dto.getPoliceStationId()));
         }
+
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.PROCUREMENT);
+        User savedUser = userRepository.save(user);
+        user.setPoliceStation(policeStation);
+
+
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
@@ -93,14 +98,24 @@ public class ProcurementServiceImp implements ProcurementService {
         Procurement procurement = procurementRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Procurement profile instance missing at ID: " + id));
 
+
+        PoliceStation policeStation=procurement.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
+            procurement.setPoliceStation(policeStation);
+        }
+
         User user = procurement.getUser();
         if (user != null) {
             user.setName(dto.getName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
+
+            user.setPoliceStation(policeStation);
             userRepository.save(user);
         }
 
@@ -128,11 +143,7 @@ public class ProcurementServiceImp implements ProcurementService {
             procurement.setImage(newImagePath);
         }
 
-        if (dto.getPoliceStationId() != null) {
-            PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
-            procurement.setPoliceStation(policeStation);
-        }
+
 
         return procurementMapper.convertTOResponseDTO(procurementRepository.save(procurement));
     }

@@ -46,7 +46,7 @@ public class ManagerServiceImp implements ManagerService {
 
     @Override
     @Transactional
-    public ManagerResponseDTO save(ManagerRequestDTO dto, MultipartFile file) {
+    public ManagerResponseDTO save(ManagerRequestDTO dto, MultipartFile image) {
         if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
             throw new RuntimeException("Credential password cannot be empty for Management creation!");
         }
@@ -68,13 +68,13 @@ public class ManagerServiceImp implements ManagerService {
 
         User savedUser = userRepository.save(user);
 
-        if (file != null && !file.isEmpty()) {
-            String imagePath = uploadImage(file, dto.getName());
+        if (image != null && !image.isEmpty()) {
+            String imagePath = uploadImage(image, dto.getName());
             dto.setAddress(imagePath);
         }
 
         Manager manager = managerMapper.toManagerEntity(dto, savedUser, policeStation);
-        if (file != null && !file.isEmpty()) {
+        if (image != null && !image.isEmpty()) {
             manager.setImage(dto.getAddress());
         }
 

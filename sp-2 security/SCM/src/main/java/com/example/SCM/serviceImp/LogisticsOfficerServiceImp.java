@@ -17,6 +17,7 @@ import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.LogisticsOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +39,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
     private final PoliceStationRepository policeStationRepository;
     private final LogisticsOfficerMapper officerMapper;
     private final MailService mailService;
-    private final ActivityLogService activityLogService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -48,24 +49,28 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
     @Override
     @Transactional
     public LogisticsOfficerResponseDTO save(LogisticsOfficerRequestDTO dto, MultipartFile file) {
-        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
-            throw new RuntimeException("Credential password cannot be empty for recruitment allocation!");
-        }
+//        if (dto.getPassword() == null || dto.getPassword().isEmpty()) {
+//            throw new RuntimeException("Credential password cannot be empty for recruitment allocation!");
+//        }
 
-        User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
-        user.setRole(Role.LOGISTICS_OFFICER);
-
-        User savedUser = userRepository.save(user);
 
         PoliceStation policeStation = null;
         if (dto.getPoliceStationId() != null) {
             policeStation = policeStationRepository.findById(dto.getPoliceStationId())
                     .orElseThrow(() -> new RuntimeException("Police Station not resolved with ID: " + dto.getPoliceStationId()));
         }
+
+        User user = new User();
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        user.setPhoneNumber(dto.getPhone());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.LOGISTICS_OFFICER);
+        user.setPoliceStation(policeStation);
+
+
+        User savedUser = userRepository.save(user);
+
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getContactPerson());
@@ -91,16 +96,27 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
         Logistics_Officer officer = officerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Logistics Officer instance not found at ID: " + id));
 
+        PoliceStation policeStation=officer.getPoliceStation();
+        if (dto.getPoliceStationId() != null) {
+            policeStation = policeStationRepository.findById(dto.getPoliceStationId())
+                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
+            officer.setPoliceStation(policeStation);
+        }
+
         User user = officer.getUser();
         if (user != null) {
             user.setName(dto.getName());
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
+            user.setPoliceStation(policeStation);
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             userRepository.save(user);
         }
+
+
+
 
         officer.setContactPerson(dto.getContactPerson());
         officer.setAddress(dto.getAddress());
@@ -108,6 +124,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
         officer.setPassportNumber(dto.getPassportNumber());
         officer.setDesignation(dto.getDesignation());
         officer.setActive(dto.isActive());
+
 
         if (dto.getDob() != null && !dto.getDob().isBlank()) {
             officer.setDob(LocalDate.parse(dto.getDob()));
@@ -127,11 +144,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
             officer.setImage(newImagePath);
         }
 
-        if (dto.getPoliceStationId() != null) {
-            PoliceStation policeStation = policeStationRepository.findById(dto.getPoliceStationId())
-                    .orElseThrow(() -> new RuntimeException("Police Station node mismatch"));
-            officer.setPoliceStation(policeStation);
-        }
+
 
         return officerMapper.convertTOResponseDTO(officerRepository.save(officer));
     }

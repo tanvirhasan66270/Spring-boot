@@ -24,6 +24,8 @@ public class DriverRequestDTO {
     // Auth Platform Security
     private String password;
 
+    private Long policeStationId;
+
     // Many-to-Many Relational Bindings
     private Set<Long> warehouseIds;
 }
