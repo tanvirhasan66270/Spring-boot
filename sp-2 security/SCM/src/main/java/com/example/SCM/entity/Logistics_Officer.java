@@ -51,7 +51,7 @@ public class Logistics_Officer {
     private String image;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    private boolean isActive ;
 
 
     private LocalDate joiningDate;

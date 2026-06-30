@@ -9,7 +9,6 @@ public class SalesOfficerRequestDTO {
     private String nidNumber;
     private String dob; // String input for standard formatting handler
     private String gender; // MALE, FEMALE, OTHER
-    private boolean isActive = true;
     private String joiningDate; // "YYYY-MM-DD"
     private String designation;
     private String language; // BANGLA, ENGLISH
@@ -20,4 +19,5 @@ public class SalesOfficerRequestDTO {
     private String email;
     private String phone;
     private String password;
+
 }

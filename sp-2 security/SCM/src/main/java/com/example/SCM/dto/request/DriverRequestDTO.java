@@ -18,8 +18,7 @@ public class DriverRequestDTO {
     private Double rating = 0.0;
     private Integer totalDeliveries = 0;
     private Double totalEarnings = 0.0;
-    private Boolean active = true;
-    private String image;
+       private String image;
 
     // Auth Platform Security
     private String password;

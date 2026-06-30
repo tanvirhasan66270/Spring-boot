@@ -47,7 +47,6 @@ public class DriverMapper {
                 .rating(dto.getRating())
                 .totalDeliveries(dto.getTotalDeliveries())
                 .totalEarnings(dto.getTotalEarnings())
-                .active(dto.getActive() != null ? dto.getActive() : true)
                 .image(dto.getImage())
                 .user(user)
                 .policeStation(policeStation)

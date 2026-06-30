@@ -30,6 +30,7 @@ import com.example.SCM.service.QCInspectorService;
 import com.example.SCM.service.SalesOfficerService;
 import com.example.SCM.service.SupplierService;
 import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -45,51 +47,10 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final CustomerRepository customerRepository;
-    private final CustomerService customerService;
-    private final LogisticsOfficerRepository logisticsOfficerRepository;
-    private final LogisticsOfficerService logisticsOfficerService;
-    private final ManagerRepository managerRepository;
-    private final ManagerService managerService;
-    private final ProcurementRepository procurementRepository;
-    private final ProcurementService procurementService;
-    private final QCInspectorRepository qcInspectorRepository;
-    private final QCInspectorService qcInspectorService;
-    private final SalesOfficerRepository salesOfficerRepository;
-    private final SalesOfficerService salesOfficerService;
+    private final QCInspectorRepository qCInspectorRepository;
 
-    private final SupplierRepository supplierRepository;
-    private final SupplierService supplierService;
 
-    public AuthService(AuthenticationManager authenticationManager, UserRepository userRepository, JwtUtil jwtUtil,
-                       PasswordEncoder passwordEncoder, MailService mailService, CustomerRepository customerRepository,
-                       @Lazy CustomerService customerService, LogisticsOfficerRepository logisticsOfficerRepository,
-                       @Lazy LogisticsOfficerService logisticsOfficerService, ManagerRepository managerRepository,
-                       @Lazy ManagerService managerService, ProcurementRepository procurementRepository,
-                       @Lazy ProcurementService procurementService, QCInspectorRepository qcInspectorRepository,
-                       @Lazy QCInspectorService qcInspectorService, SalesOfficerRepository salesOfficerRepository,
-                       @Lazy SalesOfficerService salesOfficerService, SupplierRepository supplierRepository,
-                       @Lazy SupplierService supplierService) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.jwtUtil = jwtUtil;
-        this.passwordEncoder = passwordEncoder;
-        this.mailService = mailService;
-        this.customerRepository = customerRepository;
-        this.customerService = customerService;
-        this.logisticsOfficerRepository = logisticsOfficerRepository;
-        this.logisticsOfficerService = logisticsOfficerService;
-        this.managerRepository = managerRepository;
-        this.managerService = managerService;
-        this.procurementRepository = procurementRepository;
-        this.procurementService = procurementService;
-        this.qcInspectorRepository = qcInspectorRepository;
-        this.qcInspectorService = qcInspectorService;
-        this.salesOfficerRepository = salesOfficerRepository;
-        this.salesOfficerService = salesOfficerService;
-        this.supplierRepository = supplierRepository;
-        this.supplierService = supplierService;
-    }
+
 
     public LoginResponseDTO login(LoginRequestDTO dto) {
         try {
@@ -150,75 +111,35 @@ public class AuthService {
             throw new RuntimeException("Invalid or expired verification link");
         }
 
+
+
+
         String email = jwtUtil.extractEmail(token);
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+//        QCInspector inspector = qCInspectorRepository.findByUserId(user.getId())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.isActive()) {
             throw new RuntimeException("Account is already verified.Please log in to your dashboard.");
         }
 
         user.setActive(true);
+
+//        inspector.setActive(true);
+//
+//        qCInspectorRepository.save(inspector);
+
         userRepository.save(user);
 
-        com.example.SCM.role.Role userRole = user.getRole();
+        //com.example.SCM.role.Role userRole = user.getRole();
 
-        switch (userRole) {
-            case CUSTOMER:
-                Customer customer = customerRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Customer profile link missing"));
-                customerService.sendCustomerWelcomeEmail(customer);
-                break;
+        mailService.sendCustomerWelcomeEmail(user.getName(), user.getEmail(), user.getPhoneNumber(), user.getRole().name());
 
-            case LOGISTICS_OFFICER:
-                Logistics_Officer officer = logisticsOfficerRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Logistics Officer profile link missing"));
-                logisticsOfficerService.sendLogisticsOfficerWelcomeEmail(officer);
-                break;
 
-            case MANAGER:
-                Manager manager = managerRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Manager profile link missing"));
-                managerService.sendManagerWelcomeEmail(manager);
-                break;
 
-            case PROCUREMENT:
-                Procurement procurement = procurementRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Procurement profile link missing"));
-                procurementService.sendProcurementWelcomeEmail(procurement);
-                break;
-
-            case QC_INSPECTOR:
-                QCInspector inspector = qcInspectorRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("QC Inspector profile link missing"));
-                qcInspectorService.sendQCInspectorWelcomeEmail(inspector);
-                break;
-
-            case SALES_OFFICER:
-                SalesOfficer salesOfficer = salesOfficerRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Sales Officer profile link missing"));
-                salesOfficerService.sendSalesOfficerWelcomeEmail(salesOfficer);
-                break;
-
-            case SUPPLIER:
-                Supplier supplier = supplierRepository.findByUserId(user.getId())
-                        .orElseThrow(() -> new RuntimeException("Supplier profile link missing"));
-                supplierService.sendSupplierWelcomeEmail(supplier);
-                break;
-
-            case DRIVER:
-                System.out.println("Driver verified successfully: " + user.getEmail());
-                break;
-
-            case COMMERCIAL_OFFICER:
-            case ADMIN:
-                System.out.println("Internal Staff/Admin verified successfully: " + user.getEmail());
-                break;
-
-            default:
-                throw new RuntimeException("Unknown system role detected");
-        }
     }
 
     public void forgotPassword(ForgotPasswordRequestDTO dto) {

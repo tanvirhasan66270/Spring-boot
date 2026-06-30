@@ -17,5 +17,4 @@ public interface QCInspectorService {
     Optional<QCInspectorResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendQCInspectorWelcomeEmail(QCInspector inspector);
 }

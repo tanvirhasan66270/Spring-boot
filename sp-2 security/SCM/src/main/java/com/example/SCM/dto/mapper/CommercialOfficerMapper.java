@@ -41,7 +41,7 @@ public class CommercialOfficerMapper {
         officer.setNidNumber(dto.getNidNumber());
         officer.setPassportNumber(dto.getPassportNumber());
         officer.setDesignation(dto.getDesignation());
-        officer.setActive(dto.isActive());
+
 
         if (dto.getDob() != null && !dto.getDob().isBlank()) {
             officer.setDob(LocalDate.parse(dto.getDob()));

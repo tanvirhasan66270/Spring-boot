@@ -19,7 +19,6 @@ public class QCInspectorRequestDTO {
     private String dob;            // ফ্রন্টঅ্যান্ড থেকে "YYYY-MM-DD" স্ট্রিং আসবে
     private String gender;         // MALE, FEMALE, OTHERS
     private String image;          // ইমেজ পাথ বা ইউআরএল
-    private boolean isActive;      // এটি প্রোফাইলের নিজস্ব একটিভ স্টেট
     private String joiningDate;    // "YYYY-MM-DD"
     private String designation;
     private String language;       // BANGLA, ENGLISH, OTHERS

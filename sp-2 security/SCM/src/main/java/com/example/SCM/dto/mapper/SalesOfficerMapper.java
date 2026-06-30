@@ -20,7 +20,7 @@ public class SalesOfficerMapper {
         officer.setAddress(dto.getAddress());
         officer.setNidNumber(dto.getNidNumber());
         officer.setDesignation(dto.getDesignation());
-        officer.setActive(dto.isActive());
+
 
         if (dto.getDob() != null && !dto.getDob().isBlank()) {
             officer.setDob(LocalDate.parse(dto.getDob()));

@@ -11,8 +11,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "drivers")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -54,8 +53,8 @@ public class Driver {
     private Double totalEarnings = 0.0;
 
     @Column(name = "active",nullable = false)
-    @Builder.Default
-    private Boolean active = true;
+
+    private Boolean active;
 
     private String image;
 

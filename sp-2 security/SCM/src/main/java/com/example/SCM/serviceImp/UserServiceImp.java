@@ -21,7 +21,7 @@ public class UserServiceImp implements UserService {
 
     private final UserRepository userRepository;
 
-    private final PoliceStationRepository policeStationRepository; // ➕ ডাটা বাইন্ডিংয়ের জন্য ইনজেক্ট করা হলো
+
 
     @Override
     @Transactional

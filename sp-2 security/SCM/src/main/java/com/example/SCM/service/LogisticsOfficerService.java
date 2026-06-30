@@ -14,5 +14,5 @@ public interface LogisticsOfficerService {
     Optional<LogisticsOfficerResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendLogisticsOfficerWelcomeEmail(Logistics_Officer officer);
+
 }

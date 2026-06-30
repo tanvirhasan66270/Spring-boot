@@ -22,7 +22,7 @@ public class SalesOfficerController {
     private final SalesOfficerService officerService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping
     public ResponseEntity<SalesOfficerResponseDTO> save(
             @RequestPart("salesOfficer") String officerJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -34,10 +34,10 @@ public class SalesOfficerController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping( "/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> update(
             @PathVariable Long id,
-            @RequestPart("officer") String officerJson,
+            @RequestPart("salesOfficer") String officerJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
             SalesOfficerRequestDTO dto = objectMapper.readValue(officerJson, SalesOfficerRequestDTO.class);

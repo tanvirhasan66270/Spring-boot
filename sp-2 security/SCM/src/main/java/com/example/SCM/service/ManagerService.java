@@ -14,5 +14,4 @@ public interface ManagerService {
     Optional<ManagerResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendManagerWelcomeEmail(Manager manager);
-}
+    }

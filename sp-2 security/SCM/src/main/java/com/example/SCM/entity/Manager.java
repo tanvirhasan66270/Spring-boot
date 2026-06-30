@@ -47,7 +47,7 @@ public class Manager {
 
     private String image;
 
-    private boolean isActive = true;
+    private boolean isActive ;
 
     private LocalDate joiningDate;
 

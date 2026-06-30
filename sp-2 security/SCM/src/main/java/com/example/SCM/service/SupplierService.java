@@ -24,6 +24,4 @@ public interface SupplierService {
     Optional<SupplierResponseDTO> getById(Long id);
     void delete(Long id);
 
-
-    void sendSupplierWelcomeEmail(Supplier supplier);
-}
+   }

@@ -14,5 +14,6 @@ public interface SalesOfficerService {
     Optional<SalesOfficerResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendSalesOfficerWelcomeEmail(SalesOfficer salesOfficer);
+
+
 }

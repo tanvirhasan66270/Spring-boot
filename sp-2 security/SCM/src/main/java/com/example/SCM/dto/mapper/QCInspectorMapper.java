@@ -81,7 +81,6 @@ public class QCInspectorMapper {
         inspector.setNidNumber(dto.getNidNumber());
         inspector.setPassportNumber(dto.getPassportNumber());
         inspector.setImage(dto.getImage());
-        inspector.setActive(dto.isActive());
         inspector.setDesignation(dto.getDesignation());
 
         // String -> LocalDate ডেট হ্যান্ডেলিং (নাল ও ব্ল্যাঙ্ক সেফটিসহ)
@@ -128,7 +127,6 @@ public class QCInspectorMapper {
         inspector.setNidNumber(dto.getNidNumber());
         inspector.setPassportNumber(dto.getPassportNumber());
         inspector.setImage(dto.getImage());
-        inspector.setActive(dto.isActive());
         inspector.setDesignation(dto.getDesignation());
 
         if (dto.getDob() != null && !dto.getDob().trim().isEmpty()) {

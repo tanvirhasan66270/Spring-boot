@@ -1,6 +1,7 @@
 package com.example.SCM.serviceImp;
 
 import com.example.SCM.Util.MailService;
+import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.DriverMapper;
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
@@ -15,6 +16,7 @@ import com.example.SCM.repository.WarehouseRepository;
 import com.example.SCM.role.Role;
 import com.example.SCM.service.DriverService;
 import jakarta.mail.MessagingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DriverServiceImp implements DriverService {
 
     private final DriverRepository driverRepository;
@@ -40,20 +43,9 @@ public class DriverServiceImp implements DriverService {
     private final PoliceStationRepository policeStationRepository;
     private final WarehouseRepository warehouseRepository;
     private final DriverMapper driverMapper;
-    private final MailService mailService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    public DriverServiceImp(DriverRepository driverRepository, UserRepository userRepository,
-                            PoliceStationRepository policeStationRepository, WarehouseRepository warehouseRepository,
-                            DriverMapper driverMapper, MailService mailService, PasswordEncoder passwordEncoder) {
-        this.driverRepository = driverRepository;
-        this.userRepository = userRepository;
-        this.policeStationRepository = policeStationRepository;
-        this.warehouseRepository = warehouseRepository;
-        this.driverMapper = driverMapper;
-        this.mailService = mailService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -89,7 +81,7 @@ public class DriverServiceImp implements DriverService {
         Driver driver = driverMapper.toDriverEntity(dto, savedUser, warehouses, policeStation);
         Driver savedDriver = driverRepository.save(driver);
 
-        sendWelcomeEmail(savedUser);
+        authService.sendVerificationEmail(savedDriver.getUser().getEmail());
 
         return driverMapper.convertTOResponseDTO(savedDriver);
     }
@@ -131,9 +123,6 @@ public class DriverServiceImp implements DriverService {
         driver.setRating(dto.getRating());
         driver.setTotalDeliveries(dto.getTotalDeliveries());
         driver.setTotalEarnings(dto.getTotalEarnings());
-        if (dto.getActive() != null) {
-            driver.setActive(dto.getActive());
-        }
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getDriverName());
@@ -203,47 +192,5 @@ public class DriverServiceImp implements DriverService {
         }
     }
 
-    private void sendWelcomeEmail(User user) {
-        if (user == null || user.getEmail() == null) return;
 
-        String subject = "SCM Gateway Activation – Driver Fleet Workspace";
-        String mailText = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-        <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f9f9f9; margin: 0; padding: 0; }
-        .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .header { background-color: #2196F3; color: white; padding: 25px; text-align: center; }
-        .header h2 { margin: 0; font-size: 24px; }
-        .content { padding: 30px; }
-        .btn-container { text-align: center; margin: 30px 0; }
-        .btn { background-color: #2196F3; color: white !important; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block; }
-        .footer { font-size: 0.85em; color: #777777; padding: 20px; background-color: #f1f1f1; text-align: center; border-top: 1px solid #e0e0e0; }
-        </style>
-        </head>
-        <body>
-        <div class='container'>
-        <div class='header'><h2>SCM Logistics Portal</h2></div>
-        <div class='content'>
-        <p>Dear <b>%s</b>,</p>
-        <p>Your logistics operations gateway profile has been deployed to the enterprise resource platform.</p>
-        <p>Please authorize your driver device terminal node via the secure URL token below:</p>
-        <div class='btn-container'>
-        <a href='http://localhost:8080/api/auth/activate?email=%s' class='btn'>Authorize Fleet Terminal</a>
-        </div>
-        <p>Best regards,<br><b>The SCM Logistics Operations</b></p>
-        </div>
-        <div class='footer'>&copy; %d SCM Global Supply Chain. All rights reserved.</div>
-        </div>
-        </body>
-        </html>
-        """.formatted(user.getName(), user.getEmail(), java.time.Year.now().getValue());
-
-        try {
-            mailService.senderGeneralMail(user.getEmail(), subject, mailText);
-        } catch (MessagingException e) {
-            System.err.println("Driver Gateway Email delivery fault: " + e.getMessage());
-        }
-    }
 }

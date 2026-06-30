@@ -18,5 +18,5 @@ public interface CustomerService {
     Optional<CustomerResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendCustomerWelcomeEmail(Customer customer);
+
 }
