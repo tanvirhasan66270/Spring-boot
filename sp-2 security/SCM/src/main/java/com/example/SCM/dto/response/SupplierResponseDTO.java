@@ -26,7 +26,6 @@ public class SupplierResponseDTO {
     private String image;
     private double rating;
     private int averageLeadTimeDays;
-    private boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

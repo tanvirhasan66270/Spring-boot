@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -41,7 +41,7 @@ CREATE TABLE `customers` (
   KEY `FK2jlyb2c45nw0h6a2qdhf6ckep` (`police_station_id`),
   CONSTRAINT `FK2jlyb2c45nw0h6a2qdhf6ckep` FOREIGN KEY (`police_station_id`) REFERENCES `policestations` (`id`),
   CONSTRAINT `FKrh1g1a20omjmn6kurd35o3eit` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,7 +50,7 @@ CREATE TABLE `customers` (
 
 LOCK TABLES `customers` WRITE;
 /*!40000 ALTER TABLE `customers` DISABLE KEYS */;
-INSERT INTO `customers` VALUES (1,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 17:48:46.995003','1998-06-15','srabonhasan66270@gmail.com','MALE','uploads/customer/Md._Tanvir_Hasan_26e0d855-31fa-4522-9095-40946b0666d9.JPG','Md. Tanvir Hasan','1998269123456','017123456788','2026-06-28 18:12:51.581602',12,7),(4,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:37:41.309085','1998-06-15','srabonhasan662702@gmail.com','MALE','uploads/customer/Md.Hasan_187d7c75-a72a-4d73-a428-e5b97f47d1b2.JPG','Md.Hasan','1998269123456','0171234567828','2026-06-28 18:37:41.309085',22,11),(5,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:42:43.834993','1998-06-15','srabonhasan66272@gmail.com','MALE','uploads/customer/Md.Hasan_ad0e5ae2-b3a2-4f1d-aa0b-b901017db42b.JPG','Md.Hasan','1998269123456','01712345628','2026-06-28 18:42:43.834993',2,12),(6,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:54:17.340192','1998-06-15','srabonhasan6622@gmail.com','MALE','uploads/customer/Md.Hasan_62927dd9-bb91-4905-b96a-ad7c733875cc.JPG','Md.Hasan','1998269123456','017123456228','2026-06-28 19:02:06.931824',11,13);
+INSERT INTO `customers` VALUES (1,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 17:48:46.995003','1998-06-15','srabonhasan66270@gmail.com','MALE','uploads/customer/Md._Tanvir_Hasan_26e0d855-31fa-4522-9095-40946b0666d9.JPG','Md. Tanvir Hasan','1998269123456','017123456788','2026-06-28 18:12:51.581602',12,7),(4,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:37:41.309085','1998-06-15','srabonhasan662702@gmail.com','MALE','uploads/customer/Md.Hasan_187d7c75-a72a-4d73-a428-e5b97f47d1b2.JPG','Md.Hasan','1998269123456','0171234567828','2026-06-28 18:37:41.309085',22,11),(5,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:42:43.834993','1998-06-15','srabonhasan66272@gmail.com','MALE','uploads/customer/Md.Hasan_ad0e5ae2-b3a2-4f1d-aa0b-b901017db42b.JPG','Md.Hasan','1998269123456','01712345628','2026-06-28 18:42:43.834993',2,12),(6,'মিরপুর ১২, ঢাকা, বাংলাদেশ','2026-06-28 18:54:17.340192','1998-06-15','srabonhasan6622@gmail.com','MALE','uploads/customer/Md.Hasan_62927dd9-bb91-4905-b96a-ad7c733875cc.JPG','Md.Hasan','1998269123456','017123456228','2026-06-28 19:02:06.931824',11,13),(8,'House 12, Road 4, Dhanmondi, Dhaka','2026-06-30 22:52:25.285410','1997-12-05','tanvirhasan66270@gmail.com','MALE','uploads/customer/Rashed_Khan_460532b0-57c3-419d-a205-68819bfa0125.jpg','Rashed Khan','1997567890123','+8801711223344','2026-06-30 22:52:25.285410',2,37);
 /*!40000 ALTER TABLE `customers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -63,4 +63,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:52
+-- Dump completed on 2026-06-30 23:57:43

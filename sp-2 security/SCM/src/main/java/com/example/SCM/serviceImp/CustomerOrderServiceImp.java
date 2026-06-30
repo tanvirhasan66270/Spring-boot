@@ -32,6 +32,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final MailService mailService;
     private final ActivityLogService activityLogService; // 1. ActivityLogService ইনজেক্ট করা হয়েছে
     private final HttpServletRequest request;            // 2. HttpServletRequest ইনজেক্ট করা হয়েছে
+    private final CustomerRepository customerRepository;
 
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
@@ -43,27 +44,36 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     @Override
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
 
-        User customer = userRepository.findCustomerById(dto.getCustomerId())
-                .orElseThrow(() -> new RuntimeException("Target profile missing or the user is not a valid CUSTOMER! ID: " + dto.getCustomerId()));
+        Customer customerProfile = customerRepository.findById(dto.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Target customer profile missing! ID: " + dto.getCustomerId()));
 
-        CustomerOrder order = orderMapper.toEntity(dto, customer);
-        order.executeCalculations();
+        User customerUser = customerProfile.getUser();
+        if (customerUser == null) {
+            throw new RuntimeException("Customer profile matrix has no linked authorization User account.");
+        }
+
+        CustomerOrder order = orderMapper.toEntity(dto, customerUser);
+        order.executeCalculations(); // সাবটোটাল ও চার্জ ক্যালকুলেশন
 
         CustomerOrder savedOrder = orderRepository.save(order);
         sendOrderConfirmationEmail(savedOrder);
 
-        activityLogService.log(
-                resolveCurrentUserId(),
-                null,
-                "CREATE",
-                "CUSTOMER_ORDER",
-                savedOrder.getId().toString(),
-                "New multi-item customer order placed. Order Number: " + savedOrder.getOrderNumber() + ", Total Amount: " + savedOrder.getTotalAmount() + " " + savedOrder.getCurrency(),
-                null,
-                "{\"orderNumber\":\"" + savedOrder.getOrderNumber() + "\", \"totalAmount\":" + savedOrder.getTotalAmount() + "}",
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
-        );
+        try {
+            activityLogService.log(
+                    resolveCurrentUserId(),
+                    null,
+                    "CREATE",
+                    "CUSTOMER_ORDER",
+                    savedOrder.getId().toString(),
+                    "New order placed. Order Number: " + savedOrder.getOrderNumber() + ", Total: " + savedOrder.getTotalAmount(),
+                    null,
+                    "{\"orderNumber\":\"" + savedOrder.getOrderNumber() + "\", \"totalAmount\":" + savedOrder.getTotalAmount() + "}",
+                    ActionStatus.SUCCESS,
+                    request.getRemoteAddr()
+            );
+        } catch (Exception e) {
+            System.err.println("Activity logging bypassed: " + e.getMessage());
+        }
 
         return orderMapper.convertTOResponseDTO(savedOrder);
     }
@@ -72,19 +82,24 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     @Override
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
         CustomerOrder order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer order matrix row missing for ID: " + id));
+                .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
 
-        //ওল্ড ভ্যালু ট্র্যাকিং (লগের জন্য)
         Long oldCustomerId = order.getCustomer() != null ? order.getCustomer().getId() : null;
         String oldDeliveryAddress = order.getDeliveryAddress();
         double oldTotalAmount = order.getTotalAmount();
 
-        if (dto.getCustomerId() != null && !dto.getCustomerId().equals(order.getCustomer() != null ? order.getCustomer().getId() : null)) {
-            User newCustomer = userRepository.findCustomerById(dto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("New target profile missing or not a valid CUSTOMER! ID: " + dto.getCustomerId()));
-            order.setCustomer(newCustomer);
-            order.setCustomerName(newCustomer.getName());
-            order.setCustomerEmail(newCustomer.getEmail());
+        if (dto.getCustomerId() != null) {
+            Customer newCustomerProfile = customerRepository.findById(dto.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("New target customer profile missing! ID: " + dto.getCustomerId()));
+
+            User newCustomerUser = newCustomerProfile.getUser();
+            if (newCustomerUser == null) {
+                throw new RuntimeException("New customer profile has no linked authorization account.");
+            }
+
+            order.setCustomer(newCustomerUser);
+            order.setCustomerName(newCustomerUser.getName());
+            order.setCustomerEmail(newCustomerUser.getEmail());
         }
 
         if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
@@ -94,31 +109,33 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
         if (dto.getItems() != null && !dto.getItems().isEmpty()) {
             order.getLineItems().clear();
-
             dto.getItems().forEach(itemDto -> {
                 OrderLineItem item = lineItemMapper.toEntity(itemDto);
                 if (item != null) {
                     order.addLineItem(item);
                 }
             });
-            // আইটেম রিক্যালকুলেশন মেথড কল করা হতে পারে যদি এনটিটিতে থাকে
             order.executeCalculations();
         }
 
         CustomerOrder updatedOrder = orderRepository.save(order);
 
-        activityLogService.log(
-                resolveCurrentUserId(),
-                null,
-                "UPDATE",
-                "CUSTOMER_ORDER",
-                updatedOrder.getId().toString(),
-                "Customer order metadata and items updated. Order Number: " + updatedOrder.getOrderNumber(),
-                "{\"customerId\":" + oldCustomerId + ", \"address\":\"" + oldDeliveryAddress + "\", \"total\":" + oldTotalAmount + "}",
-                "{\"customerId\":" + updatedOrder.getCustomer().getId() + ", \"address\":\"" + updatedOrder.getDeliveryAddress() + "\", \"total\":" + updatedOrder.getTotalAmount() + "}",
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
-        );
+        try {
+            activityLogService.log(
+                    resolveCurrentUserId(),
+                    null,
+                    "UPDATE",
+                    "CUSTOMER_ORDER",
+                    updatedOrder.getId().toString(),
+                    "Order updated. Order Number: " + updatedOrder.getOrderNumber(),
+                    "{\"customerId\":" + oldCustomerId + ", \"address\":\"" + oldDeliveryAddress + "\", \"total\":" + oldTotalAmount + "}",
+                    "{\"customerId\":" + (updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getId() : null) + ", \"address\":\"" + updatedOrder.getDeliveryAddress() + "\", \"total\":" + updatedOrder.getTotalAmount() + "}",
+                    ActionStatus.SUCCESS,
+                    request.getRemoteAddr()
+            );
+        } catch (Exception e) {
+            System.err.println("Activity update logging bypassed: " + e.getMessage());
+        }
 
         return orderMapper.convertTOResponseDTO(updatedOrder);
     }

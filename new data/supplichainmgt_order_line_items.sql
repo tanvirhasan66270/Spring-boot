@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -36,7 +36,7 @@ CREATE TABLE `order_line_items` (
   KEY `FKpogrqnaru5vyemp3e9c997ag3` (`product_id`),
   CONSTRAINT `FKk6hajnfcni3fw6vmupsypd7hh` FOREIGN KEY (`order_id`) REFERENCES `customer_orders` (`id`),
   CONSTRAINT `FKpogrqnaru5vyemp3e9c997ag3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,6 +45,7 @@ CREATE TABLE `order_line_items` (
 
 LOCK TABLES `order_line_items` WRITE;
 /*!40000 ALTER TABLE `order_line_items` DISABLE KEYS */;
+INSERT INTO `order_line_items` VALUES (1,0.06,1000,2,NULL,500,1,10),(2,120,500,1,NULL,500,1,2),(3,0.06,1000,2,NULL,500,2,10),(4,120,500,1,NULL,500,2,2);
 /*!40000 ALTER TABLE `order_line_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:49
+-- Dump completed on 2026-06-30 23:57:45

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -36,7 +36,7 @@ CREATE TABLE `activity_logs` (
   `user_email` varchar(255) DEFAULT NULL,
   `user_id` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -45,6 +45,7 @@ CREATE TABLE `activity_logs` (
 
 LOCK TABLES `activity_logs` WRITE;
 /*!40000 ALTER TABLE `activity_logs` DISABLE KEYS */;
+INSERT INTO `activity_logs` VALUES (1,'CREATE','SUCCESS','New multi-item customer order placed. Order Number: ORD-1782838721455, Total Amount: 3963.7 BDT','0:0:0:0:0:0:0:1','CUSTOMER_ORDER','{\"orderNumber\":\"ORD-1782838721455\", \"totalAmount\":3963.7}',NULL,'2026-06-30 22:58:48.382478','1',NULL,'16'),(2,'CREATE','SUCCESS','New order placed. Order Number: ORD-1782840301520, Total: 3963.7','0:0:0:0:0:0:0:1','CUSTOMER_ORDER','{\"orderNumber\":\"ORD-1782840301520\", \"totalAmount\":3963.7}',NULL,'2026-06-30 23:25:07.271103','2',NULL,'16');
 /*!40000 ALTER TABLE `activity_logs` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:49
+-- Dump completed on 2026-06-30 23:57:42

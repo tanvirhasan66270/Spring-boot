@@ -35,7 +35,6 @@ public class SupplierMapper {
         dto.setImage(supplier.getImage());
         dto.setRating(supplier.getRating());
         dto.setAverageLeadTimeDays(supplier.getAverageLeadTimeDays());
-        dto.setActive(supplier.isActive());
         dto.setCreatedAt(supplier.getCreatedAt());
         dto.setUpdatedAt(supplier.getUpdatedAt());
 

@@ -52,7 +52,6 @@ public class LogisticsOfficerMapper {
         dto.setDob(officer.getDob());
         dto.setGender(officer.getGender() != null ? officer.getGender().name() : null);
         dto.setImage(officer.getImage());
-        dto.setActive(officer.isActive());
         dto.setJoiningDate(officer.getJoiningDate());
         dto.setDesignation(officer.getDesignation());
         dto.setLanguage(officer.getLanguage() != null ? officer.getLanguage().name() : null);

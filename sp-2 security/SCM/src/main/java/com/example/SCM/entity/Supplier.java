@@ -45,7 +45,7 @@ public class Supplier {
 
     private int averageLeadTimeDays;
 
-    private boolean isActive = true;
+    private boolean isActive;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;

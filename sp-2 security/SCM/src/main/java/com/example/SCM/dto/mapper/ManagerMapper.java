@@ -51,7 +51,6 @@ public class ManagerMapper {
         dto.setDob(manager.getDob());
         dto.setGender(manager.getGender() != null ? manager.getGender().name() : null);
         dto.setImage(manager.getImage());
-        dto.setActive(manager.isActive());
         dto.setJoiningDate(manager.getJoiningDate());
         dto.setDesignation(manager.getDesignation());
         dto.setLanguage(manager.getLanguage() != null ? manager.getLanguage().name() : null);

@@ -76,7 +76,6 @@ public class CommercialOfficerMapper {
         dto.setDob(entity.getDob());
         dto.setGender(entity.getGender() != null ? entity.getGender().name() : null);
         dto.setImage(entity.getImage());
-        dto.setActive(entity.isActive());
         dto.setJoiningDate(entity.getJoiningDate());
         dto.setDesignation(entity.getDesignation());
         dto.setLanguage(entity.getLanguage() != null ? entity.getLanguage().name() : null);

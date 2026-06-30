@@ -19,7 +19,6 @@ public class DriverResponseDTO {
     private Double rating;
     private Integer totalDeliveries;
     private Double totalEarnings;
-    private Boolean active;
     private String image;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

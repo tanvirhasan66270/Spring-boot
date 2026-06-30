@@ -16,9 +16,8 @@ public class ActivityLogServiceImp implements ActivityLogService {
 
     @Override
     @Transactional
-    public void log(String userId, String userEmail, String action, String module,
-                    String referenceId, String description, String oldValue,
-                    String newValue, ActionStatus actionStatus, String ipAddress) {
+    public void log(String userId, String userEmail, String action, String module,String referenceId, String description,
+                    String oldValue,String newValue, ActionStatus actionStatus, String ipAddress) {
 
         ActivityLog auditLog = ActivityLog.builder()
                 .userId(userId)

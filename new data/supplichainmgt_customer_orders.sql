@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -44,7 +44,7 @@ CREATE TABLE `customer_orders` (
   UNIQUE KEY `UKs4wt1sgd48rj6cgahwlksogx` (`order_number`),
   KEY `FK6l43qmx85kv98oigli25si8xh` (`customer_id`),
   CONSTRAINT `FK6l43qmx85kv98oigli25si8xh` FOREIGN KEY (`customer_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,6 +53,7 @@ CREATE TABLE `customer_orders` (
 
 LOCK TABLES `customer_orders` WRITE;
 /*!40000 ALTER TABLE `customer_orders` DISABLE KEYS */;
+INSERT INTO `customer_orders` VALUES (1,1500,'2026-06-30 22:58:41.455336','BDT','tanvirhasan66270@gmail.com','Rashed Khan','House 12, Road 5, Banani, Dhaka',2463.7,'2026-07-05',1500,'ORD-1782838721455','2463.70','STANDARD','PENDING',3963.7,120.06,37),(2,1500,'2026-06-30 23:25:01.520597','BDT','tanvirhasan66270@gmail.com','Rashed Khan','House 12, Road 5, Banani, Dhaka',2463.7,'2026-07-05',1500,'ORD-1782840301520','2463.70','STANDARD','PENDING',3963.7,120.06,37);
 /*!40000 ALTER TABLE `customer_orders` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:48
+-- Dump completed on 2026-06-30 23:57:43

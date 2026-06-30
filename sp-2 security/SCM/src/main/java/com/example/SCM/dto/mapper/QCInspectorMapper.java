@@ -31,7 +31,6 @@ public class QCInspectorMapper {
         dto.setGender(inspector.getGender());
         dto.setDob(inspector.getDob());
         dto.setImage(inspector.getImage());
-        dto.setActive(inspector.isActive()); // প্রোফাইলের নিজস্ব একটিভ স্টেট
         dto.setJoiningDate(inspector.getJoiningDate());
         dto.setDesignation(inspector.getDesignation());
         dto.setLanguage(inspector.getLanguage());

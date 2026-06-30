@@ -18,7 +18,6 @@ public class QCInspectorResponseDTO {
     private LocalDate dob;
     private GenderStatus gender;
     private String image;
-    private boolean isActive;
     private LocalDate joiningDate;
     private String designation;
     private LanguageStatus language;

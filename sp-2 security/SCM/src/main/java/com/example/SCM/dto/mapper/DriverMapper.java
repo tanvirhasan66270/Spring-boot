@@ -78,7 +78,6 @@ public class DriverMapper {
         dto.setRating(driver.getRating());
         dto.setTotalDeliveries(driver.getTotalDeliveries());
         dto.setTotalEarnings(driver.getTotalEarnings());
-        dto.setActive(driver.getActive());
         dto.setImage(driver.getImage());
         dto.setCreatedAt(driver.getCreatedAt());
         dto.setUpdatedAt(driver.getUpdatedAt());

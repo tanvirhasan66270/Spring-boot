@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -52,7 +52,7 @@ CREATE TABLE `sales_officers` (
 
 LOCK TABLES `sales_officers` WRITE;
 /*!40000 ALTER TABLE `sales_officers` DISABLE KEYS */;
-INSERT INTO `sales_officers` VALUES (8,'House 10, Road 4, Dhanmondi, Dhaka','2026-06-30 19:07:59.114531','Sales and Distribution Officer','1999-10-10','MALE','uploads/sales_officer/Tanvir_Rahman_d0178346-26c3-4bd7-83cd-02ad4531e150.JPG',_binary '\0','2026-07-01','BANGLA','1999261025555','2026-06-30 19:08:38.760937',6,35);
+INSERT INTO `sales_officers` VALUES (8,'Holding 12, Sector 4, Uttara','2026-06-30 19:07:59.114531','Senior Sales Executive','1992-11-15','MALE','uploads/sales_officer/Kamal_Hasan_7dd5b9d6-c8ff-4cfa-a953-1ce168448af9.jpg',_binary '\0','2026-07-01','ENGLISH','1992987654321','2026-06-30 22:16:35.860409',12,35);
 /*!40000 ALTER TABLE `sales_officers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:49
+-- Dump completed on 2026-06-30 23:57:47

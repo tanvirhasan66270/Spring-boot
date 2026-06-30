@@ -55,7 +55,6 @@ public class CustomerServiceImp implements CustomerService {
         user.setPhoneNumber(dto.getPhone());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(com.example.SCM.role.Role.CUSTOMER);
-
         user.setPoliceStation(policeStation);
 
         User savedUser = userRepository.save(user);

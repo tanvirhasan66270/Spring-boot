@@ -12,7 +12,6 @@ public class SalesOfficerResponseDTO {
     private LocalDate dob;
     private String gender;
     private String image;
-    private boolean isActive;
     private LocalDate joiningDate;
     private String designation;
     private String language;

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.44, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.44
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -47,7 +47,7 @@ CREATE TABLE `suppliers` (
   KEY `FKbq72j31c0nckxt7xfyjwojksh` (`police_station_id`),
   CONSTRAINT `FKbq72j31c0nckxt7xfyjwojksh` FOREIGN KEY (`police_station_id`) REFERENCES `policestations` (`id`),
   CONSTRAINT `FKja3xaqihwgllahrmo5op9ks4d` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -56,6 +56,7 @@ CREATE TABLE `suppliers` (
 
 LOCK TABLES `suppliers` WRITE;
 /*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
+INSERT INTO `suppliers` VALUES (1,'Plot 24, Industrial Area, Tejgaon',7,'Mr. Rafiqul Islam','2026-06-30 22:21:13.184116','1988-04-12','tanvirhasn66270@gmail.com','MALE','uploads/supplier/Apex_Logistics_Group_0e8d1adf-1f5b-4796-925a-3734d4f67245.jpg',_binary '\0','Apex Logistics Group','1988123456789','A01234567','+8801555443322',4.5,'2026-06-30 22:21:13.184116',15,36);
 /*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -68,4 +69,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-06-30 19:16:50
+-- Dump completed on 2026-06-30 23:57:39

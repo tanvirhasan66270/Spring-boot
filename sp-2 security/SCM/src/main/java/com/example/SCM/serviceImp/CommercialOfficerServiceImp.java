@@ -1,6 +1,5 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.CommercialOfficerMapper;
 import com.example.SCM.dto.request.CommercialOfficerRequestDTO;
