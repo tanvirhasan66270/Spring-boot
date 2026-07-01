@@ -37,8 +37,9 @@ public class LetterOfCredit {
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-    @Column(nullable = false)
-    private String issuingBank;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "issuing_bank_id", nullable = false)
+    private LCBank issuingBank;
 
     @Column(nullable = false)
     private String shipmentIncoTerms; // FOB, CIF, CFR ইত্যাদি

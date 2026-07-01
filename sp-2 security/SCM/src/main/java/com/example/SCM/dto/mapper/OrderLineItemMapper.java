@@ -23,18 +23,20 @@ public class OrderLineItemMapper {
         item.setQuantity(dto.getQuantity());
         item.setRemarks(dto.getRemarks());
 
+
         // প্রোডাক্ট নোড অ্যাসোসিয়েশন এবং প্রাইস প্রোটেকশন গেটওয়ে
         if (dto.getProductId() != null) {
             Product product = productRepository.findById(dto.getProductId())
                     .orElseThrow(() -> new RuntimeException("Product instance not found for ID: " + dto.getProductId()));
             item.setProduct(product);
+            item.setUnitPrice(product.getSellingPrice()); 
 
-            // ফ্রন্টএন্ড থেকে unitPrice না আসলে প্রোডাক্ট মাস্টার টেবিল থেকে প্রাইস লক হবে
-            if (dto.getUnitPrice() > 0) {
-                item.setUnitPrice(dto.getUnitPrice());
-            } else {
-                item.setUnitPrice(product.getSellingPrice());
-            }
+//            // ফ্রন্টএন্ড থেকে unitPrice না আসলে প্রোডাক্ট মাস্টার টেবিল থেকে প্রাইস লক হবে
+//            if (dto.getUnitPrice() > 0) {
+//                item.setUnitPrice(dto.getUnitPrice());
+//            } else {
+//                item.setUnitPrice(product.getSellingPrice());
+//            }
 
             // সাব-টোটাল এবং ওজনের ক্যালকুলেশন সিঙ্ক
             item.setLineTotal(item.getQuantity() * item.getUnitPrice());

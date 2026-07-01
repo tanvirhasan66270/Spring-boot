@@ -26,12 +26,11 @@ import java.util.stream.Collectors;
 public class CustomerOrderServiceImp implements CustomerOrderService {
 
     private final CustomerOrderRepository orderRepository;
-    private final UserRepository userRepository;
     private final CustomerOrderMapper orderMapper;
     private final OrderLineItemMapper lineItemMapper;
     private final MailService mailService;
-    private final ActivityLogService activityLogService; // 1. ActivityLogService ইনজেক্ট করা হয়েছে
-    private final HttpServletRequest request;            // 2. HttpServletRequest ইনজেক্ট করা হয়েছে
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
     private final CustomerRepository customerRepository;
 
     private String resolveCurrentUserId() {
