@@ -16,7 +16,7 @@ public class OrderLineItemRequestDTO {
 
     private int quantity;
 
-    private double unitPrice; // অপশনাল, ফ্রন্টএন্ড থেকে না পাঠালে প্রোডাক্ট মাস্টার থেকে অটো লক হবে
+//    private double unitPrice; // অপশনাল, ফ্রন্টএন্ড থেকে না পাঠালে প্রোডাক্ট মাস্টার থেকে অটো লক হবে
 
     private String remarks;
 
