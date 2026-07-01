@@ -23,7 +23,7 @@ public class ManagerController {
     private final ManagerService managerService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping
     public ResponseEntity<ManagerResponseDTO> save(
             @RequestPart("manager") String managerJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -35,7 +35,7 @@ public class ManagerController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}")
     public ResponseEntity<ManagerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("manager") String managerJson,

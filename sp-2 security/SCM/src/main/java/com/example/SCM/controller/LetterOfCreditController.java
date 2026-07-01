@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
+
 import java.util.List;
 
 @RestController
@@ -17,26 +20,34 @@ public class LetterOfCreditController {
 
     private final LetterOfCreditService lcService;
 
-    // 1. Issue a New Letter of Credit (Draft Mode)
-
     @PostMapping
-    public ResponseEntity<LetterOfCreditResponseDTO> createLC(@RequestBody LetterOfCreditRequestDTO dto) {
+    public ResponseEntity<LetterOfCreditResponseDTO> createLC(
+            @RequestPart("lcData") String lcDataJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
+
+        tools.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
+        LetterOfCreditRequestDTO dto = objectMapper.readValue(lcDataJson, LetterOfCreditRequestDTO.class);
+
+
+
         LetterOfCreditResponseDTO response = lcService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // ⚙️ 2. General Update LC Metadata (No Counter Increment)
-
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
-            @RequestBody LetterOfCreditRequestDTO dto) {
+            @RequestPart("lcData") String lcDataJson,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        LetterOfCreditRequestDTO dto = objectMapper.readValue(lcDataJson, LetterOfCreditRequestDTO.class);
+
+
+
         LetterOfCreditResponseDTO response = lcService.update(id, dto);
         return ResponseEntity.ok(response);
     }
-
-   // Official LC Amendment Gateway (Triggers Counter & Status Change)
-    // PATCH http://localhost:8085/api/lc/amend/{id}
 
     @PatchMapping("/amend/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
@@ -46,14 +57,10 @@ public class LetterOfCreditController {
         return ResponseEntity.ok(response);
     }
 
-    //  4. Get All Letters of Credit
-
     @GetMapping
     public ResponseEntity<List<LetterOfCreditResponseDTO>> getAllLCs() {
         return ResponseEntity.ok(lcService.findAll());
     }
-
-    //  5. Get LC Profile By ID
 
     @GetMapping("/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> getLCById(@PathVariable Long id) {
@@ -61,8 +68,6 @@ public class LetterOfCreditController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
-
-   // Delete LC Instance
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {

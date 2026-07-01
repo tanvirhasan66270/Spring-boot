@@ -4,9 +4,11 @@ import com.example.SCM.Util.MailService;
 import com.example.SCM.dto.mapper.LetterOfCreditMapper;
 import com.example.SCM.dto.request.LetterOfCreditRequestDTO;
 import com.example.SCM.dto.response.LetterOfCreditResponseDTO;
+import com.example.SCM.entity.LCBank;
 import com.example.SCM.entity.LetterOfCredit;
 import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.LcStatus;
+import com.example.SCM.repository.LCBankRepository; // ➕ নতুন ইনজেকশন
 import com.example.SCM.repository.LetterOfCreditRepository;
 import com.example.SCM.service.LetterOfCreditService;
 import com.example.SCM.service.ActivityLogService;
@@ -30,24 +32,20 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     private final MailService mailService;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
-
+    private final LCBankRepository bankRepository;
 
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
         if (userId != null && !userId.isBlank()) {
             return userId;
         }
-
-        // ব্যাকআপ হিসেবে স্প্রিং সিকিউরিটির কনটেক্সট চেক করা
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()
                 && !authentication.getName().equals("anonymousUser")) {
             return authentication.getName();
         }
-
         return "UNKNOWN_USER";
     }
-
 
     @Override
     @Transactional
@@ -77,17 +75,21 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         return lcMapper.convertTOResponseDTO(savedLc);
     }
 
-
     @Override
     @Transactional
     public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto) {
         LetterOfCredit lc = lcRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Letter of credit index matrix missing for ID: " + id));
 
-        String oldBank = lc.getIssuingBank();
+        String oldBankName = (lc.getIssuingBank() != null) ? lc.getIssuingBank().getName() : "NONE";
         LcStatus oldStatus = lc.getLcStatus();
 
-        if (dto.getIssuingBank() != null) lc.setIssuingBank(dto.getIssuingBank());
+        if (dto.getIssuingBankId() != null) {
+            LCBank newBank = bankRepository.findById(dto.getIssuingBankId())
+                    .orElseThrow(() -> new RuntimeException("Target Bank not found for ID: " + dto.getIssuingBankId()));
+            lc.setIssuingBank(newBank);
+        }
+
         if (dto.getShipmentIncoTerms() != null) lc.setShipmentIncoTerms(dto.getShipmentIncoTerms());
         if (dto.getPortOfLoading() != null) lc.setPortOfLoading(dto.getPortOfLoading());
         if (dto.getPortOfDischarge() != null) lc.setPortOfDischarge(dto.getPortOfDischarge());
@@ -99,12 +101,12 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
 
         LetterOfCredit updatedLc = lcRepository.save(lc);
 
-
         if ((oldStatus != LcStatus.OPENED && updatedLc.getLcStatus() == LcStatus.OPENED)
                 || updatedLc.getLcStatus() == LcStatus.EXPIRED) {
             sendSupplierLcNotification(updatedLc);
         }
 
+        String currentBankName = (updatedLc.getIssuingBank() != null) ? updatedLc.getIssuingBank().getName() : "NONE";
         activityLogService.log(
                 resolveCurrentUserId(),
                 null,
@@ -112,15 +114,14 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
                 "LC",
                 updatedLc.getId().toString(),
                 "General metadata or Status updated for LC Number: " + updatedLc.getLcNumber() + " -> Status: " + updatedLc.getLcStatus(),
-                "{\"issuingBank\":\"" + oldBank + "\", \"status\":\"" + oldStatus + "\"}",
-                "{\"issuingBank\":\"" + updatedLc.getIssuingBank() + "\", \"status\":\"" + updatedLc.getLcStatus() + "\"}",
+                "{\"issuingBank\":\"" + oldBankName + "\", \"status\":\"" + oldStatus + "\"}",
+                "{\"issuingBank\":\"" + currentBankName + "\", \"status\":\"" + updatedLc.getLcStatus() + "\"}",
                 ActionStatus.SUCCESS,
                 request.getRemoteAddr()
         );
 
         return lcMapper.convertTOResponseDTO(updatedLc);
     }
-
 
     @Override
     @Transactional
@@ -134,11 +135,9 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         if (dto.getExpiryDate() != null && !dto.getExpiryDate().isBlank()) lc.setExpiryDate(LocalDate.parse(dto.getExpiryDate()));
         if (dto.getLatestShipmentDate() != null && !dto.getLatestShipmentDate().isBlank()) lc.setLatestShipmentDate(LocalDate.parse(dto.getLatestShipmentDate()));
 
-        // এনটিটির ইন্টারনাল মেথড স্ট্যাটাস AMENDED করে দেয় এবং কাউন্টার বাড়ায়
         lc.incrementAmendment();
 
         LetterOfCredit amendedLc = lcRepository.save(lc);
-
         sendSupplierLcNotification(amendedLc);
 
         activityLogService.log(
@@ -183,20 +182,19 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     @Override @Transactional(readOnly = true) public List<LetterOfCreditResponseDTO> findAll() {
         return lcRepository.findAllWithDetails().stream()
                 .map(lcMapper::convertTOResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getById(Long id) { return lcRepository.findByIdWithDetails(id).map(lcMapper::convertTOResponseDTO); }
-    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) { return lcRepository.findByLcNumber(lcNumber).map(lcMapper::convertTOResponseDTO); }
+    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getById(Long id) {
+        return lcRepository.findByIdWithDetails(id).map(lcMapper::convertTOResponseDTO); }
+    @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) {
+        return lcRepository.findByLcNumber(lcNumber).map(lcMapper::convertTOResponseDTO); }
 
-    // =========================================================================
-    // ডেডিকেটেড সাপ্লায়ার এলসি নোটিফিকেশন মেইলিং ইঞ্জিন (শতভাগ নির্ভুল)
-   // COMMERCIAL_OFFICER যখন কোনো Letter of Credit (LC) তৈরি (save) বা আপডেট (update) করবেন এবং
-   // সেটির স্ট্যাটাস পরিবর্তন হয়ে OPENED হবে, ঠিক তখনই সাপ্লায়ারের কাছে নোটিফিকেশন মেইল যাবে। এছাড়া এলসি অ্যামেন্ড//(amendLC) করলে বা স্ট্যাটাস AMENDED অথবা EXPIRED হলে স্বয়ংক্রিয়ভাবে আপডেটেড মেইল চলে যাবে।
-   // আর স্ট্যাটাস যদি শুধুমাত্র DRAFT থাকে, তবে কোনো মেইল যাবে না।
-    // =========================================================================
+
     private void sendSupplierLcNotification(LetterOfCredit lc) {
         if (lc.getSupplier() == null || lc.getSupplier().getEmail() == null) return;
 
         String supplierEmail = lc.getSupplier().getEmail();
         String subject = "SCM Commercial Alert: Letter of Credit #" + lc.getLcNumber() + " [" + lc.getLcStatus().name() + "]";
+
+        String activeBankName = (lc.getIssuingBank() != null) ? lc.getIssuingBank().getName() : "N/A";
 
         String mailContent = """
         <!DOCTYPE html>
@@ -241,7 +239,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         </html>
         """.formatted(
                 lc.getLcStatus().name(), lc.getSupplier().getName(),
-                lc.getLcNumber(), lc.getPoNumber(), lc.getIssuingBank(),
+                lc.getLcNumber(), lc.getPoNumber(), activeBankName, // 👈 ফিক্সড ভেরিয়েবল
                 lc.getAmount(), lc.getCurrency(), lc.getShipmentIncoTerms(),
                 lc.getLatestShipmentDate() != null ? lc.getLatestShipmentDate().toString() : "N/A",
                 lc.getExpiryDate() != null ? lc.getExpiryDate().toString() : "N/A",

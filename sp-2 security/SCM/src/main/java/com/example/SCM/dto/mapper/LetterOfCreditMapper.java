@@ -2,10 +2,12 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.LetterOfCreditRequestDTO;
 import com.example.SCM.dto.response.LetterOfCreditResponseDTO;
+import com.example.SCM.entity.LCBank;
 import com.example.SCM.entity.LetterOfCredit;
 import com.example.SCM.entity.PurchaseOrder;
 import com.example.SCM.entity.Supplier;
 import com.example.SCM.enumClass.LcStatus;
+import com.example.SCM.repository.LCBankRepository;
 import com.example.SCM.repository.PurchaseOrderRepository;
 import com.example.SCM.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +20,16 @@ public class LetterOfCreditMapper {
 
     private final PurchaseOrderRepository poRepository;
     private final SupplierRepository supplierRepository;
+    private final LCBankRepository bankRepository;
 
     public LetterOfCredit toEntity(LetterOfCreditRequestDTO dto) {
 
         LetterOfCredit lc = new LetterOfCredit();
-        lc.setIssuingBank(dto.getIssuingBank());
+        if (dto.getIssuingBankId() != null) {
+            LCBank bank = bankRepository.findById(dto.getIssuingBankId())
+                    .orElseThrow(() -> new RuntimeException("Selected Target Bank context missing for ID: " + dto.getIssuingBankId()));
+            lc.setIssuingBank(bank);
+        }
         lc.setShipmentIncoTerms(dto.getShipmentIncoTerms());
         lc.setPortOfLoading(dto.getPortOfLoading());
         lc.setPortOfDischarge(dto.getPortOfDischarge());
@@ -59,7 +66,13 @@ public class LetterOfCreditMapper {
         dto.setId(entity.getId());
         dto.setLcNumber(entity.getLcNumber());
         dto.setPoNumber(entity.getPoNumber());
-        dto.setIssuingBank(entity.getIssuingBank());
+        if (entity.getIssuingBank() != null) {
+            LCBank bank = entity.getIssuingBank();
+            dto.setIssuingBankId(bank.getId());
+            dto.setIssuingBankName(bank.getName());
+            dto.setIssuingBankSwiftCode(bank.getSwiftCode());
+            dto.setIssuingBankBranch(bank.getBranchName());
+        }
         dto.setShipmentIncoTerms(entity.getShipmentIncoTerms());
         dto.setAmount(entity.getAmount());
         dto.setCurrency(entity.getCurrency());

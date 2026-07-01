@@ -8,7 +8,10 @@ public class LetterOfCreditResponseDTO {
     private String lcNumber;
     private Long purchaseOrderId;
     private String poNumber;
-    private String issuingBank;
+    private Long issuingBankId;
+    private String issuingBankName;
+    private String issuingBankSwiftCode;
+    private String issuingBankBranch;
     private String shipmentIncoTerms;
     private String latestShipmentDate;
     private String portOfLoading;

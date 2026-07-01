@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class LetterOfCreditRequestDTO {
     private Long purchaseOrderId;
+    private Long issuingBankId;
     private String issuingBank;
     private String shipmentIncoTerms;
     private String latestShipmentDate; // YYYY-MM-DD
@@ -15,5 +16,5 @@ public class LetterOfCreditRequestDTO {
     private String currency;
     private String expiryDate;         // YYYY-MM-DD
     private String lcStatus;
-    private String documentVaultUrl;
+    private String documentVaultUrl; // image
 }
