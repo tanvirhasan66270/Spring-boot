@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 public class PurchaseOrderResponseDTO {
     private Long id;
     private String poNumber;
-    private Integer quantity; // Quotation থেকে আসা ফ্ল্যাট কোয়ান্টিটি
+    private Integer quantity;
     private double totalAmount;
     private String currency;
     private LocalDate expectedDeliveryDate;
@@ -22,7 +22,7 @@ public class PurchaseOrderResponseDTO {
     //Auto Loaded Supplier Details
     private Long supplierId;
     private String supplierName;
-    private String supplierEmail;// TS interface silked with 'supplierName'
+    private String supplierEmail;
 
     //Auto Loaded Purchase Requisition Details
     private Long purchaseRequisitionId;

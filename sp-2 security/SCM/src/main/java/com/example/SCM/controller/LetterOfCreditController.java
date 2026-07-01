@@ -5,6 +5,7 @@ import com.example.SCM.dto.response.LetterOfCreditResponseDTO;
 import com.example.SCM.service.LetterOfCreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,21 +21,21 @@ public class LetterOfCreditController {
 
     private final LetterOfCreditService lcService;
 
-    @PostMapping
+    // 1. Create New Letter of Credit (POST - Multipart Form Data)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<LetterOfCreditResponseDTO> createLC(
             @RequestPart("lcData") String lcDataJson,
             @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
 
-        tools.jackson.databind.ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
         LetterOfCreditRequestDTO dto = objectMapper.readValue(lcDataJson, LetterOfCreditRequestDTO.class);
 
-
-
-        LetterOfCreditResponseDTO response = lcService.save(dto);
+        LetterOfCreditResponseDTO response = lcService.save(dto, file);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}")
+    // 2. Update Existing Letter of Credit (PUT - Multipart Form Data)
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
             @RequestPart("lcData") String lcDataJson,
@@ -43,12 +44,11 @@ public class LetterOfCreditController {
         ObjectMapper objectMapper = new ObjectMapper();
         LetterOfCreditRequestDTO dto = objectMapper.readValue(lcDataJson, LetterOfCreditRequestDTO.class);
 
-
-
-        LetterOfCreditResponseDTO response = lcService.update(id, dto);
+        LetterOfCreditResponseDTO response = lcService.update(id, dto, file);
         return ResponseEntity.ok(response);
     }
 
+    // 3. Commercial Amendment Gateway (PATCH - Standard JSON Request)
     @PatchMapping("/amend/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
             @PathVariable Long id,
@@ -57,11 +57,13 @@ public class LetterOfCreditController {
         return ResponseEntity.ok(response);
     }
 
+    // 4. Get All LCs (GET)
     @GetMapping
     public ResponseEntity<List<LetterOfCreditResponseDTO>> getAllLCs() {
         return ResponseEntity.ok(lcService.findAll());
     }
 
+    // 5. Get LC By ID (GET)
     @GetMapping("/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> getLCById(@PathVariable Long id) {
         return lcService.getById(id)
@@ -69,6 +71,7 @@ public class LetterOfCreditController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    // 6. Delete LC (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {
         lcService.delete(id);

@@ -18,6 +18,7 @@ public class PurchaseRequisitionResponseDTO {
     private LocalDate requiredByDate;
     private PurchaseRequisitionStatus approvalStatus;
     private Long approvedBy;
+    private String approvedByName;
     private String remarks;
     private LocalDateTime createdAt;
 

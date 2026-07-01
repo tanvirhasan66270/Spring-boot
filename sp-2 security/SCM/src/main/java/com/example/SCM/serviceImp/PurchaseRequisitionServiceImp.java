@@ -18,9 +18,11 @@ import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.PurchaseRequisitionService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder; // 🌟 ইনপোর্ট করা হলো
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -37,7 +39,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     private final MailService mailService;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
-
 
     @Override
     @Transactional
@@ -64,55 +65,73 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         PurchaseRequisition pr = requisitionMapper.toEntity(dto, products, suppliers);
 
-        //sefty: ইনিশিয়াল স্ট্যাটাস সবসময় PENDING থাকবে এবং ক্রিয়েট হওয়ার সময় সাপ্লায়ার মেইল পাবে না
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
         PurchaseRequisition savedPr = requisitionRepository.save(pr);
 
         return requisitionMapper.convertTOResponseDTO(savedPr);
     }
 
-    // Manager Approval Node (Auto-Mail out to SUPPLIERS on Success)
-
+    // Manager Approval Node (Auto-Tracks Manager Context & Returns DTO)
     @Transactional
     @Override
-    public void approveRequisition(Long id) {
+    public PurchaseRequisitionResponseDTO approveRequisition(Long id) {
         PurchaseRequisition requisition = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition missing for ID: " + id));
 
-        // for status update
-        requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long managerId = null;
+        String managerEmail = "system@scm.com";
 
-        // for database save
+        if (principal instanceof User) {
+            User currentManager = (User) principal;
+            managerId = currentManager.getId();
+            managerEmail = currentManager.getEmail();
+        } else {
+            throw new RuntimeException("Unauthorized transaction: Active corporate session not found!");
+        }
+
+        // স্ট্যাটাস এবং অনুমোদনকারীর আইডি সেট করা হচ্ছে
+        requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
+        requisition.setApprovedBy(managerId); // 🔄 এনটিটিতে অটো-সেট হয়ে গেল
+
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-
+        // অ্যাক্টিভিটি লগ সিস্টেমে ম্যানেজারের ডেটা ট্র্যাক করা হচ্ছে
         activityLogService.log(
-                resolveCurrentUserId(),              // 1. userId
-                "system@scm.com",                    // 2. userEmail
-                "APPROVE",                           // 3. action
-                "PURCHASE_REQUISITION",              // 4. module
-                savedRequisition.getId().toString(), // 5. referenceId
-                "Manager approved requisition for " + savedRequisition.getSuppliers().size() + " suppliers.", // 6. description
-                "PENDING",                           // 7. oldValue
-                "APPROVED",                          // 8. newValue
-                ActionStatus.SUCCESS,                // 9. actionStatus
-                request.getRemoteAddr()              // 10. ipAddress
+                managerId.toString(),
+                managerEmail,
+                "APPROVE",
+                "PURCHASE_REQUISITION",
+                savedRequisition.getId().toString(),
+                "Manager approved requisition for " + savedRequisition.getSuppliers().size() + " suppliers.",
+                "PENDING",
+                "APPROVED",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
         );
 
-        // সাপ্লায়ারদের কাছে মেইল পাঠানো
+        // সাপ্লায়ারদের কাছে নোটিশ ডিসপ্যাচ
         if (savedRequisition.getSuppliers() != null && !savedRequisition.getSuppliers().isEmpty()) {
             sendRequisitionEmailToSuppliers(savedRequisition);
         }
+
+        return requisitionMapper.convertTOResponseDTO(savedRequisition);
     }
 
-      // Manager Disapproval Matrix Node (Back-Mail to PROCUREMENT Officer)
-
+    // Manager Disapproval Matrix Node (Auto-Tracks Manager Context & Returns DTO)
     @Transactional
     @Override
-    public void rejectOrCancelRequisition(Long id, String actionType) {
+    public PurchaseRequisitionResponseDTO rejectOrCancelRequisition(Long id, String actionType) {
         PurchaseRequisition requisition = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition missing for ID: " + id));
 
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long managerId = null;
+        if (principal instanceof User) {
+            managerId = ((User) principal).getId();
+        }
+
+        String oldStatus = requisition.getApprovalStatus().name();
         if ("REJECT".equalsIgnoreCase(actionType)) {
             requisition.setApprovalStatus(PurchaseRequisitionStatus.REJECTED);
         } else if ("CANCEL".equalsIgnoreCase(actionType)) {
@@ -121,16 +140,18 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             throw new IllegalArgumentException("Invalid routing parameters for action status");
         }
 
+        requisition.setApprovedBy(managerId); // কে ডিসিশন নিয়েছে তার আইডি ট্র্যাক করা হলো
+
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-        //ক্রিয়েটর প্রকিউরমেন্ট অফিসারের কাছে স্ট্যাটাস সহ অ্যালার্ট মেইল ব্যাক-রুট করা হলো
+        // ক্রিয়েটর প্রকিউরমেন্ট অফিসারের কাছে অ্যালার্ট মেইল পাঠানো
         if (savedRequisition.getRequestedBy() != null) {
             userRepository.findById(savedRequisition.getRequestedBy())
                     .ifPresent(officer -> sendAlertEmailToProcurement(savedRequisition, officer));
         }
-    }
 
-     //Hard-Locked Update Method (No modification allowed once generated)
+        return requisitionMapper.convertTOResponseDTO(savedRequisition);
+    }
 
     @Override
     @Transactional
@@ -138,7 +159,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         PurchaseRequisition pr = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + id));
 
-        // একবার জেনারেট হয়ে গেলে এপিআই দিয়ে আর কোনো মেটাডাটা আপডেট করা যাবে না
+        // প্রজেক্ট রুলস অনুযায়ী লক থাকা অবস্থায় এডিট ব্লক করা হলো
         if (pr.getApprovalStatus() == PurchaseRequisitionStatus.PENDING ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.APPROVED ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.REJECTED ||
@@ -148,8 +169,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         return requisitionMapper.convertTOResponseDTO(pr);
     }
-
-    //SUPPLIER HTML Mail Dispatch Engine
 
     private void sendRequisitionEmailToSuppliers(PurchaseRequisition pr) {
         if (pr.getSuppliers() == null || pr.getSuppliers().isEmpty()) return;
@@ -166,7 +185,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         String urgency = (pr.getUrgencyLevel() != null) ? pr.getUrgencyLevel().name() : "NORMAL";
         String subject = "SCM RFQ [" + urgency + "]: Authorized Procurement Order Alert - ID #" + pr.getId();
-
 
         for (Supplier supplier : pr.getSuppliers()) {
             if (supplier.getEmail() == null || supplier.getEmail().isBlank()) continue;
@@ -234,8 +252,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         }
     }
 
-    //PROCUREMENT OFFICER HTML Alert Mail Dispatch Engine
-
     private void sendAlertEmailToProcurement(PurchaseRequisition requisition, User procurementOfficer) {
         String officerEmail = procurementOfficer.getEmail();
         String currentStatus = requisition.getApprovalStatus().name();
@@ -255,12 +271,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     @Override
     @Transactional
     public void delete(Long id) {
-        PurchaseRequisition pr = requisitionRepository.findById(id).orElseThrow(() -> new RuntimeException("Purchase Requisition not found"));
-        // যেকোনো স্ট্যাটাসেই ডিলিট অ্যাকশন ব্লক থাকবে
         throw new RuntimeException("Hard-Locked! Executed Procurement Requisitions cannot be deleted from matrix index!");
-    }
-    private String resolveCurrentUserId() {
-        String userId = request.getHeader("X-User-Id");
-        return (userId != null && !userId.isBlank()) ? userId : "SYSTEM";
     }
 }

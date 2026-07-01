@@ -8,19 +8,27 @@ import com.example.SCM.entity.LCBank;
 import com.example.SCM.entity.LetterOfCredit;
 import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.LcStatus;
-import com.example.SCM.repository.LCBankRepository; // ➕ নতুন ইনজেকশন
+import com.example.SCM.repository.LCBankRepository;
 import com.example.SCM.repository.LetterOfCreditRepository;
 import com.example.SCM.service.LetterOfCreditService;
 import com.example.SCM.service.ActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +41,9 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
     private final LCBankRepository bankRepository;
+
+    @Value("${image.upload.dir:uploads}")
+    private String uploadDir;
 
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
@@ -49,10 +60,17 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
 
     @Override
     @Transactional
-    public LetterOfCreditResponseDTO save(LetterOfCreditRequestDTO dto) {
+    public LetterOfCreditResponseDTO save(LetterOfCreditRequestDTO dto, MultipartFile file) {
         if (dto == null) throw new IllegalArgumentException("LC Request footprint cannot be empty");
 
         LetterOfCredit lc = lcMapper.toEntity(dto);
+
+        if (file != null && !file.isEmpty()) {
+            String poIdentifier = dto.getPurchaseOrderId() != null ? dto.getPurchaseOrderId().toString() : "GEN";
+            String uploadedPath = uploadLcFile(file, poIdentifier);
+            lc.setDocumentVaultUrl("uploads/lc/" + uploadedPath);
+        }
+
         LetterOfCredit savedLc = lcRepository.save(lc);
 
         if (savedLc.getLcStatus() == LcStatus.OPENED) {
@@ -77,7 +95,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
 
     @Override
     @Transactional
-    public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto) {
+    public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto, MultipartFile file) {
         LetterOfCredit lc = lcRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Letter of credit index matrix missing for ID: " + id));
 
@@ -93,7 +111,12 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         if (dto.getShipmentIncoTerms() != null) lc.setShipmentIncoTerms(dto.getShipmentIncoTerms());
         if (dto.getPortOfLoading() != null) lc.setPortOfLoading(dto.getPortOfLoading());
         if (dto.getPortOfDischarge() != null) lc.setPortOfDischarge(dto.getPortOfDischarge());
-        if (dto.getDocumentVaultUrl() != null) lc.setDocumentVaultUrl(dto.getDocumentVaultUrl());
+
+        if (file != null && !file.isEmpty()) {
+            String poIdentifier = lc.getPurchaseOrder() != null ? lc.getPurchaseOrder().getId().toString() : "GEN";
+            String uploadedPath = uploadLcFile(file, poIdentifier);
+            lc.setDocumentVaultUrl("uploads/lc/" + uploadedPath);
+        }
 
         if (dto.getLcStatus() != null) {
             lc.setLcStatus(LcStatus.valueOf(dto.getLcStatus().toUpperCase()));
@@ -187,6 +210,26 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     @Override @Transactional(readOnly = true) public Optional<LetterOfCreditResponseDTO> getByLcNumber(String lcNumber) {
         return lcRepository.findByLcNumber(lcNumber).map(lcMapper::convertTOResponseDTO); }
 
+    private String uploadLcFile(MultipartFile file, String poIdentifier) {
+        try {
+            Path path = Paths.get(uploadDir, "lc");
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+
+            String ext = "";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
+            }
+
+            String fileName = "LC_PO_" + poIdentifier + "_" + UUID.randomUUID() + ext;
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+        } catch (Exception e) {
+            throw new RuntimeException("LC commercial vault attachment deployment failure: " + e.getMessage());
+        }
+    }
 
     private void sendSupplierLcNotification(LetterOfCredit lc) {
         if (lc.getSupplier() == null || lc.getSupplier().getEmail() == null) return;
@@ -239,7 +282,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
         </html>
         """.formatted(
                 lc.getLcStatus().name(), lc.getSupplier().getName(),
-                lc.getLcNumber(), lc.getPoNumber(), activeBankName, // 👈 ফিক্সড ভেরিয়েবল
+                lc.getLcNumber(), lc.getPoNumber(), activeBankName,
                 lc.getAmount(), lc.getCurrency(), lc.getShipmentIncoTerms(),
                 lc.getLatestShipmentDate() != null ? lc.getLatestShipmentDate().toString() : "N/A",
                 lc.getExpiryDate() != null ? lc.getExpiryDate().toString() : "N/A",

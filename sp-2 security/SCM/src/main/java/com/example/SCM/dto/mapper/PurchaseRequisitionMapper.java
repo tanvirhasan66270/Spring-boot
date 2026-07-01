@@ -7,6 +7,7 @@ import com.example.SCM.entity.PurchaseRequisition;
 import com.example.SCM.entity.Supplier;
 import com.example.SCM.enumClass.PurchaseRequisitionStatus;
 import com.example.SCM.enumClass.UrgencyLevel;
+import com.example.SCM.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -18,12 +19,15 @@ import java.util.stream.Collectors;
 public class PurchaseRequisitionMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final UserRepository userRepository;
 
-
-     // RequestDTO, Product List, এবং Supplier List থেকে নতুন PurchaseRequisition Entity-তে রূপান্তর (Create Operation)
+    // ম্যানুয়াল কনস্ট্রাক্টর ইনজেকশন
+    public PurchaseRequisitionMapper(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     public PurchaseRequisition toEntity(PurchaseRequisitionRequestDTO dto, List<Product> products, List<Supplier> suppliers) {
-
+        if (dto == null) return null;
 
         PurchaseRequisition pr = new PurchaseRequisition();
         pr.setRequestedBy(dto.getRequestedBy());
@@ -47,18 +51,15 @@ public class PurchaseRequisitionMapper {
         pr.setProducts(products);
         pr.setSuppliers(suppliers);
 
-        // নতুন PR তৈরির সময় স্ট্যাটাস ডিফল্ট PENDING থাকবে (যা এনটিটির @PrePersist-এও হ্যান্ডেল করা আছে)
+        // নতুন PR তৈরির সময় স্ট্যাটাস ডিফল্ট PENDING থাকবে
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
 
         return pr;
     }
 
-    /**
-     * PurchaseRequisition Entity থেকে PurchaseRequisitionResponseDTO-তে রূপান্তর (Read Operations)
-     * এটি জটিল মেনি-টু-মেনি অবজেক্ট গ্রাফ ভেঙে ফ্ল্যাট জেসন ডেটা তৈরি করে।
-     */
-    public PurchaseRequisitionResponseDTO convertTOResponseDTO(PurchaseRequisition pr) {
 
+    public PurchaseRequisitionResponseDTO convertTOResponseDTO(PurchaseRequisition pr) {
+        if (pr == null) return null;
 
         PurchaseRequisitionResponseDTO dto = new PurchaseRequisitionResponseDTO();
         dto.setId(pr.getId());
@@ -68,11 +69,16 @@ public class PurchaseRequisitionMapper {
         dto.setUrgencyLevel(pr.getUrgencyLevel());
         dto.setRequiredByDate(pr.getRequiredByDate());
         dto.setApprovalStatus(pr.getApprovalStatus());
-        dto.setApprovedBy(pr.getApprovedBy());
         dto.setRemarks(pr.getRemarks());
         dto.setCreatedAt(pr.getCreatedAt());
 
-        // Product List Flattening (আইডি এবং নামের আলাদা তালিকা তৈরি)
+        if (pr.getApprovedBy() != null) {
+            dto.setApprovedBy(pr.getApprovedBy());
+            userRepository.findById(pr.getApprovedBy()).ifPresent(user -> {
+                dto.setApprovedByName(user.getName()); // রেসপন্সে ম্যানেজারের নাম সেট হবে
+            });
+        }
+
         if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
             dto.setProductIds(pr.getProducts().stream()
                     .map(Product::getId)
@@ -97,7 +103,6 @@ public class PurchaseRequisitionMapper {
         return dto;
     }
 
-    // এক্সিস্টিং PurchaseRequisition Entity-কে RequestDTO এবং নতুন অবজেক্ট লিস্ট দিয়ে আপডেট করা (Update Operation)
 
     public void updateEntity(PurchaseRequisitionRequestDTO dto, PurchaseRequisition pr, List<Product> products, List<Supplier> suppliers) {
         if (dto == null || pr == null) {

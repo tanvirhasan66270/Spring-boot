@@ -18,16 +18,33 @@ public class PurchaseRequisitionController {
 
     private final PurchaseRequisitionService purchaseRequisitionService;
 
-    //1. Create New Purchase Requisition (POST)
-
+    // 1. Create New Purchase Requisition (POST)
     @PostMapping
     public ResponseEntity<PurchaseRequisitionResponseDTO> create(@RequestBody PurchaseRequisitionRequestDTO dto) {
         PurchaseRequisitionResponseDTO response = purchaseRequisitionService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 2. Update Existing Purchase Requisition (PUT)
+    // 2. Manager Approval Endpoint (PUT)
+    // এন্ডপয়েন্ট ইউআরএল হবে: PUT /api/purchase-requisitions/{id}/approve
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<PurchaseRequisitionResponseDTO> approve(@PathVariable Long id) {
+        PurchaseRequisitionResponseDTO response = purchaseRequisitionService.approveRequisition(id);
+        return ResponseEntity.ok(response);
+    }
 
+    // 3. Manager Disapproval / Cancellation Endpoint (PUT)
+    // এন্ডপয়েন্ট ইউআরএল হবে: PUT /api/purchase-requisitions/{id}/reject-or-cancel?actionType=REJECT
+    @PutMapping("/{id}/reject-or-cancel")
+    public ResponseEntity<PurchaseRequisitionResponseDTO> rejectOrCancel(
+            @PathVariable Long id,
+            @RequestParam String actionType // পাস করবেন 'REJECT' অথবা 'CANCEL'
+    ) {
+        PurchaseRequisitionResponseDTO response = purchaseRequisitionService.rejectOrCancelRequisition(id, actionType);
+        return ResponseEntity.ok(response);
+    }
+
+    // 4. Update Existing Purchase Requisition (PUT)
     @PutMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> update(
             @PathVariable Long id,
@@ -36,8 +53,7 @@ public class PurchaseRequisitionController {
         return ResponseEntity.ok(response);
     }
 
-    // 3. Get All Purchase Requisitions (GET)
-
+    // 5. Get All Purchase Requisitions (GET)
     @GetMapping
     public ResponseEntity<List<PurchaseRequisitionResponseDTO>> getAll() {
         List<PurchaseRequisitionResponseDTO> list = purchaseRequisitionService.findAll();
@@ -47,8 +63,7 @@ public class PurchaseRequisitionController {
         return ResponseEntity.ok(list);
     }
 
-    // 4. Get Purchase Requisition By ID (GET)
-
+    // 6. Get Purchase Requisition By ID (GET)
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> getById(@PathVariable Long id) {
         return purchaseRequisitionService.getById(id)
@@ -56,8 +71,7 @@ public class PurchaseRequisitionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-   // 5. Delete Purchase Requisition (DELETE)
-
+    // 7. Delete Purchase Requisition (DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseRequisitionService.delete(id);
