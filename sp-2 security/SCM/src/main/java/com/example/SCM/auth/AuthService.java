@@ -47,7 +47,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
-    private final QCInspectorRepository qCInspectorRepository;
+//    private final QCInspectorRepository qCInspectorRepository;
 
 
 

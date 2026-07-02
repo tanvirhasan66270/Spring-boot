@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 "/api/customerOrders/track",
                                 "/api/drivers",
                                 "/api/customers",
-                                "/**").permitAll()
+                                "/**", "/images/**").permitAll()
 
 
                 ).authenticationProvider(authenticationProvider()).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
