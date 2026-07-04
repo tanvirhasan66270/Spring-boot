@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/warehouses/")
+@RequestMapping("/api/warehouses")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class WarehouseController {

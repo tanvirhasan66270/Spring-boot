@@ -12,7 +12,6 @@ import java.util.Optional;
 @Repository
 public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
 
-    // 💡 নতুন যুক্ত করা হয়েছে: স্টক মুভমেন্টের অটো-ফিলআপের জন্য অপ্টিমাইজড নেম কুয়েরি
     @Query("SELECT w.name FROM Warehouse w WHERE w.id = :id")
     Optional<String> findNameById(@Param("id") Long id);
 

@@ -29,6 +29,8 @@ public class Warehouse {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String location;
 
+    private String address;
+
     private double capacity;
 
     private Long managerId;

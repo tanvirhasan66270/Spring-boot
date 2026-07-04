@@ -52,7 +52,7 @@ public class WarehouseServiceImp implements WarehouseService {
     public WarehouseResponseDTO update(Long id, WarehouseRequestDTO dto) {
         if (dto == null) throw new IllegalArgumentException("Request data cannot be null");
 
-        Warehouse warehouse = warehouseRepository.findById(id)
+        Warehouse warehouse = warehouseRepository.findByIdWithLocationDetails(id)
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
 
         // Name Conflict Verification
@@ -97,8 +97,9 @@ public class WarehouseServiceImp implements WarehouseService {
     @Override
     @Transactional
     public void delete(Long id) {
-        Warehouse warehouse = warehouseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + id));
-        warehouseRepository.delete(warehouse);
+        if (!warehouseRepository.existsById(id)) {
+            throw new RuntimeException("Warehouse not found with ID: " + id);
+        }
+        warehouseRepository.deleteById(id);
     }
 }

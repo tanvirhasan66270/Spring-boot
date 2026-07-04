@@ -9,6 +9,7 @@ public class WarehouseResponseDTO {
     private String name;
     private String email;
     private String location;
+    private String address;
     private double capacity;
     private Long managerId;
     private boolean isActive;

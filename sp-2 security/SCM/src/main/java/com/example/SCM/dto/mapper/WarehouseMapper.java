@@ -28,7 +28,7 @@ public class WarehouseMapper {
         WarehouseResponseDTO dto = new WarehouseResponseDTO();
         dto.setId(warehouse.getId());
         dto.setName(warehouse.getName());
-        dto.setEmail(warehouse.getEmail()); // 🔗 Mapping Email
+        dto.setEmail(warehouse.getEmail());
         dto.setLocation(warehouse.getLocation());
         dto.setCapacity(warehouse.getCapacity());
         dto.setManagerId(warehouse.getManagerId());
@@ -36,19 +36,33 @@ public class WarehouseMapper {
         dto.setCreatedAt(warehouse.getCreatedAt());
         dto.setUpdatedAt(warehouse.getUpdatedAt());
 
+        StringBuilder fullAddress = new StringBuilder();
+
+        if (warehouse.getLocation() != null && !warehouse.getLocation().isBlank()) {
+            fullAddress.append(warehouse.getLocation());
+        }
+
         if (warehouse.getPoliceStation() != null) {
             PoliceStation ps = warehouse.getPoliceStation();
             dto.setPoliceStationId(ps.getId());
             dto.setPoliceStationName(ps.getName());
 
+            if (fullAddress.length() > 0) fullAddress.append(", ");
+            fullAddress.append("PS: ").append(ps.getName());
+
             if (ps.getDistrict() != null) {
                 dto.setDistrictName(ps.getDistrict().getName());
+                fullAddress.append(", District: ").append(ps.getDistrict().getName());
 
                 if (ps.getDistrict().getDivision() != null) {
                     dto.setDivisionName(ps.getDistrict().getDivision().getName());
+
+                    fullAddress.append(", Division: ").append(ps.getDistrict().getDivision().getName());
                 }
             }
         }
+
+        dto.setAddress(fullAddress.toString());
         return dto;
     }
 
