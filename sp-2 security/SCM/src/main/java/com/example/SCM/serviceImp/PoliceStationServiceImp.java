@@ -88,4 +88,14 @@ public class PoliceStationServiceImp implements PoliceStationService {
         }
         policeStationRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public List<PoliceStationResponseDTO> search(String keyword) {
+        return policeStationRepository.searchStations(keyword.trim())
+                .stream()
+                .map(policeStationMapper::convertTOResponseDTO)
+                .collect(Collectors.toList());
+    }
+
 }

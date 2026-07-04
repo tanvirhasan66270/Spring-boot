@@ -54,4 +54,8 @@ public class PoliceStationController {
         policeStationService.delete(id);
         return ResponseEntity.ok("Police Station deleted successfully");
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<PoliceStationResponseDTO>> search(@RequestParam String keyword) {
+        return ResponseEntity.ok(policeStationService.search(keyword));
+    }
 }

@@ -1,12 +1,21 @@
 import { Routes } from '@angular/router';
+import { CountryComponent } from './component/features/address/country.component/country.component';
+import { Division } from './component/features/address/division.component/division.component';
+import { DistrictComponent } from './component/features/address/district.component/district.component';
+import { PoliceStationComponent } from './component/features/address/police-station.component/police-station.component';
+import { LocationComponent } from './component/features/address/location.component/location.component';
+import { WarehouseComponent } from './component/features/address/warehouse.component/warehouse.component';
 
-import { Header } from './component/shared/layout/header/header';
-import { Footer } from './component/shared/layout/footer/footer';
-import { SidebarComponent } from './component/shared/layout/sidebar/sidebar';
 
+export const routes: Routes = [//
 
-export const routes: Routes = [
+  { path: '', redirectTo: 'country', pathMatch: 'full' },
+  { path: 'country', component: CountryComponent },
+   { path: 'division', component: Division },
+   { path: 'district', component: DistrictComponent },
+    { path: 'police-station', component: PoliceStationComponent },
+     { path: 'location', component: LocationComponent },
+       { path: 'warehouse', component: WarehouseComponent }
 
-  
 
 ];

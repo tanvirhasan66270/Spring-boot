@@ -27,7 +27,12 @@ public interface PoliceStationRepository extends JpaRepository<PoliceStation, Lo
         LEFT JOIN FETCH div.country 
         WHERE p.id = :id
     """)
-    Optional<PoliceStation> findByIdWithDetails(@Param("id") Long id);
+        Optional<PoliceStation> findByIdWithDetails(@Param("id") Long id);
+    @Query("SELECT p FROM PoliceStation p WHERE " +
+            "LOWER(p.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+            "p.nameBn LIKE CONCAT('%', :keyword, '%') OR " +
+            "p.postalCode LIKE CONCAT('%', :keyword, '%')")
+    List<PoliceStation> searchStations(@Param("keyword") String keyword);
 
     @Query("SELECT DISTINCT p FROM PoliceStation p LEFT JOIN FETCH p.district WHERE p.district.id = :districtId")
     List<PoliceStation> findByDistrictId(@Param("districtId") Long districtId);
