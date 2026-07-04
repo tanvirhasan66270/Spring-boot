@@ -1,8 +1,6 @@
 <div class="container-fluid px-4 mt-4">
 
-  
-
-    <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+  <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
 
   <div class="slide-drawer" [class.show]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
@@ -23,7 +21,9 @@
               <img *ngIf="imagePreview" [src]="imagePreview" class="w-100 h-100 object-fit-cover">
               <i *ngIf="!imagePreview" class="bi bi-person-bounding-box text-secondary fs-2"></i>
             </div>
-            <button *ngIf="imagePreview" type="button" class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 end-0" (click)="removeSelectedFile(fileInput)"><i class="bi bi-x-lg"></i></button>
+            <button *ngIf="imagePreview" type="button" class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 end-0" (click)="removeSelectedFile(fileInput)">
+              <i class="bi bi-x-lg"></i>
+            </button>
           </div>
           <input #fileInput type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
         </div>
@@ -89,24 +89,26 @@
         </div>
 
         <div class="p-3 bg-light rounded-3 mb-3 border shadow-sm">
-          <span class="fw-bold d-block text-dark small text-uppercase mb-3 text-primary"><i class="bi bi-geo-alt-fill me-1"></i> Territorial Distribution Hierarchy</span>
+          <span class="fw-bold d-block text-dark small text-uppercase mb-3 text-primary">
+            <i class="bi bi-geo-alt-fill me-1"></i> Territorial Distribution Hierarchy
+          </span>
           
           <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="countryId" (change)="onCountryChange(); generateFullAddress()">
+            <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="countryId" (change)="onCountryChange()">
               <option [ngValue]="null">-- Country --</option>
               <option *ngFor="let c of countries" [value]="c.id">{{ c.name }}</option>
             </select>
           </div>
 
           <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange(); generateFullAddress()" [disabled]="!divisions || divisions.length === 0">
+            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange()" [disabled]="!divisions || divisions.length === 0">
               <option [ngValue]="null">-- Division --</option>
               <option *ngFor="let d of divisions" [value]="d.id">{{ d.name }}</option>
             </select>
           </div>
 
           <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange(); generateFullAddress()" [disabled]="!districts || districts.length === 0">
+            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange()" [disabled]="!districts || districts.length === 0">
               <option [ngValue]="null">-- District --</option>
               <option *ngFor="let dst of districts" [value]="dst.id">{{ dst.name }}</option>
             </select>
@@ -126,7 +128,9 @@
         </div>
 
         <div class="mb-4 bg-primary-subtle border border-primary-subtle p-3 rounded-3">
-          <label class="form-label fw-bold text-primary small text-uppercase mb-2"><i class="bi bi-cpu-fill me-1"></i>Full Compiled Address</label>
+          <label class="form-label fw-bold text-primary small text-uppercase mb-2">
+            <i class="bi bi-cpu-fill me-1"></i> Full Compiled Address
+          </label>
           <div class="bg-white p-2.5 rounded border text-dark fs-7 fw-medium font-monospace shadow-sm" style="min-height: 55px; word-break: break-word;">
             {{ customer.address || 'Standby for location parameters compilation...' }}
           </div>
@@ -134,7 +138,7 @@
 
         <div class="drawer-footer d-flex gap-2 mt-5">
           <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Update Records' : 'save' }}
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Update Records' : 'Save' }}
           </button>
           <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
         </div>
@@ -142,8 +146,7 @@
     </div>
   </div>
 
-  
-    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="mb-1 text-dark fw-bold">Customer Management Hub</h4>
       <p class="text-muted mb-0 small">Administer global enterprise customer registers, track geographic indices, and regulate credentials.</p>
@@ -152,7 +155,6 @@
       <i class="bi bi-plus-circle-fill"></i> Add Customer
     </button>
   </div>
-
 
   <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
     <div class="card-body p-0">
@@ -214,5 +216,4 @@
     </div>
   </div>
 
-  
 </div>

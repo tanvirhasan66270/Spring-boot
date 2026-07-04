@@ -20,44 +20,36 @@ export class CustomerService {
     return this.http.get<CustomerResponseModel>(`${this.apiUrl}/${id}`);
   }
 
-save(customer: CustomerRequestModel, imageFile: File | null) {
-
+  save(customer: CustomerRequestModel, imageFile: File | null): Observable<CustomerResponseModel> {
     const formData = new FormData();
-
+    
     formData.append(
-        "customer",
-        new Blob(
-            [JSON.stringify(customer)],
-            { type: "application/json" }
-        )
+      "customer",
+      new Blob([JSON.stringify(customer)], { type: "application/json" })
     );
 
     if (imageFile) {
-        formData.append("image", imageFile);
+      formData.append("image", imageFile);
     }
 
-    return this.http.post<CustomerResponseModel>(
-        this.apiUrl,
-        formData
-    );
-}
+    return this.http.post<CustomerResponseModel>(this.apiUrl, formData);
+  }
 
   update(id: number, customer: CustomerRequestModel, imageFile: File | null): Observable<CustomerResponseModel> {
- 
-
     const formData = new FormData();
-    formData.append('customer', JSON.stringify(customer));
+    
+    formData.append( "customer",
+      new Blob([JSON.stringify(customer)], { type: "application/json" })
+    );
 
-
-     if (imageFile) {
-      formData.append('image', imageFile);
+    if (imageFile) {
+      formData.append("image", imageFile);
     }
 
-   
-    return this.http.put<CustomerResponseModel>(`${this.apiUrl}/${id}`, formData);
+    return this.http.put<CustomerResponseModel>(`${this.apiUrl}${id}`, formData);
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
 }

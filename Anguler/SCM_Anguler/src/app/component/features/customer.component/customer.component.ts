@@ -58,7 +58,6 @@ export class CustomerComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
-
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -74,12 +73,12 @@ export class CustomerComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-
-   closeDrawer() {
+  closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
     this.cdr.markForCheck();
   }
+
   loadCustomers() {
     this.service.getAll().subscribe({
       next: (data) => {
@@ -101,47 +100,59 @@ export class CustomerComponent implements OnInit {
   // =====================================================
   // CASCADING LOCATION LOGICS 
   // =====================================================
-  onCountryChange() {
-    this.divisions = [];
-    this.districts = [];
-    this.policeStations = [];
-    this.selectedDivisionId = null;
-    this.selectedDistrictId = null;
-    this.customer.policeStationId = 0;
+onCountryChange() {
+  this.divisions = [];
+  this.districts = [];
+  this.policeStations = [];
+  this.selectedDivisionId = null;
+  this.selectedDistrictId = null;
+  this.customer.policeStationId = 0;
 
-    if (!this.selectedCountryId) return;
-
-    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-      this.divisions = res || [];
-      this.cdr.markForCheck();
-    });
+  if (!this.selectedCountryId) {
+    this.generateFullAddress();
+    return;
   }
 
-  onDivisionChange() {
-    this.districts = [];
-    this.policeStations = [];
-    this.selectedDistrictId = null;
-    this.customer.policeStationId = 0;
+  this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+    this.divisions = res || [];
+    this.generateFullAddress(); // ডাটা আসার পর অ্যাড্রেস আপডেট
+    this.cdr.markForCheck();
+  });
+}
 
-    if (!this.selectedDivisionId) return;
+onDivisionChange() {
+  this.districts = [];
+  this.policeStations = [];
+  this.selectedDistrictId = null;
+  this.customer.policeStationId = 0;
 
-    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
-      this.districts = res || [];
-      this.cdr.markForCheck();
-    });
+  if (!this.selectedDivisionId) {
+    this.generateFullAddress();
+    return;
   }
 
-  onDistrictChange() {
-    this.policeStations = [];
-    this.customer.policeStationId = 0;
+  this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
+    this.districts = res || [];
+    this.generateFullAddress();
+    this.cdr.markForCheck();
+  });
+}
 
-    if (!this.selectedDistrictId) return;
+onDistrictChange() {
+  this.policeStations = [];
+  this.customer.policeStationId = 0;
 
-    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
-      this.policeStations = res || [];
-      this.cdr.markForCheck();
-    });
+  if (!this.selectedDistrictId) {
+    this.generateFullAddress();
+    return;
   }
+
+  this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
+    this.policeStations = res || [];
+    this.generateFullAddress();
+    this.cdr.markForCheck();
+  });
+}
 
   // =====================================================
   // AUTO ADDRESS COMPILER
@@ -243,49 +254,58 @@ export class CustomerComponent implements OnInit {
   }
 
   edit(c: CustomerResponseModel) {
-    this.currentEditId = c.id;
-    this.isEdit = true;
+  this.currentEditId = c.id;
+  this.isEdit = true;
 
-    this.customer = {
-      name: c.name,
-      email: c.email,
-      phone: c.phone,
-      password: '', 
-      address: c.address,
-      gender: c.gender,
-      dob: c.dob,
-      nidNumber: c.nidNumber,
-      image: c.image,
-      policeStationId: c.policeStationId
-    };
+  this.customer = {
+    name: c.name,
+    email: c.email,
+    phone: c.phone,
+    password: '', 
+    address: c.address,
+    gender: c.gender,
+    dob: c.dob,
+    nidNumber: c.nidNumber,
+    image: c.image,
+    policeStationId: c.policeStationId
+  };
 
-    this.streetAddress = c.address.split(',')[0] || '';
-    this.imagePreview = c.image ? `http://localhost:8085/uploads/${c.image}` : null; 
-    this.selectedCountryId = (c as any).countryId || null;
-    this.selectedDivisionId = (c as any).divisionId || null;
-    this.selectedDistrictId = (c as any).districtId || null;
+  // অ্যাড্রেস স্প্লিট করার সময় স্পেসসহ সেফ স্প্লিট
+  const addressParts = c.address ? c.address.split(', ') : [];
+  this.streetAddress = addressParts[0] || '';
+  
+  // হার্ডকোডেড URL ফিক্স
+  this.imagePreview = c.image ? this.getImageUrl(c.image) : null; 
 
-    if (this.selectedCountryId) {
-      this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-        this.divisions = res || [];
-        if (this.selectedDivisionId) {
-          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
-            this.districts = res2 || [];
-            if (this.selectedDistrictId) {
-              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
-                this.policeStations = res3 || [];
-                this.cdr.markForCheck();
-              });
-            }
-          });
-        }
-      });
-    }
+  // আইডি ম্যাপিং
+  this.selectedCountryId = (c as any).countryId ? +(c as any).countryId : null;
+  this.selectedDivisionId = (c as any).divisionId ? +(c as any).divisionId : null;
+  this.selectedDistrictId = (c as any).districtId ? +(c as any).districtId : null;
+  this.customer.policeStationId = c.policeStationId ? +c.policeStationId : 0;
 
-    this.isDrawerOpen = true;
-    this.cdr.markForCheck();
+  // এডিট মোডে ড্রপডাউনগুলো ক্রমান্বয়ে লোড করা
+  if (this.selectedCountryId) {
+    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+      this.divisions = res || [];
+      if (this.selectedDivisionId) {
+        this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
+          this.districts = res2 || [];
+          if (this.selectedDistrictId) {
+            this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
+              this.policeStations = res3 || [];
+              this.cdr.markForCheck();
+            });
+          }
+        });
+      }
+    });
   }
 
+  this.isDrawerOpen = true;
+  this.cdr.markForCheck();
+}
+
+   
   delete(id: number) {
     if (confirm("Purge this customer record definitively?")) {
       this.service.delete(id).subscribe({
