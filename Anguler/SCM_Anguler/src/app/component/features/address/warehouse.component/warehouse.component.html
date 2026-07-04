@@ -66,7 +66,7 @@
                 </div>
               </td>
             </tr>
-            <tr *ngIf="warehouses.length === 0">
+            <tr *ngIf="!warehouses || warehouses.length === 0">
               <td colspan="6" class="text-center py-5 text-muted">
                 <i class="bi bi-inboxes fs-1 d-block mb-2 text-secondary"></i>
                 No active warehouses discovered in the server registry.
@@ -131,7 +131,7 @@
 
           <div class="mb-2">
             <label class="form-label text-muted small fw-medium">Division</label>
-            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange(); generateFullAddress()" [disabled]="divisions.length === 0">
+            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange(); generateFullAddress()" [disabled]="!divisions || divisions.length === 0">
               <option [ngValue]="null">-- Select Division --</option>
               <option *ngFor="let d of divisions" [value]="d.id">{{ d.name }}</option>
             </select>
@@ -139,7 +139,7 @@
 
           <div class="mb-2">
             <label class="form-label text-muted small fw-medium">District</label>
-            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange(); generateFullAddress()" [disabled]="districts.length === 0">
+            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange(); generateFullAddress()" [disabled]="!districts || districts.length === 0">
               <option [ngValue]="null">-- Select District --</option>
               <option *ngFor="let dst of districts" [value]="dst.id">{{ dst.name }}</option>
             </select>
@@ -147,7 +147,7 @@
 
           <div class="mb-1">
             <label class="form-label text-muted small fw-medium">Police Station Terminal</label>
-            <select class="form-select fs-7" [(ngModel)]="warehouse.policeStationId" name="policeStationId" (change)="generateFullAddress()" [disabled]="policeStations.length === 0" required>
+            <select class="form-select fs-7" [(ngModel)]="warehouse.policeStationId" name="policeStationId" (change)="generateFullAddress()" [disabled]="!policeStations || policeStations.length === 0" required>
               <option value="0">-- Select Station --</option>
               <option *ngFor="let ps of policeStations" [value]="ps.id">{{ ps.name }}</option>
             </select>
@@ -155,14 +155,10 @@
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Local Street Address (Road/Holding/Village)</label>
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Local Street Address</label>
           <div class="input-group">
             <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-signpost"></i></span>
-            <input type="text" class="form-control border-start-0 ps-0 fs-7" 
-                   placeholder="e.g., Gate-3, Industrial Area" 
-                   [(ngModel)]="warehouse.location" 
-                   name="location" 
-                   (input)="generateFullAddress()" required>
+            <input type="text" class="form-control border-start-0 ps-0 fs-7" placeholder="e.g., Gate-3, Industrial Area" [(ngModel)]="warehouse.location" name="location" (input)="generateFullAddress()" required>
           </div>
         </div>
 
@@ -170,10 +166,7 @@
           <div class="position-absolute top-0 end-0 p-2 opacity-10">
             <i class="bi bi-magic fs-1 text-primary"></i>
           </div>
-          <label class="form-label fw-bold text-primary small text-uppercase mb-2">
-            <i class="bi bi-cpu-fill me-1"></i>Full Address
-          </label>
-          
+          <label class="form-label fw-bold text-primary small text-uppercase mb-2"><i class="bi bi-cpu-fill me-1"></i>Full Address</label>
           <div class="bg-white p-2.5 rounded border text-dark fs-7 fw-medium font-monospace shadow-sm" style="min-height: 55px; word-break: break-word;">
             <i class="bi bi-geo-fill text-danger me-1" *ngIf="warehouse.address"></i>
             {{ warehouse.address || '' }}
@@ -194,9 +187,7 @@
           <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
             <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Updates' : 'Deploy Node Asset' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">
-            Clear
-          </button>
+          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
         </div>
       </form>
     </div>

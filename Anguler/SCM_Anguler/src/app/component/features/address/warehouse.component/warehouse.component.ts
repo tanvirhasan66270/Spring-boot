@@ -9,7 +9,7 @@ import { PoliceStationService } from '../../../../service/police-station.service
 import { WarehouseRequestModel, WarehouseResponseModel } from '../../../shared/model/warehouse';
 
 @Component({
-  selector: 'app-warehouse.component',
+  selector: 'app-warehouse',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './warehouse.component.html',
@@ -31,10 +31,10 @@ export class WarehouseComponent implements OnInit {
   warehouse: WarehouseRequestModel = {
     name: '',
     email: '',
-    location: '', // User text entry: e.g., "Plot-45, Road-12"
-    address: '',  // Auto compiled address
+    location: '', 
+    address: '',  
     capacity: 0,
-    managerId: 1, // Default Mock Manager
+    managerId: 1, 
     isActive: true,
     policeStationId: 0
   };
@@ -58,18 +58,22 @@ export class WarehouseComponent implements OnInit {
   }
 
   openDrawer() {
+    this.reset();          
+    this.isEdit = false;   
     this.isDrawerOpen = true;
+    this.cdr.markForCheck();
   }
 
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
+    this.cdr.markForCheck();
   }
 
   loadWarehouses() {
     this.service.getAll().subscribe({
       next: (data) => {
-        this.warehouses = data;
+        this.warehouses = data || [];
         this.cdr.markForCheck();
       }
     });
@@ -78,7 +82,7 @@ export class WarehouseComponent implements OnInit {
   loadCountries() {
     this.countryService.getAll().subscribe({
       next: (data) => {
-        this.countries = data;
+        this.countries = data || [];
         this.cdr.markForCheck();
       }
     });
@@ -92,6 +96,7 @@ export class WarehouseComponent implements OnInit {
     this.divisions = [];
     this.districts = [];
     this.policeStations = [];
+
     this.selectedDivisionId = null;
     this.selectedDistrictId = null;
     this.warehouse.policeStationId = 0;
@@ -99,8 +104,9 @@ export class WarehouseComponent implements OnInit {
     if (!this.selectedCountryId) return;
 
     this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-      this.divisions = res;
+      this.divisions = res || [];
       this.cdr.markForCheck();
+      console.log(this.divisions);
     });
   }
 
@@ -110,11 +116,19 @@ export class WarehouseComponent implements OnInit {
     this.selectedDistrictId = null;
     this.warehouse.policeStationId = 0;
 
-    if (!this.selectedDivisionId) return;
+    const divisionId = Number(this.selectedDivisionId);
+    if (!divisionId) return;
 
-    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
-      this.districts = res;
-      this.cdr.markForCheck();
+    this.districtService.getByDivisionId(divisionId).subscribe({
+      next: (res) => {
+        this.districts = res || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to load districts:', err);
+        this.districts = [];
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -122,11 +136,19 @@ export class WarehouseComponent implements OnInit {
     this.policeStations = [];
     this.warehouse.policeStationId = 0;
 
-    if (!this.selectedDistrictId) return;
+    const districtId = Number(this.selectedDistrictId);
+    if (!districtId) return;
 
-    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
-      this.policeStations = res;
-      this.cdr.markForCheck();
+    this.stationService.getByDistrictId(districtId).subscribe({
+      next: (res) => {
+        this.policeStations = res || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Failed to load police stations:', err);
+        this.policeStations = [];
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -149,7 +171,7 @@ export class WarehouseComponent implements OnInit {
   }
 
   save() {
-    if (this.warehouse.policeStationId === 0) {
+    if (!this.warehouse.policeStationId || this.warehouse.policeStationId === 0) {
       alert("Please complete the location hierarchy up to Police Station.");
       return;
     }
@@ -190,8 +212,29 @@ export class WarehouseComponent implements OnInit {
       policeStationId: w.policeStationId
     };
 
-    
-    this.openDrawer();
+    this.selectedCountryId = (w as any).countryId || null;
+    this.selectedDivisionId = (w as any).divisionId || null;
+    this.selectedDistrictId = (w as any).districtId || null;
+
+    if (this.selectedCountryId) {
+      this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+        this.divisions = res || [];
+        if (this.selectedDivisionId) {
+          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
+            this.districts = res2 || [];
+            if (this.selectedDistrictId) {
+              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
+                this.policeStations = res3 || [];
+                this.cdr.markForCheck();
+              });
+            }
+          });
+        }
+      });
+    }
+
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
   }
 
   delete(id: number) {
@@ -212,7 +255,7 @@ export class WarehouseComponent implements OnInit {
       location: '',
       address: '',
       capacity: 0,
-      managerId: 0,
+      managerId: 1,
       isActive: true,
       policeStationId: 0
     };

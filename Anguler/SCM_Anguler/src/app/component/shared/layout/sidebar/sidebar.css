@@ -153,7 +153,6 @@ color:white;
 
 }
 
-/* Scroll */
 
 .sidebar::-webkit-scrollbar{
 
@@ -173,4 +172,31 @@ border-radius:20px;
 
 background:#fafafa;
 
+}
+.fs-7 {
+  font-size: 0.825rem !important;
+  letter-spacing: 0.05em;
+}
+
+.fs-8 {
+  font-size: 0.75rem !important;
+}
+
+.icon-box {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.role-card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  background-color: #ffffff;
+}
+
+.role-card:hover {
+  transform: translateY(-4px); 
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08) !important;
 }

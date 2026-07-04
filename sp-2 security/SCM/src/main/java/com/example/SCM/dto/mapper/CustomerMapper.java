@@ -2,37 +2,28 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
-import com.example.SCM.entity.*;
+import com.example.SCM.entity.Country;
+import com.example.SCM.entity.Customer;
+import com.example.SCM.entity.District;
+import com.example.SCM.entity.Division;
+import com.example.SCM.entity.PoliceStation;
+import com.example.SCM.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 
-/**
- * CustomerMapper
- *
- * Responsible for converting:
- * 1. CustomerRequestDTO -> Customer Entity Updates
- * 2. Customer Entity -> CustomerResponseDTO
- *
- * This class helps separate API models (DTOs)
- * from database entities.
- */
 @Component("scmCustomerMapperServiceNode")
 public class CustomerMapper {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    /**
-     * Convert Customer Entity to CustomerResponseDTO.
-     *
-     * Used when sending customer information back to the client.
-     *
-     * @param entity Customer entity from database
-     * @return CustomerResponseDTO
-     */
+    // =========================
+    // ENTITY -> RESPONSE DTO
+    // =========================
     public CustomerResponseDTO convertTOResponseDTO(Customer entity) {
 
         CustomerResponseDTO dto = new CustomerResponseDTO();
+
         dto.setId(entity.getId());
         dto.setAddress(entity.getAddress());
         dto.setGender(entity.getGender());
@@ -42,40 +33,60 @@ public class CustomerMapper {
         if (entity.getDob() != null) {
             dto.setDob(dateFormat.format(entity.getDob()));
         }
+
         if (entity.getCreatedAt() != null) {
             dto.setCreatedAt(entity.getCreatedAt().toString());
         }
 
-        /*
-         * Map User information (Source of truth)
-         * if User relationship exists.
-         */
+        // =========================
+        // USER INFORMATION
+        // =========================
         if (entity.getUser() != null) {
-            dto.setUserId(entity.getUser().getId());
-            dto.setName(entity.getUser().getName());
-            dto.setEmail(entity.getUser().getEmail());
-            dto.setPhone(entity.getUser().getPhoneNumber());
-            dto.setRole(
-                    entity.getUser().getRole() != null
-                            ? entity.getUser().getRole().toString()
-                            : null
-            );
+
+            User user = entity.getUser();
+
+            dto.setUserId(user.getId());
+            dto.setName(user.getName());
+            dto.setEmail(user.getEmail());
+            dto.setPhone(user.getPhoneNumber());
+
+            if (user.getRole() != null) {
+                dto.setRole(user.getRole().name());
+            }
         }
 
-        /*
-         * Map Location Hierarchy flattening
-         * if PoliceStation relation exists.
-         */
+        // =========================
+        // LOCATION INFORMATION
+        // =========================
         if (entity.getPoliceStation() != null) {
+
             PoliceStation ps = entity.getPoliceStation();
+
             dto.setPoliceStationId(ps.getId());
             dto.setPoliceStationName(ps.getName());
 
-            if (ps.getDistrict() != null) {
-                dto.setDistrictName(ps.getDistrict().getName());
+            District district = ps.getDistrict();
 
-                if (ps.getDistrict().getDivision() != null) {
-                    dto.setDivisionName(ps.getDistrict().getDivision().getName());
+            if (district != null) {
+
+                dto.setDistrictId(district.getId());
+                dto.setDistrictName(district.getName());
+
+                Division division = district.getDivision();
+
+                if (division != null) {
+
+                    dto.setDivisionId(division.getId());
+                    dto.setDivisionName(division.getName());
+
+                    Country country = division.getCountry();
+
+                    if (country != null) {
+
+                        dto.setCountryId(country.getId());
+                        dto.setCountryName(country.getName());
+
+                    }
                 }
             }
         }
@@ -83,44 +94,61 @@ public class CustomerMapper {
         return dto;
     }
 
-    /**
-     * Update existing Customer and User Entity with request data.
-     *
-     * Used during customer profiles sync and manual entity modification.
-     *
-     * @param dto Incoming request data containing updates
-     * @param entity Existing customer entity instance to be modified
-     * @param policeStation Assigned corporate location station node reference
-     */
-    public void updateEntity(CustomerRequestDTO dto, Customer entity, PoliceStation policeStation) {
+    // =========================
+    // REQUEST DTO -> ENTITY
+    // =========================
+    public void updateEntity(CustomerRequestDTO dto,
+                             Customer entity,
+                             PoliceStation policeStation) {
 
-        // ১. কাস্টমার টেবিল সিঙ্ক
-        if (dto.getName() != null) entity.setName(dto.getName());
-        if (dto.getEmail() != null) entity.setEmail(dto.getEmail());
-        if (dto.getPhone() != null) entity.setPhone(dto.getPhone());
-        if (dto.getAddress() != null) entity.setAddress(dto.getAddress());
-        if (dto.getGender() != null) entity.setGender(dto.getGender());
-        if (dto.getNidNumber() != null) entity.setNidNumber(dto.getNidNumber());
-        if (dto.getImage() != null) entity.setImage(dto.getImage());
+        if (dto.getName() != null)
+            entity.setName(dto.getName());
+
+        if (dto.getEmail() != null)
+            entity.setEmail(dto.getEmail());
+
+        if (dto.getPhone() != null)
+            entity.setPhone(dto.getPhone());
+
+        if (dto.getAddress() != null)
+            entity.setAddress(dto.getAddress());
+
+        if (dto.getGender() != null)
+            entity.setGender(dto.getGender());
+
+        if (dto.getNidNumber() != null)
+            entity.setNidNumber(dto.getNidNumber());
+
+        // Image এখানে Set করবেন না।
+        // Image CustomerServiceImp থেকে MultipartFile দিয়ে Update হবে।
 
         if (dto.getDob() != null) {
             try {
                 entity.setDob(dateFormat.parse(dto.getDob()));
             } catch (Exception e) {
-                System.err.println("DOB sync fail: " + e.getMessage());
+                throw new RuntimeException("Invalid Date Format. Expected yyyy-MM-dd");
             }
         }
-        if (policeStation != null) entity.setPoliceStation(policeStation);
 
-        // ২. ইউজার টেবিল (Source of truth) সিঙ্ক
+        if (policeStation != null) {
+            entity.setPoliceStation(policeStation);
+        }
+
+        // =========================
+        // USER UPDATE
+        // =========================
         if (entity.getUser() != null) {
+
             User user = entity.getUser();
-            if (dto.getName() != null) user.setName(dto.getName());
-            if (dto.getEmail() != null) user.setEmail(dto.getEmail());
-            if (dto.getPhone() != null) user.setPhoneNumber(dto.getPhone());
 
+            if (dto.getName() != null)
+                user.setName(dto.getName());
 
+            if (dto.getEmail() != null)
+                user.setEmail(dto.getEmail());
+
+            if (dto.getPhone() != null)
+                user.setPhoneNumber(dto.getPhone());
         }
     }
-
 }

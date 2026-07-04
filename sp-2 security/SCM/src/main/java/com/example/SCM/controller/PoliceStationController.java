@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/police-stations")
+@RequestMapping("/api/policestation/")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class PoliceStationController {
@@ -23,7 +23,7 @@ public class PoliceStationController {
         return new ResponseEntity<>(policeStationService.save(dto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("{id}")
     public ResponseEntity<PoliceStationResponseDTO> update(@PathVariable Long id, @RequestBody PoliceStationRequestDTO dto) {
         return ResponseEntity.ok(policeStationService.update(id, dto));
     }
@@ -38,23 +38,23 @@ public class PoliceStationController {
     // নির্দিষ্ট জেলার আন্ডারে থাকা থানাগুলো ক্যাস্কেডিং ড্রপডাউন ফিল্টারিংয়ের জন্য ব্যবহৃত হবে।
      // URL: /api/police-stations/district/1
 
-    @GetMapping("/district/{districtId}")
+    @GetMapping("district/{districtId}")
     public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long districtId) {
         List<PoliceStationResponseDTO> list = policeStationService.getByDistrictId(districtId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<PoliceStationResponseDTO> getById(@PathVariable Long id) {
         return policeStationService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         policeStationService.delete(id);
         return ResponseEntity.ok("Police Station deleted successfully");
     }
-    @GetMapping("/search")
+    @GetMapping("search")
     public ResponseEntity<List<PoliceStationResponseDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(policeStationService.search(keyword));
     }

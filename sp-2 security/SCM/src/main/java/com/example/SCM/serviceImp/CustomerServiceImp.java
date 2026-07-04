@@ -1,6 +1,5 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.CustomerMapper;
 import com.example.SCM.dto.request.CustomerRequestDTO;
@@ -10,7 +9,6 @@ import com.example.SCM.repository.*;
 import com.example.SCM.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -152,7 +150,10 @@ public class CustomerServiceImp implements CustomerService {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            String cleanedName = (customerName != null ? customerName : "customer").trim().replaceAll("\\s+", "_");
+            String cleanedName = (customerName != null ? customerName : "customer")
+                    .trim()
+                    .replaceAll("[\\\\/:*?\"<>|]", "_")   // Replace illegal filename characters
+                    .replaceAll("\\s+", "_");             // Replace spaces
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
             Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);

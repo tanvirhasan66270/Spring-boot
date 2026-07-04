@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/districts")
+@RequestMapping("/api/district/")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*")
 public class DistrictController {
@@ -23,7 +23,7 @@ public class DistrictController {
         return new ResponseEntity<>(districtService.save(dto), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("{id}")
     public ResponseEntity<DistrictResponseDTO> update(@PathVariable Long id, @RequestBody DistrictRequestDTO dto) {
         return ResponseEntity.ok(districtService.update(id, dto));
     }
@@ -37,18 +37,18 @@ public class DistrictController {
 
     // নির্দিষ্ট ডিভিশন আইডির আন্ডারে থাকা জেলাগুলো ক্যাস্কেডিং ড্রপডাউনে ফিল্টার করার এন্ডপয়েন্ট।
 
-    @GetMapping("/division/{divisionId}")
+    @GetMapping("division/{divisionId}")
     public ResponseEntity<List<DistrictResponseDTO>> getByDivisionId(@PathVariable Long divisionId) {
         List<DistrictResponseDTO> list = districtService.getByDivisionId(divisionId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public ResponseEntity<DistrictResponseDTO> getById(@PathVariable Long id) {
         return districtService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         districtService.delete(id);
         return ResponseEntity.ok("District deleted successfully");

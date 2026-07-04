@@ -1,0 +1,218 @@
+<div class="container-fluid px-4 mt-4">
+
+  
+
+    <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+
+  <div class="slide-drawer" [class.show]="isDrawerOpen">
+    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-1 fw-bold">{{ isEdit ? 'Modify Customer Nodes' : 'Configure New Customer' }}</h5>
+        <p class="mb-0 text-muted small">Establish consumer account parameters.</p>
+      </div>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
+      <form (ngSubmit)="save()">
+        
+        <div class="mb-3 text-center p-3 bg-light rounded-3 border">
+          <label class="form-label fw-semibold text-secondary small text-uppercase d-block mb-2">Profile Image</label>
+          <div class="position-relative d-inline-block mb-2">
+            <div class="avatar-md bg-white rounded-circle d-flex align-items-center justify-content-center overflow-hidden border" style="width: 85px; height: 85px; margin: 0 auto;">
+              <img *ngIf="imagePreview" [src]="imagePreview" class="w-100 h-100 object-fit-cover">
+              <i *ngIf="!imagePreview" class="bi bi-person-bounding-box text-secondary fs-2"></i>
+            </div>
+            <button *ngIf="imagePreview" type="button" class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 end-0" (click)="removeSelectedFile(fileInput)"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <input #fileInput type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Customer Full Name</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0 fs-7" placeholder="John Doe" [(ngModel)]="customer.name" name="name" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
+            <input type="email" class="form-control border-start-0 ps-0 fs-7" placeholder="john@domain.com" [(ngModel)]="customer.email" name="email" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Phone Vector</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0 fs-7" placeholder="017XXXXXXXX" [(ngModel)]="customer.phone" name="phone" required>
+          </div>
+        </div>
+
+        <div class="mb-3" *ngIf="!isEdit">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Access Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control border-start-0 ps-0 fs-7" placeholder="••••••••" [(ngModel)]="customer.password" name="password" required>
+          </div>
+        </div>
+
+        <div class="mb-3" *ngIf="!isEdit">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Confirm Password</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" class="form-control border-start-0 ps-0 fs-7" placeholder="Re-enter password" [(ngModel)]="confirmPassword" name="confirmPassword" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">National ID (NID)</label>
+            <input type="text" class="form-control fs-7 font-monospace" placeholder="199XXXXXXXXXX" [(ngModel)]="customer.nidNumber" name="nidNumber" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Birthdate</label>
+            <input type="date" class="form-control fs-7" [(ngModel)]="customer.dob" name="dob" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Gender</label>
+          <select class="form-select fs-7" [(ngModel)]="customer.gender" name="gender" required>
+            <option value="">-- Select Gender --</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <div class="p-3 bg-light rounded-3 mb-3 border shadow-sm">
+          <span class="fw-bold d-block text-dark small text-uppercase mb-3 text-primary"><i class="bi bi-geo-alt-fill me-1"></i> Territorial Distribution Hierarchy</span>
+          
+          <div class="mb-2">
+            <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="countryId" (change)="onCountryChange(); generateFullAddress()">
+              <option [ngValue]="null">-- Country --</option>
+              <option *ngFor="let c of countries" [value]="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange(); generateFullAddress()" [disabled]="!divisions || divisions.length === 0">
+              <option [ngValue]="null">-- Division --</option>
+              <option *ngFor="let d of divisions" [value]="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+
+          <div class="mb-2">
+            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange(); generateFullAddress()" [disabled]="!districts || districts.length === 0">
+              <option [ngValue]="null">-- District --</option>
+              <option *ngFor="let dst of districts" [value]="dst.id">{{ dst.name }}</option>
+            </select>
+          </div>
+
+          <div class="mb-1">
+            <select class="form-select fs-7" [(ngModel)]="customer.policeStationId" name="policeStationId" (change)="generateFullAddress()" [disabled]="!policeStations || policeStations.length === 0" required>
+              <option value="0">-- Police Station Terminal --</option>
+              <option *ngFor="let ps of policeStations" [value]="ps.id">{{ ps.name }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Local Street Line (Road/House)</label>
+          <input type="text" class="form-control fs-7" placeholder="e.g., House-12, Road-5" [(ngModel)]="streetAddress" name="streetAddress" (input)="generateFullAddress()" required>
+        </div>
+
+        <div class="mb-4 bg-primary-subtle border border-primary-subtle p-3 rounded-3">
+          <label class="form-label fw-bold text-primary small text-uppercase mb-2"><i class="bi bi-cpu-fill me-1"></i>Full Compiled Address</label>
+          <div class="bg-white p-2.5 rounded border text-dark fs-7 fw-medium font-monospace shadow-sm" style="min-height: 55px; word-break: break-word;">
+            {{ customer.address || 'Standby for location parameters compilation...' }}
+          </div>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 mt-5">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Update Records' : 'save' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  
+    <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+    <div>
+      <h4 class="mb-1 text-dark fw-bold">Customer Management Hub</h4>
+      <p class="text-muted mb-0 small">Administer global enterprise customer registers, track geographic indices, and regulate credentials.</p>
+    </div>
+    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
+      <i class="bi bi-plus-circle-fill"></i> Add Customer
+    </button>
+  </div>
+
+
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-uppercase fs-7 tracking-wider">
+            <tr>
+              <th class="ps-4" width="80">ID</th>
+              <th>Customer Details</th>
+              <th>Demographics (NID)</th>
+              <th>Aggregated Address String</th>
+              <th class="text-end pe-4" width="160">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of customers" class="transition-all">
+              <td class="ps-4 text-muted fw-medium font-monospace">#{{ c.id }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 40px; height: 40px;">
+                    <img *ngIf="c.image" [src]="getImageUrl(c.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
+                    <i *ngIf="!c.image || !isImageAvailable(c.image)" class="bi bi-person-fill fs-5 text-secondary"></i>
+                  </div>
+                  <div>
+                    <span class="fw-semibold text-dark d-block mb-0.5">{{ c.name }}</span>
+                    <span class="text-secondary small d-block"><i class="bi bi-envelope me-1"></i>{{ c.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="d-block small text-dark fw-bold font-monospace">{{ c.nidNumber }}</span>
+                <span class="text-muted small"><i class="bi bi-telephone-fill me-1"></i>{{ c.phone }}</span>
+              </td>
+              <td>
+                <span class="text-dark small fw-medium d-block text-truncate" style="max-width: 320px;" [title]="c.address">
+                  {{ c.address }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-icon btn-light border-0 text-warning" title="Edit Customer" (click)="edit(c)">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Record" (click)="delete(c.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!customers || customers.length === 0">
+              <td colspan="5" class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+                No records found in the customer registry.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  
+</div>

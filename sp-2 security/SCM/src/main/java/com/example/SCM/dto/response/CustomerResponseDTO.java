@@ -4,12 +4,15 @@ import lombok.Data;
 
 @Data
 public class CustomerResponseDTO {
+
     private Long id;
     private Long userId;
+
     private String name;
     private String email;
     private String phone;
     private String role;
+
     private String address;
     private String gender;
     private String dob;
@@ -17,9 +20,15 @@ public class CustomerResponseDTO {
     private String image;
     private String createdAt;
 
-    // --- Location Nodes ---
+    // Location IDs
+    private Long countryId;
+    private Long divisionId;
+    private Long districtId;
     private Long policeStationId;
-    private String policeStationName;
-    private String districtName;
+
+    // Location Names
+    private String countryName;
     private String divisionName;
+    private String districtName;
+    private String policeStationName;
 }

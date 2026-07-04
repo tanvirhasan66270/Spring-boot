@@ -2,7 +2,7 @@ export interface WarehouseRequestModel {
   name: string;
   email: string;
   location: string;
-  address:string;//auto lode policeStationName + districtName + divisionName + Country + location
+  address:string;
   capacity: number;
   managerId: number;
   isActive: boolean;
