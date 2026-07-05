@@ -2,7 +2,6 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../encironment/environment';
-import { CustomerRequestModel, CustomerResponseModel } from '../component/shared/model/customerModel';
 
 @Injectable({
   providedIn: 'root',
@@ -12,15 +11,15 @@ export class CustomerService {
 
   constructor(private http: HttpClient) { }
 
-  getAll(): Observable<CustomerResponseModel[]> {
-    return this.http.get<CustomerResponseModel[]>(this.apiUrl);
+  getAll(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<CustomerResponseModel> {
-    return this.http.get<CustomerResponseModel>(`${this.apiUrl}/${id}`);
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 
-  save(customer: CustomerRequestModel, imageFile: File | null): Observable<CustomerResponseModel> {
+  save(customer: any, imageFile: File | null): Observable<any> {
     const formData = new FormData();
     
     formData.append(
@@ -32,10 +31,10 @@ export class CustomerService {
       formData.append("image", imageFile);
     }
 
-    return this.http.post<CustomerResponseModel>(this.apiUrl, formData);
+    return this.http.post<any>(this.apiUrl, formData);
   }
 
-  update(id: number, customer: CustomerRequestModel, imageFile: File | null): Observable<CustomerResponseModel> {
+  update(id: number, customer: any, imageFile: File | null): Observable<any> {
     const formData = new FormData();
     
     formData.append( "customer",
@@ -46,7 +45,7 @@ export class CustomerService {
       formData.append("image", imageFile);
     }
 
-    return this.http.put<CustomerResponseModel>(`${this.apiUrl}${id}`, formData);
+    return this.http.put<any>(`${this.apiUrl}${id}`, formData);
   }
 
   delete(id: number): Observable<string> {

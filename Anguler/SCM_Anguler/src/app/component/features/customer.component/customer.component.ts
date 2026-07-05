@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CustomerRequestModel, CustomerResponseModel } from '../../shared/model/customerModel';
 import { CustomerService } from '../../../service/customer.service';
 import { CountryService } from '../../../service/country.service';
 import { DivisionService } from '../../../service/division.service';
@@ -18,7 +17,7 @@ import { environment } from '../../../../encironment/environment';
 })
 export class CustomerComponent implements OnInit {
 
-  customers: CustomerResponseModel[] = [];
+  customers: any[] = [];
 
   countries: any[] = [];
   divisions: any[] = [];
@@ -35,7 +34,7 @@ export class CustomerComponent implements OnInit {
   confirmPassword = '';
   readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '') + 'uploads/';
 
-  customer: CustomerRequestModel = {
+  customer: any = {
     name: '',
     email: '',
     phone: '',
@@ -115,7 +114,7 @@ onCountryChange() {
 
   this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
     this.divisions = res || [];
-    this.generateFullAddress(); // ডাটা আসার পর অ্যাড্রেস আপডেট
+    this.generateFullAddress(); 
     this.cdr.markForCheck();
   });
 }
@@ -253,7 +252,7 @@ onDistrictChange() {
     }
   }
 
-  edit(c: CustomerResponseModel) {
+  edit(c: any) {
   this.currentEditId = c.id;
   this.isEdit = true;
 

@@ -13,7 +13,7 @@ public class CommercialOfficerResponseDTO {
     private LocalDate dob;
     private String gender;
     private String image;
-   private LocalDate joiningDate;
+    private LocalDate joiningDate;
     private String designation;
     private String language;
     private Long policeStationId;

@@ -1,6 +1,5 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.QCInspectorMapper;
 import com.example.SCM.dto.request.QCInspectorRequestDTO;
@@ -15,7 +14,6 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.QCInspectorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy; // 🌟 ইনপোর্ট করা হলো
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +38,6 @@ public class QCInspectorServiceImp implements QCInspectorService {
     private final QCInspectorMapper qcInspectorMapper;
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
-
-
-
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -76,7 +71,6 @@ public class QCInspectorServiceImp implements QCInspectorService {
         }
 
         QCInspector savedInspector = qcInspectorRepository.save(inspector);
-
         authService.sendVerificationEmail(savedInspector.getUser().getEmail());
 
         return qcInspectorMapper.convertTOResponseDTO(savedInspector);
@@ -140,8 +134,8 @@ public class QCInspectorServiceImp implements QCInspectorService {
                 .orElseThrow(() -> new RuntimeException("QC Inspector not found with ID: " + id));
 
         User user = inspector.getUser();
-
         qcInspectorRepository.delete(inspector);
+
         if (user != null) {
             userRepository.delete(user);
         }
@@ -171,13 +165,10 @@ public class QCInspectorServiceImp implements QCInspectorService {
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
             Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-
             return fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Image upload failed for QC Inspector profile: " + e.getMessage(), e);
         }
     }
-
-
 }

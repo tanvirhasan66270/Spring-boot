@@ -131,6 +131,48 @@ text-align:center;
 
 }
 
+.submenu-toggle{
+
+border:0;
+
+background:transparent;
+
+width:100%;
+
+text-align:left;
+
+cursor:pointer;
+
+font: inherit;
+
+}
+
+.submenu{
+
+margin:4px 0 8px 8px;
+
+padding-left:8px;
+
+border-left:1px solid #e8e8e8;
+
+}
+
+.submenu-item{
+
+margin-bottom:4px;
+
+padding-left:20px;
+
+font-size:14px;
+
+}
+
+.ms-auto{
+
+margin-left:auto;
+
+}
+
 .item:hover{
 
 background:#eef2ff;

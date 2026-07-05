@@ -49,6 +49,7 @@ public class DriverMapper {
                 .totalEarnings(dto.getTotalEarnings())
                 .image(dto.getImage())
                 .user(user)
+                .active(false)
                 .policeStation(policeStation)
                 .warehouses(warehouses)
                 .build()

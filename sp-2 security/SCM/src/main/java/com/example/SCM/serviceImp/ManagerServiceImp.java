@@ -1,7 +1,6 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService;
-import com.example.SCM.auth.AuthService; // 🌟 ইনপোর্ট করা হলো
+import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.ManagerMapper;
 import com.example.SCM.dto.request.ManagerRequestDTO;
 import com.example.SCM.dto.response.ManagerResponseDTO;
@@ -17,7 +16,6 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.ManagerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy; // 🌟 ইনপোর্ট করা হলো
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

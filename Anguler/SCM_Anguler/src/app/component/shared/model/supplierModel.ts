@@ -1,38 +1,40 @@
-
-export interface CommercialOfficerRequestDTO {
+export interface SupplierRequestDTO {
   name: string;
   email: string;
   phone: string;
   password?: string;
+  contactPerson: string;
   address: string;
-  gender: string;
-  dob: string;
   nidNumber: string;
   passportNumber: string;
-  designation: string;
-  joiningDate: string;
-  language: string;
-  policeStationId: number | null;
+  gender: string;
+  dob: string;
+  image: string;
+  rating: number;
+  averageLeadTimeDays: number;
+  policeStationId: number;
 }
 
-export interface CommercialOfficerResponseDTO {
+export interface SupplierResponseDTO {
   id: number;
   userId: number;
   name: string;
   email: string;
   phone: string;
   role: string;
+  contactPerson: string;
   address: string;
-  gender: string;
-  dob: string;
   nidNumber: string;
   passportNumber: string;
+  gender: string;
+  dob: string;
   image: string;
-  joiningDate: string;
-  designation: string;
-  language: string;
+  rating: number;
+  averageLeadTimeDays: number;
   createdAt: string;
   updatedAt: string;
   policeStationId: number;
   policeStationName: string;
+  districtName: string;
+  divisionName: string;
 }

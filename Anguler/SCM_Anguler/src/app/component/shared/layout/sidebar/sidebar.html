@@ -45,10 +45,58 @@
 
     </div>
 
-    <a routerLink="/users" routerLinkActive="active" class="item">
+    <button type="button" class="item submenu-toggle" (click)="toggleUsersMenu()" [attr.aria-expanded]="usersOpen">
       <i class="bi bi-people"></i>
       Users
-    </a>
+      <i class="bi ms-auto" [ngClass]="usersOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+    </button>
+
+    <div class="submenu" *ngIf="usersOpen">
+      <a routerLink="/customer" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-person"></i>
+        Add Customer
+      </a>
+
+      <a routerLink="/manager" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-person-badge"></i>
+        Add Manager
+      </a>
+
+      <a routerLink="/driver" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-car-front"></i>
+        Add Driver
+      </a>
+
+      <a routerLink="/procurement" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-cart-check"></i>
+        Add Procurement
+      </a>
+
+      <a routerLink="/qc-inspector" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-clipboard-check"></i>
+        Add QC-Inspector
+      </a>
+
+      <a routerLink="/logistics-officer" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-truck"></i>
+        Add Logistics Officer
+      </a>
+
+      <a routerLink="/commercial-officer" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-briefcase"></i>
+        Commercial Officer
+      </a>
+
+      <a routerLink="/sales-officer" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-cash-stack"></i>
+        Add Sales Officer
+      </a>
+
+      <a routerLink="/supplier" routerLinkActive="active" class="item submenu-item">
+        <i class="bi bi-truck-flatbed"></i>
+        Add Supplier
+      </a>
+    </div>
 
     <a routerLink="/country" routerLinkActive="active" class="item">
       <i class="bi bi-globe"></i>

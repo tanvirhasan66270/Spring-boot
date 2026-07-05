@@ -14,7 +14,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/commercial-officers")
+@RequestMapping("/api/commercial-officer")
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class CommercialOfficerController {
