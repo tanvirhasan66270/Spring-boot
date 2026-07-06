@@ -37,4 +37,11 @@ export class CustomerOrderService {
       params: { orderNumber: orderNumber }
     });
   }
+
+  verifyPaymentLink(orderId: number, amountPaid: number, method: string): Observable<string> {
+    return this.http.get(`${this.apiUrl}/verify-link`, {
+      params: { orderId: orderId, amountPaid: amountPaid, method: method },
+      responseType: 'text'
+    });
+  }
 }

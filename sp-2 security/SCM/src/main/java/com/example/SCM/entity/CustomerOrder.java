@@ -2,6 +2,8 @@ package com.example.SCM.entity;
 
 import com.example.SCM.Util.ExecuteCalculations;
 import com.example.SCM.enumClass.CustomerOrderStatus;
+import com.example.SCM.enumClass.PaymentMethod;
+import com.example.SCM.enumClass.PaymentStatus;
 import com.example.SCM.enumClass.ServiceType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -25,14 +27,11 @@ public class CustomerOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(unique = true, nullable = false)
     private String orderNumber;
 
-
     private String customerName;
     private String customerEmail;
-
 
     private double itemSubtotal;
     private double weight;
@@ -51,15 +50,29 @@ public class CustomerOrder {
     @Column(nullable = false)
     private String paidAmount;
 
+    private String dueAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
+
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private CustomerOrderStatus status = CustomerOrderStatus.PENDING;
 
-
     @Column(columnDefinition = "TEXT", nullable = false)
     private String deliveryAddress;
 
+    @Column(nullable = false)
+    private String deliveryPhone;
+
     private LocalDate estimatedDelivery;
+
+    @Column(columnDefinition = "TEXT")
+    private String remarks;
 
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
@@ -98,7 +111,7 @@ public class CustomerOrder {
     }
 
     public void executeCalculations() {
-        // ১. সব lijn আইটেমের মোট সাবটোটাল বের করা
+        // ১. সব লাইন আইটেমের মোট সাবটোটাল বের করা
         this.itemSubtotal = ExecuteCalculations.calculateItemSubtotal(this.lineItems);
 
         // ২. সব লাইন আইটেমের মোট ওজন বের করা
@@ -112,6 +125,33 @@ public class CustomerOrder {
 
         // ৫. ইউটিলিটি মেথড ব্যবহার করে paidAmount স্ট্রিং সেট করা
         this.paidAmount = ExecuteCalculations.calculatePaidAmount(this.totalAmount, this.codAmount);
+
+        // পেমেন্ট কন্ডিশন ও বিজনেস রুলস মেকানিজম
+        double paid = 0.0;
+        try {
+            paid = Double.parseDouble(this.paidAmount);
+        } catch (Exception e) {
+            paid = 0.0;
+        }
+
+        this.dueAmount = String.valueOf(this.totalAmount - paid);
+
+        // রুল ১: যদি পেমেন্ট মেথড CASH (ক্যাশ অন ডেলিভারি) হয়, তবে স্ট্যাটাস সবসময় UNPAID থাকবে
+        if (this.paymentMethod == PaymentMethod.CASH) {
+            this.paymentStatus = PaymentStatus.UNPAID;
+        }
+        // রুল ২: যদি paidAmount গ্র্যান্ড টোটালের সমান বা বেশি হয় (paid == totalAmount)
+        else if (paid >= this.totalAmount && this.totalAmount > 0) {
+            this.paymentStatus = PaymentStatus.PAID;
+        }
+        // রুল ৩: যদি paidAmount মোট টাকার থেকে কম অথচ ০ এর থেকে বেশি হয় (আংশিক পরিশোধ)
+        else if (paid > 0 && paid < this.totalAmount) {
+            this.paymentStatus = PaymentStatus.PARTIALLY_PAID;
+        }
+        // ডিফল্ট ব্যাকআপ রুট
+        else {
+            this.paymentStatus = PaymentStatus.UNPAID;
+        }
     }
 
     public void addLineItem(OrderLineItem item) {
@@ -124,5 +164,4 @@ public class CustomerOrder {
     public Long getCustomerId() {
         return this.customer != null ? this.customer.getId() : null;
     }
-
 }

@@ -1,8 +1,6 @@
 export interface OrderLineItemRequestModel {
-  id: number;
   productId: number;
   quantity: number;
-  unitPrice: number;
   remarks: string;
 }
 
@@ -21,10 +19,14 @@ export interface OrderLineItemResponseModel {
 export interface CustomerOrderRequestModel {
   customerId: number;
   deliveryAddress: string;
+  deliveryPhone: string;
   estimatedDelivery: string;
   serviceType: string;
+  currency: string;
   codAmount: number;
+  paymentMethod: string;
   status: string;
+  remarks: string;
   items: OrderLineItemRequestModel[];
 }
 
@@ -37,13 +39,18 @@ export interface CustomerOrderResponseModel {
   itemSubtotal: number;
   weight: number;
   serviceType: string;
+  currency: string;
   codAmount: number;
   deliveryCharge: number;
   totalAmount: number;
   paidAmount: string;
-  currency: string;
+  dueAmount: string;
+  paymentStatus: string;
+  paymentMethod: string;
   status: string;
   deliveryAddress: string;
+  deliveryPhone: string;
+  remarks: string;
   estimatedDelivery: string;
   createdAt: string;
   lineItems: OrderLineItemResponseModel[];

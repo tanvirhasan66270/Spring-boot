@@ -19,7 +19,6 @@ public class OrderLineItemMapper {
     public OrderLineItem toEntity(OrderLineItemRequestDTO dto) {
 
         OrderLineItem item = new OrderLineItem();
-        item.setId(dto.getId()); // আপডেট লাইফসাইকেলের ট্র্যাকিং আইডি
         item.setQuantity(dto.getQuantity());
         item.setRemarks(dto.getRemarks());
 

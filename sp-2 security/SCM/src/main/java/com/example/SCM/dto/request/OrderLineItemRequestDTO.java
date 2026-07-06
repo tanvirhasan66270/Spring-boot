@@ -10,9 +10,7 @@ import lombok.Data;
 
 public class OrderLineItemRequestDTO {
 
-    private Long id; // Update করার সময় প্রয়োজন হতে পারে, অন্যথায় অপশনাল
-
-    private Long productId;
+     private Long productId;
 
     private int quantity;
 

@@ -7,7 +7,6 @@ import { CustomerOrderRequestModel, CustomerOrderResponseModel, OrderLineItemReq
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { AddProductService } from '../../../service/add-product.service';
 
-
 @Component({
   selector: 'app-customer-order',
   standalone: true,
@@ -33,10 +32,14 @@ export class CustomerOrderComponent implements OnInit {
   order: CustomerOrderRequestModel = {
     customerId: 0,
     deliveryAddress: '',
+    deliveryPhone: '',      
     estimatedDelivery: '',
     serviceType: 'STANDARD',
+    currency: 'BDT',          
     codAmount: 0,
+    paymentMethod: 'CASH',    
     status: 'PENDING',
+    remarks: '',              
     items: []
   };
 
@@ -108,10 +111,8 @@ export class CustomerOrderComponent implements OnInit {
       existingItem.quantity += this.currentQuantity;
     } else {
       const newItem: OrderLineItemRequestModel = {
-        id: 0, 
         productId: this.currentProduct.id,
         quantity: this.currentQuantity,
-        unitPrice: this.currentProduct.sellingPrice,
         remarks: this.currentRemarks
       };
       this.order.items.push(newItem);
@@ -142,6 +143,11 @@ export class CustomerOrderComponent implements OnInit {
 
     if (this.order.customerId === 0) {
       this.errorMessage = 'Validation Fault: Associate a target customer profile token context.';
+      return;
+    }
+
+    if (!this.order.deliveryPhone || this.order.deliveryPhone.trim() === '') {
+      this.errorMessage = 'Validation Fault: Delivery contact number is required.';
       return;
     }
 
@@ -179,15 +185,17 @@ export class CustomerOrderComponent implements OnInit {
     this.order = {
       customerId: o.customerId,
       deliveryAddress: o.deliveryAddress,
+      deliveryPhone: o.deliveryPhone || '',      
       estimatedDelivery: o.estimatedDelivery,
       serviceType: o.serviceType,
+      currency: o.currency || 'BDT',                
       codAmount: o.codAmount,
+      paymentMethod: o.paymentMethod || 'CASH',    
       status: o.status,
+      remarks: o.remarks || '',                    
       items: o.lineItems.map(item => ({
-        id: item.id,
         productId: item.productId,
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
         remarks: item.remarks || ''
       }))
     };
@@ -212,10 +220,14 @@ export class CustomerOrderComponent implements OnInit {
     this.order = {
       customerId: 0,
       deliveryAddress: '',
+      deliveryPhone: '',
       estimatedDelivery: '',
       serviceType: 'STANDARD',
+      currency: 'BDT',
       codAmount: 0,
+      paymentMethod: 'CASH',
       status: 'PENDING',
+      remarks: '',
       items: []
     };
     this.currentProduct = null;

@@ -7,6 +7,7 @@ import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.ActionStatus;
+import com.example.SCM.enumClass.PaymentMethod;
 import com.example.SCM.enumClass.ServiceType;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.CustomerOrderService;
@@ -33,48 +34,54 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final HttpServletRequest request;
     private final CustomerRepository customerRepository;
 
-    private String resolveCurrentUserId() {
-        String userId = request.getHeader("X-User-Id");
-        return (userId != null && !userId.isBlank()) ? userId : "16";
-    }
-
 
     @Transactional
     @Override
     public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
-
         Customer customerProfile = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target customer profile missing! ID: " + dto.getCustomerId()));
 
         User customerUser = customerProfile.getUser();
         if (customerUser == null) {
-            throw new RuntimeException("Customer profile matrix has no linked authorization User account.");
+            throw new RuntimeException("Customer profile has no linked User account.");
         }
 
         CustomerOrder order = orderMapper.toEntity(dto, customerUser);
-        order.executeCalculations(); // সাবটোটাল ও চার্জ ক্যালকুলেশন
+        order.executeCalculations();
+
+        double inputPaid = dto.getCodAmount();
+        if (inputPaid > order.getTotalAmount()) {
+            throw new IllegalArgumentException("Error: Provided amount cannot be greater than Total Order Value (" + order.getTotalAmount() + " BDT)!");
+        }
 
         CustomerOrder savedOrder = orderRepository.save(order);
-        sendOrderConfirmationEmail(savedOrder);
 
-        try {
-            activityLogService.log(
-                    resolveCurrentUserId(),
-                    null,
-                    "CREATE",
-                    "CUSTOMER_ORDER",
-                    savedOrder.getId().toString(),
-                    "New order placed. Order Number: " + savedOrder.getOrderNumber() + ", Total: " + savedOrder.getTotalAmount(),
-                    null,
-                    "{\"orderNumber\":\"" + savedOrder.getOrderNumber() + "\", \"totalAmount\":" + savedOrder.getTotalAmount() + "}",
-                    ActionStatus.SUCCESS,
-                    request.getRemoteAddr()
-            );
-        } catch (Exception e) {
-            System.err.println("Activity logging bypassed: " + e.getMessage());
+        if (savedOrder.getPaymentMethod() == PaymentMethod.CASH) {
+            sendOrderConfirmationEmail(savedOrder);
+        } else {
+            sendInitPaymentVerificationEmail(savedOrder, inputPaid);
         }
 
         return orderMapper.convertTOResponseDTO(savedOrder);
+    }
+
+    @Transactional
+    @Override
+    public void processFinalPaymentConfirmation(Long orderId, double amountPaid, String method) {
+        CustomerOrder order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order matrix record missing for ID: " + orderId));
+
+        if (amountPaid > order.getTotalAmount()) {
+            throw new IllegalArgumentException("Error: Confirmed payment amount exceeds grand total order limit.");
+        }
+
+        order.setPaymentMethod(PaymentMethod.valueOf(method.toUpperCase()));
+        order.setPaidAmount(String.valueOf(amountPaid));
+        order.executeCalculations();
+
+        CustomerOrder updatedOrder = orderRepository.save(order);
+
+        sendOrderConfirmationEmail(updatedOrder);
     }
 
     @Transactional
@@ -83,25 +90,9 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
 
-        Long oldCustomerId = order.getCustomer() != null ? order.getCustomer().getId() : null;
-        String oldDeliveryAddress = order.getDeliveryAddress();
-        double oldTotalAmount = order.getTotalAmount();
-
-        if (dto.getCustomerId() != null) {
-            Customer newCustomerProfile = customerRepository.findById(dto.getCustomerId())
-                    .orElseThrow(() -> new RuntimeException("New target customer profile missing! ID: " + dto.getCustomerId()));
-
-            User newCustomerUser = newCustomerProfile.getUser();
-            if (newCustomerUser == null) {
-                throw new RuntimeException("New customer profile has no linked authorization account.");
-            }
-
-            order.setCustomer(newCustomerUser);
-            order.setCustomerName(newCustomerUser.getName());
-            order.setCustomerEmail(newCustomerUser.getEmail());
-        }
-
         if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
+        if (dto.getDeliveryPhone() != null) order.setDeliveryPhone(dto.getDeliveryPhone());
+        if (dto.getRemarks() != null) order.setRemarks(dto.getRemarks());
         if (dto.getEstimatedDelivery() != null) order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
         order.setCodAmount(dto.getCodAmount());
@@ -110,88 +101,55 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             order.getLineItems().clear();
             dto.getItems().forEach(itemDto -> {
                 OrderLineItem item = lineItemMapper.toEntity(itemDto);
-                if (item != null) {
-                    order.addLineItem(item);
-                }
+                if (item != null) order.addLineItem(item);
             });
-            order.executeCalculations();
         }
+        order.executeCalculations();
+        return orderMapper.convertTOResponseDTO(orderRepository.save(order));
+    }
 
-        CustomerOrder updatedOrder = orderRepository.save(order);
+    @Transactional(readOnly = true) public List<CustomerOrderResponseDTO> findAll() { return orderRepository.findAllOrdersWithDetails().stream().map(orderMapper::convertTOResponseDTO).collect(Collectors.toList()); }
+    @Transactional(readOnly = true) public Optional<CustomerOrderResponseDTO> getById(Long id) { return orderRepository.findByIdWithDetails(id).map(orderMapper::convertTOResponseDTO); }
+    @Transactional public void delete(Long id) { orderRepository.deleteById(id); }
+    @Transactional(readOnly = true) public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) { return orderRepository.findByOrderNumberWithDetails(orderNumber).map(orderMapper::convertTOResponseDTO); }
+
+    private void sendInitPaymentVerificationEmail(CustomerOrder order, double amountPaid) {
+        if (order.getCustomerEmail() == null || order.getCustomerEmail().contains("no-email")) return;
+
+        String subject = "Action Required: Verify Your Payment for Order #" + order.getOrderNumber();
+
+        String targetVerificationUrl = "http://localhost:8085/api/customerOrders/verify-link?orderId="
+                + order.getId() + "&amountPaid=" + amountPaid + "&method=" + order.getPaymentMethod().name();
+
+        String mailContent = """
+        <!DOCTYPE html>
+        <html>
+        <body style='font-family: Arial; line-height: 1.6; color: #333;'>
+            <div style='max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;'>
+                <h3 style='color: #1A365D;'>Payment Initialization Verification</h3>
+                <p>Dear <b>%s</b>,</p>
+                <p>We received a payment request via <b>%s</b> for your order.</p>
+                <table style='width: 100%%; margin: 15px 0; border-collapse: collapse;'>
+                    <tr><td>Order Number:</td><td><b>%s</b></td></tr>
+                    <tr><td>Initiated Amount:</td><td><b>%.2f %s</b></td></tr>
+                    <tr><td>Grand Total Bill:</td><td><b>%.2f %s</b></td></tr>
+                </table>
+                <p>Please click the button below to authorize and confirm this transaction:</p>
+                <div style='text-align: center; margin: 30px 0;'>
+                    <a href='%s' style='background-color: #2B6CB0; color: white; padding: 12px 30px; text-decoration: none; font-weight: bold; border-radius: 5px; display: inline-block;'>Confirm My Payment</a>
+                </div>
+                <p style='font-size: 12px; color: #718096;'>If you did not initiate this transaction, please contact support immediately.</p>
+            </div>
+        </body>
+        </html>
+        """.formatted(order.getCustomerName(), order.getPaymentMethod().name(), order.getOrderNumber(),
+                amountPaid, order.getCurrency(), order.getTotalAmount(), order.getCurrency(), targetVerificationUrl);
 
         try {
-            activityLogService.log(
-                    resolveCurrentUserId(),
-                    null,
-                    "UPDATE",
-                    "CUSTOMER_ORDER",
-                    updatedOrder.getId().toString(),
-                    "Order updated. Order Number: " + updatedOrder.getOrderNumber(),
-                    "{\"customerId\":" + oldCustomerId + ", \"address\":\"" + oldDeliveryAddress + "\", \"total\":" + oldTotalAmount + "}",
-                    "{\"customerId\":" + (updatedOrder.getCustomer() != null ? updatedOrder.getCustomer().getId() : null) + ", \"address\":\"" + updatedOrder.getDeliveryAddress() + "\", \"total\":" + updatedOrder.getTotalAmount() + "}",
-                    ActionStatus.SUCCESS,
-                    request.getRemoteAddr()
-            );
+            mailService.senderGeneralMail(order.getCustomerEmail(), subject, mailContent);
         } catch (Exception e) {
-            System.err.println("Activity update logging bypassed: " + e.getMessage());
+            System.err.println("Init Mail Error: " + e.getMessage());
         }
-
-        return orderMapper.convertTOResponseDTO(updatedOrder);
-    }
-
-
-    @Transactional(readOnly = true)
-    @Override
-    public List<CustomerOrderResponseDTO> findAll() {
-        return orderRepository.findAllOrdersWithDetails()
-                .stream()
-                .map(orderMapper::convertTOResponseDTO)
-                .collect(Collectors.toList());
-    }
-
-
-    @Transactional(readOnly = true)
-    @Override
-    public Optional<CustomerOrderResponseDTO> getById(Long id) {
-        return orderRepository.findByIdWithDetails(id)
-                .map(orderMapper::convertTOResponseDTO);
-    }
-
-
-    @Transactional
-    @Override
-    public void delete(Long id) {
-        CustomerOrder order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Target customer order row missing mapping index"));
-
-        String deletedOrderNumber = order.getOrderNumber();
-        double deletedTotalAmount = order.getTotalAmount();
-
-        orderRepository.delete(order);
-
-        activityLogService.log(
-                resolveCurrentUserId(),
-                null,
-                "DELETE",
-                "CUSTOMER_ORDER",
-                id.toString(),
-                "Customer order permanently purged from logistics cluster. Order Number was: " + deletedOrderNumber,
-                "{\"orderNumber\":\"" + deletedOrderNumber + "\", \"totalAmount\":" + deletedTotalAmount + "}",
-                null,
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
-        );
-    }
-
-
-    @Transactional(readOnly = true)
-    @Override
-    public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) {
-        if (orderNumber == null || orderNumber.trim().isEmpty()) {
-            throw new IllegalArgumentException("Tracking/Order number cannot be empty");
-        }
-        return orderRepository.findByOrderNumberWithDetails(orderNumber.trim())
-                .map(orderMapper::convertTOResponseDTO);
     }
 
     private void sendOrderConfirmationEmail(CustomerOrder order) {
@@ -203,96 +161,89 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         if (order.getLineItems() != null) {
             for (OrderLineItem item : order.getLineItems()) {
                 itemRows.append(String.format("""
-                    <tr>
-                        <td><b>%s</b></td>
-                        <td style='text-align: center;'>%d</td>
-                        <td style='text-align: right;'>%s %.2f</td>
-                    </tr>
-                """, item.getProduct().getName(), item.getQuantity(), order.getCurrency(), item.getLineTotal()));
+                <tr>
+                    <td><b>%s</b></td>
+                    <td style='text-align: center;'>%d</td>
+                    <td style='text-align: right;'>%s %.2f</td>
+                </tr>
+            """, item.getProduct().getName(), item.getQuantity(), order.getCurrency(), item.getLineTotal()));
             }
         }
 
         String mailText = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f6f9; margin: 0; padding: 0; }
-                .container { max-width: 600px; margin: 30px auto; padding: 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-                .header { background-color: #2E7D32; color: white; padding: 30px; text-align: center; }
-                .header h2 { margin: 0; font-size: 26px; font-weight: 600; }
-                .content { padding: 30px; }
-                .tracking-box { background-color: #E8F5E9; border-left: 5px solid #2E7D32; padding: 15px; margin: 20px 0; border-radius: 4px; }
-                .tracking-code { font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; color: #1B5E20; letter-spacing: 1px; }
-                .invoice-table { width: 100%%; border-collapse: collapse; margin: 20px 0; }
-                .invoice-table th { background-color: #f8fafc; text-align: left; padding: 10px; font-size: 13px; color: #64748b; border-bottom: 2px solid #e2e8f0; }
-                .invoice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-                .total-row { font-weight: bold; color: #2E7D32; font-size: 16px; background-color: #f8fafc; }
-                .btn-container { text-align: center; margin: 30px 0; }
-                .btn { background-color: #2E7D32; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; }
-                .footer { font-size: 0.85em; color: #64748b; padding: 20px; background-color: #f8fafc; text-align: center; border-top: 1px solid #e2e8f0; }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='header'>
-                    <h2>Order Confirmed Successfully</h2>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f6f9; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 30px auto; padding: 0; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+            .header { background-color: #2E7D32; color: white; padding: 30px; text-align: center; }
+            .header h2 { margin: 0; font-size: 26px; font-weight: 600; }
+            .content { padding: 30px; }
+            
+            /* নতুন ট্র্যাকিং বক্স স্টাইল মডিউল */
+            .tracking-box { background-color: #E8F5E9; border-left: 5px solid #2E7D32; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .tracking-code { font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; color: #1B5E20; letter-spacing: 1px; }
+            
+            .invoice-table { width: 100%%; border-collapse: collapse; margin: 20px 0; }
+            .invoice-table th { background-color: #f8fafc; padding: 10px; border-bottom: 2px solid #e2e8f0; text-align: left; font-size: 13px; color: #64748b; }
+            .invoice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+            .total-row { font-weight: bold; color: #2E7D32; font-size: 16px; background-color: #f8fafc; }
+            
+            /* নতুন ট্র্যাকিং বাটন স্টাইল */
+            .btn-container { text-align: center; margin: 30px 0; }
+            .btn { background-color: #2E7D32; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; }
+            
+            .footer { font-size: 12px; color: #64748b; background-color: #f8fafc; padding: 15px; text-align: center; border-top: 1px solid #e2e8f0; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h2>Order Confirmed Successfully</h2>
+            </div>
+            <div class='content'>
+                <p>Dear <b>%s</b>,</p>
+                <p>Your purchase order has been logged into our logistics cluster node.</p>
+                <p>Payment Method: <b>%s</b> | Payment Status: <span style='color:blue;'><b>%s</b></span></p>
+                
+                <div class='tracking-box'>
+                    <p style='margin: 0 0 5px 0; font-size: 13px; color: #555;'>YOUR UNIQUE LIVE TRACKING CODE:</p>
+                    <span class='tracking-code'>%s</span>
                 </div>
-                <div class='content'>
-                    <p>Dear <b>%s</b>,</p>
-                    <p>Thank you for shopping with us! Your multi-item purchase order has been successfully logged into our logistics cluster nodes.</p>
-                    
-                    <div class='tracking-box'>
-                        <p style='margin: 0 0 5px 0; font-size: 13px;'>YOUR UNIQUE LIVE TRACKING CODE:</p>
-                        <span class='tracking-code'>%s</span>
-                    </div>
 
-                    <table class='invoice-table'>
-                        <thead>
-                            <tr>
-                                <th>Product Specifications</th>
-                                <th style='text-align: center;'>Qty</th>
-                                <th style='text-align: right;'>Total Bill</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            %s
-                            <tr>
-                                <td colspan='2' style='text-align: right; color:#64748b;'>Cart Item Subtotal:</td>
-                                <td style='text-align: right;'>%s %.2f</td>
-                            </tr>
-                            <tr>
-                                <td colspan='2' style='text-align: right; color:#64748b;'>Logistics Charge (%s):</td>
-                                <td style='text-align: right;'>%s %.2f</td>
-                            </tr>
-                            <tr class='total-row'>
-                                <td colspan='2' style='text-align: right;'>Net Aggregate Amount:</td>
-                                <td style='text-align: right;'>%s %.2f</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <p><b>Consignment Shipping Node:</b><br>%s</p>
-
-                    <div class='btn-container'>
-                        <a href='http://localhost:4200/track-order?code=%s' class='btn'>Track Package Live</a>
-                    </div>
-                </div>
-                <div class='footer'>
-                    &copy; %d SCM Global Logistics Network. All rights reserved.
+                <table class='invoice-table'>
+                    <thead><tr><th>Product Name</th><th style='text-align:center;'>Qty</th><th style='text-align:right;'>Total</th></tr></thead>
+                    <tbody>
+                        %s
+                        <tr><td colspan='2' style='text-align:right; color:#64748b;'>Subtotal:</td><td style='text-align:right;'>%s %.2f</td></tr>
+                        <tr><td colspan='2' style='text-align:right; color:#64748b;'>Delivery Charge:</td><td style='text-align:right;'>%s %.2f</td></tr>
+                        <tr class='total-row'><td colspan='2' style='text-align:right;'>Net Aggregate:</td><td style='text-align:right;'>%s %.2f</td></tr>
+                        <tr><td colspan='2' style='text-align:right; color:red;'>Due Amount:</td><td style='text-align:right; color:red;'>%s %s</td></tr>
+                    </tbody>
+                </table>
+                
+                <p><b>Shipping Target:</b> %s (Phone: %s)</p>
+                
+                <div class='btn-container'>
+                    <a href='http://localhost:4200/track-order?code=%s' class='btn'>Track Package Live</a>
                 </div>
             </div>
-        </body>
-        </html>
-        """.formatted(
+            <div class='footer'>&copy; %d SCM Global Logistics Network. All rights reserved.</div>
+        </div>
+    </body>
+    </html>
+    """.formatted(
                 order.getCustomerName(),
+                order.getPaymentMethod().name(),
+                order.getPaymentStatus().name(),
                 order.getOrderNumber(),
                 itemRows.toString(),
                 order.getCurrency(), order.getItemSubtotal(),
-                order.getServiceType().name(),
                 order.getCurrency(), order.getDeliveryCharge(),
                 order.getCurrency(), order.getTotalAmount(),
-                order.getDeliveryAddress(),
+                order.getCurrency(), order.getDueAmount(),
+                order.getDeliveryAddress(), order.getDeliveryPhone(),
                 order.getOrderNumber(),
                 Year.now().getValue()
         );
@@ -300,7 +251,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         try {
             mailService.senderGeneralMail(order.getCustomerEmail(), subject, mailText);
         } catch (Exception e) {
-            System.err.println("Invoice Notification Cluster Mail delivery failed: " + e.getMessage());
+            System.err.println("Final Mail Error: " + e.getMessage());
         }
     }
 }

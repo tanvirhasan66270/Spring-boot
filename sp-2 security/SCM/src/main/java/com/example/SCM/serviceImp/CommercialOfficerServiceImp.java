@@ -16,6 +16,7 @@ import com.example.SCM.role.Role;
 import com.example.SCM.service.CommercialOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,6 +39,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     private final PoliceStationRepository policeStationRepository;
     private final CommercialOfficerMapper officerMapper;
     private final AuthService authService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${image.upload.dir:uploads}")
     private String uploadDir;
@@ -61,7 +63,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getPhone());
-        user.setPassword(dto.getPassword());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setActive(false);
         user.setRole(Role.COMMERCIAL_OFFICER);
         User savedUser = userRepository.save(user);
@@ -101,7 +103,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             user.setEmail(dto.getEmail());
             user.setPhoneNumber(dto.getPhone());
             if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-                user.setPassword(dto.getPassword());
+                user.setPassword(passwordEncoder.encode(dto.getPassword()));
             }
             userRepository.save(user);
         }

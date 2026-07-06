@@ -1,214 +1,259 @@
-<div class="container-fluid px-4 mt-4">
-
-  <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
-
-  <div class="slide-drawer" [class.show]="isDrawerOpen">
-    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h5 class="mb-1 fw-bold">{{ isEdit ? 'Mutate Order Matrix Parameter' : 'Initialize SCM Customer Order' }}</h5>
-        <p class="mb-0 text-muted small">Log consignment tracking and pricing configurations.</p>
-      </div>
-      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
-    </div>
-
-    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
-      
-      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show border-2 mb-4 fs-7 shadow-sm" role="alert">
-        <i class="bi bi-exclamation-octagon-fill me-2 fs-6"></i> {{ errorMessage }}
-        <button type="button" class="btn-close small" (click)="errorMessage = null"></button>
-      </div>
-
-      <form #orderForm="ngForm" (ngSubmit)="orderForm.valid && save()">
-        
-        <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Target Customer Profile Node</label>
-          <select class="form-select fs-7" [class.is-invalid]="custRef.value === 0 && orderForm.submitted" [(ngModel)]="order.customerId" name="customerId" #custRef="ngModel" required [disabled]="isEdit">
-            <option value="0">-- Link Target Customer --</option>
-            <option *ngFor="let c of customers" [value]="c.id">{{ c.name }} ({{ c.email }})</option>
-          </select>
-          <div class="invalid-feedback small fw-bold" *ngIf="custRef.value === 0 && orderForm.submitted">
-            Binding an active client matrix account is required!
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">Logistics Service Type</label>
-            <select class="form-select fs-7" [(ngModel)]="order.serviceType" name="serviceType" required>
-              <option value="STANDARD">Standard Cargo</option>
-              <option value="EXPRESS">Express Hub Vector</option>
-              <option value="OVERNIGHT">Overnight Courier</option>
-              <option value="SAME_DAY">Same Day Hub Node</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">Current Order Lifecycle State</label>
-            <select class="form-select fs-7" [(ngModel)]="order.status" name="status" required>
-              <option value="PENDING">Pending (Awaiting Sync)</option>
-              <option value="CONFIRMED">Confirmed Node</option>
-              <option value="PROCESSING">Processing Warehouse</option>
-              <option value="SHIPPED">Shipped Transit</option>
-              <option value="DELIVERED">Delivered Terminal</option>
-              <option value="CANCELLED">Cancelled</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">Cash On Delivery (COD) Amount</label>
-            <input type="number" class="form-control fs-7 font-monospace" [(ngModel)]="order.codAmount" name="codAmount" min="0" required>
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">Estimated Target Delivery</label>
-            <input type="date" class="form-control fs-7" [class.is-invalid]="estRef.invalid && orderForm.submitted" [(ngModel)]="order.estimatedDelivery" name="estimatedDelivery" #estRef="ngModel" required>
-            <div class="invalid-feedback small" *ngIf="estRef.invalid && orderForm.submitted">Required!</div>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Full Destination Street Address Line</label>
-          <textarea class="form-control fs-7" rows="2" [class.is-invalid]="addrRef.invalid && orderForm.submitted" placeholder="Input physical destination block matrix details..." [(ngModel)]="order.deliveryAddress" name="deliveryAddress" #addrRef="ngModel" required></textarea>
-          <div class="invalid-feedback small fw-bold" *ngIf="addrRef.invalid && orderForm.submitted">Shipping target destination is required!</div>
-        </div>
-
-        <div class="p-3 bg-light rounded border mb-4 shadow-sm">
-          <span class="fw-bold d-block text-primary small text-uppercase mb-3"><i class="bi bi-cart-plus-fill me-1"></i> Dynamic Order Line Item Compiler Matrix</span>
-          
-          <div class="row g-2 mb-2">
-            <div class="col-8">
-              <label class="form-label small text-muted text-uppercase fw-semibold fs-8 mb-1">Catalog Product</label>
-              <select class="form-select fs-7" [(ngModel)]="currentProduct" name="locProduct">
-                <option [ngValue]="null">-- Select Inventory Item --</option>
-                <option *ngFor="let p of products" [ngValue]="p">{{ p.name }} (Code: {{p.productCode}})</option>
-              </select>
-            </div>
-            <div class="col-4">
-              <label class="form-label small text-muted text-uppercase fw-semibold fs-8 mb-1">Quantity</label>
-              <input type="number" class="form-control fs-7 text-center font-monospace" [(ngModel)]="currentQuantity" name="locQty" min="1">
-            </div>
-          </div>
-
-          <div class="row g-2 align-items-end mb-3">
-            <div class="col-10">
-              <label class="form-label small text-muted text-uppercase fw-semibold fs-8 mb-1">Product Handling Remarks/Notes</label>
-              <input type="text" class="form-control fs-7" placeholder="Fragile, pack carefully, etc." [(ngModel)]="currentRemarks" name="locRemarks">
-            </div>
-            <div class="col-2">
-              <button type="button" class="btn btn-primary btn-sm w-100 py-2" (click)="addItem()"><i class="bi bi-plus-lg"></i></button>
-            </div>
-          </div>
-
-          <div class="table-responsive bg-white rounded border shadow-inner" *ngIf="order.items.length > 0">
-            <table class="table table-sm table-hover align-middle mb-0 fs-7.5">
-              <thead class="table-dark">
-                <tr>
-                  <th class="ps-2">Item Specs</th>
-                  <th class="text-center">Qty</th>
-                  <th>Remarks</th>
-                  <th class="text-end pe-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of order.items; let idx = index">
-                  <td class="ps-2 fw-medium">
-                    <span class="d-block text-dark">{{ getProductName(item.productId) }}</span>
-                    <span class="text-muted small fs-8">Rate: ৳{{ item.unitPrice }}</span>
-                  </td>
-                  <td class="text-center font-monospace fw-bold">{{ item.quantity }}</td>
-                  <td class="text-muted small text-truncate" style="max-width: 130px;" [title]="item.remarks">{{ item.remarks || '---' }}</td>
-                  <td class="text-end pe-2">
-                    <button type="button" class="btn btn-sm text-danger border-0 p-1" (click)="removeItem(idx)"><i class="bi bi-trash-fill"></i></button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          
-          <div *ngIf="order.items.length === 0" class="text-center text-muted py-3 border border-dashed rounded fs-8 bg-white font-monospace">
-            No specimen packages linked in current loading vector index buffer.
-          </div>
-        </div>
-
-        <div class="drawer-footer d-flex gap-2 mt-4">
-          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Mutate Ledger Node' : 'Dispatch Consignment Node' }}
-          </button>
-          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-success border-4">
+<div class="container-fluid py-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
-      <h4 class="mb-1 text-dark fw-bold">Customer Order Lifecycle Registry</h4>
-      <p class="text-muted mb-0 small">Administer automated parcel pricing algorithms, log activity matrices, monitor subtotal tracking weights and send invoices.</p>
+      <h4 class="text-dark fw-bold mb-1">Customer Purchase Ledger</h4>
+      <p class="text-muted mb-0 small">Enforce transactional price tracking rules and sync delivery workflows.</p>
     </div>
-    <button class="btn btn-success d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
-      <i class="bi bi-plus-circle-fill"></i> Construct Purchase Order
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
+      <i class="bi bi-plus-circle me-2"></i>Create New Order
     </button>
   </div>
 
-  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+  @if (errorMessage) {
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-2 mb-4 fs-7" role="alert">
+      <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Validation Exception:</strong> {{ errorMessage }}
+      <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+    </div>
+  }
+
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-uppercase fs-7 tracking-wider">
+          <thead class="table-light text-uppercase fs-8 tracking-wider">
             <tr>
-              <th class="ps-4">Invoice ID</th>
-              <th>Consignment SCM Target Details</th>
-              <th>Shipping Configuration Specs</th>
-              <th>Weight & Subtotal Financials</th>
-              <th>Grand Total Bill</th>
-              <th class="text-end pe-4" width="150">Actions</th>
+              <th class="ps-4">Order Number</th>
+              <th>Customer Cluster Details</th>
+              <th>Total Amount</th>
+              <th>Payment Engine</th>
+              <th>Settlement State</th>
+              <th>Order Lifecycle</th>
+              <th class="text-end px-4" width="140">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let o of orders" [class.table-success]="o.status === 'DELIVERED'">
-              <td class="ps-4 font-monospace fw-bold text-success">
-                <span>{{ o.orderNumber }}</span>
-                <span class="d-block text-muted fs-8 mt-0.5 font-sans fw-normal">ID: #{{ o.id }}</span>
-              </td>
-              <td>
-                <span class="fw-bold text-dark d-block mb-0.5">{{ o.customerName }}</span>
-                <span class="text-secondary small d-block text-truncate" style="max-width: 240px;" [title]="o.deliveryAddress"><i class="bi bi-geo-alt me-0.5"></i>{{ o.deliveryAddress }}</span>
-              </td>
-              <td>
-                <span class="badge bg-secondary text-uppercase fs-8 fw-bold">{{ o.serviceType }}</span>
-                <span class="d-block text-muted fs-8 mt-1"><i class="bi bi-clock me-0.5"></i>Est: {{ o.estimatedDelivery | date:'mediumDate' }}</span>
-              </td>
-              <td>
-                <span class="d-block small text-dark fw-medium font-monospace">Sub: ৳{{ o.itemSubtotal | number:'1.2-2' }}</span>
-                <span class="badge bg-light text-dark border fs-8 mt-0.5 font-monospace"><i class="bi bi-box-seam me-1"></i>{{ o.weight | number:'1.2-2' }} kg</span>
-              </td>
-              <td>
-                <span class="d-block text-dark fw-bold font-monospace fs-6">৳{{ o.totalAmount | number:'1.2-2' }}</span>
-                <span [class]="o.status === 'DELIVERED' ? 'badge bg-success-subtle text-success border border-success' : 'badge bg-warning-subtle text-warning border border-warning'" class="px-2 py-0.5 fs-8 text-uppercase fw-bold mt-1">
-                  {{ o.status }}
-                </span>
-              </td>
-              <td class="text-end pe-4">
-                <div class="d-flex justify-content-end gap-2">
-                  <button class="btn btn-icon btn-light border-0 text-warning" title="Modify Order Ledger Matrix" (click)="edit(o)">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Invoice Node" (click)="delete(o.id)">
-                    <i class="bi bi-trash3-fill"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="!orders || orders.length === 0">
-              <td colspan="6" class="text-center py-5 text-muted">
-                <i class="bi bi-wallet2 fs-1 d-block mb-2 text-secondary"></i>
-                No validation tracking nodes found in central customer order cluster architecture.
-              </td>
-            </tr>
+            @for (o of orders; track o.id) {
+              <tr>
+                <td class="ps-4"><span class="badge bg-dark font-monospace tracking-wide fs-7.5">{{ o.orderNumber }}</span></td>
+                <td>
+                  <div class="fw-bold text-dark mb-0.5">{{ o.customerName }}</div>
+                  <div class="text-secondary small font-monospace"><i class="bi bi-envelope-at me-1"></i>{{ o.customerEmail }}</div>
+                </td>
+                <td><strong class="text-success font-monospace fs-6">৳{{ o.totalAmount | number:'1.2-2' }}</strong></td>
+                <td><span class="badge bg-light text-dark border px-2 py-1 text-uppercase fw-semibold">{{ o.paymentMethod || 'CASH' }}</span></td>
+                <td>
+                  <span class="badge px-2.5 py-1.5 fs-8 text-uppercase fw-bold"
+                    [ngClass]="{
+                      'bg-success-subtle text-success border border-success': o.paymentStatus === 'PAID',
+                      'bg-warning-subtle text-warning border border-warning': o.paymentStatus === 'PARTIALLY_PAID',
+                      'bg-danger-subtle text-danger border border-danger': o.paymentStatus === 'UNPAID' || !o.paymentStatus
+                    }">
+                    {{ o.paymentStatus || 'UNPAID' }}
+                  </span>
+                  @if (o.dueAmount && +o.dueAmount > 0) {
+                    <small class="d-block text-danger font-monospace mt-1">Due: ৳{{ o.dueAmount }}</small>
+                  }
+                </td>
+                <td>
+                  <span class="badge rounded-pill bg-primary px-2.5 py-1.2 fs-8 text-uppercase tracking-normal">{{ o.status }}</span>
+                </td>
+                <td class="text-end px-4">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-icon btn-light text-danger border-0" title="Purge Record" (click)="delete(o.id)">
+                      <i class="bi bi-trash-fill"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>No active logistics cluster instances resolved in node cache.
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>
     </div>
   </div>
+
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+    <div class="drawer-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-dark text-white">
+      <h5 class="fw-bold mb-0">
+        {{ isEdit ? 'Modify Order Instance' : 'Dispatch New Purchase Order' }}
+      </h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body px-4 py-3" style="overflow-y: auto; height: calc(100vh - 110px);">
+      <form #orderForm="ngForm" (ngSubmit)="orderForm.valid && save()">
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Customer Profile</label>
+          <select class="form-select fs-7" [class.is-invalid]="custRef.value === '0' && orderForm.submitted" [(ngModel)]="order.customerId" name="customerId" #custRef="ngModel" required [disabled]="isEdit">
+            <option value="0">-- Select Customer Context --</option>
+            @for (c of customers; track c.id) {
+              <option [value]="c.id">{{ c.name }} ({{ c.email }})</option>
+            }
+          </select>
+          @if (custRef.value === '0' && orderForm.submitted) {
+            <div class="invalid-feedback small fw-bold">
+              Binding an active customer ledger account is required!
+            </div>
+          }
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Delivery Phone Channel</label>
+            <input type="text" class="form-control fs-7 font-monospace" [class.is-invalid]="phoneRef.invalid && (phoneRef.touched || orderForm.submitted)" [(ngModel)]="order.deliveryPhone" name="deliveryPhone" #phoneRef="ngModel" placeholder="01XXXXXXXXX" required minlength="11">
+            @if (phoneRef.invalid && (phoneRef.touched || orderForm.submitted)) {
+              <div class="invalid-feedback small fw-bold">
+                Valid 11-digit destination dial vector is mandatory!
+              </div>
+            }
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Roadmap</label>
+            <input type="date" class="form-control fs-7" [class.is-invalid]="estRef.invalid && orderForm.submitted" [(ngModel)]="order.estimatedDelivery" name="estimatedDelivery" #estRef="ngModel" required>
+            @if (estRef.invalid && orderForm.submitted) {
+              <div class="invalid-feedback small fw-bold">Timeline configuration is mandatory!</div>
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Delivery Address Destination</label>
+          <textarea class="form-control fs-7" rows="2" [class.is-invalid]="addrRef.invalid && orderForm.submitted" [(ngModel)]="order.deliveryAddress" name="deliveryAddress" #addrRef="ngModel" placeholder="Full physical shipping street layout..." required></textarea>
+          @if (addrRef.invalid && orderForm.submitted) {
+            <div class="invalid-feedback small fw-bold">Destination string token line cannot be empty!</div>
+          }
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Service Strategy Matrix</label>
+            <select class="form-select fs-7" [(ngModel)]="order.serviceType" name="serviceType" required>
+              <option value="STANDARD">STANDARD Logistics Delivery</option>
+              <option value="EXPRESS">EXPRESS Bullet Velocity</option>
+              <option value="OVERNIGHT">OVERNIGHT Cargo</option>
+              <option value="SAME_DAY">SAMEDAY Hub Token</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Payment Strategy Router</label>
+            <select class="form-select fs-7" [(ngModel)]="order.paymentMethod" name="paymentMethod" required>
+              <option value="CASH">CASH On Delivery</option>
+              <option value="BANK">BANK Transfer Swift Service</option>
+              <option value="BKASH">BKASH Mobile Wallet</option>
+              <option value="NAGAD">NAGAD Fast Engine</option>
+              <option value="ROCKET">ROCKET DBBL Node</option>
+            </select>
+          </div>
+        </div>
+
+        @if (order.paymentMethod === 'BANK') {
+          <div class="alert alert-info border border-primary bg-white shadow-sm py-2.5 mb-3">
+            <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
+            <div class="form-group">
+              <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index</label>
+              <input type="text" class="form-control form-control-sm font-monospace fs-7" placeholder="e.g. 10214300982341" name="bankNodeAcc">
+            </div>
+          </div>
+        }
+
+        @if (['BKASH', 'NAGAD', 'ROCKET'].includes(order.paymentMethod)) {
+          <div class="alert alert-danger border border-danger bg-white shadow-sm py-2.5 mb-3">
+            <h6 class="fw-bold text-danger mb-2 small text-uppercase"><i class="bi bi-phone-vibrate me-2"></i>MFS Wallet Engine Verification</h6>
+            <div class="form-group">
+              <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number</label>
+              <input type="text" class="form-control form-control-sm font-monospace fs-7" [(ngModel)]="order.deliveryPhone" name="mfsNodePhone" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Initial Payment Context / COD Amount Allocation</label>
+          <input type="number" class="form-control fs-7 font-monospace fw-bold text-success" [(ngModel)]="order.codAmount" name="codAmount" min="0" placeholder="0.00" required>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Special Delivery Remarks</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="order.remarks" name="remarks" placeholder="Drop parcel at reception, fragile, etc.">
+        </div>
+
+        <hr class="my-3 text-muted" />
+
+        <h6 class="fw-bold text-dark mb-2 small text-uppercase"><i class="bi bi-box-seam me-2 text-primary"></i>Product Specification Allocations</h6>
+        <div class="bg-light p-2.5 rounded mb-3 border border-secondary-subtle">
+          <div class="row g-2 align-items-end">
+            <div class="col-md-5">
+              <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Inventory Product</label>
+              <select class="form-select form-select-sm fs-7.5" [(ngModel)]="currentProduct" name="locItemSelect">
+                <option [ngValue]="null">-- Select Item --</option>
+                @for (p of products; track p.id) {
+                  <option [ngValue]="p">{{ p.name }} (৳{{ p.sellingPrice }})</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Qty</label>
+              <input type="number" class="form-control form-control-sm font-monospace text-center fs-7.5" [(ngModel)]="currentQuantity" name="locItemQty" placeholder="Qty" min="1" />
+            </div>
+            <div class="col-md-3">
+              <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Notes</label>
+              <input type="text" class="form-control form-control-sm fs-7.5" [(ngModel)]="currentRemarks" name="locItemRem" placeholder="Item Notes" />
+            </div>
+            <div class="col-md-2">
+              <button type="button" class="btn btn-sm btn-dark w-100 fw-bold py-1.8 fs-7.5" (click)="addItem()">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card bg-white mb-4 shadow-inner">
+          <ul class="list-group list-group-flush fs-7.5">
+            @for (item of order.items; track $index; let idx = $index) {
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2.5 border-bottom">
+                <div>
+                  <span class="fw-bold text-dark d-block mb-0.5">{{ getProductName(item.productId) }}</span>
+                  <div class="small text-muted font-monospace">
+                    Quantity Order Vector: <b class="text-primary fs-7">{{ item.quantity }} units</b>
+                    @if (item.remarks) {
+                      <span class="ms-2 text-info bg-info-subtle px-1 rounded border border-info-subtle">💬 {{ item.remarks }}</span>
+                    }
+                  </div>
+                </div>
+                <button type="button" class="btn btn-sm text-danger border-0 p-1" (click)="removeItem(idx)">
+                  <i class="bi bi-x-circle-fill fs-5"></i>
+                </button>
+              </li>
+            }
+            @if (order.items.length === 0) {
+              <li class="list-group-item text-center text-muted py-3 small font-monospace fs-8 border-dashed">
+                No product components attached to this envelope matrix yet.
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 pt-2">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold fs-7" type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Metadata Mutations' : 'Dispatch Consignment Node' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (isDrawerOpen) {
+    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+  }
 
 </div>
