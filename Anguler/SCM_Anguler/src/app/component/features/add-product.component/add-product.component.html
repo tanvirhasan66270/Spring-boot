@@ -1,1 +1,212 @@
-<p>add-product.component works!</p>
+<div class="container-fluid px-4 mt-4">
+
+  <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
+
+  <div class="slide-drawer" [class.show]="isDrawerOpen">
+    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="mb-1 fw-bold">{{ isEdit ? 'Modify Product Stock Parameters' : 'Deploy New Inventory Product' }}</h5>
+        <p class="mb-0 text-muted small">Establish catalog items and monitoring thresholds.</p>
+      </div>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
+      
+      <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show d-flex align-items-center shadow-sm border-2 mb-4" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+        <div class="fs-7 fw-semibold">{{ errorMessage }}</div>
+        <button type="button" class="btn-close small" (click)="errorMessage = null" aria-label="Close"></button>
+      </div>
+
+      <form #productForm="ngForm" (ngSubmit)="productForm.valid && save()">
+        
+        <div class="mb-3 text-center p-3 bg-light rounded-3 border">
+          <label class="form-label fw-semibold text-secondary small text-uppercase d-block mb-2">Product Stock Image Display</label>
+          <div class="position-relative d-inline-block mb-2">
+            <div class="avatar-md bg-white rounded-3 d-flex align-items-center justify-content-center overflow-hidden border" style="width: 90px; height: 90px; margin: 0 auto;">
+              <img *ngIf="imagePreview" [src]="imagePreview" class="w-100 h-100 object-fit-cover">
+              <i *ngIf="!imagePreview" class="bi bi-box-seam-fill text-secondary fs-1"></i>
+            </div>
+            <button *ngIf="imagePreview" type="button" class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 end-0" (click)="removeSelectedFile(fileInput)"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <input #fileInput type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Inventory Product Code</label>
+            <input type="text" class="form-control fs-7 font-monospace fw-bold" [class.is-invalid]="codeRef.invalid && (codeRef.dirty || codeRef.touched || productForm.submitted)" placeholder="e.g., PROD-102" [(ngModel)]="product.productCode" name="productCode" #codeRef="ngModel" required>
+            <div class="invalid-feedback small fw-bold mt-1" *ngIf="codeRef.invalid && (codeRef.dirty || codeRef.touched || productForm.submitted)">
+              Unique product barcode/code is required!
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Commercial Item Title</label>
+            <input type="text" class="form-control fs-7" [class.is-invalid]="nameRef.invalid && (nameRef.dirty || nameRef.touched || productForm.submitted)" placeholder="e.g., Wireless Mouse" [(ngModel)]="product.name" name="name" #nameRef="ngModel" required>
+            <div class="invalid-feedback small fw-bold mt-1" *ngIf="nameRef.invalid && (nameRef.dirty || nameRef.touched || productForm.submitted)">
+              Product catalog name is required!
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold text-secondary small text-uppercase">Ecosystem Category Classification</label>
+          <select class="form-select fs-7" [class.is-invalid]="catRef.value === 0 && productForm.submitted" [(ngModel)]="product.categoryId" name="categoryId" #catRef="ngModel" required>
+            <option value="0">-- Bind Inventory Category --</option>
+            <option *ngFor="let c of categories" [value]="c.id">{{ c.categoryName }}</option>
+          </select>
+          <div class="invalid-feedback small fw-bold mt-1" *ngIf="catRef.value === 0 && productForm.submitted">
+            Please resolve catalog context mapping to an active Category block!
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Packaging Unit (e.g., PCS, KG)</label>
+            <input type="text" class="form-control fs-7" [class.is-invalid]="unitRef.invalid && (unitRef.dirty || unitRef.touched || productForm.submitted)" placeholder="e.g., PCS" [(ngModel)]="product.unit" name="unit" #unitRef="ngModel" required>
+            <div class="invalid-feedback small fw-bold mt-1" *ngIf="unitRef.invalid && (unitRef.dirty || unitRef.touched || productForm.submitted)">
+              Measurement unit is mandatory!
+            </div>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Net Weight Class (kg/g)</label>
+            <input type="number" step="0.01" class="form-control fs-7" [(ngModel)]="product.weight" name="weight" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3 bg-light p-2.5 rounded border">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase text-dark"><i class="bi bi-stack me-1"></i> Current Stock Quantity</label>
+            <input type="number" class="form-control fs-7 fw-bold text-center" [(ngModel)]="product.quantity" name="quantity" min="0" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase text-danger"><i class="bi bi-bell-fill me-1"></i> Reorder Critical Threshold</label>
+            <input type="number" class="form-control fs-7 text-center font-monospace" [(ngModel)]="product.reorderPoint" name="reorderPoint" min="0" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase text-primary">Unit Purchase Cost Base</label>
+            <input type="number" step="0.01" class="form-control fs-7 text-center text-primary fw-medium font-monospace" [(ngModel)]="product.unitCost" name="unitCost" min="0" required>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase text-success">Target Selling Price Rate</label>
+            <input type="number" step="0.01" class="form-control fs-7 text-center text-success fw-bold font-monospace" [(ngModel)]="product.sellingPrice" name="sellingPrice" min="0" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Perishable Expiry Vector</label>
+            <select class="form-select fs-7" [(ngModel)]="product.hasExpiryDate" name="hasExpiryDate" required>
+              <option value="NO">No Expiry Date Tracking</option>
+              <option value="YES">Perishable (Track Expiry)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-semibold text-secondary small text-uppercase">Availability Channel State</label>
+            <select class="form-select fs-7" [(ngModel)]="product.availability" name="availability" required>
+              <option value="AVAILABLE">Available (In Stock)</option>
+              <option value="OUT_OF_STOCK">Out Of Stock</option>
+              <option value="DISCONTINUED">Discontinued</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-check form-switch mb-4 p-2 bg-primary-subtle border border-primary-subtle rounded px-5 mx-0 text-dark fs-7 fw-semibold">
+          <input class="form-check-input" type="checkbox" role="switch" id="activeStateTriggerBox" [(ngModel)]="product.isActive" name="isActive">
+          <label class="form-check-label text-primary" for="activeStateTriggerBox">Publish Active Catalog Distribution Stream State</label>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 mt-5">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Metadata Mutations' : 'Deploy Product Node' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-danger border-4">
+    <div>
+      <h4 class="mb-1 text-dark fw-bold">SCM Central Catalog Hub</h4>
+      <p class="text-muted mb-0 small">Administer barcode indexes, manage reorder threshold warnings, audit unit valuations, and control lifecycle logs.</p>
+    </div>
+    <button class="btn btn-danger d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
+      <i class="bi bi-plus-circle-fill"></i> Add New Product
+    </button>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-uppercase fs-7 tracking-wider">
+            <tr>
+              <th class="ps-4" width="80">ID</th>
+              <th>Product Core Details Stream</th>
+              <th>Category Bound</th>
+              <th>Stock Status Metrics</th>
+              <th>Financial Pricing (Cost/Sell)</th>
+              <th class="text-end pe-4" width="160">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of products" [class.table-warning]="p.quantity <= p.reorderPoint">
+              <td class="ps-4 text-muted fw-medium font-monospace">#{{ p.id }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-light border text-primary rounded-3 me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 44px; height: 44px;">
+                    <img *ngIf="p.image" [src]="getImageUrl(p.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
+                    <i *ngIf="!p.image" class="bi bi-box-seam text-secondary fs-4"></i>
+                  </div>
+                  <div>
+                    <span class="fw-semibold text-dark d-block mb-0.5">{{ p.name }}</span>
+                    <span class="badge bg-dark font-monospace fs-8 text-uppercase tracking-wider"><i class="bi bi-qr-code me-1"></i>{{ p.productCode }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge bg-secondary text-uppercase fs-8">{{ p.categoryName || 'Unassigned' }}</span>
+                <span class="d-block text-muted small mt-1 font-monospace" *ngIf="p.weight"><i class="bi bi-scales me-0.5"></i>{{ p.weight }} kg</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fw-bold fs-6" [class.text-danger]="p.quantity <= p.reorderPoint" [class.text-dark]="p.quantity > p.reorderPoint">
+                    {{ p.quantity }} <span class="fs-8 text-muted fw-normal">{{ p.unit }}</span>
+                  </span>
+                  <span *ngIf="p.quantity <= p.reorderPoint" class="badge bg-danger rounded-pill fs-9 text-uppercase tracking-normal"><i class="bi bi-exclamation-triangle-fill"></i> Low</span>
+                </div>
+                <span class="text-muted fs-8 d-block mt-0.5">Status: <b class="text-uppercase text-secondary fs-9">{{ p.availability }}</b></span>
+              </td>
+              <td>
+                <span class="d-block small text-primary font-monospace">Cost: ৳{{ p.unitCost | number:'1.2-2' }}</span>
+                <span class="d-block text-success fw-bold font-monospace">Sell: ৳{{ p.sellingPrice | number:'1.2-2' }}</span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-icon btn-light border-0 text-warning" title="Modify Stock Metrics" (click)="edit(p)">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Product" (click)="delete(p.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!products || products.length === 0">
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-inboxes-fill fs-1 d-block mb-2 text-secondary"></i>
+                No catalog items registered in central warehouse indices.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

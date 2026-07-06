@@ -13,7 +13,10 @@ import { ManagerComponent } from './component/features/manager.component/manager
 import { QcinspactorComponent } from './component/features/qcinspactor.component/qcinspactor.component';
 import { SalesOfficerComponent } from './component/features/sales-officer.component/sales-officer.component';
 import { SupplierComponent } from './component/features/supplier.component/supplier.component';
+import { CategoryComponent } from './component/features/category.component/category.component';
 import { ProcourmentComponent } from './component/features/procourment.component/procourment.component';
+import { AddProductComponent } from './component/features/add-product.component/add-product.component';
+import { CustomerOrderComponent } from './component/features/customer-order.component/customer-order.component';
 
 
 export const routes: Routes = [//
@@ -33,7 +36,10 @@ export const routes: Routes = [//
                     { path: 'qc-inspector', component: QcinspactorComponent },
                     { path: 'sales-officer', component: SalesOfficerComponent },
                       { path: 'supplier', component: SupplierComponent},
-                      { path: 'procurement', component: ProcourmentComponent}
+                      { path: 'procurement', component: ProcourmentComponent},
+                      { path: 'category', component: CategoryComponent},
+                      { path: 'product', component: AddProductComponent},
+                      { path: 'order', component: CustomerOrderComponent}
                        
 
 

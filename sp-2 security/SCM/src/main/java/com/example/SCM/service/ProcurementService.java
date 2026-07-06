@@ -14,5 +14,4 @@ public interface ProcurementService {
     Optional<ProcurementResponseDTO> getById(Long id);
     void delete(Long id);
 
-    void sendProcurementWelcomeEmail(Procurement procurement);
 }
