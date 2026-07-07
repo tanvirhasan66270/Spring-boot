@@ -17,7 +17,6 @@ import { CategoryComponent } from './component/features/category.component/categ
 import { ProcourmentComponent } from './component/features/procourment.component/procourment.component';
 import { AddProductComponent } from './component/features/add-product.component/add-product.component';
 import { CustomerOrderComponent } from './component/features/customer-order.component/customer-order.component';
-import { CustomerDashboardComponent } from './component/dashboard/customer-dashboard.component/customer-dashboard.component';
 import { LoginComponent } from './auth/auth_component/login.component/login.component';
 import { ForgetPasswordComponent } from './auth/auth_component/forget-password.component/forget-password.component';
 import { ResetPasswordComponent } from './auth/auth_component/reset-password.component/reset-password.component';
@@ -33,7 +32,6 @@ export const routes: Routes = [
     component: BlankLayoutComponent,
     children: [
       { path: '', redirectTo: 'country', pathMatch: 'full' },
-
       { path: 'customer', component: CustomerComponent },
       { path: 'commercial-officer', component: CommercialOfficerComponent },
       { path: 'driver', component: DriverComponent },
