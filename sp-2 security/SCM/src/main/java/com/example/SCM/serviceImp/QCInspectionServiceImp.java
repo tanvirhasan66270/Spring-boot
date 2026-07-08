@@ -32,8 +32,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
     @Value("${file.upload-dir:uploads}")
     private String uploadDir;
 
-
-
     @Override
     @Transactional
     public QCInspectionResponseDTO save(QCInspectionRequestDTO dto, MultipartFile file) {
@@ -43,15 +41,28 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         QCInspection inspection = qcInspectionMapper.toEntity(dto, grn, product, inspector);
 
+        // 🎯 ফিক্স: POST রিকোয়েস্টের সময় চাইল্ড চেকলিস্ট কালেকশন চেইন বাইন্ডিং
+        if (dto.getChecklists() != null && !dto.getChecklists().isEmpty()) {
+            for (QCChecklistRequestDTO cDto : dto.getChecklists()) {
+                QCChecklist chk = new QCChecklist();
+                chk.setCheckpointName(cDto.getCheckpointName());
+                chk.setPassed(cDto.isPassed());
+                chk.setRemarks(cDto.getRemarks());
+
+                // 🔗 ইনভার্স রিলেশনশিপ ম্যাপ (Cascade Type ALL কে সক্রিয় করার জন্য)
+                chk.setQcInspection(inspection);
+                inspection.getChecklists().add(chk);
+            }
+        }
+
         if (file != null && !file.isEmpty()) {
             inspection.setLabTestReport(uploadLabReport(file, dto.getInspectionType()));
         }
 
-        //CascadeType.ALL থাকার কারণে ভেতরের চেকলিস্টগুলো একসাথে ওয়ান-শটে ডাটাবেজে রাইট হবে
-        QCInspection saved = qcInspectionRepository.save(inspection);
+        // এখন ফার্স্ট শটেই চাইল্ড ডাটা সহ সেভ হবে
+        QCInspection saved = qcInspectionRepository.saveAndFlush(inspection);
         return qcInspectionMapper.convertTOResponseDTO(saved);
     }
-
     @Override
     @Transactional
     public QCInspectionResponseDTO update(Long id, QCInspectionRequestDTO dto, MultipartFile file) {
@@ -80,7 +91,9 @@ public class QCInspectionServiceImp implements QCInspectionService {
             inspection.setLabTestReport(uploadLabReport(file, dto.getInspectionType()));
         }
 
-        QCInspection updated = qcInspectionRepository.save(inspection);
+        // 🎯 ফিক্স: saveAndFlush() এর মাধ্যমে ট্রানজেকশন বা বাউন্ডারি শেষ হওয়ার আগেই চাইল্ড এন্টিরির লাইফসাইকেল টাইম জেনারেট করানো হলো
+        QCInspection updated = qcInspectionRepository.saveAndFlush(inspection);
+
         return qcInspectionMapper.convertTOResponseDTO(updated);
     }
 
@@ -104,6 +117,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
         if (!qcInspectionRepository.existsById(id)) throw new RuntimeException("QC record not found");
         qcInspectionRepository.deleteById(id);
     }
+
     private String uploadLabReport(MultipartFile file, String inspectionType) {
         try {
             Path path = Paths.get(uploadDir, "qc");

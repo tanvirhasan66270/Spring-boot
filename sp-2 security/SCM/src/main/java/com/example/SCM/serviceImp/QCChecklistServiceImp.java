@@ -35,7 +35,10 @@ public class QCChecklistServiceImp implements QCChecklistService {
                 .orElseThrow(() -> new RuntimeException("QC Inspection not found with ID: " + dto.getInspectionId()));
 
         QCChecklist checklist = qcChecklistMapper.toEntity(dto, inspection);
-        QCChecklist savedChecklist = qcChecklistRepository.save(checklist);
+
+        // 🎯 ফিক্স: save() এর বদলে saveAndFlush() ব্যবহার করে @PrePersist টাইমস্ট্যাম্প ইনস্ট্যান্ট মেমোরিতে সিঙ্ক করানো হলো
+        QCChecklist savedChecklist = qcChecklistRepository.saveAndFlush(checklist);
+
         return qcChecklistMapper.convertTOResponseDTO(savedChecklist);
     }
 
@@ -56,7 +59,10 @@ public class QCChecklistServiceImp implements QCChecklistService {
         }
 
         qcChecklistMapper.updateEntity(dto, checklist, inspection);
-        QCChecklist updatedChecklist = qcChecklistRepository.save(checklist);
+
+        // 🎯 ফিক্স: saveAndFlush() ব্যবহার করা হয়েছে যেন @PreUpdate এর জেনারেটেড 'updatedAt' টাইমস্ট্যাম্প ম্যাপার রিড করতে পারে
+        QCChecklist updatedChecklist = qcChecklistRepository.saveAndFlush(checklist);
+
         return qcChecklistMapper.convertTOResponseDTO(updatedChecklist);
     }
 

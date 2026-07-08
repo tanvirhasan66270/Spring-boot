@@ -9,15 +9,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class QCChecklistMapper {
 
-
     public QCChecklistResponseDTO convertTOResponseDTO(QCChecklist entity) {
-
 
         QCChecklistResponseDTO dto = new QCChecklistResponseDTO();
         dto.setId(entity.getId());
         dto.setCheckpointName(entity.getCheckpointName());
         dto.setPassed(entity.isPassed());
         dto.setRemarks(entity.getRemarks());
+
+        // ✅ একক এপিআই রেসপন্সের জন্য অলরেডি সঠিক আছে
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
 
@@ -29,9 +29,7 @@ public class QCChecklistMapper {
         return dto;
     }
 
-
     public QCChecklist toEntity(QCChecklistRequestDTO dto, QCInspection inspection) {
-
 
         QCChecklist entity = new QCChecklist();
         entity.setCheckpointName(dto.getCheckpointName());
@@ -42,7 +40,6 @@ public class QCChecklistMapper {
 
         return entity;
     }
-
 
     public void updateEntity(QCChecklistRequestDTO dto, QCChecklist entity, QCInspection inspection) {
         if (dto == null || entity == null) {

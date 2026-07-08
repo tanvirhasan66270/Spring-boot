@@ -6,7 +6,6 @@ import lombok.Data;
 public class LetterOfCreditRequestDTO {
     private Long purchaseOrderId;
     private Long issuingBankId;
-    private String issuingBank;
     private String shipmentIncoTerms;
     private String latestShipmentDate; // YYYY-MM-DD
     private String portOfLoading;

@@ -5,4 +5,5 @@ public enum ResultStatus {
     VERY_GOOD,
     AVERAGE,
     BAD
+
 }

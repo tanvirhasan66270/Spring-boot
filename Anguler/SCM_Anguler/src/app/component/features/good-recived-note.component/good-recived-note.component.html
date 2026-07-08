@@ -1,0 +1,239 @@
+<div class="container-fluid py-4 px-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-indigo border-4">
+    <div>
+      <h4 class="text-dark fw-bold mb-1">Goods Received Notes (GRN) Registry</h4>
+      <p class="text-muted mb-0 small">Log arriving fleet consignments, execute quality inspector validations, and pipe physical stock into warehouse slots.</p>
+    </div>
+    <button class="btn btn-indigo px-4 py-2 fw-bold shadow-sm fs-7 text-white" (click)="openDrawer()">
+      <i class="bi bi-file-earmark-arrow-down me-2"></i>Generate GRN Record
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
+      <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Inventory Layer Fault:</strong> {{ errorMessage }}
+    </div>
+  }
+
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-7">
+          <thead class="table-light text-uppercase fs-8">
+            <tr>
+              <th class="ps-4">GRN Track Index</th>
+              <th>Linked Procurement PO</th>
+              <th>Destination Terminal (Warehouse)</th>
+              <th>Receiver Personnel</th>
+              <th>Quantity (PO vs Rec)</th>
+              <th>Quality Verification</th>
+              <th>Operation Stage</th>
+              <th class="text-end px-4" width="140">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (g of grns; track g.id) {
+              <tr>
+                <td class="ps-4">
+                  <span class="badge bg-dark font-monospace tracking-wide px-2.5 py-1.5">{{ g.grnNumber }}</span>
+                  <small class="text-muted font-monospace d-block mt-1">Logged At: {{ g.receivedAt }}</small>
+                </td>
+                <td>
+                  <div class="fw-bold text-dark">Ref: {{ g.poNumber }}</div>
+                  <small class="text-muted font-monospace d-block">PO Node ID: #{{ g.poId }}</small>
+                </td>
+                <td>
+                  <div class="fw-bold text-secondary"><i class="bi bi-house-gear-fill me-1"></i>{{ g.warehouseName }}</div>
+                </td>
+                <td>
+                  <div class="fw-semibold text-dark">{{ g.receivedByName }}</div>
+                </td>
+                <td>
+                  <div class="font-monospace">
+                    <span class="text-muted" title="Ordered Quota">{{ g.quantity || 0 }}</span> ➡️ 
+                    <span class="text-indigo fw-bold" title="Received Quota">{{ g.receivedQuantity }} Units</span>
+                  </div>
+                </td>
+                <td>
+                  @if (g.inspectedByName) {
+                    <div class="fw-semibold text-success small"><i class="bi bi-patch-check-fill"></i> Verified By: {{ g.inspectedByName }}</div>
+                    <small class="text-muted font-monospace d-block">Date: {{ g.inspectionDate || 'N/A' }}</small>
+                  } @else {
+                    <span class="text-warning small font-monospace"><i class="bi bi-hourglass-split"></i> QC Pending</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge px-2.5 py-1.5 fs-8 text-uppercase border"
+                    [ngClass]="{
+                      'bg-light text-dark border-secondary': g.status === 'PENDING',
+                      'bg-warning-subtle text-warning border-warning': g.status === 'PARTIALLY_RECEIVED',
+                      'bg-primary-subtle text-primary border-primary': g.status === 'RECEIVED',
+                      'bg-info-subtle text-info border-info': g.status === 'INSPECTED',
+                      'bg-success-subtle text-success border-success': g.status === 'APPROVED',
+                      'bg-danger-subtle text-danger border-danger': g.status === 'REJECTED'
+                    }">
+                    {{ g.status }}
+                  </span>
+                </td>
+                <td class="text-end px-4">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-icon btn-light text-warning" title="Modify GRN Ledger" (click)="edit(g)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(g.id)">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="8" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-receipt-cutoff fs-2 d-block mb-2 text-secondary"></i>No cargo consignments processed inside operational matrix ledger.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen" style="width: 500px; right: -510px;">
+    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0">{{ isEdit ? 'Modify GRN Allocation Metadata' : 'Process Inbound Cargo (GRN)' }}</h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
+      <form #grnForm="ngForm" (ngSubmit)="grnForm.valid && save()">
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Source Purchase Order Vector</label>
+          <select class="form-select fs-7" [(ngModel)]="grn.poId" name="poId" required [disabled]="isEdit">
+            <option [value]="0">-- Link Core Procurement PO --</option>
+            @for (po of purchaseOrders; track po.id) {
+              <option [value]="po.id">PO #{{ po.poNumber }} (Volume: {{ po.quantity }} Units)</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Destination Vault (Warehouse Allocation)</label>
+          <select class="form-select fs-7" [(ngModel)]="grn.warehouseId" name="warehouseId" required>
+            <option [value]="0">-- Select Destination Terminal --</option>
+            @for (w of warehouses; track w.id) {
+              <option [value]="w.id">{{ w.name }} (Location: {{ w.address || 'Central Zone' }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Master Product Node (Legacy)</label>
+            <select class="form-select fs-7" [(ngModel)]="grn.productId" name="productId">
+              <option [value]="0">-- Single Item Select --</option>
+              @for (p of products; track p.id) {
+                <option [value]="p.id">{{ p.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Total Received Volume</label>
+            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="grn.receivedQuantity" name="receivedQuantity" min="0" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Arrival Log Date</label>
+            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="grn.receivedAt" name="receivedAt" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">GRN Operation Status</label>
+            <select class="form-select fs-7" [(ngModel)]="grn.status" name="status" required>
+              <option value="PENDING">PENDING</option>
+              <option value="PARTIALLY_RECEIVED">PARTIALLY_RECEIVED</option>
+              <option value="RECEIVED">RECEIVED</option>
+              <option value="INSPECTED">INSPECTED</option>
+              <option value="APPROVED">APPROVED</option>
+              <option value="REJECTED">REJECTED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="bg-light p-3 rounded border border-info-subtle mb-3">
+          <h6 class="fw-bold small text-indigo mb-2"><i class="bi bi-shield-shaded me-1"></i> Quality Assurance Checks</h6>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-uppercase text-muted fs-8">QC Authorized Inspector</label>
+              <select class="form-select fs-7" [(ngModel)]="grn.inspectedBy" name="inspectedBy">
+                <option [value]="null">-- Map Inspector Node --</option>
+                @for (u of users; track u.id) {
+                  <option [value]="u.id">{{ u.name }} ({{ u.role }})</option>
+                }
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-uppercase text-muted fs-8">Inspection Timestamp</label>
+              <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="grn.inspectionDate" name="inspectionDate">
+            </div>
+          </div>
+        </div>
+
+        <div class="border p-3 rounded mb-4 bg-white" *ngIf="!isEdit">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold small text-secondary text-uppercase mb-0"><i class="bi bi-box-seam me-1"></i> Bulk Item Line Cargo Allocation</h6>
+            <button type="button" class="btn btn-sm btn-outline-indigo font-sans fs-8 px-2 py-1 fw-bold" (click)="addLineItem()">
+              <i class="bi bi-plus-circle me-1"></i>Add Product Row
+            </button>
+          </div>
+
+          @for (item of grn.lineItems; track $index; let idx = $index) {
+            <div class="row g-1 align-items-center mb-2 bg-light p-2 rounded position-relative">
+              <div class="col-md-5">
+                <select class="form-select fs-8 py-1" [(ngModel)]="item.productId" name="itemProd_{{idx}}" required>
+                  <option [value]="0">-- Select --</option>
+                  @for (p of products; track p.id) {
+                    <option [value]="p.id">{{ p.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-3">
+                <input type="number" class="form-control fs-8 py-1 font-monospace" [(ngModel)]="item.quantityOrdered" name="itemOrd_{{idx}}" placeholder="Order" required>
+              </div>
+              <div class="col-md-3">
+                <input type="number" class="form-control fs-8 py-1 font-monospace fw-bold text-indigo" [(ngModel)]="item.quantityReceived" name="itemRec_{{idx}}" placeholder="Recv" required>
+              </div>
+              <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-sm text-danger p-0" (click)="removeLineItem(idx)"><i class="bi bi-x-circle-fill"></i></button>
+              </div>
+            </div>
+          }
+          @if (grn.lineItems.length === 0) {
+            <small class="text-muted font-monospace d-block text-center py-2 border-dashed rounded bg-light fs-8">No specific child line-items added yet.</small>
+          }
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Operational Tonnage Terminal Remarks</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="grn.remarks" name="remarks" placeholder="Consignment damage logs, missing parts descriptions..."></textarea>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-indigo text-white flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Allocation Ledger' : 'Authorize & Stream Stock' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (isDrawerOpen) {
+    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+  }
+
+</div>

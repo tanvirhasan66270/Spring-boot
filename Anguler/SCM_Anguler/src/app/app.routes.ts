@@ -33,6 +33,8 @@ import { POLineItemComponent } from './component/features/poline-item.component/
 import { ShipmentComponent } from './component/features/shipment.component/shipment.component';
 import { LetterOfCreditComponent } from './component/features/letterofcradit.component/letterofcradit.component';
 import { LcbankComponent } from './component/features/lcbank.component/lcbank.component';
+import { GoodRecivedNoteComponent } from './component/features/good-recived-note.component/good-recived-note.component';
+import { QcInspectionComponent } from './component/features/qc-inspection.component/qc-inspection.component';
 
 
 export const routes: Routes = [
@@ -83,7 +85,10 @@ export const routes: Routes = [
       { path: 'poline-item', component: POLineItemComponent },
       { path: 'shipment', component: ShipmentComponent },
       { path: 'letter-of-credit', component: LetterOfCreditComponent },
-      { path: 'lcbank', component: LcbankComponent }
+      { path: 'lcbank', component: LcbankComponent },
+      { path: 'good-received-note', component: GoodRecivedNoteComponent },
+      { path: 'qc-inspection', component: QcInspectionComponent }
+      // { path: '**', redirectTo: 'good-received-note' }
 
     ]
   }

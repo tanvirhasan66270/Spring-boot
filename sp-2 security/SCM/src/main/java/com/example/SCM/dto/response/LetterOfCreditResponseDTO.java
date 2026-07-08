@@ -12,6 +12,7 @@ public class LetterOfCreditResponseDTO {
     private String issuingBankName;
     private String issuingBankSwiftCode;
     private String issuingBankBranch;
+    private String issuingBankaddress;
     private String shipmentIncoTerms;
     private String latestShipmentDate;
     private String portOfLoading;

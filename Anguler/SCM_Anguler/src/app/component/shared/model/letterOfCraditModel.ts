@@ -1,19 +1,19 @@
 
-
-export interface LetterOfCreditRequestModel{
+export interface LetterOfCreditRequestModel {
   purchaseOrderId: number;
-  issuingBankId: number; 
+  issuingBankId: number;
   shipmentIncoTerms: string;
-  latestShipmentDate: string; // YYYY-MM-DD
+  latestShipmentDate: string; // Formatting Pattern: YYYY-MM-DD
   portOfLoading: string;
   portOfDischarge: string;
   amount: number;
   supplierId: number;
   currency: string;
-  expiryDate: string; // YYYY-MM-DD
-  lcStatus:'DRAFT' | 'OPENED' | 'AMENDED' | 'EXPIRED' | 'CANCELLED' | string;
-  documentVaultUrl: string;
+  expiryDate: string;         // Formatting Pattern: YYYY-MM-DD
+  lcStatus: 'DRAFT' | 'OPENED' | 'AMENDED' | 'EXPIRED' | 'CANCELLED' | string;
+  documentVaultUrl: string;   // Image/PDF Vault String Path References
 }
+
 
 export interface LetterOfCreditResponseModel {
   id: number;
@@ -24,6 +24,7 @@ export interface LetterOfCreditResponseModel {
   issuingBankName: string;
   issuingBankSwiftCode: string;
   issuingBankBranch: string;
+  issuingBankaddress: string; 
   shipmentIncoTerms: string;
   latestShipmentDate: string;
   portOfLoading: string;
@@ -35,7 +36,7 @@ export interface LetterOfCreditResponseModel {
   supplierEmail: string;
   currency: string;
   expiryDate: string;
-  lcStatus:'DRAFT' | 'OPENED' | 'AMENDED' | 'EXPIRED' | 'CANCELLED' | string;
+  lcStatus: 'DRAFT' | 'OPENED' | 'AMENDED' | 'EXPIRED' | 'CANCELLED' | string;
   documentVaultUrl: string;
   openedAt: string;
   createdAt: string;

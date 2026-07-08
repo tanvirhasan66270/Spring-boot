@@ -22,7 +22,7 @@ constructor(private storage: StorageService, private router: Router) { }
       QC_INSPECTOR: '/qc-inspector',
       LOGISTICS_OFFICER:  '/logistics-officer',
       COMMERCIAL_OFFICER:  '/commercial-officer',
-      CUSTOMER:   '/customer',
+      CUSTOMER:   '/order-dashboard',
       SUPPLIER:   '/supplier',
       SALES_OFFICER: '/sales-officer',
     };

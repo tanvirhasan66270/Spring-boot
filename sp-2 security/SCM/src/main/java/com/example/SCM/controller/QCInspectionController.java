@@ -21,7 +21,7 @@ public class QCInspectionController {
 
     private final QCInspectionService qcInspectionService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     public ResponseEntity<QCInspectionResponseDTO> create(
             @RequestPart("inspection") String inspectionJson,
             @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
@@ -31,7 +31,7 @@ public class QCInspectionController {
         return new ResponseEntity<>(qcInspectionService.save(dto, file), HttpStatus.CREATED);
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}")
     public ResponseEntity<QCInspectionResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("inspection") String inspectionJson,

@@ -47,7 +47,6 @@ export class CustomerDashboardComponent implements OnInit {
       next: (orders) => {
         this.customerOrders = orders ? orders.filter(o => o.customerId === this.userId) : [];
         
-        // 📊 KPI Metrics Calculations Engine
         this.stats.total = this.customerOrders.length;
         this.stats.pending = this.customerOrders.filter(o => o.status === 'PENDING').length;
         this.stats.active = this.customerOrders.filter(o => ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status)).length;

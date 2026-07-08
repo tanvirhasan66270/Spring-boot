@@ -5,6 +5,7 @@ import { LetterOfCreditRequestModel, LetterOfCreditResponseModel } from '../../s
 import { LetterOfCreditService } from '../../../service/letterofcradit.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { LcbankService } from '../../../service/lcbank.service'; // 🎯 রিয়েল ব্যাংক সার্ভিস সিঙ্ক
 
 @Component({
   selector: 'app-letter-of-credit',
@@ -18,12 +19,12 @@ export class LetterOfCreditComponent implements OnInit {
   lcs: LetterOfCreditResponseModel[] = [];
   purchaseOrders: any[] = [];
   suppliers: any[] = [];
-  banks: any[] = []; // এসাইন করা ব্যাংক ডিরেক্টরি লিস্ট (ধরে নেওয়া হয়েছে ব্যাংক সার্ভিস আলাদা আছে)
+  banks: any[] = []; 
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
-  isAmendMode = false; // Amendment পপআপ ট্র্যাকার
+  isAmendMode = false;
   currentEditId: number | null = null;
   selectedFile: File | null = null;
 
@@ -46,6 +47,7 @@ export class LetterOfCreditComponent implements OnInit {
     private service: LetterOfCreditService,
     private poService: PurchaseOrderService,
     private supplierService: SupplierService,
+    private bankService: LcbankService, // 🎯 ইনজেক্ট করা হলো
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -53,7 +55,7 @@ export class LetterOfCreditComponent implements OnInit {
     this.loadLCs();
     this.loadPurchaseOrders();
     this.loadSuppliers();
-    this.mockBanks(); 
+    this.loadRealBanks(); // 🎯 মকিং বাদ দিয়ে রিয়েল ডাটা লোড
   }
 
   loadLCs() {
@@ -68,12 +70,12 @@ export class LetterOfCreditComponent implements OnInit {
     this.supplierService.findAll().subscribe({ next: (res) => this.suppliers = res || [] });
   }
 
-  mockBanks() {
-    this.banks = [
-      { id: 1, name: 'Standard Chartered Bank', swiftCode: 'SCBLBDDHXXX', branchName: 'Gulban' },
-      { id: 2, name: 'HSBC Bangladesh', swiftCode: 'HSBCBDDHXXX', branchName: 'Motijheel' },
-      { id: 3, name: 'Brac Bank PLC', swiftCode: 'BRACBDDHXXX', branchName: 'Dhaka Head Office' }
-    ];
+  loadRealBanks() {
+    // 🏦 আপনার তৈরি করা /api/banks এপিআই থেকে ডাটা সরাসরি লোড হবে
+    this.bankService.findAll().subscribe({
+      next: (res) => { this.banks = res || []; this.cdr.markForCheck(); },
+      error: () => { this.banks = []; }
+    });
   }
 
   onFileChange(event: any) {
@@ -85,61 +87,66 @@ export class LetterOfCreditComponent implements OnInit {
   openDrawer() { this.reset(); this.isEdit = false; this.isAmendMode = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
 
- save() {
+  save() {
     this.errorMessage = null;
 
-    if (!this.lc.purchaseOrderId || this.lc.purchaseOrderId === 0 ||
-        !this.lc.supplierId || this.lc.supplierId === 0 ||
-        !this.lc.issuingBankId || this.lc.issuingBankId === 0) {
-      this.errorMessage = "Validation Fault: Please select valid Purchase Order, Supplier, and Issuing Bank.";
+    // 🎯 ১. ড্রপডাউন আইডি ভ্যালিডেশন চেক (Strict Type Cast)
+    if (!this.lc.purchaseOrderId || +this.lc.purchaseOrderId === 0 ||
+        !this.lc.supplierId || +this.lc.supplierId === 0 ||
+        !this.lc.issuingBankId || +this.lc.issuingBankId === 0) {
+      this.errorMessage = "Validation Fault: Please select valid Purchase Order, Supplier, and Issuing Bank from options.";
       this.cdr.markForCheck();
       return;
     }
 
+    // 🎯 ২. ক্রনিকাল ডেট চেক
     if (!this.lc.latestShipmentDate || !this.lc.expiryDate) {
       this.errorMessage = "Validation Fault: Latest Shipment Date and Expiry Date are mandatory parameters.";
       this.cdr.markForCheck();
       return;
     }
 
+    // 🎯 ৩. ডাটা স্যানিটাইজেশন এবং পেলোড প্রিপারেশন
     const cleanedPayload: LetterOfCreditRequestModel = {
       ...this.lc,
       lcStatus: this.lc.lcStatus ? this.lc.lcStatus.toUpperCase() : 'DRAFT',
-      // যদি আইডি স্ট্রিং হিসেবে থাকে তবে সেটিকে নাম্বারে কাস্ট করা
       purchaseOrderId: +this.lc.purchaseOrderId,
       supplierId: +this.lc.supplierId,
       issuingBankId: +this.lc.issuingBankId
     };
 
     if (this.isAmendMode && this.currentEditId !== null) {
+      // 🚀 PATCH: অ্যামেন্ডমেন্ট ট্রানজেকশন
       const patchData = {
         amount: cleanedPayload.amount,
         expiryDate: cleanedPayload.expiryDate,
         latestShipmentDate: cleanedPayload.latestShipmentDate
       };
       this.service.amendLC(this.currentEditId, patchData).subscribe({
-        next: () => { alert("Commercial LC Amendment applied."); this.closeDrawer(); this.loadLCs(); },
+        next: () => { alert("Commercial LC Amendment applied successfully."); this.closeDrawer(); this.loadLCs(); },
         error: (err) => this.handleErrorLog(err)
       });
     } else if (this.isEdit && this.currentEditId !== null) {
+      // 📝 PUT: মেটাডাটা আপডেট
       this.service.update(this.currentEditId, cleanedPayload, this.selectedFile).subscribe({
         next: () => { alert("Letter of Credit updated successfully."); this.closeDrawer(); this.loadLCs(); },
         error: (err) => this.handleErrorLog(err)
       });
     } else {
+      // ➕ POST: নতুন এলসি রেজিস্টার
       this.service.save(cleanedPayload, this.selectedFile).subscribe({
-        next: () => { alert("New Letter of Credit registered successfully."); this.closeDrawer(); this.loadLCs(); },
+        next: () => { alert("New Letter of Credit registered successfully into cluster registry."); this.closeDrawer(); this.loadLCs(); },
         error: (err) => this.handleErrorLog(err)
       });
     }
   }
 
-  // কাস্টম এরর হ্যান্ডলার মেথড
   private handleErrorLog(err: any) {
-    console.error("Backend Error Object:", err);
-    this.errorMessage = err.error?.message || err.message || "400 Bad Request: Structural payload mismatch.";
+    console.error("Core Backend Tracked Error:", err);
+    this.errorMessage = err.error?.message || err.message || "400 Bad Request: Structural mapping mismatch.";
     this.cdr.markForCheck();
   }
+
   edit(o: LetterOfCreditResponseModel) {
     this.errorMessage = null;
     this.currentEditId = o.id;
@@ -165,14 +172,14 @@ export class LetterOfCreditComponent implements OnInit {
 
   openAmendWindow(o: LetterOfCreditResponseModel) {
     this.edit(o);
-    this.isAmendMode = true; // শুধু অ্যামাউন্ট এবং ডেট ইনপুট ভিজিবল ফিল্ড করার ট্র্যাকার
+    this.isAmendMode = true;
     this.cdr.markForCheck();
   }
 
   delete(id: number) {
     if (confirm("Definitively purge this Letter of Credit mapping from the enterprise logistics grid?")) {
       this.service.delete(id).subscribe({
-        next: () => { alert("LC entry cleanly wiped."); this.loadLCs(); },
+        next: () => { alert("LC entry cleanly wiped from server."); this.loadLCs(); },
         error: (err) => alert(err.error?.message || err.message)
       });
     }
