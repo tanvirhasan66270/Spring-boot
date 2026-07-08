@@ -35,7 +35,16 @@
           <tbody>
             @for (o of orders; track o.id) {
               <tr>
-                <td class="ps-4"><span class="badge bg-dark font-monospace tracking-wide fs-7.5">{{ o.orderNumber }}</span></td>
+                <td class="ps-4">
+                  <span class="badge bg-dark font-monospace tracking-wide fs-7.5">{{ o.orderNumber }}</span>
+                  <span class="d-block mt-1 font-sans fs-8 fw-bold" 
+                    [ngClass]="{
+                      'text-secondary': o.priority === 'LOW',
+                      'text-success': o.priority === 'NORMAL',
+                      'text-warning': o.priority === 'HIGH',
+                      'text-danger fw-bolder': o.priority === 'URGENT'
+                    }">⚡ {{ o.priority || 'NORMAL' }}</span>
+                </td>
                 <td>
                   <div class="fw-bold text-dark mb-0.5">{{ o.customerName }}</div>
                   <div class="text-secondary small font-monospace"><i class="bi bi-envelope-at me-1"></i>{{ o.customerEmail }}</div>
@@ -57,6 +66,7 @@
                 </td>
                 <td>
                   <span class="badge rounded-pill bg-primary px-2.5 py-1.2 fs-8 text-uppercase tracking-normal">{{ o.status }}</span>
+                  <small class="d-block text-muted font-monospace fs-8 mt-1" *ngIf="o.estimatedDelivery"><i class="bi bi-calendar3 me-1"></i>{{ o.estimatedDelivery | date:'mediumDate' }}</small>
                 </td>
                 <td class="text-end px-4">
                   <div class="d-flex justify-content-end gap-2">
@@ -119,12 +129,23 @@
               </div>
             }
           </div>
+          
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Roadmap</label>
-            <input type="date" class="form-control fs-7" [class.is-invalid]="estRef.invalid && orderForm.submitted" [(ngModel)]="order.estimatedDelivery" name="estimatedDelivery" #estRef="ngModel" required>
-            @if (estRef.invalid && orderForm.submitted) {
-              <div class="invalid-feedback small fw-bold">Timeline configuration is mandatory!</div>
-            }
+            <input type="text" class="form-control fs-7 bg-light text-muted fw-bold" 
+              [value]="isEdit ? order.estimatedDelivery : 'Auto-Fixed by Priority Rule'" disabled>
+            
+            <div class="mt-1 fs-8 fw-semibold">
+              @if (order.priority === 'LOW') {
+                <span class="text-secondary"><i class="bi bi-calendar-check me-1"></i> Fixed 120 Days (1% Discount)</span>
+              } @else if (order.priority === 'HIGH') {
+                <span class="text-warning"><i class="bi bi-lightning-charge-fill me-1"></i> Fixed 50 Days (+7% Premium)</span>
+              } @else if (order.priority === 'URGENT') {
+                <span class="text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i> Fixed 30 Days (+10% Premium)</span>
+              } @else {
+                <span class="text-success"><i class="bi bi-calendar3 me-1"></i> Fixed 90 Days (Standard Timeline)</span>
+              }
+            </div>
           </div>
         </div>
 
@@ -146,7 +167,20 @@
               <option value="SAME_DAY">SAMEDAY Hub Token</option>
             </select>
           </div>
+          
           <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Order Priority Matrix</label>
+            <select class="form-select fs-7 fw-bold border-info" [(ngModel)]="order.priority" name="priority" required>
+              <option value="LOW">LOW Priority (120 Days / 1% Disc.)</option>
+              <option value="NORMAL">NORMAL Priority (90 Days Standard)</option>
+              <option value="HIGH">HIGH Priority (50 Days / +7% Cost)</option>
+              <option value="URGENT">URGENT Priority (30 Days / +10% Cost)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-12">
             <label class="form-label fw-bold small text-uppercase text-secondary">Payment Strategy Router</label>
             <select class="form-select fs-7" [(ngModel)]="order.paymentMethod" name="paymentMethod" required>
               <option value="CASH">CASH On Delivery</option>

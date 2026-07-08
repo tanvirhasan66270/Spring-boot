@@ -1,1 +1,97 @@
-<p>customer-dashboard.component works!</p>
+<div class="container-fluid px-4 py-4 bg-light min-vh-100">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-warning border-4">
+    <div>
+      <h4 class="mb-1 text-dark fw-bold">Welcome Back, {{ user?.name || 'SCM Node User' }}</h4>
+      <p class="text-muted mb-0 small">Ecosystem Role Signature: <span class="badge bg-warning text-dark text-uppercase">{{ user?.role }}</span></p>
+    </div>
+    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+      <i class="bi bi-box-arrow-right me-1"></i> Terminate Session
+    </button>
+  </div>
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-3 mb-4">
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-dark border-3">
+        <div class="fs-3 fw-bold text-dark font-monospace">{{ stats.total }}</div>
+        <div class="text-secondary small text-uppercase fw-bold">Total Dispatched Orders</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-primary border-3">
+        <div class="fs-3 fw-bold text-primary font-monospace">{{ stats.active }}</div>
+        <div class="text-secondary small text-uppercase fw-bold">In-Transit Vectors</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-success border-3">
+        <div class="fs-3 fw-bold text-success font-monospace">{{ stats.delivered }}</div>
+        <div class="text-secondary small text-uppercase fw-bold">Successful Terminals</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-danger border-3">
+        <div class="fs-3 fw-bold text-danger font-monospace">{{ stats.duePayments }}</div>
+        <div class="text-secondary small text-uppercase fw-bold">Pending Settlements</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <a routerLink="/book-parcel" class="card border-0 shadow-sm text-center p-4 bg-white text-decoration-none text-dark hover-card">
+        <i class="bi bi-plus-circle-fill fs-1 text-warning mb-2"></i>
+        <div class="fw-bold fs-6">Initialize New Consignment Order</div>
+        <small class="text-muted">Launch immediate packaging item schema matrix</small>
+      </a>
+    </div>
+    <div class="col-md-6">
+      <a routerLink="/my-orders" class="card border-0 shadow-sm text-center p-4 bg-white text-decoration-none text-dark hover-card">
+        <i class="bi bi-truck-flatbed fs-1 text-primary mb-2"></i>
+        <div class="fw-bold fs-6">Live Cargo Tracking Center</div>
+        <small class="text-muted">Monitor milestone timestamps via live mapping nodes</small>
+      </a>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 border-0">
+      <h6 class="mb-0 fw-bold text-dark text-uppercase tracking-wider"><i class="bi bi-clock-history me-1 text-warning"></i> Recent Pipeline Logistics Records</h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-7.5">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">Tracking Number</th>
+              <th>Consignment Value</th>
+              <th>Settlement Status</th>
+              <th>Lifecycle Stage</th>
+              <th>Est. Arrival</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of recentOrders">
+              <td class="ps-4 font-monospace fw-bold text-primary">{{ o.orderNumber }}</td>
+              <td><strong class="text-dark">৳{{ o.totalAmount | number:'1.2-2' }}</strong></td>
+              <td>
+                <span class="badge px-2 py-1 fs-8 text-uppercase"
+                  [ngClass]="{'bg-success-subtle text-success': o.paymentStatus === 'PAID', 'bg-warning-subtle text-warning': o.paymentStatus === 'PARTIALLY_PAID', 'bg-danger-subtle text-danger': o.paymentStatus === 'UNPAID'}">
+                  {{ o.paymentStatus || 'UNPAID' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge bg-secondary text-uppercase fs-8">{{ o.status }}</span>
+              </td>
+              <td class="text-muted font-monospace">{{ o.estimatedDelivery | date:'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="recentOrders.length === 0">
+              <td colspan="5" class="text-center py-4 text-muted font-monospace">No ledger signatures registered in current workspace pipeline.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

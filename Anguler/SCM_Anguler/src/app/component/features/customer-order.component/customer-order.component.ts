@@ -35,6 +35,7 @@ export class CustomerOrderComponent implements OnInit {
     deliveryPhone: '',      
     estimatedDelivery: '',
     serviceType: 'STANDARD',
+    priority: 'NORMAL',      // 🎯 ডিফল্ট প্রায়োরিটি প্যারামিটার ইনিশিয়ালাইজেশন
     currency: 'BDT',          
     codAmount: 0,
     paymentMethod: 'CASH',    
@@ -188,6 +189,7 @@ export class CustomerOrderComponent implements OnInit {
       deliveryPhone: o.deliveryPhone || '',      
       estimatedDelivery: o.estimatedDelivery,
       serviceType: o.serviceType,
+      priority: o.priority || 'NORMAL',    // 🎯 ম্যাপার থেকে আসা প্রায়োরিটি ড্রপডাউনে সিঙ্ক করা হলো
       currency: o.currency || 'BDT',                
       codAmount: o.codAmount,
       paymentMethod: o.paymentMethod || 'CASH',    
@@ -223,6 +225,7 @@ export class CustomerOrderComponent implements OnInit {
       deliveryPhone: '',
       estimatedDelivery: '',
       serviceType: 'STANDARD',
+      priority: 'NORMAL',
       currency: 'BDT',
       codAmount: 0,
       paymentMethod: 'CASH',
