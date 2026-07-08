@@ -227,11 +227,13 @@ export class SupplierComponent implements OnInit {
   save() {
     this.errorMessage = null;
 
+    // ১. নতুন প্রোফাইল ক্রিয়েশনের সময় পাসওয়ার্ড ভ্যালিডেশন চেক
     if (!this.isEdit && this.supplier.password !== this.confirmPassword) {
       this.errorMessage = 'Validation Fault: Access passwords do not match.';
       return;
     }
 
+    // ২. অ্যাড্রেস হাইরার্কি চেইন ভ্যালিডেশন
     if (this.supplier.policeStationId === 0) {
       this.errorMessage = 'Validation Fault: Local base station terminal configuration hierarchy incomplete.';
       return;
@@ -240,26 +242,37 @@ export class SupplierComponent implements OnInit {
     this.generateFullAddress();
 
     if (this.isEdit && this.currentEditId !== null) {
-      this.service.update(this.currentEditId, this.supplier, this.selectedFile).subscribe({
+      // 🎯 ওন্ড রুলস ফিক্স: এডিট করার সময় পাসওয়ার্ড ফিল্ড ফাকা থাকলে অবজেক্ট থেকে পাসওয়ার্ড প্রোপার্টি ডিলেট করা ভালো
+      const updatePayload = { ...this.supplier };
+      if (!updatePayload.password || updatePayload.password.trim() === '') {
+        delete updatePayload.password; 
+      }
+
+      // 🌟 ফিক্স: ৩টি আর্গুমেন্টই পাস করা হলো। নতুন ফাইল সিলেক্ট না করলে 'this.selectedFile' ডিফল্টভাবে null হিসেবে যাবে।
+      this.service.update(this.currentEditId, updatePayload, this.selectedFile).subscribe({
         next: () => {
           alert("Supplier profile updated successfully!");
           this.closeDrawer();
           this.loadSuppliers();
+              this.cdr.markForCheck();
+
         },
         error: (err) => this.handleBackendError(err)
       });
     } else {
+      // ৪. নতুন ক্রিয়েশনের সময় মাল্টিপার্ট হিসেবে ইমেজ সহ পাঠানো (POST)
       this.service.save(this.supplier, this.selectedFile).subscribe({
         next: () => {
           alert("Supplier station node successfully initialized!");
           this.closeDrawer();
           this.loadSuppliers();
+           this.cdr.markForCheck();
+
         },
         error: (err) => this.handleBackendError(err)
       });
     }
   }
-
   edit(s: SupplierResponseDTO) {
     this.errorMessage = null;
     this.currentEditId = s.id;
@@ -318,6 +331,7 @@ export class SupplierComponent implements OnInit {
         next: () => {
           alert("Supplier workstation profile purged successfully.");
           this.loadSuppliers();
+          this.cdr.markForCheck();
         },
         error: (err) => this.handleBackendError(err)
       });

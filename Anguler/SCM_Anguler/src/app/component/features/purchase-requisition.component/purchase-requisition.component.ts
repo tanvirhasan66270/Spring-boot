@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/ourchase-requisionModel';
+import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { SupplierService } from '../../../service/supplier.service';

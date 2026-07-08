@@ -25,5 +25,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // ৩. ইমেইল দিয়ে ইউজার খোঁজার মেথড
     Optional<User> findByEmail(String email);
 
+    List<User> findByRole(Role role);
 
+
+    Role Role(Role role);
 }

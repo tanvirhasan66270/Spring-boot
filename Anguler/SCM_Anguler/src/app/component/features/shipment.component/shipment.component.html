@@ -1,0 +1,168 @@
+<div class="container-fluid py-4 px-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+    <div>
+      <h4 class="text-dark fw-bold mb-1">Cargo Shipment Registry</h4>
+      <p class="text-muted mb-0 small">Formulate freight dispatch tracks, map fleet captains, and audit proof of delivery (POD) envelopes.</p>
+    </div>
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
+      <i class="bi bi-truck me-2"></i>Initialize Shipment Freight
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
+      <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
+    </div>
+  }
+
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-7">
+          <thead class="table-light text-uppercase fs-8">
+            <tr>
+              <th class="ps-4">Shipment No</th>
+              <th>Linked Master Order</th>
+              <th>Supplier / Origin Node</th>
+              <th>Fleet Vehicle & Captain</th>
+              <th>Logistics Cost</th>
+              <th>Est Delivery</th>
+              <th class="text-end px-4" width="140">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of shipments; track s.id) {
+              <tr>
+                <td class="ps-4">
+                  <span class="badge bg-dark font-monospace tracking-wide">{{ s.shipmentNumber }}</span>
+                  @if (s.podFileUrl) {
+                    <small class="d-block text-success font-monospace mt-1"><i class="bi bi-file-earmark-pdf-fill"></i> POD Attached</small>
+                  }
+                </td>
+                <td>
+                  <div class="fw-bold text-dark">PO Ref Node: #{{ s.poId }}</div>
+                  <div class="text-muted small font-monospace">Quota Vol: {{ s.poQuantity }} Units</div>
+                </td>
+                <td>
+                  <div class="fw-bold text-secondary">{{ s.supplierName }}</div>
+                  <div class="text-muted small font-sans"><i class="bi bi-geo-alt"></i> From: {{ s.origin }}</div>
+                </td>
+                <td>
+                  <div class="text-dark font-monospace fw-semibold">{{ s.vehicleNumber }}</div>
+                  <div class="text-secondary small font-sans"><i class="bi bi-person-badge"></i> Reg: {{ s.captainRegistrationNumber }}</div>
+                </td>
+                <td class="font-monospace fw-bold text-primary">${{ s.transportCost | number:'1.2-2' }}</td>
+                <td class="font-monospace text-danger fw-semibold"><i class="bi bi-calendar-check me-1"></i>{{ s.estimatedDelivery | date:'mediumDate' }}</td>
+                <td class="text-end px-4">
+                  <div class="d-flex justify-content-end gap-2">
+                    <button class="btn btn-icon btn-light text-warning" title="Mutate Track Node" (click)="edit(s)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-truck-flatbed fs-2 d-block mb-2 text-secondary"></i>No shipment track nodes initialized inside operational cluster.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Freight Parameters' : 'Authorize Freight Node' }}</h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
+      <form #sForm="ngForm" (ngSubmit)="sForm.valid && save()">
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Purchase Order Vector</label>
+          <select class="form-select fs-7" [(ngModel)]="shipment.poId" name="poId" required [disabled]="isEdit">
+            <option [value]="0">-- Link Master Purchase Order --</option>
+            @for (po of purchaseOrders; track po.id) {
+              <option [value]="po.id">PO #{{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
+          <select class="form-select fs-7" [(ngModel)]="shipment.supplierId" name="supplierId" required [disabled]="isEdit">
+            <option [value]="0">-- Map Dispatch Supplier Node --</option>
+            @for (v of suppliers; track v.id) {
+              <option [value]="v.id">{{ v.name }} (Contact: {{ v.contactPerson }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Vehicle Fleet Plate No</label>
+            <input type="text" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="shipment.vehicleNumber" name="vehicleNumber" placeholder="e.g. DHAKA-METRO-T-1122" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Captain License Reg No</label>
+            <input type="text" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.captainRegistrationNumber" name="captainRegistrationNumber" placeholder="e.g. BRTA-DL-99228" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Freight Sourcing Origin</label>
+            <input type="text" class="form-control fs-7" [(ngModel)]="shipment.origin" name="origin" placeholder="e.g. Chittagong Port Yard" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
+            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Expected Delivery Date</label>
+          <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.estimatedDelivery" name="estimatedDelivery" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Controller Email</label>
+          <input type="email" class="form-control fs-7 bg-light text-muted font-monospace" [(ngModel)]="shipment.assignedByEmail" name="assignedByEmail" readonly disabled>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Consignment Target Destination Address</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="shipment.sendByAddress" name="sendByAddress" placeholder="Full delivery terminal address details..." required></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (POD) Envelope Document</label>
+          <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
+          <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation sheets.</small>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Freight Changes' : 'Launch Consignment Track' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (isDrawerOpen) {
+    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+  }
+
+</div>

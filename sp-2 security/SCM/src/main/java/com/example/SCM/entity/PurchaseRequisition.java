@@ -17,6 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PurchaseRequisition {
+    
+
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

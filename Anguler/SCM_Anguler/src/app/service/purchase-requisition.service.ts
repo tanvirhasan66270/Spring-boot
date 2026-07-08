@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../encironment/environment';
-import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../component/shared/model/ourchase-requisionModel';
+import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../component/shared/model/purchase-requisionModel';
 
 @Injectable({
   providedIn: 'root',

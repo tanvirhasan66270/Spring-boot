@@ -28,6 +28,11 @@ import { Routes } from '@angular/router';
 import { CustomerDashboardComponent } from './component/dashboard/customer-dashboard.component/customer-dashboard.component';
 import { PurchaseRequisitionComponent } from './component/features/purchase-requisition.component/purchase-requisition.component';
 import { QuatationComponent } from './component/features/quatation.component/quatation.component';
+import { PurchaseOrderComponent } from './component/features/purchase-order.component/purchase-order.component';
+import { POLineItemComponent } from './component/features/poline-item.component/poline-item.component';
+import { ShipmentComponent } from './component/features/shipment.component/shipment.component';
+import { LetterOfCreditComponent } from './component/features/letterofcradit.component/letterofcradit.component';
+import { LcbankComponent } from './component/features/lcbank.component/lcbank.component';
 
 
 export const routes: Routes = [
@@ -73,7 +78,12 @@ export const routes: Routes = [
       { path: 'warehouse', component: WarehouseComponent },
       { path: 'order-dashboard', component: CustomerDashboardComponent },
       { path: 'purchase-requisition', component: PurchaseRequisitionComponent },
-      { path: 'quotation', component: QuatationComponent }
+      { path: 'quotation', component: QuatationComponent },
+      { path: 'purchase-order', component: PurchaseOrderComponent },
+      { path: 'poline-item', component: POLineItemComponent },
+      { path: 'shipment', component: ShipmentComponent },
+      { path: 'letter-of-credit', component: LetterOfCreditComponent },
+      { path: 'lcbank', component: LcbankComponent }
 
     ]
   }

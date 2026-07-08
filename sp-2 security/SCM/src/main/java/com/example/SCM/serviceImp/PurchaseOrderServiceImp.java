@@ -8,6 +8,8 @@ import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.PurchaseOrderStatus;
 import com.example.SCM.repository.PurchaseOrderRepository;
 import com.example.SCM.repository.QuotationRepository;
+import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
 import com.example.SCM.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final QuotationRepository quotationRepository;
     private final PurchaseOrderMapper purchaseOrderMapper;
     private final MailService mailService;
+
+    private final UserRepository userRepository;
 
 
     @Override
@@ -117,6 +121,12 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
 
     private void sendPoApprovalMailToManager(PurchaseOrder po) {
+
+        List<User> managers = userRepository.findByRole(Role.MANAGER);
+
+
+
+
         //প্রজেক্টে কোম্পানির ম্যানেজারের অফিশিয়াল মেইল বসে যাবে
         String managerEmail = "manager@company.com";
         String subject = "SCM Approval Request: Authorize Purchase Order #" + po.getPoNumber();
@@ -158,6 +168,17 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                 po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(), issueUrl);
 
         try {
+
+
+            for (User manager : managers) {
+                mailService.senderGeneralMail(
+                        manager.getEmail(),
+                        subject,
+                        mailContent
+                );
+            }
+
+
             mailService.senderGeneralMail(managerEmail, subject, mailContent);
         } catch (Exception e) {
             System.err.println("Manager PO Dispatch Pipeline Failed: " + e.getMessage());
