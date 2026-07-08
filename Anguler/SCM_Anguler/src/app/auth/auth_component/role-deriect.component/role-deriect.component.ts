@@ -15,16 +15,16 @@ constructor(private storage: StorageService, private router: Router) { }
   ngOnInit(): void {
     const role = this.storage.getRole();
     const map: Record<string, string> = {
-      ADMIN:    '/admin',
-      MANAGER:    '/managers',
-      DRIVER:    '/drivers',
-      PROCUREMENT: '/procurements',
-      QC_INSPECTOR:    '/qc-inspectors',
-      LOGISTICS_OFFICER:    '/logistics-officers',
-      COMMERCIAL_OFFICER:    '/commercial-officer',
-      CUSTOMER:   '/customer/',
-      SUPPLIER:   '/suppliers',
-      SALES_OFFICER: '/sales-officers',
+      ADMIN:  '/admin',
+      MANAGER:  '/manager',
+      DRIVER:  '/driver',
+      PROCUREMENT: '/procurement',
+      QC_INSPECTOR: '/qc-inspector',
+      LOGISTICS_OFFICER:  '/logistics-officer',
+      COMMERCIAL_OFFICER:  '/commercial-officer',
+      CUSTOMER:   '/customer',
+      SUPPLIER:   '/supplier',
+      SALES_OFFICER: '/sales-officer',
     };
     this.router.navigate([map[role ?? ''] ?? '/login']);
   }

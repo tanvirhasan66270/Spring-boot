@@ -1,5 +1,6 @@
 
 // npm install crypto-js
+// npm install --save-dev @types/crypto-js
 
 import CryptoJS from "crypto-js";
 import { SECRET } from "../../../encironment/environment";
