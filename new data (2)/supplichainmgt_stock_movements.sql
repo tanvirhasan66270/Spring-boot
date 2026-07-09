@@ -33,8 +33,17 @@ CREATE TABLE `stock_movements` (
   `remarks` text,
   `send_warehouse` varchar(255) DEFAULT NULL,
   `warehouse_id` bigint NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `source_warehouse_id` bigint DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FKlaob67k5ekyx7qnir6ekb99jy` (`performed_by`),
+  KEY `FKjcaag8ogfjxpwmqypi1wfdaog` (`product_id`),
+  KEY `FK2qkwlt85m1lck03wx1uv8v5y7` (`source_warehouse_id`),
+  KEY `FKiparp4rp4rsfsxb9y02oyxauh` (`warehouse_id`),
+  CONSTRAINT `FK2qkwlt85m1lck03wx1uv8v5y7` FOREIGN KEY (`source_warehouse_id`) REFERENCES `warehouses` (`id`),
+  CONSTRAINT `FKiparp4rp4rsfsxb9y02oyxauh` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
+  CONSTRAINT `FKjcaag8ogfjxpwmqypi1wfdaog` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `FKlaob67k5ekyx7qnir6ekb99jy` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -43,6 +52,7 @@ CREATE TABLE `stock_movements` (
 
 LOCK TABLES `stock_movements` WRITE;
 /*!40000 ALTER TABLE `stock_movements` DISABLE KEYS */;
+INSERT INTO `stock_movements` VALUES (1,'2026-07-09 16:25:04.665753','OUTWARD',1,1,200,'bnv  fvghvbjh','nmkb,m jbvhhujb',NULL,1,NULL);
 /*!40000 ALTER TABLE `stock_movements` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:49
+-- Dump completed on 2026-07-09 19:17:51

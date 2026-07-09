@@ -37,7 +37,7 @@ CREATE TABLE `inventories` (
   KEY `FKoipfe4s81wodvutx9i0rlmoyi` (`warehouse_id`),
   CONSTRAINT `FK8drmqyx629j3oo8ct9jnc5y3y` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `FKoipfe4s81wodvutx9i0rlmoyi` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,6 +46,7 @@ CREATE TABLE `inventories` (
 
 LOCK TABLES `inventories` WRITE;
 /*!40000 ALTER TABLE `inventories` DISABLE KEYS */;
+INSERT INTO `inventories` VALUES (1,'2026-07-10','2026-07-09 15:40:30.712747','ssdzxvwe sdfsd',230,0,'IN_STOCK',1,1);
 /*!40000 ALTER TABLE `inventories` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -58,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:49
+-- Dump completed on 2026-07-09 19:17:50

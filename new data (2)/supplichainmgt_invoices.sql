@@ -53,7 +53,7 @@ CREATE TABLE `invoices` (
   `updated_at` datetime(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UKl1x55mfsay7co0r3m9ynvipd5` (`invoice_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -62,6 +62,7 @@ CREATE TABLE `invoices` (
 
 LOCK TABLES `invoices` WRITE;
 /*!40000 ALTER TABLE `invoices` DISABLE KEYS */;
+INSERT INTO `invoices` VALUES (2,NULL,NULL,'2026-07-09 17:24:55.724478','BDT','tanvirhan66270@gmail.com',1,'sdfgvsed sdfsaf','2026-07-15',10,5,209990,'TRN-1783596295721','ISSUED','2026-07-09','Rashed Khan','aZSfcazsd asdcfaZf',2000,'BANK','PARTIALLY_PAID',NULL,2000,200000,10000,0.05,211990,'ZAvf sdf','2026-07-09 17:24:55.725494');
 /*!40000 ALTER TABLE `invoices` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -74,4 +75,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:53
+-- Dump completed on 2026-07-09 19:17:48

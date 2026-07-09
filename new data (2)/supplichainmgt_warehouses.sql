@@ -39,7 +39,7 @@ CREATE TABLE `warehouses` (
   UNIQUE KEY `UK2qm0l82n5ivhyqwmgejxxefm1` (`name`),
   KEY `FKookqoqrmqnl7j2pibx0pmj2yo` (`police_station_id`),
   CONSTRAINT `FKookqoqrmqnl7j2pibx0pmj2yo` FOREIGN KEY (`police_station_id`) REFERENCES `policestations` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -48,6 +48,7 @@ CREATE TABLE `warehouses` (
 
 LOCK TABLES `warehouses` WRITE;
 /*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
+INSERT INTO `warehouses` VALUES (1,230,'2026-07-09 15:38:14.507772','warehousechattrogram@gmail.com',_binary '\0','house No:112',1,'Badrul amin','2026-07-09 15:38:14.507772',49,NULL);
 /*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -60,4 +61,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:51
+-- Dump completed on 2026-07-09 19:17:50

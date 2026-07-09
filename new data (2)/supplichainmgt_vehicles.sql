@@ -35,7 +35,7 @@ CREATE TABLE `vehicles` (
   UNIQUE KEY `UKh6kd0awsaislk5n2f3ea1hhuq` (`plate_number`),
   KEY `FKaashphrwfd4ts511y8vj785ia` (`driver_id`),
   CONSTRAINT `FKaashphrwfd4ts511y8vj785ia` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `vehicles` (
 
 LOCK TABLES `vehicles` WRITE;
 /*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
+INSERT INTO `vehicles` VALUES (1,1500,85,'2026-05-10','Dhaka Metro-GA-11-2026','AVAILABLE','VAN',1),(2,3000,60,'2026-06-01','Dhaka Metro-THA-55-1024','ON_TRIP','TRUCK',2),(3,5000,45,'2026-04-15','Chotto Metro-TA-99-4321','MAINTENANCE','TRUCK',3),(4,1200,90,'2026-06-20','Dhaka Metro-HA-22-9981','OUT_OF_SERVICE','VAN',4),(5,2000,75,'2026-07-01','Dhaka Metro-MOTO-88-7722','AVAILABLE','VAN',5);
 /*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:49
+-- Dump completed on 2026-07-09 19:17:48

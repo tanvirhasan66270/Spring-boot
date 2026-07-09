@@ -26,20 +26,17 @@ CREATE TABLE `delivery_trips` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `completed_at` datetime(6) DEFAULT NULL,
   `created_at` datetime(6) NOT NULL,
-  `customer_address` varchar(255) NOT NULL,
+  `customer_address` text NOT NULL,
   `delivery_photo_url` varchar(255) DEFAULT NULL,
-  `destination_info` varchar(255) DEFAULT NULL,
+  `dispatcher_id` bigint NOT NULL,
   `recipient_signature` varchar(255) DEFAULT NULL,
-  `schedule_info` varchar(255) DEFAULT NULL,
-  `send_by` varchar(255) NOT NULL,
+  `remarks` text,
   `started_at` datetime(6) DEFAULT NULL,
   `status` enum('CANCELLED','DELIVERED','IN_TRANSIT','PENDING') NOT NULL,
-  `trip_info` varchar(255) DEFAULT NULL,
   `updated_at` datetime(6) NOT NULL,
-  `vehicle_info` varchar(255) DEFAULT NULL,
   `customer_id` bigint NOT NULL,
   `driver_id` bigint NOT NULL,
-  `vehicle_id` bigint DEFAULT NULL,
+  `vehicle_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK2o3mj1p41rujvmfdplp1mj0nx` (`customer_id`),
   KEY `FKr449c60k54t53nlem00r869t3` (`driver_id`),
@@ -47,7 +44,7 @@ CREATE TABLE `delivery_trips` (
   CONSTRAINT `FK2o3mj1p41rujvmfdplp1mj0nx` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`),
   CONSTRAINT `FKmjs8olu2fy49vw2m6vbfveoey` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`),
   CONSTRAINT `FKr449c60k54t53nlem00r869t3` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -56,6 +53,7 @@ CREATE TABLE `delivery_trips` (
 
 LOCK TABLES `delivery_trips` WRITE;
 /*!40000 ALTER TABLE `delivery_trips` DISABLE KEYS */;
+INSERT INTO `delivery_trips` VALUES (1,NULL,'2026-07-09 19:06:12.627115','saDF;kerl jefkerwnojhor',NULL,1,NULL,'esrgmlkjhnoijfrgvt jhok',NULL,'PENDING','2026-07-09 19:06:12.627115',1,1,1),(2,NULL,'2026-07-09 19:06:16.102922','saDF;kerl jefkerwnojhor',NULL,1,NULL,'esrgmlkjhnoijfrgvt jhok',NULL,'PENDING','2026-07-09 19:06:16.102922',1,1,1);
 /*!40000 ALTER TABLE `delivery_trips` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -68,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08 19:11:51
+-- Dump completed on 2026-07-09 19:17:49
