@@ -6,6 +6,7 @@ import com.example.SCM.dto.response.InventoryResponseDTO;
 import com.example.SCM.entity.Inventory;
 import com.example.SCM.entity.Product;
 import com.example.SCM.entity.Warehouse;
+import com.example.SCM.enumClass.StockStatus; // 🎯 এনাম প্যাকেজ ইমপোর্ট
 import com.example.SCM.repository.InventoryRepository;
 import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.WarehouseRepository;
@@ -27,7 +28,6 @@ public class InventoryServiceImp implements InventoryService {
     private final WarehouseRepository warehouseRepository;
     private final InventoryMapper inventoryMapper;
 
-
     @Override
     @Transactional
     public InventoryResponseDTO save(InventoryRequestDTO dto) {
@@ -35,30 +35,26 @@ public class InventoryServiceImp implements InventoryService {
             throw new IllegalArgumentException("Inventory request data cannot be null");
         }
 
-        // ডাটাবেজে একই ওয়ারহাউজে একই প্রোডাক্টের কম্বিনেশন অলরেডি এক্সিস্ট করে কি না চেক (ডুপ্লিকেট স্টক এড়াতে)
         Optional<Inventory> existingStock = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId());
         if (existingStock.isPresent()) {
             throw new RuntimeException("Inventory record already exists for this Product in the specified Warehouse! Please use update instead.");
         }
 
-        // রিলেশনাল প্রোডাক্ট এবং ওয়ারহাউজ অবজেক্ট খুঁজে বের করা
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
         Warehouse warehouse = warehouseRepository.findById(dto.getWarehouseId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + dto.getWarehouseId()));
 
-        // Mapper দিয়ে DTO -> Entity রূপান্তর
         Inventory inventory = inventoryMapper.toEntity(dto, product, warehouse);
 
-        // বিজনেস লজিক: ইনভেন্টরি লেভেলে স্টক স্ট্যাটাস ডাইনামিকালি সেট করা
+        // 🚀 বিজনেস লজিক: এনাম ট্র্যাকিং ক্যালকুলেটর
         calculateAndSetStockStatus(inventory, product);
 
-        Inventory savedInventory = inventoryRepository.save(inventory);
+        // 🎯 saveAndFlush ব্যবহার করা হয়েছে যাতে @PrePersist (lastUpdated টাইম) ইনস্ট্যান্ট সিঙ্ক হয়
+        Inventory savedInventory = inventoryRepository.saveAndFlush(inventory);
         return inventoryMapper.convertTOResponseDTO(savedInventory);
     }
-
-    // 2. Update Existing Inventory Stock
 
     @Override
     @Transactional
@@ -67,11 +63,9 @@ public class InventoryServiceImp implements InventoryService {
             throw new IllegalArgumentException("Inventory request data cannot be null");
         }
 
-        // এক্সিস্টিং ইনভেন্টরি রো খুঁজে বের করা
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventory record not found with ID: " + id));
 
-        // যদি প্রোডাক্ট বা ওয়ারহাউজ চেঞ্জ করার রিকোয়ারমেন্ট আসে
         Product product = inventory.getProduct();
         if (dto.getProductId() != null && !dto.getProductId().equals(product.getId())) {
             product = productRepository.findById(dto.getProductId())
@@ -84,17 +78,14 @@ public class InventoryServiceImp implements InventoryService {
                     .orElseThrow(() -> new RuntimeException("New Warehouse not found with ID: " + dto.getWarehouseId()));
         }
 
-        // ম্যাপারের মাধ্যমে বেসিক ডেটা ও ডেট আপডেট
         inventoryMapper.updateEntity(dto, inventory, product, warehouse);
 
-        // বিজনেস লজিক: আপডেটেড পরিমাণের ওপর ভিত্তি করে স্টক স্ট্যাটাস আবার চেক করা
+        // 🚀 বিজনেস লজিক: পরিমাণের ওপর ভিত্তি করে স্টক এনাম আপডেট
         calculateAndSetStockStatus(inventory, product);
 
-        Inventory updatedInventory = inventoryRepository.save(inventory);
+        Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);
         return inventoryMapper.convertTOResponseDTO(updatedInventory);
     }
-
-    //  Find All Inventories
 
     @Override
     @Transactional(readOnly = true)
@@ -104,16 +95,12 @@ public class InventoryServiceImp implements InventoryService {
                 .collect(Collectors.toList());
     }
 
-    // Find Inventory By ID
-
     @Override
     @Transactional(readOnly = true)
     public Optional<InventoryResponseDTO> getById(Long id) {
         return inventoryRepository.findById(id)
                 .map(inventoryMapper::convertTOResponseDTO);
     }
-
-    //  Delete Inventory Record
 
     @Override
     @Transactional
@@ -124,17 +111,15 @@ public class InventoryServiceImp implements InventoryService {
         inventoryRepository.delete(inventory);
     }
 
-    // quantityOnHand এবং quantityReserved এর ওপর ভিত্তি করে অটো-স্ট্যাটাস ক্যালকুলেশন
-
     private void calculateAndSetStockStatus(Inventory inventory, Product product) {
         int availableQuantity = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
 
         if (availableQuantity <= 0) {
-            inventory.setStockStatus("OUT_OF_STOCK");
-        } else if (availableQuantity <= product.getReorderPoint()) {
-            inventory.setStockStatus("LOW_STOCK"); // প্রোডাক্টের নিজস্ব রিঅর্ডার পয়েন্ট ক্রস করলে ওয়ার্নিং
+            inventory.setStockStatus(StockStatus.OUT_OF_STOCK);
+        } else if (product != null && availableQuantity <= product.getReorderPoint()) {
+            inventory.setStockStatus(StockStatus.LOW_STOCK);
         } else {
-            inventory.setStockStatus("IN_STOCK");
+            inventory.setStockStatus(StockStatus.IN_STOCK);
         }
     }
 }

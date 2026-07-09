@@ -5,16 +5,13 @@ import lombok.Data;
 @Data
 public class DeliveryTripRequestDTO {
     private Long id;
-    private String sendBy;
+    private Long dispatcherId;
     private Long customerId;
     private Long driverId;
-    private String status;
+    private Long vehicleId;
+    private String status;     // PENDING, IN_TRANSIT, DELIVERED, CANCELLED
+    private String customerAddress;
     private String recipientSignature;
     private String deliveryPhotoUrl;
-    private String customerAddress;
-    private Long vehicleId;
-    private String vehicleInfo;
-    private String destinationInfo;
-    private String scheduleInfo;
-    private String tripInfo;
+    private String remarks;
 }

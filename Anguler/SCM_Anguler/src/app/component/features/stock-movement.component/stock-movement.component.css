@@ -1,0 +1,78 @@
+.container-fluid {
+  background-color: #f8fafc;
+  min-height: 100vh;
+}
+
+.bg-white { background-color: #ffffff !important; }
+.btn-primary { background-color: #3b82f6 !important; border-color: #3b82f6 !important; }
+.btn-primary:hover { background-color: #2563eb !important; }
+.text-primary { color: #3b82f6 !important; }
+.border-primary { border-color: #3b82f6 !important; }
+.text-indigo { color: #4f46e5 !important; }
+
+.table-responsive {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table th {
+  background-color: #f1f5f9;
+  color: #475569;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 14px 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.table td {
+  padding: 14px 12px;
+  color: #1e293b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background-color: #fee2e2 !important;
+  transform: translateY(-1px);
+}
+
+/* Right Slide Drawer Engine */
+.custom-drawer {
+  position: fixed;
+  top: 0;
+  right: -460px;
+  width: 450px;
+  height: 100vh;
+  background-color: #ffffff;
+  z-index: 1050;
+  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-drawer.open {
+  right: 0;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(2px);
+  z-index: 1040;
+}
+
+.fs-7 { font-size: 13px !important; }
+.fs-8 { font-size: 11px !important; }

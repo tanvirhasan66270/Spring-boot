@@ -10,8 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface StockMovementRepository extends JpaRepository<StockMovement, Long> {
-    @Query("SELECT p.name FROM Product p WHERE p.id = :id")
-    Optional<String> findNameById(@Param("id") Long id);
     List<StockMovement> findByProductId(Long productId);
+
     List<StockMovement> findByWarehouseId(Long warehouseId);
+
+    List<StockMovement> findBySourceWarehouseId(Long sourceWarehouseId);
 }

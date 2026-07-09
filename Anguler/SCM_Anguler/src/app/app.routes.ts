@@ -35,6 +35,10 @@ import { LetterOfCreditComponent } from './component/features/letterofcradit.com
 import { LcbankComponent } from './component/features/lcbank.component/lcbank.component';
 import { GoodRecivedNoteComponent } from './component/features/good-recived-note.component/good-recived-note.component';
 import { QcInspectionComponent } from './component/features/qc-inspection.component/qc-inspection.component';
+import { InventoryComponent } from './component/features/inventory.component/inventory.component';
+import { StockMovementComponent } from './component/features/stock-movement.component/stock-movement.component';
+import { InvoiceComponent } from './component/features/invoice.component/invoice.component';
+import { DeliveryTripComponent } from './component/features/delivery-trip.component/delivery-trip.component';
 
 
 export const routes: Routes = [
@@ -87,8 +91,13 @@ export const routes: Routes = [
       { path: 'letter-of-credit', component: LetterOfCreditComponent },
       { path: 'lcbank', component: LcbankComponent },
       { path: 'good-received-note', component: GoodRecivedNoteComponent },
-      { path: 'qc-inspection', component: QcInspectionComponent }
+      { path: 'qc-inspection', component: QcInspectionComponent },
+      { path: 'inventory', component: InventoryComponent },
+      { path: 'stock-movement', component: StockMovementComponent },
+      { path: 'invoice', component: InvoiceComponent },
+      { path: 'delivery-trip', component: DeliveryTripComponent }
       // { path: '**', redirectTo: 'good-received-note' }
+
 
     ]
   }

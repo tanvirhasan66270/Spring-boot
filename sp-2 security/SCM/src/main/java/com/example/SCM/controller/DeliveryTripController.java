@@ -41,8 +41,9 @@ public class DeliveryTripController {
             @PathVariable Long id,
             @RequestParam("status") String status,
             @RequestPart(value = "signature", required = false) MultipartFile signature,
-            @RequestPart(value = "photo", required = false) MultipartFile photo
+            @RequestPart(value = "photo", required = false) MultipartFile photo // 🎯 ফ্রন্টএন্ড থেকে FormData-তে 'photo' নামে ফাইল পুশ করতে হবে
     ) {
+        // সার্ভিস লেয়ারের মেথড সিগনেচারের সাথে ভেরিয়েবল পাসিং সিঙ্কড
         return ResponseEntity.ok(tripService.updateTripStatus(id, status, signature, photo));
     }
 
@@ -69,5 +70,4 @@ public class DeliveryTripController {
         tripService.delete(id);
         return ResponseEntity.ok("Delivery trip cluster index cleared successfully from control matrix.");
     }
-
 }

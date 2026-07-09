@@ -41,7 +41,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
                 .orElseThrow(() -> new RuntimeException("Customer profile mapping failure"));
         Driver driver = driverRepository.findById(dto.getDriverId())
                 .orElseThrow(() -> new RuntimeException("Driver assignment node missing"));
-        Vehicle vehicle = dto.getVehicleId() != null ? vehicleRepository.findById(dto.getVehicleId()).orElse(null) : null;
+        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId())
+                .orElseThrow(() -> new RuntimeException("Allocated fleet vehicle missing"));
 
         DeliveryTrip trip = tripMapper.toEntity(dto, customer, driver, vehicle);
         DeliveryTrip savedTrip = tripRepository.save(trip);
@@ -58,7 +59,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
 
         Customer customer = customerRepository.findById(dto.getCustomerId()).orElse(trip.getCustomer());
         Driver driver = driverRepository.findById(dto.getDriverId()).orElse(trip.getDriver());
-        Vehicle vehicle = dto.getVehicleId() != null ? vehicleRepository.findById(dto.getVehicleId()).orElse(null) : trip.getVehicle();
+        Vehicle vehicle = vehicleRepository.findById(dto.getVehicleId()).orElse(trip.getVehicle());
 
         tripMapper.updateEntity(dto, trip, customer, driver, vehicle);
         return tripMapper.convertTOResponseDTO(tripRepository.save(trip));
@@ -84,8 +85,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     @Transactional(readOnly = true)
     @Override
     public List<DeliveryTripResponseDTO> findAll() {
-        return tripRepository.findAllTripsWithDetails()
-                .stream()
+        return tripRepository.findAll().stream()
                 .map(tripMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -93,8 +93,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     @Transactional(readOnly = true)
     @Override
     public Optional<DeliveryTripResponseDTO> getById(Long id) {
-        return tripRepository.findByIdWithDetails(id)
-                .map(tripMapper::convertTOResponseDTO);
+        return tripRepository.findById(id).map(tripMapper::convertTOResponseDTO);
     }
 
     @Transactional
@@ -133,9 +132,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
                     <p>A new delivery transit manifest has been assigned to your active profile today by sales team operations.</p>
                     <p><b>Trip Deployment Brief Matrix:</b></p>
                     <ul>
-                        <li><b>Destination Depot:</b> %s</li>
                         <li><b>Client Address Node:</b> %s</li>
-                        <li><b>Fleet Allocation:</b> %s</li>
+                        <li><b>Vehicle Fleet Assigned:</b> %s</li>
                     </ul>
                     <div class='btn-container'>
                         <a href='http://localhost:8080/api/delivery-trips/%d' class='btn'>View Manifest Details</a>
@@ -151,9 +149,8 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         </html>
         """.formatted(
                 driver.getDriverName(),
-                trip.getDestinationInfo(),
                 trip.getCustomerAddress(),
-                trip.getVehicleInfo(),
+                trip.getVehicle() != null ? (trip.getVehicle().getPlateNumber()) : "N/A",
                 trip.getId(),
                 java.time.Year.now().getValue()
         );
@@ -176,5 +173,4 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
             throw new RuntimeException("Trip document sync operational exception: " + e.getMessage());
         }
     }
-
 }

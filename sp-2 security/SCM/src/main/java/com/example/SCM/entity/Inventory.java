@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.example.SCM.enumClass.StockStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,8 +41,9 @@ public class Inventory {
 
     private LocalDate expiryDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String stockStatus; // IN_STOCK, LOW_STOCK, OUT_OF_STOCK
+    private StockStatus stockStatus;
 
     @Column(nullable = false)
     private LocalDateTime lastUpdated;

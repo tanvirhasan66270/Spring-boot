@@ -44,4 +44,6 @@ public class Vehicle {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = true)
     private Driver driver;
+
+
 }

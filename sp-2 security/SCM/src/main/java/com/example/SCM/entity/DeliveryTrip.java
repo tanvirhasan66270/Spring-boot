@@ -4,7 +4,6 @@ import com.example.SCM.enumClass.DeliveryTripStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,8 +19,9 @@ public class DeliveryTrip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // স্ট্রিং এর বদলে কোন ম্যানেজার/ইউজার ট্রিপটি পাঠিয়েছে তার আইডি ট্র্যাকিং
     @Column(nullable = false)
-    private String sendBy;
+    private Long dispatcherId;
 
     private LocalDateTime startedAt;
 
@@ -29,22 +29,18 @@ public class DeliveryTrip {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
-    private DeliveryTripStatus status;
+    private DeliveryTripStatus status; // e.g., PENDING, IN_TRANSIT, DELIVERED, CANCELLED
 
-    private String recipientSignature;
+    private String recipientSignature; // রিসিভারের ডিজিটাল সিগনেচার ইমেজ পাথ/বেস৬৪
 
-    private String deliveryPhotoUrl;
+    private String deliveryPhotoUrl;   // প্রুফ অফ ডেলিভারি (POD) ইমেজ ইউআরএল
 
-    @Column(nullable = false)
-    private String customerAddress;
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String customerAddress;    // নির্দিষ্ট ট্রিপের ড্রপ-অফ শিপিং লোকেশন
 
-    private String vehicleInfo;
 
-    private String destinationInfo;
-
-    private String scheduleInfo;
-
-    private String tripInfo;
+    @Column(columnDefinition = "TEXT")
+    private String remarks; // জেনারেল ট্রিপ নোট বা চালকের কোনো মন্তব্য রাখার জন্য
 
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
@@ -52,7 +48,8 @@ public class DeliveryTrip {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    // ── System Core Relations ────────────────────────────────────
+    // ── 🔗 System Core ORM Relations (নিখুঁত অবজেক্ট গ্রাফ) ────────────────────────
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
@@ -65,7 +62,7 @@ public class DeliveryTrip {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id")
+    @JoinColumn(name = "vehicle_id", nullable = false) // ট্রিপে গাড়ি অ্যাসাইন করা বাধ্যতামূলক হওয়া উচিত
     private Vehicle vehicle;
 
     @PrePersist

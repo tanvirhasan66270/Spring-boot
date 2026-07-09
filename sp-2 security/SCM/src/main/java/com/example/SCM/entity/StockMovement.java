@@ -18,25 +18,31 @@ public class StockMovement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-     @Column(nullable = false)
-    private Long productId;
+    // 🔗 Many-to-One Relation mappings
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
-    @Column(nullable = false)
-    private Long warehouseId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    private Warehouse warehouse;
 
-
-    private String sendWarehouse;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "source_warehouse_id")
+    private Warehouse sourceWarehouse;
 
     @Enumerated(EnumType.STRING)
-    private StockMovementType movementType;
+    @Column(nullable = false)
+    private StockMovementType movementType; // INBOUND, OUTBOUND, TRANSFER, ADJUSTMENT
 
     private int quantity;
 
     @Column(nullable = false)
-    private String referenceId;
+    private String referenceId; // GRN-Code, Invoice-Code, QC-Id
 
-    @Column(nullable = false)
-    private Long performedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "performed_by", nullable = false)
+    private User performedBy;
 
     @Column(nullable = false)
     private LocalDateTime movedAt;
@@ -44,10 +50,17 @@ public class StockMovement {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
+    // 🎯 ডেটাবেজে প্রথমবার সেভ (Insert) হওয়ার সময় কারেন্ট টাইমস্ট্যাম্প সেট হবে
     @PrePersist
     protected void onCreate() {
         if (this.movedAt == null) {
             this.movedAt = LocalDateTime.now();
         }
+    }
+
+    // 🎯 ফিক্স: মুভমেন্টের ডেটা আপডেট বা মডিফাই করার সময় স্বয়ংক্রিয়ভাবে টাইমস্ট্যাম্প রি-সিঙ্ক হবে
+    @PreUpdate
+    protected void onUpdate() {
+        this.movedAt = LocalDateTime.now();
     }
 }

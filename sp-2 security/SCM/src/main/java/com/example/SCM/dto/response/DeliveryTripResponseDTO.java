@@ -1,27 +1,25 @@
 package com.example.SCM.dto.response;
 
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 public class DeliveryTripResponseDTO {
     private Long id;
-    private String sendBy;
+    private Long dispatcherId;
     private String status;
-    private String startedAt;
-    private String completedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
     private String recipientSignature;
     private String deliveryPhotoUrl;
     private String customerAddress;
-    private String vehicleInfo;
-    private String destinationInfo;
-    private String scheduleInfo;
-    private String tripInfo;
-    private String createdAt;
-    private String updatedAt;
+    private String remarks;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    //  Flattened Relations (Auto Fillup Match with Angular) ---
+    // ── Flattened Relations for UI ──
     private Long customerId;
-    private String recipientName; // Maps with customerName from Customer table
+    private String recipientName;
 
     private Long driverId;
     private String driverName;
@@ -29,4 +27,5 @@ public class DeliveryTripResponseDTO {
 
     private Long vehicleId;
     private String vehiclePlateNumber;
+    private String vehicleModel;
 }
