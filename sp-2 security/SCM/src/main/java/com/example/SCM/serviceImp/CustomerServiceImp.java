@@ -136,6 +136,11 @@ public class CustomerServiceImp implements CustomerService {
         }
     }
 
+    @Override
+    public Optional<CustomerResponseDTO> findUserById(Long id) {
+        return customerRepository.findByUserId(id).map(customerMapper::convertTOResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String customerName) {
         try {
             Path path = Paths.get(uploadDir, "customer");

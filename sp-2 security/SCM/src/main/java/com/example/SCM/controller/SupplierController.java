@@ -1,5 +1,6 @@
 package com.example.SCM.controller;
 
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.dto.response.SupplierResponseDTO;
 import com.example.SCM.dto.request.SupplierRequestDTO;
 import com.example.SCM.service.SupplierService;
@@ -35,10 +36,10 @@ public class SupplierController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE }) // 🌟 ফিক্সড: কন্ট্রোলার লেয়ার থেকে @Transactional রিমুভ করা হয়েছে
+    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> update(
             @PathVariable Long id,
-            @RequestPart("suppliers") String supplierJson, // 🌟 ফিক্সড: সরাসরি DTO না নিয়ে স্ট্রিং জেসন রিসিভ করা হলো
+            @RequestPart("suppliers") String supplierJson,
             @RequestPart(value = "image", required = false) MultipartFile image) {
         try {
             SupplierRequestDTO dto = objectMapper.readValue(supplierJson, SupplierRequestDTO.class);
@@ -68,5 +69,12 @@ public class SupplierController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return ResponseEntity.ok("Supplier profile and associated auth account deleted successfully!");
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<SupplierResponseDTO> getByUserId(@PathVariable Long id) {
+        return supplierService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

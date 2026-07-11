@@ -156,9 +156,9 @@ export class DailyReportComponent implements OnInit {
   approveReport(id: number) {
     if (confirm("Are you sure you want to officially APPROVE and lock this operational report?")) {
       this.service.approve(id).subscribe({
-        next: () => { 
-          alert("Report stamped and locked as APPROVED."); 
-          this.loadReports(); 
+        next: () => {
+          alert("Report stamped and locked as APPROVED.");
+          this.loadReports();
         },
         error: (err) => this.handleError(err)
       });
@@ -191,8 +191,9 @@ export class DailyReportComponent implements OnInit {
   deleteReport(id: number) {
     if (confirm("Terminate this report pointer from tracking grid?")) {
       this.service.delete(id).subscribe({
-        next: () => { 
-          alert("Report trace erased."); 
+        next: () => {
+          alert("Report trace erased.");
+          this.loadReports();
           this.cdr.markForCheck();
         },
         error: (err) => this.handleError(err)

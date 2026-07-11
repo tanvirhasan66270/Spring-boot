@@ -7,7 +7,7 @@ import { CryptoUtil } from '../utils/CryptoUtil';
 export const KEYS = {
   TOKEN: 'cm_token',
   USER: 'cm_user',
-  CUSTOMER: 'cm_customer',
+  MANAGER: 'cm_manager',
   RIDER: 'cm_rider',
   AGENT: 'cm_agent'
 };
@@ -46,6 +46,8 @@ export class StorageService {
     const raw = localStorage.getItem(KEYS.USER);
     if (!raw) return null;
     const json = CryptoUtil.decrypt(raw);
+
+    console.log(json);
     try {
       return json ? JSON.parse(json) : null;
     } catch {

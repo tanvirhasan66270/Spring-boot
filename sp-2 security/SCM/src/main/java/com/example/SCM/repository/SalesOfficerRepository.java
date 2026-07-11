@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface SalesOfficerRepository extends JpaRepository<SalesOfficer, Long> {
     Optional<SalesOfficer> findByUserId(Long userId);
 
+
     @Query("SELECT DISTINCT s FROM SalesOfficer s LEFT JOIN FETCH s.user LEFT JOIN FETCH s.policeStation")
     List<SalesOfficer> findAllWithDetails();
 

@@ -1,9 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { StorageService } from '../../auth/auth_service/storage.service';
 import { environment } from '../../../environment/environment';
 import { MessageRequestModel, MessageResponseModel } from '../massageModel';
-
 
 @Injectable({
   providedIn: 'root',
@@ -11,21 +11,25 @@ import { MessageRequestModel, MessageResponseModel } from '../massageModel';
 export class MessageService {
   private apiUrl = environment.apiUrl + 'messages';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService
+  ) { }
 
-  /**
-   * 💡 কাস্টম হেডার বাদ দেওয়া হয়েছে। 
-   * আপনার প্রজেক্টের AuthInterceptor স্বয়ংক্রিয়ভাবে Bearer Token ব্যাকএন্ডে ম্যাপ করবে।
-   */
+  private getHeaders(): HttpHeaders {
+    const userId = this.storage.getUser()?.userId?.toString() ?? '16';
+    return new HttpHeaders().set('X-User-Id', userId);
+  }
+
   getInbox(): Observable<MessageResponseModel[]> {
-    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`);
+    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, { headers: this.getHeaders() });
   }
 
   send(message: MessageRequestModel): Observable<MessageResponseModel[]> {
-    return this.http.post<MessageResponseModel[]>(this.apiUrl, message);
+    return this.http.post<MessageResponseModel[]>(this.apiUrl, message, { headers: this.getHeaders() });
   }
 
   markAsRead(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/read`, {});
+    return this.http.patch<void>(`${this.apiUrl}/${id}/read`, {}, { headers: this.getHeaders() });
   }
 }

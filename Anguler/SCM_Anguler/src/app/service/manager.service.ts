@@ -53,4 +53,13 @@ export class ManagerService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+
+
+    /** Fetch the agent entity whose linked user matches the given userId. */
+  getManagerByUserId(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`);
+  }
+
+  
 }

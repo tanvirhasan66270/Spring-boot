@@ -13,52 +13,33 @@ import { FormsModule } from '@angular/forms';
 export class ForgetPasswordComponent {
 
   
-token = '';
-  newPassword = '';
-  confirmPassword = '';
-
-  showPassword = false;
-  showConfirm = false;
+email = '';
   loading = false;
-  success = false;
+  successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  constructor(
-    private auth: AuthService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) { }
-
-  ngOnInit(): void {
-    this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
-    if (!this.token) {
-      this.errorMessage = 'Invalid or missing reset token. Please request a new link.';
-    }
-  }
-
-  get mismatch(): boolean {
-    return !!this.confirmPassword && this.newPassword !== this.confirmPassword;
-  }
+  constructor(private auth: AuthService) { }
 
   submit(): void {
-    if (this.mismatch || !this.token) return;
-
     this.loading = true;
+    this.successMessage = null;
     this.errorMessage = null;
 
-    this.auth.resetPassword({ token: this.token, newPassword: this.newPassword }).subscribe({
+    this.auth.forgotPassword({ email: this.email }).subscribe({
       next: () => {
         this.loading = false;
-        this.success = true;
-        setTimeout(() => this.router.navigate(['/login']), 3000);
+        this.successMessage = `A password reset link has been sent to ${this.email}.`;
       },
-      error: (err) => {
+      error: () => {
         this.loading = false;
-        this.errorMessage =
-          err.status === 400
-            ? 'Reset link is invalid or has expired. Please request a new one.'
-            : 'Something went wrong. Please try again.';
+        this.errorMessage = 'No account found with that email address.';
       }
     });
   }
+
+
+  scrollTo(id: string): void {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
 }

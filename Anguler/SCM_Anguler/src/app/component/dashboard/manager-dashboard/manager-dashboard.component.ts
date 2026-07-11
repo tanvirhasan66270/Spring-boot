@@ -1,7 +1,10 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
+import { ManagerResponseModel } from '../../shared/model/manager';
+import { ManagerService } from '../../../service/manager.service';
+import { LoginResponse } from '../../../auth/Model/authModel';
 
 @Component({
   selector: 'app-manager-dashboard',
@@ -33,17 +36,54 @@ export class ManagerDashboardComponent implements OnInit {
     { name: 'Commercial Imports', score: 70, color: 'warning' }
   ];
 
+
+  userId!: number;
+
+  manager: ManagerResponseModel | null= null;
+
+  user: LoginResponse | null = null;
+
+
   constructor(
     private storage: StorageService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private managerService: ManagerService,
   ) {}
 
   ngOnInit(): void {
     const user = this.storage.getUser();
+
+        console.log(this.user)
+
     if (user) {
       this.userName = user.name || 'Manager';
     }
+
+
+    if (this.user?.userId) {
+      this.userId = this.user.userId;
+    }
+
+    console.log(this.userId)
+
+
+    this.loadManager();
+
+  }
+
+
+  loadManager(): void {
+    this.managerService.getManagerByUserId(this.userId).subscribe({
+      next: (res) => {
+        this.manager = res;
+        console.log(this.manager);
+        this.storage.saveData(KEYS.MANAGER, res);
+        this.cdr.markForCheck();
+       
+      },
+      error: (err) => console.log(err)
+    });
   }
 
   approve(id: string): void {

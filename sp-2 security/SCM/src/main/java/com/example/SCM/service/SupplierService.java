@@ -1,6 +1,7 @@
 package com.example.SCM.service;
 
 
+import com.example.SCM.dto.response.DriverResponseDTO;
 import com.example.SCM.dto.response.SupplierResponseDTO;
 import com.example.SCM.dto.request.SupplierRequestDTO;
 
@@ -15,13 +16,11 @@ import java.util.Optional;
 public interface SupplierService {
 
     SupplierResponseDTO save(SupplierRequestDTO dto, MultipartFile file);
-
-
     SupplierResponseDTO update(Long id, SupplierRequestDTO dto, MultipartFile file);
-
-
     List<SupplierResponseDTO> findAll();
     Optional<SupplierResponseDTO> getById(Long id);
     void delete(Long id);
+    Optional<SupplierResponseDTO> findUserById(Long id);
 
-   }
+
+}

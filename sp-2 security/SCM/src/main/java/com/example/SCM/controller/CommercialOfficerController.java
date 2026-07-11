@@ -2,6 +2,7 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.CommercialOfficerRequestDTO;
 import com.example.SCM.dto.response.CommercialOfficerResponseDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.service.CommercialOfficerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -68,6 +69,12 @@ public class CommercialOfficerController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<CommercialOfficerResponseDTO> getByUserId(@PathVariable Long id) {
+        return officerService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 }

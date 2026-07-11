@@ -2,6 +2,7 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -63,6 +64,12 @@ public class CustomerController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");
+    }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<CustomerResponseDTO> getByUserId(@PathVariable Long id) {
+        return customerService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 }

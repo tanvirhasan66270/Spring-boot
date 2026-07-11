@@ -1,6 +1,7 @@
 package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.QCInspectorRequestDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.dto.response.QCInspectorResponseDTO;
 import com.example.SCM.service.QCInspectorService;
 import lombok.RequiredArgsConstructor;
@@ -64,5 +65,12 @@ public class QCInspectorController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcInspectorService.delete(id);
         return ResponseEntity.ok("Deleted successfully");
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<QCInspectorResponseDTO> getByUserId(@PathVariable Long id) {
+        return qcInspectorService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

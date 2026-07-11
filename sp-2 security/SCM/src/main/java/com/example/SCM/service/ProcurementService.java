@@ -1,6 +1,7 @@
 package com.example.SCM.service;
 
 import com.example.SCM.dto.request.ProcurementRequestDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.response.ProcurementResponseDTO;
 import com.example.SCM.entity.Procurement;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,5 +14,7 @@ public interface ProcurementService {
     List<ProcurementResponseDTO> findAll();
     Optional<ProcurementResponseDTO> getById(Long id);
     void delete(Long id);
+    Optional<ProcurementResponseDTO> findUserById(Long id);
+
 
 }

@@ -37,7 +37,7 @@ public class MailService {
     //Reset Password
     public void sendPasswordResetEmail(String to, String name, String token) throws MessagingException {
 
-        String link = frontendUrl + "/api/auth/reset-password?token=" + token;
+        String link = frontendUrl + "/reset-password?token=" + token;
 
         String body = """
             <!DOCTYPE html>

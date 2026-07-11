@@ -168,6 +168,11 @@ public class SupplierServiceImp implements SupplierService {
         }
     }
 
+    @Override
+    public Optional<SupplierResponseDTO> findUserById(Long id) {
+        return supplierRepository.findByUserId(id).map(supplierMapper::toResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String supplierName) {
         try {
             Path path = Paths.get(uploadDir, "supplier");

@@ -2,6 +2,7 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.service.DriverService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -71,5 +72,12 @@ public class DriverController {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {
+        return driverService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
 }

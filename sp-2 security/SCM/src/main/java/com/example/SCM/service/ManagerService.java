@@ -15,4 +15,6 @@ public interface ManagerService {
     Optional<ManagerResponseDTO> getById(Long id);
     void delete(Long id);
 
+    Optional<ManagerResponseDTO> findUserById(Long id);
+
     }

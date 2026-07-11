@@ -1,6 +1,7 @@
 package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.ProcurementRequestDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.dto.response.ProcurementResponseDTO;
 import com.example.SCM.service.ProcurementService;
 import lombok.RequiredArgsConstructor;
@@ -63,5 +64,11 @@ public class ProcurementController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         procurementService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<ProcurementResponseDTO> getByUserId(@PathVariable Long id) {
+        return procurementService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

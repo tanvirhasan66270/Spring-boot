@@ -1,5 +1,6 @@
 package com.example.SCM.repository;
 
+import com.example.SCM.entity.Manager;
 import com.example.SCM.entity.QCInspector;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

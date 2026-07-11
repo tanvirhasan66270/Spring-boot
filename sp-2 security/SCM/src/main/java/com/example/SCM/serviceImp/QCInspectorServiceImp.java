@@ -141,6 +141,11 @@ public class QCInspectorServiceImp implements QCInspectorService {
         }
     }
 
+    @Override
+    public Optional<QCInspectorResponseDTO> findUserById(Long id) {
+        return qcInspectorRepository.findByUserId(id).map(qcInspectorMapper::convertTOResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "qc_inspector");

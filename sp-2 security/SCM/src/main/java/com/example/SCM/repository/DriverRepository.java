@@ -1,6 +1,7 @@
 package com.example.SCM.repository;
 
 import com.example.SCM.entity.Driver;
+import com.example.SCM.entity.Manager;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +30,7 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
         WHERE d.id = :id
     """)
     Optional<Driver> findByIdWithDetails(@Param("id") Long id);
+
+    Optional<Driver> findByUserId(Long userId);
+
 }

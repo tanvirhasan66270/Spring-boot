@@ -52,11 +52,14 @@ export class MassageComponent implements OnInit {
   loadInbox() {
     this.errorMessage = null;
     this.service.getInbox().subscribe({
-      next: (data) => { 
-        this.messages = data || []; 
-        this.cdr.markForCheck(); 
+      next: (data) => {
+        this.messages = data || [];
+        this.cdr.markForCheck();
       },
-      error: (err) => this.errorMessage = err.message
+      error: (err) => {
+        this.errorMessage = err.error?.message || err.error?.detail || err.message || 'Unable to load inbox messages.';
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -73,16 +76,19 @@ export class MassageComponent implements OnInit {
     this.errorMessage = null;
 
     if (!this.canSelectUser()) {
-      this.formModel.recipientId = null; 
+      this.formModel.recipientId = null;
     }
 
     this.service.send(this.formModel).subscribe({
       next: () => {
-        alert("SCM Matrix Message routed successfully.");
+        alert('SCM Matrix Message routed successfully.');
         this.closeDrawer();
         this.loadInbox();
       },
-      error: (err) => this.errorMessage = err.message
+      error: (err) => {
+        this.errorMessage = err.error?.message || err.error?.detail || err.message || 'Unable to send message.';
+        this.cdr.markForCheck();
+      }
     });
   }
 

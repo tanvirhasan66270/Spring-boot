@@ -160,6 +160,11 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
         }
     }
 
+    @Override
+    public Optional<LogisticsOfficerResponseDTO> findUserById(Long id) {
+        return officerRepository.findByUserId(id).map(officerMapper::convertTOResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "logistics_officer");

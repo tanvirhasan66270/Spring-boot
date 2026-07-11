@@ -165,6 +165,13 @@ public class ManagerServiceImp implements ManagerService {
         }
     }
 
+    @Override
+    public Optional<ManagerResponseDTO> findUserById(Long id) {
+        return managerRepository.findByUserId(id)
+                .map(managerMapper::convertTOResponseDTO);
+
+    }
+
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "manager");

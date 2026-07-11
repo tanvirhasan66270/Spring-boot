@@ -9,7 +9,6 @@ import { DailyReportResponseModel } from '../component/shared/model/daley-report
   providedIn: 'root',
 })
 export class DailyReportService {
-  // ব্যাকএন্ডের রুট ম্যাপিংয়ের সাথে পারফেক্ট সিঙ্ক
   private apiUrl = environment.apiUrl + 'reports/'; 
 
   constructor(private http: HttpClient) { }
@@ -34,10 +33,9 @@ export class DailyReportService {
     return this.http.put<DailyReportResponseModel>(`${this.apiUrl}${id}`, formData);
   }
 
-  approve(id: number): Observable<DailyReportResponseModel> {
-    return this.http.patch<DailyReportResponseModel>(`${this.apiUrl}approve/${id}`, {});
+ approve(id: number): Observable<string> {
+    return this.http.patch(`${this.apiUrl}approve/${id}`, {}, { responseType: 'text' });
   }
-
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}${id}`);
   }

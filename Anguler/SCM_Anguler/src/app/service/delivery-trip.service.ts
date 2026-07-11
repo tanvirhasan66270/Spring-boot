@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
@@ -28,7 +28,7 @@ export class DeliveryTripService {
     return this.http.put<DeliveryTripResponseModel>(`${this.apiUrl}/${id}`, trip);
   }
 
-  //  ফিক্সড এবং ক্লিন মাল্টিপার্ট প্যাচ মেথড
+  //  for patch mathod
   changeStatus(id: number, status: string, signatureFile?: File | null, photoFile?: File | null): Observable<DeliveryTripResponseModel> {
     const formData = new FormData();
     formData.append('status', status);
@@ -36,7 +36,6 @@ export class DeliveryTripService {
     if (signatureFile) formData.append('signature', signatureFile);
     if (photoFile) formData.append('photo', photoFile);
 
-    // অতিরিক্ত .pipe() এবং ভুল সিনট্যাক্স রিমুভ করে সোজা এপিআই কল করা হলো
     return this.http.patch<DeliveryTripResponseModel>(`${this.apiUrl}/${id}/status`, formData);
   }
   delete(id: number): Observable<string> {

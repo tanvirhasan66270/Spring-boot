@@ -161,6 +161,11 @@ public class DriverServiceImp implements DriverService {
         }
     }
 
+    @Override
+    public Optional<DriverResponseDTO> findUserById(Long id) {
+        return driverRepository.findByUserId(id).map(driverMapper::convertTOResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String driverName) {
         try {
             Path path = Paths.get(uploadDir, "driver");

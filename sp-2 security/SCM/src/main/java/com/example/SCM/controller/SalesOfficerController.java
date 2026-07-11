@@ -1,6 +1,7 @@
 package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.SalesOfficerRequestDTO;
+import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.dto.response.SalesOfficerResponseDTO;
 import com.example.SCM.service.SalesOfficerService;
 import lombok.RequiredArgsConstructor;
@@ -62,5 +63,12 @@ public class SalesOfficerController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<SalesOfficerResponseDTO> getByUserId(@PathVariable Long id) {
+        return officerService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

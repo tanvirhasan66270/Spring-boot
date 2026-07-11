@@ -65,4 +65,12 @@ public class ManagerController {
         managerService.delete(id);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/user/{id}")
+    public ResponseEntity<ManagerResponseDTO> getByUserId(@PathVariable Long id) {
+        return managerService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 }

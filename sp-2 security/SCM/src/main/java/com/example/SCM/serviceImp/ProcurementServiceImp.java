@@ -3,6 +3,7 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.ProcurementMapper;
 import com.example.SCM.dto.request.ProcurementRequestDTO;
+import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.response.ProcurementResponseDTO;
 import com.example.SCM.entity.Procurement;
 import com.example.SCM.entity.PoliceStation;
@@ -172,6 +173,11 @@ public class ProcurementServiceImp implements ProcurementService {
         if (procurement.getUser() != null) {
             userRepository.delete(procurement.getUser());
         }
+    }
+
+    @Override
+    public Optional<ProcurementResponseDTO> findUserById(Long id) {
+        return procurementRepository.findByUserId(id).map(procurementMapper::convertTOResponseDTO);
     }
 
     private String uploadImage(MultipartFile file, String name) {

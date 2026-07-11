@@ -165,6 +165,12 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         officerRepository.delete(officer);
     }
 
+    @Override
+    public Optional<CommercialOfficerResponseDTO> findUserById(Long id) {
+        return officerRepository.findByUserId(id)
+                .map(officerMapper::convertTOResponseDTO);
+    }
+
     private String uploadImage(MultipartFile file, String name) {
         try {
             Path path = Paths.get(uploadDir, "commercial_officer");

@@ -13,4 +13,6 @@ public interface ManagerRepository extends JpaRepository<Manager, Long> {
 
     @Query("SELECT DISTINCT m FROM Manager m LEFT JOIN FETCH m.user LEFT JOIN FETCH m.policeStation")
     List<Manager> findAllWithDetails();
+
+
 }

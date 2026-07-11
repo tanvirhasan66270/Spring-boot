@@ -305,6 +305,10 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
 
     }
 
+    @Override
+    public Optional<SalesOfficerResponseDTO> findUserById(Long id) {
+        return officerRepository.findByUserId(id).map(officerMapper::convertTOResponseDTO);
+    }
 
 
     private String uploadImage(MultipartFile file, String name) {
