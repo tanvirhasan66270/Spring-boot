@@ -35,7 +35,7 @@ export class SupplierComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"supplier/";
   
 
   supplier: SupplierRequestDTO = {
@@ -242,13 +242,11 @@ export class SupplierComponent implements OnInit {
     this.generateFullAddress();
 
     if (this.isEdit && this.currentEditId !== null) {
-      // 🎯 ওন্ড রুলস ফিক্স: এডিট করার সময় পাসওয়ার্ড ফিল্ড ফাকা থাকলে অবজেক্ট থেকে পাসওয়ার্ড প্রোপার্টি ডিলেট করা ভালো
       const updatePayload = { ...this.supplier };
       if (!updatePayload.password || updatePayload.password.trim() === '') {
         delete updatePayload.password; 
       }
 
-      // 🌟 ফিক্স: ৩টি আর্গুমেন্টই পাস করা হলো। নতুন ফাইল সিলেক্ট না করলে 'this.selectedFile' ডিফল্টভাবে null হিসেবে যাবে।
       this.service.update(this.currentEditId, updatePayload, this.selectedFile).subscribe({
         next: () => {
           alert("Supplier profile updated successfully!");

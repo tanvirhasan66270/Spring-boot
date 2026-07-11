@@ -29,7 +29,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
     private final UserRepository userRepository;
     private final QCInspectionMapper qcInspectionMapper;
 
-    @Value("${file.upload-dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override
@@ -41,7 +41,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         QCInspection inspection = qcInspectionMapper.toEntity(dto, grn, product, inspector);
 
-        // 🎯 ফিক্স: POST রিকোয়েস্টের সময় চাইল্ড চেকলিস্ট কালেকশন চেইন বাইন্ডিং
         if (dto.getChecklists() != null && !dto.getChecklists().isEmpty()) {
             for (QCChecklistRequestDTO cDto : dto.getChecklists()) {
                 QCChecklist chk = new QCChecklist();
@@ -49,7 +48,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
                 chk.setPassed(cDto.isPassed());
                 chk.setRemarks(cDto.getRemarks());
 
-                // 🔗 ইনভার্স রিলেশনশিপ ম্যাপ (Cascade Type ALL কে সক্রিয় করার জন্য)
                 chk.setQcInspection(inspection);
                 inspection.getChecklists().add(chk);
             }
@@ -59,7 +57,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
             inspection.setLabTestReport(uploadLabReport(file, dto.getInspectionType()));
         }
 
-        // এখন ফার্স্ট শটেই চাইল্ড ডাটা সহ সেভ হবে
         QCInspection saved = qcInspectionRepository.saveAndFlush(inspection);
         return qcInspectionMapper.convertTOResponseDTO(saved);
     }
@@ -74,7 +71,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         qcInspectionMapper.updateEntity(dto, inspection, grn, product, inspector);
 
-        // চাইল্ড অবজেক্ট আপডেট হ্যান্ডেলিং (OrphanRemoval এনফোর্সমেন্ট)
         if (dto.getChecklists() != null) {
             inspection.getChecklists().clear();
             for (QCChecklistRequestDTO cDto : dto.getChecklists()) {
@@ -91,7 +87,6 @@ public class QCInspectionServiceImp implements QCInspectionService {
             inspection.setLabTestReport(uploadLabReport(file, dto.getInspectionType()));
         }
 
-        // 🎯 ফিক্স: saveAndFlush() এর মাধ্যমে ট্রানজেকশন বা বাউন্ডারি শেষ হওয়ার আগেই চাইল্ড এন্টিরির লাইফসাইকেল টাইম জেনারেট করানো হলো
         QCInspection updated = qcInspectionRepository.saveAndFlush(inspection);
 
         return qcInspectionMapper.convertTOResponseDTO(updated);

@@ -42,7 +42,7 @@ public class DailyReportServiceImp implements DailyReportService {
     private final UserRepository userRepository;
     private final HttpServletRequest request;
 
-    @Value("${file.upload-dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     private String resolveCurrentUserId() {
@@ -57,10 +57,10 @@ public class DailyReportServiceImp implements DailyReportService {
         }
         return "UNKNOWN_USER";
     }
+
     @Transactional
     @Override
-    public DailyReportResponseDTO save(DailyReportRequestDTO dto) {
-        if (dto == null) throw new IllegalArgumentException("Report footprint cannot be empty");
+    public DailyReportResponseDTO save(DailyReportRequestDTO dto, MultipartFile file) {
 
         LocalDate rDate = LocalDate.parse(dto.getReportDate());
         if (reportRepository.existsByWarehouseIdAndReportDate(dto.getWarehouseId(), rDate)) {
@@ -71,14 +71,12 @@ public class DailyReportServiceImp implements DailyReportService {
         report.setUserId(resolveCurrentUserId());
         report.setReportStatus(ReportStatus.DRAFT);
 
-        // 🎯 ফিক্স: ইমেজ/ফাইল আপলোড প্রসেসিং চেইন
-        if (dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
-            String savedFilePath = uploadFile(dto.getAttachment(), "reports");
-            report.setAttachmentUrl(savedFilePath);
+        if (file != null && !file.isEmpty()) {
+            String savedFileName = uploadFile(file, "reports");
+            report.setAttachmentUrl(savedFileName);
         }
 
         DailyReport savedReport = reportRepository.save(report);
-
         List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(savedReport);
 
         if (notifiedList != null && !notifiedList.isEmpty()) {
@@ -101,7 +99,7 @@ public class DailyReportServiceImp implements DailyReportService {
 
     @Transactional
     @Override
-    public DailyReportResponseDTO update(Long id, DailyReportRequestDTO dto) {
+    public DailyReportResponseDTO update(Long id, DailyReportRequestDTO dto, MultipartFile file) {
         DailyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report index missing for ID: " + id));
 
@@ -115,10 +113,9 @@ public class DailyReportServiceImp implements DailyReportService {
         if (dto.getTotalTasksDone() > 0) report.setTotalTasksDone(dto.getTotalTasksDone());
         if (dto.getIssuesLogged() >= 0) report.setIssuesLogged(dto.getIssuesLogged());
 
-        // 🎯 ফিক্স: আপডেট করার সময় নতুন ফাইল দিলে পুরনোটা রিপ্লেস হবে
-        if (dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
-            String savedFilePath = uploadFile(dto.getAttachment(), "reports");
-            report.setAttachmentUrl(savedFilePath);
+        if (file != null && !file.isEmpty()) {
+            String savedFileName = uploadFile(file, "reports");
+            report.setAttachmentUrl(savedFileName);
         }
 
         DailyReport updatedReport = reportRepository.save(report);
@@ -244,14 +241,25 @@ public class DailyReportServiceImp implements DailyReportService {
         return successfullyNotified;
     }
 
-    // 🎯 ফাইল সেভিং ইউটিলিটি লজিক
     private String uploadFile(MultipartFile file, String subFolder) {
         try {
             Path path = Paths.get(uploadDir, subFolder);
-            if (!Files.exists(path)) Files.createDirectories(path);
-            String fileName = subFolder.toUpperCase() + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+
+            String ext = "";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
+            }
+
+            String cleanedName = subFolder.toUpperCase();
+            String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
+
             Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-            return subFolder + "/" + fileName;
+            return fileName;
+
         } catch (Exception e) {
             throw new RuntimeException("Report file syncing operational exception: " + e.getMessage());
         }

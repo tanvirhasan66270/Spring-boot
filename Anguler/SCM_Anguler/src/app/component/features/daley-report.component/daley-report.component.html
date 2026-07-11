@@ -1,104 +1,97 @@
-<div class="container-fluid py-4 px-4">
+<div class="container-fluid py-4 px-4 bg-light min-vh-100">
 
+  <!-- Hub Management Headliner Banner -->
   <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
-      <h4 class="text-dark fw-bold mb-1"><i class="bi bi-journal-check text-primary me-2"></i>EOD Operational Audit Core</h4>
-      <p class="text-muted mb-0 small">Automate warehouse transaction summation, log infrastructure issues, view active manager notification stacks, and lock finalized logs.</p>
+      <h4 class="text-dark fw-bold mb-1"><i class="bi bi-journal-check text-primary me-2"></i>SCM EOD Operational Logs</h4>
+      <p class="text-muted mb-0 small">EOD (End of Day) transaction grid tracking and automated manager notification dispatch network.</p>
     </div>
     <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm text-white fs-7" (click)="openDrawer()">
-      <i class="bi bi-file-earmark-plus-fill me-2"></i>File New EOD Report
+      <i class="bi bi-file-earmark-plus me-2"></i>Create Daily Report
     </button>
   </div>
 
+  <!-- Error Message Banner -->
   @if (errorMessage) {
-    <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7">
-      <strong><i class="bi bi-slash-circle-fill me-2"></i>Audit Fault:</strong> {{ errorMessage }}
+    <div class="alert alert-danger shadow-sm mb-4 fs-7 font-monospace border-0 border-start border-danger border-3">
+      <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMessage }}
     </div>
   }
 
+  <!-- Data Frame Grid Table -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 fs-7">
+        <table class="table table-hover align-middle mb-0 fs-7.5">
           <thead class="table-light text-uppercase fs-8 fw-bold text-secondary">
             <tr>
-              <th class="ps-4">Report Token</th>
-              <th>Warehouse Node</th>
-              <th>Operation Date</th>
-              <th>Tasks Processed</th>
-              <th>Issues Counter</th>
-              <th>Image Attachment</th>
-              <th>Audit Flags</th>
-              <th>Notified Admins</th>
-              <th class="text-end px-4" width="155">Execution Action</th>
+              <th class="ps-4">Report Details</th>
+              <th>Operational Summary</th>
+              <th>Task Metrics</th>
+              <th>Attachment Vault</th>
+              <th>Status</th>
+              <th class="text-center pe-4">Actions Matrix</th>
             </tr>
           </thead>
           <tbody>
             @for (r of reports; track r.id) {
-              <tr>
+              <tr [class.locked-row]="r.reportStatus === 'APPROVED'">
                 <td class="ps-4">
-                  <div class="fw-bold text-dark">EOD-#{{ r.id }}</div>
-                  <small class="text-muted font-monospace fs-8">Issuer UID: {{ r.userId }}</small>
-                </td>
-                <td><span class="badge bg-light text-dark border font-monospace fs-8"><i class="bi bi-building me-1"></i>{{ r.warehouseId }}</span></td>
-                <td><b class="text-dark font-monospace">{{ r.reportDate }}</b></td>
-                <td><span class="text-primary fw-bold font-monospace"><i class="bi bi-arrow-up-right-circle-fill me-1"></i>{{ r.totalTasksDone }} Tx</span></td>
-                <td>
-                  <span class="fw-bold font-monospace" [ngClass]="r.issuesLogged > 0 ? 'text-danger' : 'text-muted'">
-                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ r.issuesLogged }} Faults
-                  </span>
+                  <div class="fw-bold text-dark font-monospace">Node ID: {{ r.warehouseId }}</div>
+                  <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ r.reportDate }}</small>
                 </td>
                 <td>
-                  @if (r.attachmentUrl) {
-                    <a [href]="'http://localhost:8085/' + r.attachmentUrl" target="_blank" class="badge bg-info text-decoration-none">
-                      <i class="bi bi-image me-1"></i> View Proof
+                  <small class="text-muted text-truncate d-block" style="max-width: 250px;" [title]="r.summary">
+                    {{ r.summary || 'No overview notes logged.' }}
+                  </small>
+                </td>
+                <td>
+                  <div class="text-success small fw-bold"><i class="bi bi-check2-circle me-1"></i>Done: {{ r.totalTasksDone }}</div>
+                  <div class="text-danger small fw-bold"><i class="bi bi-x-circle me-1"></i>Issues: {{ r.issuesLogged }}</div>
+                </td>
+                <td>
+                  @if (isImageAvailable(r.attachmentUrl)) {
+                    <a [href]="imageBaseUrl+r.attachmentUrl" target="_blank" class="d-inline-block position-relative thumbnail-wrapper shadow-xs">
+                      <img [src]="imageBaseUrl+r.attachmentUrl" (error)="onImageError($event)" class="rounded border" alt="Proof">
+                      <span class="zoom-icon"><i class="bi bi-zoom-in"></i></span>
                     </a>
                   } @else {
-                    <span class="text-muted fs-8 font-monospace">No Image</span>
+                    <span class="badge bg-light text-secondary font-monospace border fs-9"><i class="bi bi-paperclip me-1"></i>No Proof</span>
                   }
                 </td>
                 <td>
-                  <span class="badge px-2.5 py-1.5 fs-8 text-uppercase"
+                  <span class="badge rounded-pill px-2.5 py-1 fs-9 font-monospace"
                     [ngClass]="{
-                      'bg-secondary-subtle text-secondary': r.reportStatus === 'DRAFT',
-                      'bg-primary-subtle text-primary border border-primary': r.reportStatus === 'SUBMITTED',
-                      'bg-success text-white fw-bold shadow-xs': r.reportStatus === 'APPROVED'
+                      'bg-success-subtle text-success border border-success-subtle': r.reportStatus === 'APPROVED',
+                      'bg-warning-subtle text-warning border border-warning-subtle': r.reportStatus === 'SUBMITTED',
+                      'bg-secondary-subtle text-secondary border border-secondary-subtle': r.reportStatus === 'DRAFT'
                     }">
-                    <i class="bi me-1" [ngClass]="r.reportStatus === 'APPROVED' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>{{ r.reportStatus }}
+                    {{ r.reportStatus }}
                   </span>
                 </td>
-                <td>
-                  <div class="d-flex flex-wrap gap-1" style="max-width: 180px;">
-                    @for (auth of r.notifiedAuthorities; track auth['email']) {
-                      <span class="badge bg-dark-subtle text-dark fs-9 font-monospace" [title]="auth['email']">
-                        {{ auth['name'] }} ({{ auth['role'] }})
-                      </span>
-                    } @empty {
-                      <span class="text-muted fs-8 font-monospace italic">No routes bound</span>
-                    }
-                  </div>
-                </td>
-                <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-1.5">
+                <td class="text-center pe-4">
+                  <div class="d-flex justify-content-center gap-1">
                     @if (r.reportStatus !== 'APPROVED') {
-                      <button class="btn btn-icon btn-light text-success" title="Approve & Lock Matrix" (click)="approveReport(r.id)">
-                        <i class="bi bi-check-all fs-6"></i>
+                      <button class="btn btn-sm btn-outline-success fs-9 px-2.5 py-1" (click)="approveReport(r.id)">
+                        <i class="bi bi-shield-check"></i> Approve
                       </button>
+                      <button class="btn btn-sm btn-action-edit fs-9" (click)="edit(r)">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                    } @else {
+                      <span class="text-muted small fs-9 font-monospace"><i class="bi bi-lock-fill text-success me-1"></i>Locked</span>
                     }
-                    <button class="btn btn-icon btn-light text-warning" [disabled]="r.reportStatus === 'APPROVED'" title="Edit Audit Notes" (click)="edit(r)">
-                      <i class="bi bi-pencil-square"></i>
+                    <button class="btn btn-sm btn-action-delete fs-9" (click)="deleteReport(r.id)">
+                      <i class="bi bi-trash3"></i>
                     </button>
-                    <!-- <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="deleteReport(r.id)">
-                      <i class="bi bi-trash-fill"></i>
-                    </button> -->
                   </div>
                 </td>
               </tr>
             }
             @empty {
               <tr>
-                <td colspan="9" class="text-center py-5 text-muted font-monospace fs-8">
-                  <i class="bi bi-clipboard-x fs-1 d-block mb-2 text-secondary"></i>No end-of-day operations manifests compiled in datastore nodes.
+                <td colspan="6" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary"></i>No daily operations found on matching cluster registry.
                 </td>
               </tr>
             }
@@ -108,62 +101,80 @@
     </div>
   </div>
 
-  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+  <!-- Compose/Update Slide Drawer -->
+  <div class="custom-drawer shadow-lg" [class.open]="isDrawerOpen">
     <div class="drawer-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
-      <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-bar-graph me-2"></i>{{ isEdit ? 'Modify Operational Logs' : 'Compile Day-End Summary' }}</h5>
+      <h5 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>{{ isEdit ? 'Mutate Operation Log' : 'Deploy EOD Dispatch' }}</h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
     </div>
 
-    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
+    <div class="drawer-body bg-white">
       <form #reportForm="ngForm" (ngSubmit)="reportForm.valid && submitReport()">
         
         <div class="mb-3">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Target Warehouse Asset</label>
-          <select class="form-select fs-7 font-monospace fw-bold" [(ngModel)]="formModel.warehouseId" name="warehouseId" [disabled]="isEdit" required>
-            <option value="">-- Choose Target Depot --</option>
-            @for (wh of warehouses; track wh) { <option [value]="wh">{{ wh }}</option> }
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Target Warehouse Node</label>
+          <select class="form-select fs-7" [(ngModel)]="formModel.warehouseId" name="warehouseId" [disabled]="isEdit" required>
+            <option value="">-- Select Active Location --</option>
+            <option value="WH-DHAKA-01">WH-DHAKA-01 (Central Hub)</option>
+            <option value="WH-CHITTAGONG-02">WH-CHITTAGONG-02 (Port Node)</option>
+            @for (w of warehouses; track w.id) {
+              <option [value]="w.warehouseId">{{ w.name }}</option>
+            }
           </select>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Operation Report Date</label>
-          <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="formModel.reportDate" name="reportDate" [disabled]="isEdit" required>
-        </div>
-
-        <div class="row g-2 mb-3">
+        <div class="row mb-3">
           <div class="col-md-6">
-            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Total Shifts Tasks Done</label>
-            <input type="number" class="form-control fs-7 font-monospace text-primary fw-bold" [(ngModel)]="formModel.totalTasksDone" name="totalTasksDone" min="0" required>
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Operation Date</label>
+            <input type="date" class="form-control fs-7" [(ngModel)]="formModel.reportDate" name="reportDate" [disabled]="isEdit" required>
           </div>
           <div class="col-md-6">
-            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Damages / Issues Logged</label>
-            <input type="number" class="form-control fs-7 font-monospace text-danger fw-bold" [(ngModel)]="formModel.issuesLogged" name="issuesLogged" min="0" required>
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Total Tasks Processed</label>
+            <input type="number" class="form-control fs-7" [(ngModel)]="formModel.totalTasksDone" name="totalTasksDone" min="0" required>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Upload Operational Attachment Proof (Image)</label>
-          <input type="file" class="form-control fs-7" (change)="onFileSelected($event)" accept="image/*">
-          <small class="text-muted fs-9 d-block mt-1">Accepts PNG, JPG, JPEG formats up to system storage quota.</small>
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Damages / Issues Logged Counter</label>
+          <input type="number" class="form-control fs-7" [(ngModel)]="formModel.issuesLogged" name="issuesLogged" min="0" required>
+        </div>
+
+        <!-- কাস্টমার স্টাইল ফাইল আপলোডার এবং ইমেজ লাইভ প্রিভিউ সেকশন -->
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Attachment Proof Image</label>
+          <div class="input-group">
+            <input type="file" class="form-control fs-7" #fileInput (change)="onFileSelected($event)" accept="image/*">
+            @if (selectedFile || imagePreview) {
+              <button class="btn btn-outline-danger fs-7" type="button" (click)="removeSelectedFile(fileInput)">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </div>
+          
+          <!-- লাইভ ইমেজ প্রিভিউ ফ্রেম -->
+          @if (imagePreview) {
+            <div class="mt-3 text-center border p-2 rounded bg-light position-relative animated fadeIn">
+              <label class="d-block text-start text-muted font-monospace fs-9 mb-1">Live Manifest Preview:</label>
+              <img [src]="imagePreview" class="img-fluid rounded shadow-xs" style="max-height: 150px; object-fit: contain;">
+            </div>
+          }
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">EOD Operational Summary</label>
-          <textarea class="form-control fs-7" [(ngModel)]="formModel.summary" name="summary" rows="4" placeholder="Brief workflow overview..." required></textarea>
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Operational Summary Notes</label>
+          <textarea class="form-control fs-7" [(ngModel)]="formModel.summary" name="summary" rows="4" placeholder="Log details profile metrics..." required></textarea>
         </div>
 
-        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
-          <button class="btn btn-primary text-white flex-grow-1 py-2.5 fw-bold fs-7 text-uppercase" type="submit">
-            <i class="bi bi-cloud-upload-fill me-1"></i> {{ isEdit ? 'Patch Operation Audit' : 'Deploy Manifest & Notify' }}
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top bg-white">
+          <button class="btn btn-primary text-white flex-grow-1 py-2 fw-bold text-uppercase fs-7" type="submit">
+            {{ isEdit ? 'Update Report' : 'Dispatch Manifest' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="resetForm()">Clear</button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="closeDrawer()">Cancel</button>
         </div>
       </form>
     </div>
   </div>
 
-  @if (isDrawerOpen) {
-    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
-  }
-
+  <!-- Backdrop overlay -->
+  @if (isDrawerOpen) { <div class="drawer-backdrop" (click)="closeDrawer()"></div> }
 </div>

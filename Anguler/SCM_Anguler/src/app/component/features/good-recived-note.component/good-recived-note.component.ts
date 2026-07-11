@@ -76,7 +76,6 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.productService.findAll().subscribe({ next: (data) => this.products = data || [] });
   }
 
-  //  চাইল্ড লাইন আইটেম কন্ট্রোল লজিক ──
   addLineItem() {
     const newItem: GRNLineItemRequestModel = {
       productId: 0,
@@ -103,7 +102,6 @@ export class GoodRecivedNoteComponent implements OnInit {
       return;
     }
 
-    // ব্যাকএন্ড ডাবল ম্যাপিং সেফটি ট্র্যাকার কাস্টিং
     const payload: GoodsReceivedNoteRequestModel = {
       ...this.grn,
       poId: +this.grn.poId,

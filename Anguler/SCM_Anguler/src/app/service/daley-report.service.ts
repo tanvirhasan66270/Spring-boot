@@ -1,3 +1,4 @@
+
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -8,7 +9,8 @@ import { DailyReportResponseModel } from '../component/shared/model/daley-report
   providedIn: 'root',
 })
 export class DailyReportService {
-  private apiUrl = environment.apiUrl + 'reports'; // Synced with @RequestMapping("/api/reports")
+  // ব্যাকএন্ডের রুট ম্যাপিংয়ের সাথে পারফেক্ট সিঙ্ক
+  private apiUrl = environment.apiUrl + 'reports/'; 
 
   constructor(private http: HttpClient) { }
 
@@ -17,27 +19,26 @@ export class DailyReportService {
   }
 
   getById(id: number): Observable<DailyReportResponseModel> {
-    return this.http.get<DailyReportResponseModel>(`${this.apiUrl}/${id}`);
+    return this.http.get<DailyReportResponseModel>(`${this.apiUrl}${id}`);
   }
 
   getByWarehouse(warehouseId: string): Observable<DailyReportResponseModel[]> {
-    return this.http.get<DailyReportResponseModel[]>(`${this.apiUrl}/warehouse/${warehouseId}`);
+    return this.http.get<DailyReportResponseModel[]>(`${this.apiUrl}warehouse/${warehouseId}`);
   }
 
-  // 🎯 ফিক্স: Multipart/Form-Data হ্যান্ডেল করার জন্য পেলোড টাইপ FormData করা হলো
   create(formData: FormData): Observable<DailyReportResponseModel> {
     return this.http.post<DailyReportResponseModel>(this.apiUrl, formData);
   }
 
   update(id: number, formData: FormData): Observable<DailyReportResponseModel> {
-    return this.http.put<DailyReportResponseModel>(`${this.apiUrl}/${id}`, formData);
+    return this.http.put<DailyReportResponseModel>(`${this.apiUrl}${id}`, formData);
   }
 
   approve(id: number): Observable<DailyReportResponseModel> {
-    return this.http.patch<DailyReportResponseModel>(`${this.apiUrl}/approve/${id}`, {});
+    return this.http.patch<DailyReportResponseModel>(`${this.apiUrl}approve/${id}`, {});
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}${id}`);
   }
 }

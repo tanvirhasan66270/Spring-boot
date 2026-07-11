@@ -42,7 +42,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
     private final AuthService authService;
 
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override

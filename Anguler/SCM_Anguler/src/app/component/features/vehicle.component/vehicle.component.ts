@@ -15,14 +15,13 @@ import { DriverService } from '../../../service/driver.service';
 export class VehicleComponent implements OnInit {
 
   vehicles: VehicleResponseModel[] = [];
-  drivers: any[] = []; // ড্রপডাউন ফিডের জন্য
+  drivers: any[] = []; 
   
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
   currentVehicleId: number | null = null;
 
-  // ── 🎯 নতুন স্ট্যাটাস চেঞ্জার মোডাল স্টেট ──
   isStatusModalOpen = false;
   statusUpdateValue = 'AVAILABLE';
 
@@ -30,7 +29,7 @@ export class VehicleComponent implements OnInit {
     plateNumber: '',
     type: 'VAN',
     capacity: 0,
-    status: 'AVAILABLE', // ফর্মে এটি ফিক্সড থাকবে
+    status: 'AVAILABLE', 
     lastServiceDate: '',
     fuelLevel: 100,
     driverId: null
@@ -90,7 +89,6 @@ export class VehicleComponent implements OnInit {
     }
   }
 
-  // ── 🎯 টেবিল রো থেকে স্ট্যাটাস মোডাল ট্রিগার করার মাস্টার মেথড ──
   openStatusModal(vehicle: VehicleResponseModel) {
     this.currentVehicleId = vehicle.id;
     this.statusUpdateValue = vehicle.status;
@@ -103,20 +101,17 @@ export class VehicleComponent implements OnInit {
     this.currentVehicleId = null;
   }
 
-  // ── 🎯 ডাটাবেজ কুইক প্যাচ এক্সিকিউশন লজিক ──
   executeStatusUpdate() {
     if (!this.currentVehicleId) return;
 
-    // গাড়ির এক্সিস্টিং ডাটা অবজেক্ট খুঁজে বের করা
     const targetVehicle = this.vehicles.find(v => v.id === this.currentVehicleId);
     if (!targetVehicle) return;
 
-    // ভেহিকল রিকোয়েস্ট মডেলের সাথে ১০০% সিঙ্কড পেলোড জেনারেশন
     const patchPayload: VehicleRequestModel = {
       plateNumber: targetVehicle.plateNumber,
       type: targetVehicle.type,
       capacity: targetVehicle.capacity,
-      status: this.statusUpdateValue.toUpperCase(), // 💡 মোডাল থেকে সিলেক্টেড নতুন স্ট্যাটাস
+      status: this.statusUpdateValue.toUpperCase(), 
       lastServiceDate: targetVehicle.lastServiceDate,
       fuelLevel: targetVehicle.fuelLevel,
       driverId: targetVehicle.driverId
@@ -139,7 +134,7 @@ export class VehicleComponent implements OnInit {
       plateNumber: vehicle.plateNumber,
       type: vehicle.type,
       capacity: vehicle.capacity,
-      status: vehicle.status, // ওল্ড ডাটা লোড হবে কিন্তু ইউআই-তে রিডঅনলি থাকবে
+      status: vehicle.status, 
       lastServiceDate: vehicle.lastServiceDate,
       fuelLevel: vehicle.fuelLevel,
       driverId: vehicle.driverId

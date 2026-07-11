@@ -31,7 +31,7 @@ public class ShipmentServiceImp implements ShipmentService {
     private final SupplierRepository supplierRepository;
     private final ShipmentMapper shipmentMapper;
 
-    @Value("${file.upload-dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override

@@ -1,6 +1,5 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.DriverMapper;
 import com.example.SCM.dto.request.DriverRequestDTO;
@@ -15,7 +14,6 @@ import com.example.SCM.repository.UserRepository;
 import com.example.SCM.repository.WarehouseRepository;
 import com.example.SCM.role.Role;
 import com.example.SCM.service.DriverService;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,8 +44,7 @@ public class DriverServiceImp implements DriverService {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Transactional
@@ -73,14 +70,14 @@ public class DriverServiceImp implements DriverService {
             warehouses = new HashSet<>(warehouseRepository.findAllById(dto.getWarehouseIds()));
         }
 
+        Driver driver = driverMapper.toDriverEntity(dto, savedUser, warehouses, policeStation);
+
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getDriverName());
-            dto.setImage("uploads/driver/" + imagePath);
+            driver.setImage( imagePath);
         }
 
-        Driver driver = driverMapper.toDriverEntity(dto, savedUser, warehouses, policeStation);
         Driver savedDriver = driverRepository.save(driver);
-
         authService.sendVerificationEmail(savedDriver.getUser().getEmail());
 
         return driverMapper.convertTOResponseDTO(savedDriver);
@@ -126,7 +123,7 @@ public class DriverServiceImp implements DriverService {
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getDriverName());
-            driver.setImage("uploads/driver/" + newImagePath);
+            driver.setImage(newImagePath);
         }
 
         if (dto.getWarehouseIds() != null) {
@@ -191,6 +188,4 @@ public class DriverServiceImp implements DriverService {
             throw new RuntimeException("Driver file upload sequence dropped: " + e.getMessage());
         }
     }
-
-
 }

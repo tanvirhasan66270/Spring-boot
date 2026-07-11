@@ -84,7 +84,6 @@ export class ShipmentComponent implements OnInit {
     }
 
     if (this.isEdit && this.currentEditId !== null) {
-      // 🌟 ৩টি আর্গুমেন্ট সিঙ্ক রেখেই সার্ভিস কল (id, payload, file)
       this.service.update(this.currentEditId, this.shipment, this.selectedFile).subscribe({
         next: () => { alert("Shipment logistics registry updated successfully."); this.closeDrawer(); this.loadShipments(); },
         error: (err) => this.errorMessage = err.error?.message || "Modification matrix deployment failure."

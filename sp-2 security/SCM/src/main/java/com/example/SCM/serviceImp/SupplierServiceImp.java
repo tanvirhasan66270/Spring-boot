@@ -41,7 +41,7 @@ public class SupplierServiceImp implements SupplierService {
 
 
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override
@@ -70,7 +70,7 @@ public class SupplierServiceImp implements SupplierService {
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
-            dto.setImage("uploads/supplier/" + imagePath);
+            dto.setImage(imagePath);
         }
 
         Supplier supplier = supplierMapper.toSupplierEntity(dto, savedUser, policeStation);
@@ -134,7 +134,7 @@ public class SupplierServiceImp implements SupplierService {
 
         if (image != null && !image.isEmpty()) {
             String newImagePath = uploadImage(image, dto.getName());
-            supplier.setImage("uploads/supplier/" + newImagePath);
+            supplier.setImage( newImagePath);
         }
 
         Supplier updatedSupplier = supplierRepository.save(supplier);

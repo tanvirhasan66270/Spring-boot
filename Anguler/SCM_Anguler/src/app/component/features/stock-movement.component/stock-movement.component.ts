@@ -30,7 +30,7 @@ export class StockMovementComponent implements OnInit {
     movementType: 'INWARD',
     quantity: 0,
     referenceId: '',
-    performedBy: 0, // কারেন্ট লগড-ইন ইউজার আইডি (টেস্টিং পারপাস: 1)
+    performedBy: 0, 
     remarks: ''
   };
 
@@ -63,7 +63,6 @@ export class StockMovementComponent implements OnInit {
   }
 
   onMovementTypeChange() {
-    // TRANSFER ছাড়া অন্য কোনো স্ট্যাটাস থাকলে সোর্স ওয়ারহাউজ অবজেক্ট পেলোড থেকে রিমুভ হবে
     if (this.formModel.movementType !== 'TRANSFER') {
       this.formModel.sourceWarehouseId = null;
     }
@@ -75,7 +74,6 @@ export class StockMovementComponent implements OnInit {
   submitMovement() {
     this.errorMessage = null;
 
-    // ১. বেসিক ড্রপডাউন ভ্যালিডেশন
     if (!this.formModel.productId || +this.formModel.productId === 0 ||
         !this.formModel.warehouseId || +this.formModel.warehouseId === 0) {
       this.errorMessage = "Validation Fault: Product specs and Destination Warehouse node must be assigned.";
@@ -83,7 +81,6 @@ export class StockMovementComponent implements OnInit {
       return;
     }
 
-    // ২. ইন্টার-ওয়ারহাউজ ট্রান্সফার রুলস ভ্যালিডেশন
     if (this.formModel.movementType === 'TRANSFER') {
       if (!this.formModel.sourceWarehouseId || +this.formModel.sourceWarehouseId === 0) {
         this.errorMessage = "Validation Fault: Origin Source Warehouse context is required for TRANSFER type.";

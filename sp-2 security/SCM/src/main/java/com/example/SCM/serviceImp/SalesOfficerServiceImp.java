@@ -74,7 +74,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
 
 
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
 
     private String uploadDir;
 
@@ -130,7 +130,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
 
             String imagePath = uploadImage(file, dto.getName());
 
-            dto.setAddress("uploads/sales_officer/" + imagePath);
+            dto.setAddress( imagePath);
 
         }
 
@@ -245,7 +245,7 @@ public class SalesOfficerServiceImp implements SalesOfficerService {
 
             String newImagePath = uploadImage(file, dto.getName());
 
-            officer.setImage("uploads/sales_officer/" + newImagePath);
+            officer.setImage(newImagePath);
 
         }
 

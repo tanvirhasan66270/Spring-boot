@@ -48,10 +48,8 @@ public class InventoryServiceImp implements InventoryService {
 
         Inventory inventory = inventoryMapper.toEntity(dto, product, warehouse);
 
-        // 🚀 বিজনেস লজিক: এনাম ট্র্যাকিং ক্যালকুলেটর
         calculateAndSetStockStatus(inventory, product);
 
-        // 🎯 saveAndFlush ব্যবহার করা হয়েছে যাতে @PrePersist (lastUpdated টাইম) ইনস্ট্যান্ট সিঙ্ক হয়
         Inventory savedInventory = inventoryRepository.saveAndFlush(inventory);
         return inventoryMapper.convertTOResponseDTO(savedInventory);
     }
@@ -80,7 +78,6 @@ public class InventoryServiceImp implements InventoryService {
 
         inventoryMapper.updateEntity(dto, inventory, product, warehouse);
 
-        // 🚀 বিজনেস লজিক: পরিমাণের ওপর ভিত্তি করে স্টক এনাম আপডেট
         calculateAndSetStockStatus(inventory, product);
 
         Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);

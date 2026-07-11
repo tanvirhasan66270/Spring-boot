@@ -6,6 +6,7 @@ import { CustomerService } from '../../../service/customer.service';
 import { CustomerOrderRequestModel, CustomerOrderResponseModel, OrderLineItemRequestModel } from '../../shared/model/customerOrder';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { AddProductService } from '../../../service/add-product.service';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-customer-order',
@@ -15,6 +16,8 @@ import { AddProductService } from '../../../service/add-product.service';
   styleUrl: './customer-order.component.css',
 })
 export class CustomerOrderComponent implements OnInit {
+
+
 
   orders: CustomerOrderResponseModel[] = [];
   customers: any[] = [];
@@ -35,7 +38,7 @@ export class CustomerOrderComponent implements OnInit {
     deliveryPhone: '',      
     estimatedDelivery: '',
     serviceType: 'STANDARD',
-    priority: 'NORMAL',      // 🎯 ডিফল্ট প্রায়োরিটি প্যারামিটার ইনিশিয়ালাইজেশন
+    priority: 'NORMAL',      
     currency: 'BDT',          
     codAmount: 0,
     paymentMethod: 'CASH',    
@@ -189,7 +192,7 @@ export class CustomerOrderComponent implements OnInit {
       deliveryPhone: o.deliveryPhone || '',      
       estimatedDelivery: o.estimatedDelivery,
       serviceType: o.serviceType,
-      priority: o.priority || 'NORMAL',    // 🎯 ম্যাপার থেকে আসা প্রায়োরিটি ড্রপডাউনে সিঙ্ক করা হলো
+      priority: o.priority || 'NORMAL',   
       currency: o.currency || 'BDT',                
       codAmount: o.codAmount,
       paymentMethod: o.paymentMethod || 'CASH',    

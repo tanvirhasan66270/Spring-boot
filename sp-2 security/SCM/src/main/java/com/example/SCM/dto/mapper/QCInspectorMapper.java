@@ -114,7 +114,7 @@ public class QCInspectorMapper {
             if (dto.getName() != null) user.setName(dto.getName());
             if (dto.getEmail() != null) user.setEmail(dto.getEmail());
             if (dto.getPhone() != null) user.setPhoneNumber(dto.getPhone());
-            user.setActive(dto.isUserActive()); // 💡 আপডেটের সময়ও ইউজারের একটিভ স্টেট সিঙ্ক হবে
+            user.setActive(dto.isUserActive());
             if (dto.getPassword() != null && !dto.getPassword().trim().isEmpty()) {
                 user.setPassword(dto.getPassword());
             }

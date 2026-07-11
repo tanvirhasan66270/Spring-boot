@@ -9,13 +9,15 @@ import java.time.LocalDate;
 @Component
 public class DailyReportMapper {
 
+
     public DailyReport toEntity(DailyReportRequestDTO dto) {
+        if (dto == null) return null;
+
         DailyReport report = new DailyReport();
         report.setWarehouseId(dto.getWarehouseId());
         report.setTotalTasksDone(dto.getTotalTasksDone());
         report.setIssuesLogged(dto.getIssuesLogged());
         report.setSummary(dto.getSummary());
-        // 💡 নোট: attachmentUrl এর পাথ সার্ভিস লেয়ার থেকে আপলোডের পর সেট হবে।
 
         if (dto.getReportDate() != null && !dto.getReportDate().isBlank()) {
             report.setReportDate(LocalDate.parse(dto.getReportDate()));
@@ -23,7 +25,23 @@ public class DailyReportMapper {
         return report;
     }
 
+
+    public void updateEntityFromDTO(DailyReportRequestDTO dto, DailyReport entity) {
+        if (dto == null || entity == null) return;
+
+        if (dto.getSummary() != null) entity.setSummary(dto.getSummary());
+        if (dto.getTotalTasksDone() > 0) entity.setTotalTasksDone(dto.getTotalTasksDone());
+        if (dto.getIssuesLogged() >= 0) entity.setIssuesLogged(dto.getIssuesLogged());
+
+        if (dto.getReportDate() != null && !dto.getReportDate().isBlank()) {
+            entity.setReportDate(LocalDate.parse(dto.getReportDate()));
+        }
+    }
+
+
     public DailyReportResponseDTO convertTOResponseDTO(DailyReport entity) {
+        if (entity == null) return null;
+
         DailyReportResponseDTO dto = new DailyReportResponseDTO();
         dto.setId(entity.getId());
         dto.setUserId(entity.getUserId());
@@ -31,8 +49,12 @@ public class DailyReportMapper {
         dto.setSummary(entity.getSummary());
         dto.setTotalTasksDone(entity.getTotalTasksDone());
         dto.setIssuesLogged(entity.getIssuesLogged());
-        dto.setAttachmentUrl(entity.getAttachmentUrl()); // ডাটাবেজ থেকে পাওয়া পাথ রেসপন্সে যাবে
-        dto.setReportStatus(entity.getReportStatus().name());
+
+        dto.setAttachmentUrl(entity.getAttachmentUrl());
+
+        if (entity.getReportStatus() != null) {
+            dto.setReportStatus(entity.getReportStatus().name());
+        }
 
         if (entity.getReportDate() != null) dto.setReportDate(entity.getReportDate().toString());
         if (entity.getGeneratedAt() != null) dto.setGeneratedAt(entity.getGeneratedAt().toString());

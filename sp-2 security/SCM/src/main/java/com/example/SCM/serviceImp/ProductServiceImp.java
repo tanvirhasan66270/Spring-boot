@@ -42,7 +42,7 @@ public class ProductServiceImp implements ProductService {
     }
 
     // application.properties থেকে আপলোড ডিরেক্টরি পাথ লোড হবে
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
 

@@ -26,7 +26,6 @@ export class PurchaseRequisitionComponent implements OnInit {
   isEdit = false;
   currentEditId: number | null = null;
 
-  // ড্রপডাউন মডেল বাইন্ডিং ট্র্যাকার
   selectedProductInput: any = null;
   selectedSupplierInput: any = null;
 
@@ -61,7 +60,6 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.loadSuppliers();
   }
 
-  // ডাইনামিক প্রোডাক্ট সিলেকশন ইঞ্জিন ──
   onProductSelect(event: any) {
     const id = +event.target.value;
     if (id && !this.requisition.productIds.includes(id)) {
@@ -80,7 +78,6 @@ export class PurchaseRequisitionComponent implements OnInit {
     return this.products.find(p => p.id === id);
   }
 
-  //  ডাইনামিক সাপ্লায়ার সিলেকশন ইঞ্জিন ──
   onSupplierSelect(event: any) {
     const id = +event.target.value;
     if (id && !this.requisition.supplierIds.includes(id)) {
@@ -99,14 +96,12 @@ export class PurchaseRequisitionComponent implements OnInit {
     return this.suppliers.find(s => s.id === id);
   }
 
-  // টেক্সট-এরিয়া অটো-গ্রো লজিক (Auto-growing Textarea) ──
   autoGrowTextarea(event: any) {
     const element = event.target;
     element.style.height = 'auto';
     element.style.height = element.scrollHeight + '2px' + 'px';
   }
 
-  // ── বাকি স্ট্যান্ডার্ড CRUD মেথডসমূহ ──
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
   

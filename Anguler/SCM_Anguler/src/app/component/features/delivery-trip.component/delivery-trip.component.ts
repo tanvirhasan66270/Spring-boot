@@ -44,7 +44,7 @@ export class DeliveryTripComponent implements OnInit {
 
   constructor(
     private service: DeliveryTripService,
-    private vehicleService: VehicleService, // ইনজেক্টেড ওল্ড সার্ভিস
+    private vehicleService: VehicleService, 
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -61,26 +61,23 @@ export class DeliveryTripComponent implements OnInit {
   }
 
   loadActiveFleetData() {
-    // রিয়েল ভেহিকল সার্ভিস থেকে ডাটা ফেচ করা (যার ভেতর ড্রাইভার ফ্ল্যাটেনড মেটাডাটা আছে)
     this.vehicleService.findAll().subscribe({
-      next: (data) => {
+      next: (data) => {   this.cdr.markForCheck();
         this.allVehicles = data || [];
-        this.cdr.markForCheck();
+     
       },
-      error: () => this.mockDropdownFeeds() // ব্যাকএন্ড অফ থাকলে মক ডাটা ফলব্যাক হবে
+      error: () => this.mockDropdownFeeds() 
     });
     
-    // কাস্টমার ফিড লোড (আপনার এক্সিস্টিং কাস্টমার সার্ভিস কল এখানে হবে)
     this.customers = [{ id: 1, name: "Tanvir Rahman" }];
   }
 
   onVehicleTypeChange() {
-    this.formModel.vehicleId = 0; // ওল্ড সিলেকশন রিসেট
+    this.formModel.vehicleId = 0;
     
     if (!this.selectedVehicleType) {
       this.filteredVehicles = [];
     } else {
-      // ব্যাকএন্ড থেকে আসা লিস্ট থেকে শুধুমাত্র সিলেক্টেড টাইপ (যেমন: TRUCK) এবং অ্যাক্টিভ ড্রাইভার আছে এমন গাড়ি ফিল্টার হবে
       this.filteredVehicles = this.allVehicles.filter(v => 
         v.type.toUpperCase() === this.selectedVehicleType.toUpperCase() && v.driverId != null
       );
@@ -156,7 +153,6 @@ export class DeliveryTripComponent implements OnInit {
     this.isEdit = true;
     this.currentTripId = trip.id;
     
-    // এডিট করার সময় ওল্ড ভেহিকল টাইপ ডিটেক্ট করা
     const matchedVehicle = this.allVehicles.find(v => v.id === trip.vehicleId);
     if (matchedVehicle) {
       this.selectedVehicleType = matchedVehicle.type;

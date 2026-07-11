@@ -30,28 +30,28 @@ public class MessageServiceImp {
         String senderName = currentUser.getName(); // আপনার User Entity-র নাম রিটার্ন মেথড
         Role senderRole = currentUser.getRole();       // ইউজারের রোল
 
-        // 🎯 রুল ১: DRIVER -> Auto-Route to MANAGER & LOGISTICS_OFFICER
+        //  DRIVER -> Auto-Route to MANAGER & LOGISTICS_OFFICER
         if (senderRole == Role.DRIVER) {
             List<User> recipients = userRepository.findUsersByRoles(List.of(Role.MANAGER, Role.LOGISTICS_OFFICER));
             for (User u : recipients) {
                 messagesToSave.add(buildMessageObject(dto, senderId, senderName, u.getId().toString()));
             }
         }
-        // 🎯 রুল ২: CUSTOMER -> Auto-Route to MANAGER & SALES_OFFICER
+        // CUSTOMER -> Auto-Route to MANAGER & SALES_OFFICER
         else if (senderRole == Role.CUSTOMER) {
             List<User> recipients = userRepository.findUsersByRoles(List.of(Role.MANAGER, Role.SALES_OFFICER));
             for (User u : recipients) {
                 messagesToSave.add(buildMessageObject(dto, senderId, senderName, u.getId().toString()));
             }
         }
-        // 🎯 রুল ৩: SUPPLIER -> Auto-Route to MANAGER & PROCUREMENT
+        //SUPPLIER -> Auto-Route to MANAGER & PROCUREMENT
         else if (senderRole == Role.SUPPLIER) {
             List<User> recipients = userRepository.findUsersByRoles(List.of(Role.MANAGER, Role.PROCUREMENT));
             for (User u : recipients) {
                 messagesToSave.add(buildMessageObject(dto, senderId, senderName, u.getId().toString()));
             }
         }
-        // 🎯 রুল ৪: INTERNAL STAFF -> নির্দিষ্ট সিলেক্টেড ইউজার
+        // INTERNAL STAFF -> নির্দিষ্ট সিলেক্টেড ইউজার
         else {
             if (dto.getRecipientId() == null || dto.getRecipientId().isBlank()) {
                 throw new IllegalArgumentException("Internal staff must specify a target recipient user.");

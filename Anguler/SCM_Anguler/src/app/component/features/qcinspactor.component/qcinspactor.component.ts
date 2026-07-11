@@ -34,7 +34,7 @@ export class QcinspactorComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"qc_inspector/";
 
   inspector: QCInspectorRequestModel = {
     name: '',

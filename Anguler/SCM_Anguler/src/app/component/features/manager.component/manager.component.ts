@@ -36,7 +36,7 @@ export class ManagerComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"manager/";
 
   manager: ManagerRequestModel = {
     id: 0,

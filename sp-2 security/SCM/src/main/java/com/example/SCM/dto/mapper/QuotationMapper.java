@@ -118,9 +118,6 @@ public class QuotationMapper {
         return dto;
     }
 
-    /**
-     * Update Entity from DTO: বিদ্যমান কোটেশন আপডেট করার জন্য (PUT/PATCH রিকোয়েস্টের জন্য উপযোগী)
-     */
     public void updateEntityFromDTO(QuotationRequestDTO dto, Quotation quotation) {
         if (dto == null || quotation == null) {
             return;

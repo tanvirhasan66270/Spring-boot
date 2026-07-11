@@ -140,7 +140,6 @@ public class POLineItemServiceImp implements POLineItemService {
         inventoryRepository.save(inventory);
         POLineItem updatedItem = poLineItemRepository.save(item);
 
-        // 💡 রোল-আপ লজিক: চাইল্ড আপডেট হওয়ার পর প্যারেন্ট মাস্টার টেবিলের totalAmount সিঙ্ক করা
         double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);

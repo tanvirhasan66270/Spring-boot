@@ -92,7 +92,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         // স্ট্যাটাস এবং অনুমোদনকারীর আইডি সেট করা হচ্ছে
         requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
-        requisition.setApprovedBy(managerId); // 🔄 এনটিটিতে অটো-সেট হয়ে গেল
+        requisition.setApprovedBy(managerId);
 
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 

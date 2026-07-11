@@ -35,7 +35,7 @@ export class SalesOfficerComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"sales_officer/";
 
   officer: SalesOfficerRequestDTO = {
     id: 0,

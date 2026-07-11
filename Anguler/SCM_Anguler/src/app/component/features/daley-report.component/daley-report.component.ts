@@ -3,27 +3,31 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DailyReportResponseModel } from '../../shared/model/daley-report';
 import { DailyReportService } from '../../../service/daley-report.service';
+import { WarehouseService } from '../../../service/warehouse.service';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-daley-report.component',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './daley-report.component.html',
   styleUrl: './daley-report.component.css',
 })
-  export class DailyReportComponent implements OnInit {
+export class DailyReportComponent implements OnInit {
 
- reports: DailyReportResponseModel[] = [];
-  warehouses: string[] = ['WH-DHAKA-01', 'WH-CHITTAGONG-02', 'WH-SYLHET-03'];
+  reports: DailyReportResponseModel[] = [];
+  warehouses: any[] = [];
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
   currentReportId: number | null = null;
 
-  // 🎯 ইমেজ ফাইলের লোকাল মেমোরি স্টেট
   selectedFile: File | null = null;
+  imagePreview: string | ArrayBuffer | null = null; 
 
-  // UI বাইন্ডিং মডেল (রিকোয়েস্ট মডেল ইন্টারফেস থেকে 'attachment' বাদ দিয়ে ফ্রন্টএন্ড ফর্ম অবজেক্ট জেনারেট করা হলো)
+  readonly imageBaseUrl = environment.apiUrl + "reports/";
+
   formModel = {
     warehouseId: '',
     reportDate: new Date().toISOString().split('T')[0],
@@ -34,28 +38,71 @@ import { DailyReportService } from '../../../service/daley-report.service';
 
   constructor(
     private service: DailyReportService,
+    private warehouseService: WarehouseService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.loadReports();
+    this.loadWarehouses();
   }
 
   loadReports() {
     this.service.findAll().subscribe({
-      next: (data) => { this.reports = data || []; this.cdr.markForCheck(); },
+      next: (data) => { 
+        this.reports = data || []; 
+        this.cdr.markForCheck(); 
+      },
       error: (err) => this.handleError(err)
     });
   }
 
-  // 🎯 ফাইলে সিলেক্ট চেঞ্জ ইভেন্ট ট্র্যাকার
+  loadWarehouses() {
+    this.warehouseService.getAll().subscribe({
+      next: (data) => { 
+        this.warehouses = data || []; 
+        this.cdr.markForCheck(); 
+      }
+    });
+  }
+
+
   onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    this.selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result;
+      this.cdr.markForCheck();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeSelectedFile(fileInput: HTMLInputElement) {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    fileInput.value = '';
+    this.cdr.markForCheck();
+  }
+
+  isImageAvailable(imageName: string | null | undefined): boolean {
+    return !!imageName && imageName.trim().length > 0;
+  }
+
+  getImageUrl(imageName: string | null | undefined): string {
+    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement | null;
+    if (target) {
+      target.style.display = 'none';
     }
   }
 
+ 
   submitReport() {
     this.errorMessage = null;
 
@@ -65,21 +112,33 @@ import { DailyReportService } from '../../../service/daley-report.service';
       return;
     }
 
-    // 🎯 ফিক্স: ব্যাকএন্ড @ModelAttribute এর সাথে সিঙ্ক করতে FormData অবজেক্ট বিল্ড করা হলো
     const formData = new FormData();
-    formData.append('warehouseId', this.formModel.warehouseId);
-    formData.append('reportDate', this.formModel.reportDate);
-    formData.append('totalTasksDone', this.formModel.totalTasksDone.toString());
-    formData.append('issuesLogged', this.formModel.issuesLogged.toString());
-    formData.append('summary', this.formModel.summary?.trim() || '');
+
+    const reportDto = {
+      warehouseId: this.formModel.warehouseId,
+      reportDate: this.formModel.reportDate,
+      totalTasksDone: this.formModel.totalTasksDone,
+      issuesLogged: this.formModel.issuesLogged,
+      summary: this.formModel.summary?.trim() || ''
+    };
+
+    formData.append(
+      'report',
+      new Blob([JSON.stringify(reportDto)], { type: 'application/json' })
+    );
     
+    // ফাইল পার্ট সংযুক্তিকরণ
     if (this.selectedFile) {
-      formData.append('attachment', this.selectedFile); // ব্যাকএন্ড রিকোয়েস্ট DTO-র 'attachment' ফিল্ড নেম
+      formData.append('attachment', this.selectedFile);
     }
 
     if (this.isEdit && this.currentReportId) {
       this.service.update(this.currentReportId, formData).subscribe({
-        next: () => { alert("Daily operation metrics and image proof updated."); this.closeDrawer(); this.loadReports(); },
+        next: () => { 
+          alert("Daily operation metrics and image proof updated successfully."); 
+          this.closeDrawer(); 
+          this.loadReports(); 
+        },
         error: (err) => this.handleError(err)
       });
     } else {
@@ -97,7 +156,10 @@ import { DailyReportService } from '../../../service/daley-report.service';
   approveReport(id: number) {
     if (confirm("Are you sure you want to officially APPROVE and lock this operational report?")) {
       this.service.approve(id).subscribe({
-        next: () => { alert("Report stamped and locked as APPROVED."); this.loadReports(); },
+        next: () => { 
+          alert("Report stamped and locked as APPROVED."); 
+          this.loadReports(); 
+        },
         error: (err) => this.handleError(err)
       });
     }
@@ -118,7 +180,10 @@ import { DailyReportService } from '../../../service/daley-report.service';
       issuesLogged: report.issuesLogged,
       summary: report.summary || ''
     };
-    this.selectedFile = null; // ওল্ড ফাইল স্টেট ক্লিন
+    
+    this.selectedFile = null;
+    this.imagePreview = report.attachmentUrl ? this.getImageUrl(report.attachmentUrl) : null; 
+    
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
@@ -126,18 +191,38 @@ import { DailyReportService } from '../../../service/daley-report.service';
   deleteReport(id: number) {
     if (confirm("Terminate this report pointer from tracking grid?")) {
       this.service.delete(id).subscribe({
-        next: () => { alert("Report trace erased."); this.loadReports(); },
+        next: () => { 
+          alert("Report trace erased."); 
+          this.cdr.markForCheck();
+        },
         error: (err) => this.handleError(err)
       });
     }
   }
 
-  openDrawer() { this.resetForm(); this.isDrawerOpen = true; }
-  closeDrawer() { this.isDrawerOpen = false; this.resetForm(); }
+  openDrawer() { 
+    this.resetForm(); 
+    this.isEdit = false; 
+    this.isDrawerOpen = true; 
+    this.cdr.markForCheck();
+  }
+
+  closeDrawer() { 
+    this.isDrawerOpen = false; 
+    this.resetForm(); 
+    this.cdr.markForCheck();
+  }
 
   resetForm() {
-    this.formModel = { warehouseId: '', reportDate: new Date().toISOString().split('T')[0], totalTasksDone: 0, issuesLogged: 0, summary: '' };
+    this.formModel = { 
+      warehouseId: '', 
+      reportDate: new Date().toISOString().split('T')[0], 
+      totalTasksDone: 0, 
+      issuesLogged: 0, 
+      summary: '' 
+    };
     this.selectedFile = null;
+    this.imagePreview = null;
     this.isEdit = false;
     this.currentReportId = null;
     this.errorMessage = null;
@@ -148,4 +233,3 @@ import { DailyReportService } from '../../../service/daley-report.service';
     this.cdr.markForCheck();
   }
 }
-

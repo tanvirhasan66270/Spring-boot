@@ -199,7 +199,7 @@
               <td>
                 <div class="d-flex align-items-center">
                   <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 40px; height: 40px;">
-                    <img *ngIf="s.image" [src]="getImageUrl(s.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
+                    <img *ngIf="s.image" [src]="imageBaseUrl+s?.image" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
                     <i *ngIf="!s.image" class="bi bi-building-fill fs-5 text-secondary"></i>
                   </div>
                   <div>

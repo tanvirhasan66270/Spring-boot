@@ -32,7 +32,11 @@ export class CustomerComponent implements OnInit {
   imagePreview: string | ArrayBuffer | null = null;
   streetAddress: string = '';
   confirmPassword = '';
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '') + 'uploads/';
+
+  readonly imageBaseUrl = environment.apiUrl+"customer/";
+
+
+
 
   customer: any = {
     name: '',

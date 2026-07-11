@@ -38,7 +38,7 @@ export class DriverComponent implements OnInit {
   
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"driver/";
 
   driver: DriverRequestModel = {
     id: 0,

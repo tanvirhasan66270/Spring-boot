@@ -39,7 +39,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Transactional
@@ -67,7 +67,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
 
         if (image != null && !image.isEmpty()) {
             String imagePath = uploadImage(image, dto.getName());
-            inspector.setImage("uploads/qc_inspector/" + imagePath);
+            inspector.setImage(imagePath);
         }
 
         QCInspector savedInspector = qcInspectorRepository.save(inspector);
@@ -93,7 +93,7 @@ public class QCInspectorServiceImp implements QCInspectorService {
 
         if (image != null && !image.isEmpty()) {
             String newImagePath = uploadImage(image, dto.getName());
-            inspector.setImage("uploads/qc_inspector/" + newImagePath);
+            inspector.setImage( newImagePath);
         }
 
         User user = inspector.getUser();

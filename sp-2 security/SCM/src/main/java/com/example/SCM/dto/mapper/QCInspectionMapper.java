@@ -41,7 +41,6 @@ public class QCInspectionMapper {
             dto.setInspectedByName(entity.getInspectedBy().getName());
         }
 
-        // 🎯 চাইল্ড কালেকশন টু ডিটিও ম্যাপিং (টাইমস্ট্যাম্প সহ ফিক্সড করা হয়েছে)
         if (entity.getChecklists() != null) {
             dto.setChecklists(entity.getChecklists().stream().map(chk -> {
                 QCChecklistResponseDTO cDto = new QCChecklistResponseDTO();
@@ -50,7 +49,6 @@ public class QCInspectionMapper {
                 cDto.setPassed(chk.isPassed());
                 cDto.setRemarks(chk.getRemarks());
 
-                // 🚀 ফিক্স: চাইল্ড লিস্টের মেটাডাটা টাইমস্ট্যাম্প এখানে ম্যাপ করে দেওয়া হলো
                 cDto.setCreatedAt(chk.getCreatedAt());
                 cDto.setUpdatedAt(chk.getUpdatedAt());
 

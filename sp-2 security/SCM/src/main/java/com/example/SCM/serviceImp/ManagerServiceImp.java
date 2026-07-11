@@ -43,7 +43,7 @@ public class ManagerServiceImp implements ManagerService {
     private final AuthService authService;
 
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override
@@ -72,7 +72,7 @@ public class ManagerServiceImp implements ManagerService {
 
         if (image != null && !image.isEmpty()) {
             String imagePath = uploadImage(image, dto.getName());
-            dto.setAddress("uploads/manager/" + imagePath);
+            dto.setAddress(imagePath);
         }
 
         Manager manager = managerMapper.toManagerEntity(dto, savedUser, policeStation);
@@ -134,7 +134,7 @@ public class ManagerServiceImp implements ManagerService {
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getName());
-            manager.setImage("uploads/manager/" + newImagePath);
+            manager.setImage( newImagePath);
         }
 
         return managerMapper.convertTOResponseDTO(managerRepository.save(manager));

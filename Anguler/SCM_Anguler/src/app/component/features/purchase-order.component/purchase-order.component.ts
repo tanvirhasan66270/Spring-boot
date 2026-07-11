@@ -54,7 +54,7 @@ export class PurchaseOrderComponent implements OnInit {
   }
 
   loadQuotations() {
-    // শুধুমাত্র APPROVED কোটেশনগুলো ফিল্টার করে আনা যাতে সেগুলোর বিপরীতে PO ইস্যু করা যায়
+    // শুধুমাত্র APPROVED কোটেশনগুলো ফিল্টার করে আনা যাতে সেগুলোর বিপরীতে PO ইস্যু 
     this.quotationService.findAll().subscribe({
       next: (data) => {
         this.quotations = data ? data.filter((q: any) => q.status === 'APPROVED') : [];
@@ -67,7 +67,6 @@ export class PurchaseOrderComponent implements OnInit {
     const qId = +event.target.value;
     const selectedQ = this.quotations.find(q => q.id === qId);
     if (selectedQ) {
-      // কোটেশন সিলেক্ট হওয়া মাত্রই টোটাল প্রাইস অটো-লোড মেকানিজম সিঙ্ক
       this.order.totalAmount = selectedQ.totalPrice;
     }
   }

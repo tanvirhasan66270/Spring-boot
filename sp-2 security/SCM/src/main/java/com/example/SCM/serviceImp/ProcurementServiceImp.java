@@ -44,7 +44,7 @@ public class ProcurementServiceImp implements ProcurementService {
 
 
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Override

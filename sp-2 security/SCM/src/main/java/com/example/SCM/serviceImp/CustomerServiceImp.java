@@ -35,7 +35,7 @@ public class CustomerServiceImp implements CustomerService {
 
 
 
-    @Value("${file.upload-dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Transactional
@@ -63,7 +63,7 @@ public class CustomerServiceImp implements CustomerService {
 
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
-            customer.setImage("uploads/customer/" + uploadedFileName);
+            customer.setImage( uploadedFileName);
         }
 
         Customer savedCustomer = customerRepository.save(customer);
@@ -90,7 +90,7 @@ public class CustomerServiceImp implements CustomerService {
 
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadImage(image, dto.getName());
-            customer.setImage("uploads/customer/" + uploadedFileName);
+            customer.setImage( uploadedFileName);
         }
 
         User user = customer.getUser();

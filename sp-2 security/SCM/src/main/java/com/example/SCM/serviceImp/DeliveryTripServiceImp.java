@@ -31,7 +31,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     private final DeliveryTripMapper tripMapper;
     private final MailService mailService;
 
-    @Value("${file.upload-dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Transactional

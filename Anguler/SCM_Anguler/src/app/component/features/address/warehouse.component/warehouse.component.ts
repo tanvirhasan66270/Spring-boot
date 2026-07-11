@@ -7,6 +7,7 @@ import { DivisionService } from '../../../../service/division.service';
 import { DistrictService } from '../../../../service/district.service';
 import { PoliceStationService } from '../../../../service/police-station.service';
 import { WarehouseRequestModel, WarehouseResponseModel } from '../../../shared/model/warehouse';
+import { environment } from '../../../../../environment/environment';
 
 @Component({
   selector: 'app-warehouse',
@@ -51,6 +52,7 @@ export class WarehouseComponent implements OnInit {
     private stationService: PoliceStationService,
     private cdr: ChangeDetectorRef
   ) { }
+
 
   ngOnInit() {
     this.loadWarehouses();

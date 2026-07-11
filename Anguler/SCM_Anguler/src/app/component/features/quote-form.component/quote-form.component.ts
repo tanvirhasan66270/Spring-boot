@@ -29,7 +29,6 @@ export class QuoteFormComponent implements OnInit {
     this.initForm();
   }
 
-  // রিয়্যাক্টিভ ফর্ম ইনিশিয়ালাইজেশন এবং ভ্যালিডেশন
   private initForm(): void {
     this.quoteForm = this.fb.group({
       companyName: ['', [Validators.required, Validators.minLength(2)]],
@@ -58,7 +57,7 @@ export class QuoteFormComponent implements OnInit {
       next: (response) => {
         this.isSubmitting = false;
         this.isSuccess = true;
-        this.quoteForm.reset({ requestType: '' }); // ফর্ম রিসেট করা হলো ডিফল্ট ভ্যালু সহ
+        this.quoteForm.reset({ requestType: '' }); 
       },
       error: (err) => {
         this.isSubmitting = false;
@@ -69,13 +68,11 @@ export class QuoteFormComponent implements OnInit {
     });
   }
 
-  // ভ্যালিডেশন চেক করার হেল্পার মেথড
   isFieldInvalid(fieldName: string): boolean {
     const field = this.quoteForm.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 
-  // সাবমিট ক্লিকের সময় সব ফিল্ড টাচ করার হেল্পার
   private markFormGroupTouched(formGroup: FormGroup) {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();

@@ -41,7 +41,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     @Transactional

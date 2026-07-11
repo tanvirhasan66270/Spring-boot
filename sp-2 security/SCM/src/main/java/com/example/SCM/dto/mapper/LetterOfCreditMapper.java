@@ -22,9 +22,7 @@ public class LetterOfCreditMapper {
     private final SupplierRepository supplierRepository;
     private final LCBankRepository bankRepository;
 
-    /**
-     * ── 🔄 DTO TO ENTITY MAPPING ──
-     */
+
     public LetterOfCredit toEntity(LetterOfCreditRequestDTO dto) {
         if (dto == null) return null;
 
@@ -78,9 +76,7 @@ public class LetterOfCreditMapper {
         return lc;
     }
 
-    /**
-     * ── 🔄 ENTITY TO RESPONSE DTO MAPPING ──
-     */
+
     public LetterOfCreditResponseDTO convertTOResponseDTO(LetterOfCredit entity) {
         if (entity == null) return null;
 

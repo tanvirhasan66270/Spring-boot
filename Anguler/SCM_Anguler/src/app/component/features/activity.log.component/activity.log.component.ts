@@ -15,7 +15,7 @@ import { ActivityLogService } from '../../../service/activity.log.service';
 export class ActivityLogComponent implements OnInit {
 
   logs: ActivityLogModel[] = [];
-  selectedLog: ActivityLogModel | null = null; // Payload পরিদর্শনের জন্য
+  selectedLog: ActivityLogModel | null = null; 
   errorMessage: string | null = null;
 
   // ডাইনামিক ফিল্টার মডেলস

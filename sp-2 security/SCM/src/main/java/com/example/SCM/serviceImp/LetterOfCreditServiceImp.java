@@ -42,7 +42,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     private final HttpServletRequest request;
     private final LCBankRepository bankRepository;
 
-    @Value("${image.upload.dir:uploads}")
+    @Value("${image.upload.dir}")
     private String uploadDir;
 
     private String resolveCurrentUserId() {

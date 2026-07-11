@@ -84,7 +84,6 @@ export class InvoiceComponent implements OnInit {
       return;
     }
 
-    // ডাটা কাস্টিং ও স্যানিটাইজেশন
     const payload: InvoiceRequestModel = {
       customerOrderId: +this.formModel.customerOrderId,
       salesOfficerId: this.formModel.salesOfficerId ? +this.formModel.salesOfficerId : null,

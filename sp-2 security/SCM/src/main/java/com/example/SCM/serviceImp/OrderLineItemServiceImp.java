@@ -40,7 +40,6 @@ public class OrderLineItemServiceImp implements OrderLineItemService {
         OrderLineItem item = lineItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target order line item node missing index"));
 
-        // চাইল্ড রিমুভ করার পর মাস্টার অর্ডারের বিল পুনরায় রি-ক্যালকুলেট করানোর জন্য
         // এটি ডাটাবেজ লেভেলে প্যারেন্ট অবজেক্টকেও ট্রিগার করবে
         if (item.getCustomerOrder() != null) {
             item.getCustomerOrder().getLineItems().remove(item);

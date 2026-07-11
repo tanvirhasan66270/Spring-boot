@@ -35,7 +35,7 @@ export class CommercialOfficerComponent implements OnInit {
   errorMessage: string | null = null;
   streetAddress: string = '';
   confirmPassword = '';
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '') + 'uploads/commercial_officer/';
+  readonly imageBaseUrl = environment.imgUrl+"commercial_officer/";
 
   officer: CommercialOfficerRequestDTO = {
     name: '',
