@@ -17,8 +17,8 @@ public class DeliveryTripMapper {
         dto.setDispatcherId(entity.getDispatcherId());
         dto.setStartedAt(entity.getStartedAt());
         dto.setCompletedAt(entity.getCompletedAt());
-        dto.setRecipientSignature(entity.getRecipientSignature()); // 🎯 ম্যাপড
-        dto.setDeliveryPhotoUrl(entity.getDeliveryPhotoUrl());     // 🎯 ম্যাপড
+        dto.setRecipientSignature(entity.getRecipientSignature());
+        dto.setDeliveryPhotoUrl(entity.getDeliveryPhotoUrl());
         dto.setCustomerAddress(entity.getCustomerAddress());
         dto.setRemarks(entity.getRemarks());
         dto.setCreatedAt(entity.getCreatedAt());
@@ -36,6 +36,7 @@ public class DeliveryTripMapper {
         if (entity.getDriver() != null) {
             dto.setDriverId(entity.getDriver().getId());
             dto.setDriverName(entity.getDriver().getDriverName());
+            dto.setDriverPhone(entity.getDriver().getPhone());
             dto.setDriverEmail(entity.getDriver().getEmail());
         }
 
@@ -53,8 +54,8 @@ public class DeliveryTripMapper {
         DeliveryTrip entity = new DeliveryTrip();
         entity.setDispatcherId(dto.getDispatcherId());
         entity.setCustomerAddress(dto.getCustomerAddress());
-        entity.setRecipientSignature(dto.getRecipientSignature()); // 🎯 সেটার অ্যাডড
-        entity.setDeliveryPhotoUrl(dto.getDeliveryPhotoUrl());     // 🎯 সেটার অ্যাডড
+        entity.setRecipientSignature(dto.getRecipientSignature());
+        entity.setDeliveryPhotoUrl(dto.getDeliveryPhotoUrl());
         entity.setRemarks(dto.getRemarks());
 
         entity.setStatus(dto.getStatus() != null ?
@@ -72,8 +73,8 @@ public class DeliveryTripMapper {
 
         if (dto.getDispatcherId() != null) entity.setDispatcherId(dto.getDispatcherId());
         if (dto.getCustomerAddress() != null) entity.setCustomerAddress(dto.getCustomerAddress());
-        if (dto.getRecipientSignature() != null) entity.setRecipientSignature(dto.getRecipientSignature()); // 🎯 সিঙ্কড
-        if (dto.getDeliveryPhotoUrl() != null) entity.setDeliveryPhotoUrl(dto.getDeliveryPhotoUrl());       // 🎯 সিঙ্কড
+        if (dto.getRecipientSignature() != null) entity.setRecipientSignature(dto.getRecipientSignature());
+        if (dto.getDeliveryPhotoUrl() != null) entity.setDeliveryPhotoUrl(dto.getDeliveryPhotoUrl());
         if (dto.getRemarks() != null) entity.setRemarks(dto.getRemarks());
 
         if (dto.getStatus() != null) {

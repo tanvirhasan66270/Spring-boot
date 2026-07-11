@@ -1,0 +1,305 @@
+<nav class="public-navbar sticky-top shadow-sm">
+  <div class="container-fluid px-4 py-2 d-flex align-items-center justify-content-between">
+    
+    <!-- BRAND LOGO & TAGLINE -->
+    <a routerLink="/" class="brand-link d-flex align-items-center gap-2.5 text-decoration-none">
+      <div class="logo-box">SCM</div>
+      <div class="brand-meta">
+        <h5 class="brand-name mb-0 fw-extrabold text-primary tracking-tight">Global SCM Pro</h5>
+        <small class="brand-tagline text-secondary d-none d-xl-block">Connecting Buyers, Suppliers & Logistics Worldwide</small>
+      </div>
+    </a>
+
+    <!-- CENTER NAVIGATION (DESKTOP) -->
+    <ul class="nav-links-menu d-none d-lg-flex list-unstyled m-0 p-0 gap-4">
+      <li><a routerLink="/" class="nav-item-link">Home</a></li>
+      
+      <!-- About Us Dropdown -->
+      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('about')" (mouseleave)="toggleDropdown('')">
+        <span class="nav-item-link">About Us <i class="bi bi-chevron-down ms-0.5"></i></span>
+        <div class="dropdown-panel rounded-3 border p-2" *ngIf="activeDropdown === 'about'">
+          <a routerLink="/about" class="dropdown-item-link"><i class="bi bi-info-circle me-2"></i> Company Overview</a>
+          <a routerLink="/mission" class="dropdown-item-link"><i class="bi bi-eye me-2"></i> Mission & Vision</a>
+          <a routerLink="/network" class="dropdown-item-link"><i class="bi bi-globe2 me-2"></i> Global Network</a>
+          <a routerLink="/sustainability" class="dropdown-item-link"><i class="bi bi-leaf me-2"></i> Sustainability</a>
+        </div>
+      </li>
+
+      <!-- Services Mega Dropdown -->
+      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('services')" (mouseleave)="toggleDropdown('')">
+        <span class="nav-item-link">Solutions <i class="bi bi-chevron-down ms-0.5"></i></span>
+        <div class="mega-menu-panel rounded-4 border p-4 shadow-lg" *ngIf="activeDropdown === 'services'">
+          <div class="row g-4">
+            <div class="col-md-3">
+              <h6 class="mega-title"><i class="bi bi-cart text-primary me-2"></i> Sourcing & Procurement</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/sourcing">Global Product Sourcing</a></li>
+                <li><a routerLink="/procurement">Strategic Procurement</a></li>
+                <li><a routerLink="/vendor">Vendor Management</a></li>
+                <li><a routerLink="/purchase-order">Purchase Orders</a></li>
+              </ul>
+            </div>
+            <div class="col-md-3">
+              <h6 class="mega-title"><i class="bi bi-truck text-success me-2"></i> Freight Forwarding</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/shipment">Air & Ocean Freight</a></li>
+                <li><a routerLink="/poline-item">Road & Rail Logistics</a></li>
+                <li><a routerLink="/container">Container Shipping</a></li>
+              </ul>
+            </div>
+            <div class="col-md-3">
+              <h6 class="mega-title"><i class="bi bi-building text-warning me-2"></i> Warehouse Management</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/warehouse">Inventory Management</a></li>
+                <li><a routerLink="/cold-storage">Cold Chain Storage</a></li>
+                <li><a routerLink="/cross-docking">Cross Docking Hubs</a></li>
+              </ul>
+            </div>
+            <div class="col-md-3">
+              <h6 class="mega-title"><i class="bi bi-file-earmark-lock text-danger me-2"></i> Customs & Trade</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/customs">Customs Clearance</a></li>
+                <li><a routerLink="/letter-of-credit">LC Payments & Docs</a></li>
+                <li><a routerLink="/compliance">HS Code Support</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- Global Coverage Dropdown -->
+      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('coverage')" (mouseleave)="toggleDropdown('')">
+        <span class="nav-item-link">Global Network <i class="bi bi-chevron-down ms-0.5"></i></span>
+        <div class="dropdown-panel rounded-3 border p-2" *ngIf="activeDropdown === 'coverage'">
+          <a routerLink="/coverage/asia" class="dropdown-item-link">Asia Pacific</a>
+          <a routerLink="/coverage/europe" class="dropdown-item-link">Europe Hub</a>
+          <a routerLink="/coverage/americas" class="dropdown-item-link">North America</a>
+          <a routerLink="/coverage/middle-east" class="dropdown-item-link">Middle East & Africa</a>
+        </div>
+      </li>
+
+      <!-- Partner Portal Mega Menu -->
+      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('partners')" (mouseleave)="toggleDropdown('')">
+        <span class="nav-item-link">Partner Portal <i class="bi bi-chevron-down ms-0.5"></i></span>
+        <div class="mega-menu-panel rounded-4 border p-4 shadow-lg" *ngIf="activeDropdown === 'partners'">
+          <div class="row g-4">
+            <div class="col-md-6 border-end">
+              <h6 class="mega-title text-primary"><i class="bi bi-person me-2"></i> For Buyers / Customers</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/register">Create Corporate Buyer Profile</a></li>
+                <li><a routerLink="/order">Place Purchase Requisitions</a></li>
+                <li><a routerLink="/quotation">Submit RFQ Requests</a></li>
+              </ul>
+            </div>
+            <div class="col-md-6 ps-md-4">
+              <h6 class="mega-title text-success"><i class="bi bi-shop me-2"></i> For Suppliers / Vendors</h6>
+              <ul class="list-unstyled mega-list">
+                <li><a routerLink="/register">Become an Enlisted Vendor</a></li>
+                <li><a routerLink="/quotation">Submit Supply Quotations</a></li>
+                <li><a routerLink="/compliance">Review Trade Compliance</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <!-- Tracking & Resources -->
+      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('resources')" (mouseleave)="toggleDropdown('')">
+        <span class="nav-item-link">Resources <i class="bi bi-chevron-down ms-0.5"></i></span>
+        <div class="mega-menu-panel rounded-4 border p-4 shadow-lg" *ngIf="activeDropdown === 'resources'" style="width: 480px; left: -100px;">
+          <div class="row g-4">
+            <div class="col-md-6 border-end">
+              <h6 class="mega-title"><i class="bi bi-search me-2"></i> Track Shipments</h6>
+              <div class="p-1">
+                <input type="text" class="form-control form-control-sm mb-2" placeholder="Tracking/Container No." [(ngModel)]="trackingNumber">
+                <button class="btn btn-sm btn-primary w-100" (click)="trackShipment()"><i class="bi bi-arrow-right"></i> Track</button>
+              </div>
+            </div>
+            <div class="col-md-6 ps-md-3">
+              <h6 class="mega-title"><i class="bi bi-info-circle me-2"></i> Incoterms Guide</h6>
+              <ul class="list-unstyled mega-list small">
+                <li><a href="#" (click)="$event.preventDefault()">FOB - Free On Board</a></li>
+                <li><a href="#" (click)="$event.preventDefault()">CIF - Cost, Insurance & Freight</a></li>
+                <li><a href="#" (click)="$event.preventDefault()">DDP - Delivered Duty Paid</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+
+    <!-- RIGHT CONTROLS & CTA (DESKTOP) -->
+    <div class="d-none d-lg-flex align-items-center gap-3">
+      
+      <!-- Currency Switcher
+      <div class="dropdown">
+        <button class="btn btn-sm btn-light dropdown-toggle font-monospace fw-bold" type="button" data-bs-toggle="dropdown">
+          {{ currentCurrency }}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><button class="dropdown-item" (click)="setCurrency('USD')">USD ($)</button></li>
+          <li><button class="dropdown-item" (click)="setCurrency('EUR')">EUR (€)</button></li>
+          <li><button class="dropdown-item" (click)="setCurrency('BDT')">BDT (৳)</button></li>
+        </ul>
+      </div> -->
+
+      <!-- Language Selector
+      <div class="dropdown">
+        <button class="btn btn-sm btn-light dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">
+          🌐 {{ currentLanguage }}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><button class="dropdown-item" (click)="setLanguage('EN')">English</button></li>
+          <li><button class="dropdown-item" (click)="setLanguage('BN')">বাংলা</button></li>
+        </ul>
+      </div> -->
+
+      <!-- Search Trigger -->
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="showSearchModal = true">
+        <i class="bi bi-search"></i>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button class="btn btn-light rounded-circle p-2 d-flex" (click)="toggleTheme()">
+        <i class="bi" [ngClass]="themeMode === 'light' ? 'bi-moon-stars' : 'bi-sun'"></i>
+      </button>
+
+      <!-- Action CTAs -->
+      <a routerLink="/login" class="btn btn-outline-primary px-3 fw-bold rounded-pill">Sign In</a>
+      <button class="btn btn-primary px-3.5 fw-bold rounded-pill" (click)="showQuoteModal = true">Request Quote</button>
+    </div>
+
+    <!-- HAMBURGER BUTTON (MOBILE) -->
+    <button class="btn btn-light d-lg-none rounded" (click)="toggleMobileMenu()">
+      <i class="bi" [ngClass]="mobileMenuOpen ? 'bi-x-lg' : 'bi-list'"></i>
+    </button>
+  </div>
+
+  <!-- MOBILE DRAWER & ACCORDIONS -->
+  <div class="mobile-drawer border-top p-3 d-lg-none" *ngIf="mobileMenuOpen">
+    <div class="d-flex flex-column gap-2">
+      <a routerLink="/" class="btn btn-light text-start py-2.5" (click)="mobileMenuOpen = false">Home</a>
+      
+      <button class="btn btn-light text-start py-2.5 d-flex justify-content-between" (click)="toggleDropdown('mobile-about')">
+        About Us <i class="bi" [ngClass]="activeDropdown === 'mobile-about' ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+      </button>
+      <div class="ps-3 d-flex flex-column gap-1.5" *ngIf="activeDropdown === 'mobile-about'">
+        <a routerLink="/about" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Company Overview</a>
+        <a routerLink="/mission" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Vision & Core Values</a>
+      </div>
+
+      <button class="btn btn-light text-start py-2.5 d-flex justify-content-between" (click)="toggleDropdown('mobile-services')">
+        Solutions <i class="bi" [ngClass]="activeDropdown === 'mobile-services' ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+      </button>
+      <div class="ps-3 d-flex flex-column gap-1.5" *ngIf="activeDropdown === 'mobile-services'">
+        <a routerLink="/sourcing" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Global Sourcing</a>
+        <a routerLink="/shipment" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Freight Logistics</a>
+        <a routerLink="/warehouse" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Warehouse Solutions</a>
+      </div>
+
+      <!-- Quick CTAs at bottom of Mobile Menu -->
+      <hr class="my-3">
+      <div class="row g-2">
+        <div class="col-6"><a routerLink="/login" class="btn btn-outline-primary w-100 py-2" (click)="mobileMenuOpen = false">Sign In</a></div>
+        <div class="col-6"><button class="btn btn-primary w-100 py-2" (click)="showQuoteModal = true; mobileMenuOpen = false">Request Quote</button></div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ───────────────── DIALOGS / MODALS ───────────────── -->
+
+<!-- Quotation Request Modal -->
+<div class="modal-backdrop-glass fade-in" *ngIf="showQuoteModal">
+  <div class="modal-wrap p-4 bg-white rounded-4 border shadow-lg">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-plus text-primary me-2"></i> Request SCM Freight Quote</h5>
+      <button class="btn-close" (click)="showQuoteModal = false"></button>
+    </div>
+    
+    <div class="row g-3">
+      <div class="col-12">
+        <label class="form-label small fw-bold text-secondary">Product Specification</label>
+        <input type="text" class="form-control" placeholder="Industrial Thread, Chemicals, Machinery etc." [(ngModel)]="quoteForm.product">
+      </div>
+      <div class="col-6">
+        <label class="form-label small fw-bold text-secondary">Cargo Quantity</label>
+        <input type="number" class="form-control" [(ngModel)]="quoteForm.qty">
+      </div>
+      <div class="col-6">
+        <label class="form-label small fw-bold text-secondary">Destination Country</label>
+        <input type="text" class="form-control" placeholder="Bangladesh, China, Germany" [(ngModel)]="quoteForm.destination">
+      </div>
+      <div class="col-6">
+        <label class="form-label small fw-bold text-secondary">Shipping Route Mode</label>
+        <select class="form-select" [(ngModel)]="quoteForm.shippingMethod">
+          <option value="SEA">Sea Container Freight</option>
+          <option value="AIR">Air Cargo</option>
+          <option value="ROAD">Road Transport Truck</option>
+          <option value="RAIL">Rail Logistics</option>
+        </select>
+      </div>
+      <div class="col-6">
+        <label class="form-label small fw-bold text-secondary">Transit Speed</label>
+        <select class="form-select" [(ngModel)]="quoteForm.deliveryTime">
+          <option value="STANDARD">Standard Logistics</option>
+          <option value="EXPRESS">Express Priority</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label small fw-bold text-secondary">Additional Handling Instructions</label>
+        <textarea class="form-control" rows="2.5" placeholder="Hazmat, temperature control, fragile..." [(ngModel)]="quoteForm.notes"></textarea>
+      </div>
+    </div>
+    
+    <div class="d-flex gap-2 justify-content-end mt-4">
+      <button class="btn btn-secondary px-4 rounded-3" (click)="showQuoteModal = false">Cancel</button>
+      <button class="btn btn-primary px-4 rounded-3" (click)="submitQuote()">Submit Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Global Search Modal -->
+<div class="modal-backdrop-glass fade-in" *ngIf="showSearchModal">
+  <div class="modal-wrap p-4 bg-white rounded-4 border shadow-lg" style="max-width: 450px;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h6 class="fw-bold text-dark mb-0"><i class="bi bi-search text-primary me-2"></i> Global SCM Search</h6>
+      <button class="btn-close" (click)="showSearchModal = false"></button>
+    </div>
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="Search orders, vessels, suppliers..." [(ngModel)]="searchQuery" (keyup.enter)="globalSearch()">
+      <button class="btn btn-primary" (click)="globalSearch()">Search</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tracking Result Modal Overlay -->
+<div class="modal-backdrop-glass fade-in" *ngIf="showTrackingResult">
+  <div class="modal-wrap p-4 bg-white rounded-4 border shadow-lg" style="max-width: 480px;">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-truck-flatbed text-primary me-2"></i> Live Container Tracking</h5>
+      <button class="btn-close" (click)="showTrackingResult = false"></button>
+    </div>
+    
+    <div class="p-2 bg-light rounded-3 mb-3">
+      <div class="small text-secondary mb-1">REFERENCE BILL/CONTAINER</div>
+      <strong class="text-dark font-monospace fs-6">{{ trackingResult?.ref }}</strong>
+    </div>
+    
+    <div class="d-flex justify-content-between small text-secondary mb-2">
+      <div><strong>Origin Hub:</strong> {{ trackingResult?.origin }}</div>
+      <div class="text-end"><strong>Destination Port:</strong> {{ trackingResult?.destination }}</div>
+    </div>
+    
+    <div class="progress mb-3" style="height: 8px;">
+      <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="trackingResult?.progress"></div>
+    </div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span class="badge bg-success-subtle text-success py-1.5 px-2.5 text-uppercase fw-semibold">{{ trackingResult?.status }}</span>
+      <span class="small font-monospace text-muted">ETA: {{ trackingResult?.eta }}</span>
+    </div>
+    
+    <div class="small text-secondary"><i class="bi bi-info-circle me-1"></i> Carrying Vessel: <strong>{{ trackingResult?.vessel }}</strong></div>
+  </div>
+</div>

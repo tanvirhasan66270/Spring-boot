@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { SupplierRequestDTO, SupplierResponseDTO } from "../../shared/model/supplierModel";
-import { environment } from "../../../../encironment/environment";
+import { environment } from "../../../../environment/environment";
 import { SupplierService } from "../../../service/supplier.service";
 import { CountryService } from "../../../service/country.service";
 import { DivisionService } from "../../../service/division.service";

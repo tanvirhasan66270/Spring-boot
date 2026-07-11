@@ -1,9 +1,7 @@
 
 export interface DeliveryTripRequestModel {
-  id?: number | null;
   dispatcherId: number;
   customerId: number;
-  driverId: number;
   vehicleId: number;
   status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED' | string;
   customerAddress: string;
@@ -32,6 +30,7 @@ export interface DeliveryTripResponseModel {
 
   driverId: number;
   driverName: string;
+  driverPhone: string;
   driverEmail: string;
 
   vehicleId: number;

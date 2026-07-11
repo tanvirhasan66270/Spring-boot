@@ -1,69 +1,96 @@
 <div class="top-strip"></div>
 
 <header class="header">
+  <!-- Left side is left empty to match the design in the screenshot -->
+  <div></div>
 
-    <div class="logo">
-
-        <div class="logo-box">
-
-            SCM
-
-        </div>
-
-        <div class="logo-text">
-
-            SCM <span>PRO</span>
-
-        </div>
-
+  <div class="actions">
+    
+    <!-- Time Tracker -->
+    <div class="time-tracker d-none d-md-block text-secondary small font-monospace me-2">
+      <i class="bi bi-clock me-1"></i> {{ currentDateTime }}
     </div>
 
-    <nav>
+    <!-- Notifications Bell -->
+    <button class="action-btn" routerLink="/notifications" style="position: relative;" title="Notifications">
+      <i class="bi bi-bell"></i>
+      @if (unreadNotificationCount > 0) {
+        <span class="badge-count">{{ unreadNotificationCount }}</span>
+      }
+    </button>
 
-        <a routerLink="/dashboard">Home</a>
+    <!-- Message Icon -->
+    <button class="action-btn" routerLink="/messages" title="Messages">
+      <i class="bi bi-chat-dots"></i>
+    </button>
 
-        <a routerLink="/users">Order Tracking</a>
+    <!-- Language Toggle -->
+    <button class="action-btn" (click)="handleDropdownAction('Language Selection')" title="Language">
+      <i class="bi bi-globe"></i>
+    </button>
 
-        <a routerLink="/inventory">About Us </a>
+    <!-- User Profile Dropdown Toggle -->
+    <div class="profile-container">
+      <div class="profile" (click)="toggleDropdown()">
+        <div class="avatar-wrap">
+          <div class="avatar-circle">
+            {{ getInitials() }}
+          </div>
+          <!-- Online status indicator -->
+          <span class="status-indicator" [ngClass]="onlineStatus ? 'status-online' : 'status-offline'"></span>
+        </div>
+        <div class="profile-info d-none d-sm-flex align-items-center gap-1.5">
+          <span class="profile-name text-dark text-uppercase">{{ user?.name || 'SCM User' }}</span>
+          <span class="profile-role text-secondary text-uppercase">{{ user?.role || 'User' }}</span>
+        </div>
+        <i class="bi bi-chevron-down ms-1.5 text-secondary"></i>
+      </div>
 
-        <a routerLink="/procurement">Report</a>
-
-        <a routerLink="/logistics">Service</a>
-
-    </nav>
-
-    <div class="actions">
-
-        <button class="notification">
-
-            🔔
-
-        </button>
-
-        <button class="message">
-
-            Message
-
-        </button>
-
-        <button class="message">
-
-            Login
-
-        </button>
-
-        <div class="profile">
-
-            <div class="avatar">
-
-                A
-
+      <!-- Animated Profile Dropdown -->
+      <div class="profile-dropdown shadow-lg border rounded-3 p-3 text-start show-dropdown-anim" *ngIf="showDropdown">
+        <div class="dropdown-user-header border-bottom pb-2.5 mb-2.5 d-flex gap-3 align-items-center">
+          <div class="avatar-wrap">
+            <div class="avatar-circle fs-5">
+              {{ getInitials() }}
             </div>
-
-            <span>Admin</span>
-
+            <span class="status-indicator" [ngClass]="onlineStatus ? 'status-online' : 'status-offline'"></span>
+          </div>
+          <div>
+            <h6 class="mb-0 text-dark fw-bold">{{ user?.name || 'SCM User' }}</h6>
+            <span class="badge bg-secondary-subtle text-secondary small text-uppercase">{{ user?.role }}</span>
+            <small class="text-muted d-block font-monospace mt-1" style="font-size: 9px;">
+              ID: {{ employeeId }} | {{ departmentName }}
+            </small>
+          </div>
         </div>
 
+        <ul class="dropdown-menu-list list-unstyled p-0 m-0">
+          <li><button (click)="handleDropdownAction('View Profile')"><i class="bi bi-person me-2"></i> View Profile</button></li>
+          <li><button (click)="handleDropdownAction('Edit Profile')"><i class="bi bi-pencil me-2"></i> Edit Profile</button></li>
+          <li><button (click)="handleDropdownAction('Change Password')"><i class="bi bi-lock me-2"></i> Change Password</button></li>
+          <li><button (click)="handleDropdownAction('Theme Selection')"><i class="bi bi-palette me-2"></i> Theme Toggle</button></li>
+          <li><button (click)="handleDropdownAction('Security Settings')"><i class="bi bi-shield-lock me-2"></i> Security & 2FA</button></li>
+          <li><button (click)="toggleOnlineStatus()"><i class="bi bi-toggle-on me-2"></i> Simulate {{ onlineStatus ? 'Offline' : 'Online' }}</button></li>
+          <li><hr class="dropdown-divider my-2"></li>
+          <li><button class="text-danger" (click)="handleDropdownAction('logout')"><i class="bi bi-box-arrow-right me-2"></i> Logout</button></li>
+        </ul>
+      </div>
     </div>
 
+  </div>
 </header>
+
+<!-- Logout Confirmation Modal -->
+<div class="logout-modal-backdrop fade-in" *ngIf="showLogoutModal">
+  <div class="logout-modal p-4 rounded-4 shadow-lg border bg-white text-center">
+    <div class="icon-warning mb-3">
+      <i class="bi bi-exclamation-circle fs-1 text-danger"></i>
+    </div>
+    <h5 class="fw-bold text-dark mb-2">Secure Logout Confirmation</h5>
+    <p class="text-secondary small mb-4">Are you sure you want to end your current SCM session? Any unsaved telemetry adjustments will be lost.</p>
+    <div class="d-flex gap-2 justify-content-center">
+      <button class="btn btn-secondary px-4 rounded-3" (click)="closeLogoutModal()">Cancel</button>
+      <button class="btn btn-danger px-4 rounded-3" (click)="confirmLogout()">Logout</button>
+    </div>
+  </div>
+</div>

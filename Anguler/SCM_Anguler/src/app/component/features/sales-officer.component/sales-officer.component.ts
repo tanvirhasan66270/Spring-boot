@@ -6,7 +6,7 @@ import { CountryService } from '../../../service/country.service';
 import { DivisionService } from '../../../service/division.service';
 import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
-import { environment } from '../../../../encironment/environment';
+import { environment } from '../../../../environment/environment';
 import { SalesOfficerRequestDTO, SalesOfficerResponseDTO } from '../../shared/model/salesOfficerModel';
 import { SalesOfficerService } from '../../../service/sales-officer.service';
 

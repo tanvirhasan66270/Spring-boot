@@ -5,5 +5,5 @@ public enum VehicleType {
     VAN,
     BIKE,
     AIR,
-    RIVER_ROUTE
+    RIVER_SHIP
 }

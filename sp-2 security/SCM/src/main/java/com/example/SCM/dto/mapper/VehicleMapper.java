@@ -30,6 +30,7 @@ public class VehicleMapper {
             dto.setDriverId(entity.getDriver().getId());
             dto.setDriverName(entity.getDriver().getDriverName());
             dto.setDriverPhone(entity.getDriver().getPhone());
+            dto.setDriverEmail(entity.getDriver().getEmail());
         }
         return dto;
     }

@@ -1,4 +1,4 @@
-/* .custom-drawer {
+.custom-drawer {
   position: fixed;
   top: 0;
   right: -550px; 
@@ -52,4 +52,4 @@
 .form-control:focus, .form-select:focus {
   border-color: #3182ce;
   box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
-} */
+}

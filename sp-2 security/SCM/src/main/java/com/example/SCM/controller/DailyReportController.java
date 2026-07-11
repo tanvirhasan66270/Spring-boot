@@ -5,6 +5,7 @@ import com.example.SCM.dto.response.DailyReportResponseDTO;
 import com.example.SCM.service.DailyReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,18 +19,18 @@ public class DailyReportController {
 
     private final DailyReportService reportService;
 
-    @PostMapping
-    public ResponseEntity<DailyReportResponseDTO> createReport(@RequestBody DailyReportRequestDTO dto) {
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<DailyReportResponseDTO> createReport(@ModelAttribute DailyReportRequestDTO dto) {
         return new ResponseEntity<>(
                 reportService.save(dto),
                 HttpStatus.CREATED
         );
     }
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DailyReportResponseDTO> updateReport(
             @PathVariable Long id,
-            @RequestBody DailyReportRequestDTO dto
+            @ModelAttribute DailyReportRequestDTO dto
     ) {
         return ResponseEntity.ok(reportService.update(id, dto));
     }
@@ -45,7 +46,6 @@ public class DailyReportController {
             @RequestParam String approverId
     ) {
         reportService.approveReport(id, approverId);
-
         return ResponseEntity.ok("""
             <html>
             <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
@@ -67,5 +67,4 @@ public class DailyReportController {
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
         return ResponseEntity.ok(reportService.getByWarehouse(warehouseId));
     }
-
 }

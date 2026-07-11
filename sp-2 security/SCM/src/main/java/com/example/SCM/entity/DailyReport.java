@@ -9,8 +9,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "daily_reports")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -41,7 +40,7 @@ public class DailyReport {
     private ReportStatus reportStatus = ReportStatus.DRAFT;
 
 
-    private String attachmentUrl;
+    private String attachmentUrl;// image
 
     // রিপোর্টের জেনারেট হওয়ার অরিজিনাল টাইম যেন লক থাকে
     @Column(nullable = false, updatable = false)

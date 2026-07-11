@@ -1,0 +1,7 @@
+.public-network {
+  background-color: #f8fafc;
+}
+
+body.dark-theme .public-network {
+  background-color: #0f172a;
+}

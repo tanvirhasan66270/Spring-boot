@@ -1,0 +1,45 @@
+.welcome-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+}
+
+.wallet-card {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
+}
+
+.due-card {
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
+}
+
+.quick-action-btn {
+  border: 1px solid #f0f0f0;
+  transition: all 0.2s ease;
+}
+
+.quick-action-btn:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, 0.2);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+}
+
+.recommendation-item {
+  transition: border-color 0.2s ease;
+}
+
+.recommendation-item:hover {
+  border-color: #6366f1;
+}
+
+.fs-8 {
+  font-size: 0.785rem !important;
+}
+
+.opacity-15 {
+  opacity: 0.15;
+}
+
+.opacity-20 {
+  opacity: 0.20;
+}

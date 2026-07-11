@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../encironment/environment';
+import { environment } from '../../environment/environment';
 import { CommercialOfficerRequestDTO, CommercialOfficerResponseDTO } from '../component/shared/model/customerModel';
 @Injectable({
   providedIn: 'root',

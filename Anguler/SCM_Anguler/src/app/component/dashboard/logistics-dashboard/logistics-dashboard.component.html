@@ -1,0 +1,135 @@
+<div class="logistics-dashboard px-3 py-4">
+
+  <!-- ───────────────── TOP BAR ───────────────── -->
+  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <h3 class="fw-bold mb-1 text-dark">Logistics Command Center</h3>
+      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Dispatch and fleet tracking console.</p>
+    </div>
+    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+      <i class="bi bi-box-arrow-right"></i> Terminate Session
+    </button>
+  </div>
+
+  <!-- ───────────────── KPI GRID ───────────────── -->
+  <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+    <div class="col" *ngFor="let kpi of kpis">
+      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
+        <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
+        <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+        <div class="small font-monospace">
+          <span class="text-success fw-bold">
+            <i class="bi bi-arrow-up-right"></i> +8%
+          </span>
+          <span class="text-muted small ms-1">vs target capacity</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── QUICK ACTIONS ───────────────── -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <a routerLink="/shipment" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+        <i class="bi bi-truck fs-2 text-primary mb-1 d-block"></i>
+        <strong class="text-dark d-block">Dispatch Shipment</strong>
+        <small class="text-muted">Launch cargo shipping manifests</small>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a routerLink="/delivery-trip" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+        <i class="bi bi-signpost-split fs-2 text-success mb-1 d-block"></i>
+        <strong class="text-dark d-block">Schedule Trip</strong>
+        <small class="text-muted">Allocate routing timelines to drivers</small>
+      </a>
+    </div>
+    <div class="col-md-4">
+      <a routerLink="/warehouse" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+        <i class="bi bi-building fs-2 text-warning mb-1 d-block"></i>
+        <strong class="text-dark d-block">Warehouse Audits</strong>
+        <small class="text-muted">Manage stock placement layouts</small>
+      </a>
+    </div>
+  </div>
+
+  <!-- ───────────────── CHARTS & WAREHOUSES ───────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-graph-up-arrow text-primary me-2"></i> Shipment Logistics Performance</h6>
+        <svg viewBox="0 0 500 150" width="100%" height="150">
+          <line x1="40" y1="10" x2="480" y2="10" stroke="#f1f5f9" stroke-width="1"></line>
+          <line x1="40" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-width="1"></line>
+          <line x1="40" y1="110" x2="480" y2="110" stroke="#f1f5f9" stroke-width="1"></line>
+          <line x1="40" y1="130" x2="480" y2="130" stroke="#cbd5e1" stroke-width="1.5"></line>
+          <!-- Line path -->
+          <path d="M 40 110 L 120 70 L 220 90 L 320 40 L 480 20" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round"></path>
+          <circle cx="480" cy="20" r="4.5" fill="#1e40af"></circle>
+          
+          <text x="40" y="145" font-size="10.5" fill="#64748b">WK 23</text>
+          <text x="220" y="145" font-size="10.5" fill="#64748b">WK 24</text>
+          <text x="320" y="145" font-size="10.5" fill="#64748b">WK 25</text>
+          <text x="480" y="145" font-size="10.5" fill="#64748b" text-anchor="end">Active WK 26</text>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-boxes text-warning me-2"></i> Warehouse Volume Occupancy</h6>
+        <div class="d-flex flex-column gap-3">
+          <div *ngFor="let wh of warehouses" class="p-2 border rounded-3 bg-light">
+            <div class="d-flex justify-content-between small fw-bold mb-1">
+              <span class="text-dark">{{ wh.name }}</span>
+              <span class="text-secondary font-monospace">{{ wh.used }}% ({{ wh.total }})</span>
+            </div>
+            <div class="progress" style="height: 6px;">
+              <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="wh.used"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── SHIPLIENTS TRACKER TABLE ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 border-0">
+      <h6 class="mb-0 fw-bold text-dark text-uppercase"><i class="bi bi-clock-history text-primary me-2"></i> Outbound Shipment Dispatch Logs</h6>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">Logistics ID</th>
+              <th>Assigned Fleet</th>
+              <th>Target Destination</th>
+              <th>Route ETA</th>
+              <th>Tracking State</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of shipments">
+              <td class="ps-4 font-monospace fw-bold text-primary">{{ s.id }}</td>
+              <td class="fw-semibold"><i class="bi bi-truck-flatbed me-1.5 text-secondary"></i>{{ s.vehicle }}</td>
+              <td class="text-secondary">{{ s.destination }}</td>
+              <td class="font-monospace">{{ s.eta }}</td>
+              <td>
+                <span class="badge rounded-pill text-uppercase px-2.5 py-1" 
+                      [ngClass]="{
+                        'bg-primary-subtle text-primary': s.status === 'IN_TRANSIT',
+                        'bg-success-subtle text-success': s.status === 'DELIVERED',
+                        'bg-warning-subtle text-warning': s.status === 'DISPATCHING'
+                      }">
+                  {{ s.status }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

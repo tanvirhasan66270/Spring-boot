@@ -6,7 +6,7 @@ import { CountryService } from '../../../service/country.service';
 import { DivisionService } from '../../../service/division.service';
 import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
-import { environment } from '../../../../encironment/environment';
+import { environment } from '../../../../environment/environment';
 import { ProcurementRequestModel, ProcurementResponseDTO } from '../../shared/model/procourmentModel';
 import { ProcurementService } from '../../../service/procourment.service';
 

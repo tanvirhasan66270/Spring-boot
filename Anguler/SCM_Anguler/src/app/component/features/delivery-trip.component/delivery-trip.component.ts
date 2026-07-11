@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DeliveryTripRequestModel, DeliveryTripResponseModel } from '../../shared/model/DeliveryTripModel';
 import { DeliveryTripService } from '../../../service/delivery-trip.service';
+import { VehicleService } from '../../../service/vehicle.service'; // ভেহিকল ডাটা ফেচ করার জন্য
 
 @Component({
   selector: 'app-delivery-trip',
@@ -14,9 +15,13 @@ import { DeliveryTripService } from '../../../service/delivery-trip.service';
 export class DeliveryTripComponent implements OnInit {
 
   trips: DeliveryTripResponseModel[] = [];
-  customers: any[] = []; // dropdown feeds
-  drivers: any[] = [];   // dropdown feeds
-  vehicles: any[] = [];  // dropdown feeds
+  customers: any[] = [];
+  
+  // ── ফ্লিট ডাটা মেমোরি ──
+  allVehicles: any[] = [];      
+  filteredVehicles: any[] = [];  
+  
+  selectedVehicleType: string = ''; 
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
@@ -24,7 +29,6 @@ export class DeliveryTripComponent implements OnInit {
   isEdit = false;
   currentTripId: number | null = null;
 
-  // ফাইল হ্যান্ডেলিং মেমোরি স্টেট
   selectedSignature: File | null = null;
   selectedPhoto: File | null = null;
   statusUpdateValue = 'PENDING';
@@ -32,7 +36,6 @@ export class DeliveryTripComponent implements OnInit {
   formModel: DeliveryTripRequestModel = {
     dispatcherId: 1, 
     customerId: 0,
-    driverId: 0,
     vehicleId: 0,
     status: 'PENDING',
     customerAddress: '',
@@ -41,12 +44,13 @@ export class DeliveryTripComponent implements OnInit {
 
   constructor(
     private service: DeliveryTripService,
+    private vehicleService: VehicleService, // ইনজেক্টেড ওল্ড সার্ভিস
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
     this.loadTrips();
-    this.mockDropdownFeeds(); 
+    this.loadActiveFleetData();
   }
 
   loadTrips() {
@@ -56,23 +60,47 @@ export class DeliveryTripComponent implements OnInit {
     });
   }
 
+  loadActiveFleetData() {
+    // রিয়েল ভেহিকল সার্ভিস থেকে ডাটা ফেচ করা (যার ভেতর ড্রাইভার ফ্ল্যাটেনড মেটাডাটা আছে)
+    this.vehicleService.findAll().subscribe({
+      next: (data) => {
+        this.allVehicles = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => this.mockDropdownFeeds() // ব্যাকএন্ড অফ থাকলে মক ডাটা ফলব্যাক হবে
+    });
+    
+    // কাস্টমার ফিড লোড (আপনার এক্সিস্টিং কাস্টমার সার্ভিস কল এখানে হবে)
+    this.customers = [{ id: 1, name: "Tanvir Rahman" }];
+  }
+
+  onVehicleTypeChange() {
+    this.formModel.vehicleId = 0; // ওল্ড সিলেকশন রিসেট
+    
+    if (!this.selectedVehicleType) {
+      this.filteredVehicles = [];
+    } else {
+      // ব্যাকএন্ড থেকে আসা লিস্ট থেকে শুধুমাত্র সিলেক্টেড টাইপ (যেমন: TRUCK) এবং অ্যাক্টিভ ড্রাইভার আছে এমন গাড়ি ফিল্টার হবে
+      this.filteredVehicles = this.allVehicles.filter(v => 
+        v.type.toUpperCase() === this.selectedVehicleType.toUpperCase() && v.driverId != null
+      );
+    }
+    this.cdr.markForCheck();
+  }
+
   submitTrip() {
     this.errorMessage = null;
 
-    // ড্রপডাউন ভ্যালিডেশন গার্ড
     if (!this.formModel.customerId || +this.formModel.customerId === 0 ||
-        !this.formModel.driverId || +this.formModel.driverId === 0 ||
         !this.formModel.vehicleId || +this.formModel.vehicleId === 0) {
-      this.errorMessage = "Validation Fault: Customer mapping, Fleet allocation and Captain configuration are required.";
+      this.errorMessage = "Validation Fault: Customer mapping and Fleet allocation with assigned captain are required.";
       this.cdr.markForCheck();
       return;
     }
 
-    // 🎯 ফিক্স ২: status.toUpperCase() নিশ্চিত করা হলো এবং dispatcherId সেফ কাস্টিং করা হলো
     const payload: DeliveryTripRequestModel = {
       dispatcherId: this.formModel.dispatcherId ? +this.formModel.dispatcherId : 1,
       customerId: +this.formModel.customerId,
-      driverId: +this.formModel.driverId,
       vehicleId: +this.formModel.vehicleId,
       status: this.formModel.status.toUpperCase(), 
       customerAddress: this.formModel.customerAddress.trim(),
@@ -127,10 +155,17 @@ export class DeliveryTripComponent implements OnInit {
   edit(trip: DeliveryTripResponseModel) {
     this.isEdit = true;
     this.currentTripId = trip.id;
+    
+    // এডিট করার সময় ওল্ড ভেহিকল টাইপ ডিটেক্ট করা
+    const matchedVehicle = this.allVehicles.find(v => v.id === trip.vehicleId);
+    if (matchedVehicle) {
+      this.selectedVehicleType = matchedVehicle.type;
+      this.onVehicleTypeChange();
+    }
+
     this.formModel = {
       dispatcherId: trip.dispatcherId,
       customerId: trip.customerId,
-      driverId: trip.driverId,
       vehicleId: trip.vehicleId,
       status: trip.status,
       customerAddress: trip.customerAddress,
@@ -153,15 +188,9 @@ export class DeliveryTripComponent implements OnInit {
   closeDrawer() { this.isDrawerOpen = false; this.resetForm(); }
 
   resetForm() {
-    this.formModel = { 
-      dispatcherId: 1, 
-      customerId: 0, 
-      driverId: 0, 
-      vehicleId: 0, 
-      status: 'PENDING', 
-      customerAddress: '', 
-      remarks: '' 
-    };
+    this.formModel = { dispatcherId: 1, customerId: 0, vehicleId: 0, status: 'PENDING', customerAddress: '', remarks: '' };
+    this.selectedVehicleType = '';
+    this.filteredVehicles = [];
     this.isEdit = false;
     this.currentTripId = null;
     this.errorMessage = null;
@@ -173,8 +202,13 @@ export class DeliveryTripComponent implements OnInit {
   }
 
   private mockDropdownFeeds() {
-    this.customers = [{ id: 1, name: "Tanvir Rahman" }];
-    this.drivers = [{ id: 1, driverName: "Captain Rafiq" }];
-    this.vehicles = [{ id: 1, plateNumber: "Dhaka Metro-GA-11-2026" }];
+    // ব্যাকএন্ড সার্ভিস ফেসিং এরর হলে রিলেশন প্রটেক্টেড ডামি ডাটা আর্কিটেকচার
+    this.allVehicles = [
+      { id: 1, plateNumber: "Dhaka Metro-GA-11-2026", type: "TRUCK", driverId: 10, driverName: "Captain Rafiq" },
+      { id: 2, plateNumber: "Dhaka Metro-HA-22-9981", type: "TRUCK", driverId: 11, driverName: "Captain Asif" },
+      { id: 3, plateNumber: "Dhaka Metro-THA-55-1024", type: "VAN", driverId: 12, driverName: "Captain Karim" },
+      { id: 4, plateNumber: "Dhaka Metro-MOTO-88-1122", type: "BIKE", driverId: 13, driverName: "Rider Sohel" }
+    ];
+    this.cdr.markForCheck();
   }
 }

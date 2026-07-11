@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../encironment/environment';
+import { environment } from '../../environment/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CountryRequestModel, CountryResponseModel } from '../component/shared/model/country/countryModel';

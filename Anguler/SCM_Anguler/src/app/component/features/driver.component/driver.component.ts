@@ -6,7 +6,7 @@ import { DivisionService } from '../../../service/division.service';
 import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
 import { WarehouseService } from '../../../service/warehouse.service';
-import { environment } from '../../../../encironment/environment';
+import { environment } from '../../../../environment/environment';
 import { DriverRequestModel, DriverResponseModel } from '../../shared/model/driverModel';
 import { DriverService } from '../../../service/driver.service';
 

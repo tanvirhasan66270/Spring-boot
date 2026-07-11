@@ -1,0 +1,37 @@
+<div class="public-about py-5">
+  <div class="container-fluid px-5">
+    
+    <div class="text-center mb-5">
+      <h1 class="fw-extrabold text-dark tracking-tight mb-2">About Global SCM Pro</h1>
+      <p class="text-secondary">Enterprise supply chain integrity and shipping networks worldwide.</p>
+    </div>
+
+    <!-- About Overview -->
+    <div class="row align-items-center mb-5 g-4">
+      <div class="col-md-6">
+        <h3 class="fw-bold text-dark mb-3">Our Mission & Global Vision</h3>
+        <p class="text-secondary">
+          We streamline international trade by combining multi-device tracking, automated customs brokers clearance, and Strategic Sourcing in one platform. We are dedicated to providing sustainable shipping networks and warehouse hubs connecting ports globally.
+        </p>
+      </div>
+      <div class="col-md-6 text-center">
+        <div class="p-4 border bg-white rounded-4 shadow-sm">
+          <i class="bi bi-shield-check text-success fs-1 mb-2 d-block"></i>
+          <h5 class="fw-bold text-dark">Verified Compliance</h5>
+          <p class="text-secondary small mb-0">Authorized customs protocols conforming to international shipping regulations and Incoterms guides.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Values Cards -->
+    <div class="row g-3">
+      <div class="col-md-4" *ngFor="let val of coreValues">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+          <h5 class="fw-bold text-primary mb-2">{{ val.title }}</h5>
+          <p class="text-secondary small mb-0">{{ val.desc }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

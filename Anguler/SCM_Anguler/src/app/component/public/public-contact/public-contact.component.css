@@ -1,0 +1,7 @@
+.public-contact {
+  background-color: #f8fafc;
+}
+
+body.dark-theme .public-contact {
+  background-color: #0f172a;
+}

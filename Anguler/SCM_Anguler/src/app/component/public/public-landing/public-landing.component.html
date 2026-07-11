@@ -1,0 +1,120 @@
+<div class="public-landing">
+  
+  <!-- HERO BANNER -->
+  <section class="hero-section text-white d-flex align-items-center position-relative py-5">
+    <div class="container-fluid px-5 py-5 z-2">
+      <div class="row align-items-center">
+        <div class="col-lg-7">
+          <span class="badge bg-primary text-uppercase px-3 py-1.5 fw-bold mb-3 tracking-wider">Enterprise Global SCM</span>
+          <h1 class="display-3 fw-extrabold tracking-tight text-white mb-3">
+            Connecting Buyers, Suppliers & Logistics <span class="text-primary-glow">Worldwide</span>
+          </h1>
+          <p class="lead opacity-80 mb-4.5">
+            Optimize your international sourcing, customs documents clearance, cold warehouse storage, and multimodal freight routing with one unified platform.
+          </p>
+          <div class="d-flex gap-3">
+            <a routerLink="/login" class="btn btn-lg btn-primary rounded-pill px-4.5 fw-bold">Enter SCM Console</a>
+            <a routerLink="/contact" class="btn btn-lg btn-outline-light rounded-pill px-4.5 fw-bold">Global Offices</a>
+          </div>
+        </div>
+
+        <!-- Inline Live Tracking Widget -->
+        <div class="col-lg-5 mt-5 mt-lg-0">
+          <div class="card border-0 shadow-lg p-4 bg-white/10 backdrop-blur rounded-4 text-white">
+            <h5 class="fw-bold mb-3"><i class="bi bi-search me-2 text-warning"></i> Quick Container Lookup</h5>
+            <p class="small opacity-75">No login required. Track your freight container, air bill, or invoice status dynamically.</p>
+            <div class="input-group mb-3">
+              <input type="text" class="form-control bg-white/20 text-white border-white/20 placeholder-white/50" placeholder="Bill of Lading / Booking No." [(ngModel)]="trackingNumber">
+              <button class="btn btn-primary fw-bold" (click)="trackShipment()">Lookup</button>
+            </div>
+            
+            <div class="p-3 bg-white/10 border border-white/10 rounded-3 mb-2 fade-in" *ngIf="showDetails">
+              <div class="d-flex justify-content-between small opacity-75 mb-1.5">
+                <span>Vessel: <strong>{{ trackingDetails?.vessel }}</strong></span>
+                <span class="text-warning fw-bold">{{ trackingDetails?.status }}</span>
+              </div>
+              <div class="progress mb-2" style="height: 6px;">
+                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="trackingDetails?.progress"></div>
+              </div>
+              <div class="d-flex justify-content-between small font-monospace">
+                <span>{{ trackingDetails?.origin }}</span>
+                <span>ETA: {{ trackingDetails?.eta }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSINESS STATS SECTION -->
+  <section class="py-5 bg-white border-bottom shadow-sm">
+    <div class="container-fluid px-5">
+      <div class="row text-center g-4">
+        <div class="col-md-3">
+          <h2 class="fw-extrabold text-primary mb-0 font-monospace">৳4.8B+</h2>
+          <small class="text-secondary fw-bold text-uppercase">Trade Volume Backed</small>
+        </div>
+        <div class="col-md-3">
+          <h2 class="fw-extrabold text-success mb-0 font-monospace">150+</h2>
+          <small class="text-secondary fw-bold text-uppercase">Airports & Ports Connected</small>
+        </div>
+        <div class="col-md-3">
+          <h2 class="fw-extrabold text-warning mb-0 font-monospace">99.8%</h2>
+          <small class="text-secondary fw-bold text-uppercase">QC Inspections Pass Rate</small>
+        </div>
+        <div class="col-md-3">
+          <h2 class="fw-extrabold text-indigo mb-0 font-monospace">24/7</h2>
+          <small class="text-secondary fw-bold text-uppercase">Customs Clearance Network</small>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KEY SERVICES OVERVIEW -->
+  <section class="py-5">
+    <div class="container-fluid px-5">
+      <div class="text-center mb-5">
+        <span class="badge bg-success-subtle text-success text-uppercase px-2.5 py-1.5 fw-bold mb-2">Capabilities</span>
+        <h2 class="fw-extrabold text-dark tracking-tight">Our Core Supply Chain Solutions</h2>
+        <p class="text-secondary small">Multimodal cargo operations backed by compliance audits and logistics infrastructure.</p>
+      </div>
+
+      <div class="row g-4">
+        <!-- Card 1 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 text-center service-hover">
+            <i class="bi bi-cart-check fs-1 text-primary mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark mb-2">Global Procurement</h5>
+            <p class="text-secondary small mb-0">Enlist verified suppliers, manage bulk RFQs, and issue proforma purchase orders securely.</p>
+          </div>
+        </div>
+        <!-- Card 2 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 text-center service-hover">
+            <i class="bi bi-truck fs-1 text-success mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark mb-2">Freight Forwarding</h5>
+            <p class="text-secondary small mb-0">Air, ocean, and road logistics tracking with optimized route manifests and real-time mapping.</p>
+          </div>
+        </div>
+        <!-- Card 3 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 text-center service-hover">
+            <i class="bi bi-building-up fs-1 text-warning mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark mb-2">Warehouse Hubs</h5>
+            <p class="text-secondary small mb-0">Cross-docking operations, cold storage buffers, and automated stock visibility counts.</p>
+          </div>
+        </div>
+        <!-- Card 4 -->
+        <div class="col-md-6 col-lg-3">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 text-center service-hover">
+            <i class="bi bi-file-earmark-lock fs-1 text-danger mb-3 d-block"></i>
+            <h5 class="fw-bold text-dark mb-2">Customs Compliance</h5>
+            <p class="text-secondary small mb-0">Automated HS code mapping, bill of lading documentation, and letter of credit bank matching.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

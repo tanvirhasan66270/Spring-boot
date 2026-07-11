@@ -1,0 +1,7 @@
+.public-about {
+  background-color: #f8fafc;
+}
+
+body.dark-theme .public-about {
+  background-color: #0f172a;
+}

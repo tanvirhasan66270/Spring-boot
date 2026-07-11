@@ -2,7 +2,7 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectorRef, Component, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { QCInspectorRequestModel, QCInspectorResponseModel } from "../../shared/model/qcInspactorModel";
-import { environment } from "../../../../encironment/environment";
+import { environment } from "../../../../environment/environment";
 import { QcInspectorService } from "../../../service/qc-inspactor.service";
 import { CountryService } from "../../../service/country.service";
 import { DivisionService } from "../../../service/division.service";

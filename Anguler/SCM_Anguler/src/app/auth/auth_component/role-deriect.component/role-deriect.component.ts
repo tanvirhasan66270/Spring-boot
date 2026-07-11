@@ -16,15 +16,15 @@ constructor(private storage: StorageService, private router: Router) { }
     const role = this.storage.getRole();
     const map: Record<string, string> = {
       ADMIN:  '/admin',
-      MANAGER:  '/manager',
-      DRIVER:  '/driver',
-      PROCUREMENT: '/procurement',
-      QC_INSPECTOR: '/qc-inspector',
-      LOGISTICS_OFFICER:  '/logistics-officer',
-      COMMERCIAL_OFFICER:  '/commercial-officer',
-      CUSTOMER:   '/order-dashboard',
-      SUPPLIER:   '/supplier',
-      SALES_OFFICER: '/sales-officer',
+      MANAGER:  '/dashboard/manager',
+      DRIVER:  '/dashboard/driver',
+      PROCUREMENT: '/dashboard/procurement',
+      QC_INSPECTOR: '/dashboard/qc-inspector',
+      LOGISTICS_OFFICER:  '/dashboard/logistics',
+      COMMERCIAL_OFFICER:  '/dashboard/commercial',
+      CUSTOMER:   '/dashboard/customer',
+      SUPPLIER:   '/dashboard/supplier',
+      SALES_OFFICER: '/dashboard/sales',
     };
     this.router.navigate([map[role ?? ''] ?? '/login']);
   }

@@ -120,19 +120,34 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Appointed Route Captain (Driver)</label>
-          <select class="form-select fs-7" [(ngModel)]="formModel.driverId" name="driverId" required>
-            <option [value]="0">-- Choose Captain Logistics Profile --</option>
-            @for (d of drivers; track d.id) { <option [value]="d.id">{{ d.driverName }}</option> }
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Select Vehicle Mode</label>
+          <select class="form-select fs-7" [(ngModel)]="selectedVehicleType" name="selectedVehicleType" (change)="onVehicleTypeChange()" required>
+            <option value="">-- Choose Fleet Mode --</option>
+            <option value="TRUCK">🚛 TRUCK DISPATCH</option>
+            <option value="VAN">🚐 VAN INFRASTRUCTURE</option>
+            <option value="BIKE">🏍️ BIKE FAST DELIVERY</option>
+            <option value="AIR">✈️ AIR FREIGHT CORE</option>
+            <option value="RIVER_SHIP">🚢 RIVER SHIFT NETWORK</option>
           </select>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Allocated Fleet Asset (Vehicle)</label>
-          <select class="form-select fs-7" [(ngModel)]="formModel.vehicleId" name="vehicleId" required>
-            <option [value]="0">-- Choose Fleet Asset Index --</option>
-            @for (v of vehicles; track v.id) { <option [value]="v.id">{{ v.plateNumber }}</option> }
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Assign Captain & Fleet Asset</label>
+          <select class="form-select fs-7 font-monospace fw-bold" [(ngModel)]="formModel.vehicleId" name="vehicleId" [disabled]="filteredVehicles.length === 0" required>
+            <option [value]="0">
+              {{ filteredVehicles.length === 0 ? '-- Choose Fleet Mode First / No Driver Available --' : '-- Choose Captain (Vehicle Number) --' }}
+            </option>
+            @for (v of filteredVehicles; track v.id) {
+              <option [value]="v.id">
+                👤 {{ v.driverName }} (🚗 {{ v.plateNumber }})
+              </option>
+            }
           </select>
+          @if (selectedVehicleType && filteredVehicles.length === 0) {
+            <small class="text-danger d-block mt-1 fs-8 font-monospace">
+              <i class="bi bi-exclamation-triangle"></i> Business Notice: No active captain assigned to any {{ selectedVehicleType }} inside fleet database.
+            </small>
+          }
         </div>
 
         <div class="mb-3">

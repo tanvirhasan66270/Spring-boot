@@ -1,0 +1,20 @@
+<div class="public-network py-5">
+  <div class="container-fluid px-5">
+    
+    <div class="text-center mb-5">
+      <h1 class="fw-extrabold text-dark tracking-tight mb-2">Our Global SCM Network</h1>
+      <p class="text-secondary">Explore shipping channels, container hubs, and delivery hubs serving worldwide trade.</p>
+    </div>
+
+    <!-- Hubs Grid -->
+    <div class="row g-4">
+      <div class="col-md-4" *ngFor="let hub of hubs">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+          <h5 class="fw-bold text-primary mb-2">{{ hub.continent }} Hubs</h5>
+          <p class="text-secondary small mb-0">{{ hub.ports }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

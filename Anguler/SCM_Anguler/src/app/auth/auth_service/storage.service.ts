@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { LoginResponse } from '../Model/authModel';
-import { CryptoUtil } from '../utils/CryptoUtil ';
+import { CryptoUtil } from '../utils/CryptoUtil';
 
 
 export const KEYS = {
@@ -18,6 +19,7 @@ export const KEYS = {
 
 
 export class StorageService {
+  private roleSubject = new BehaviorSubject<string>('');
 
  // ── Write ────────────────────────────────────────────
 
@@ -51,11 +53,33 @@ export class StorageService {
     }
   }
 
-    getRole(): string | null {
+  constructor() {
+    this.roleSubject.next(this.getActiveRole());
+  }
+
+  role$ = this.roleSubject.asObservable();
+
+  getActiveRole(): string {
+    const sim = localStorage.getItem('simulated_role');
+    if (sim) return sim;
+    return this.getRole() ?? 'CUSTOMER';
+  }
+
+  setActiveRole(role: string): void {
+    localStorage.setItem('simulated_role', role);
+    this.roleSubject.next(role);
+  }
+
+  clearSimulatedRole(): void {
+    localStorage.removeItem('simulated_role');
+    this.roleSubject.next(this.getActiveRole());
+  }
+
+  getRole(): string | null {
     return this.getUser()?.role ?? null;
   }
 
-   isLoggedIn(): boolean {
+  isLoggedIn(): boolean {
     return !!this.getToken();
   }
 

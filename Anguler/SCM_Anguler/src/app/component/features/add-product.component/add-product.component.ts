@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { CategoryService } from '../../../service/category.service';
-import { environment } from '../../../../encironment/environment';
+import { environment } from '../../../../environment/environment';
 import { ProductRequestModel, ProductResponseModel } from '../../shared/model/addProduct';
 import { AddProductService } from '../../../service/add-product.service';
 

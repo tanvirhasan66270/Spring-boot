@@ -1,0 +1,169 @@
+<div class="container-fluid py-4 px-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+    <div>
+      <h4 class="text-dark fw-bold mb-1"><i class="bi bi-journal-check text-primary me-2"></i>EOD Operational Audit Core</h4>
+      <p class="text-muted mb-0 small">Automate warehouse transaction summation, log infrastructure issues, view active manager notification stacks, and lock finalized logs.</p>
+    </div>
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm text-white fs-7" (click)="openDrawer()">
+      <i class="bi bi-file-earmark-plus-fill me-2"></i>File New EOD Report
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7">
+      <strong><i class="bi bi-slash-circle-fill me-2"></i>Audit Fault:</strong> {{ errorMessage }}
+    </div>
+  }
+
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-7">
+          <thead class="table-light text-uppercase fs-8 fw-bold text-secondary">
+            <tr>
+              <th class="ps-4">Report Token</th>
+              <th>Warehouse Node</th>
+              <th>Operation Date</th>
+              <th>Tasks Processed</th>
+              <th>Issues Counter</th>
+              <th>Image Attachment</th>
+              <th>Audit Flags</th>
+              <th>Notified Admins</th>
+              <th class="text-end px-4" width="155">Execution Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of reports; track r.id) {
+              <tr>
+                <td class="ps-4">
+                  <div class="fw-bold text-dark">EOD-#{{ r.id }}</div>
+                  <small class="text-muted font-monospace fs-8">Issuer UID: {{ r.userId }}</small>
+                </td>
+                <td><span class="badge bg-light text-dark border font-monospace fs-8"><i class="bi bi-building me-1"></i>{{ r.warehouseId }}</span></td>
+                <td><b class="text-dark font-monospace">{{ r.reportDate }}</b></td>
+                <td><span class="text-primary fw-bold font-monospace"><i class="bi bi-arrow-up-right-circle-fill me-1"></i>{{ r.totalTasksDone }} Tx</span></td>
+                <td>
+                  <span class="fw-bold font-monospace" [ngClass]="r.issuesLogged > 0 ? 'text-danger' : 'text-muted'">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>{{ r.issuesLogged }} Faults
+                  </span>
+                </td>
+                <td>
+                  @if (r.attachmentUrl) {
+                    <a [href]="'http://localhost:8085/' + r.attachmentUrl" target="_blank" class="badge bg-info text-decoration-none">
+                      <i class="bi bi-image me-1"></i> View Proof
+                    </a>
+                  } @else {
+                    <span class="text-muted fs-8 font-monospace">No Image</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge px-2.5 py-1.5 fs-8 text-uppercase"
+                    [ngClass]="{
+                      'bg-secondary-subtle text-secondary': r.reportStatus === 'DRAFT',
+                      'bg-primary-subtle text-primary border border-primary': r.reportStatus === 'SUBMITTED',
+                      'bg-success text-white fw-bold shadow-xs': r.reportStatus === 'APPROVED'
+                    }">
+                    <i class="bi me-1" [ngClass]="r.reportStatus === 'APPROVED' ? 'bi-lock-fill' : 'bi-unlock-fill'"></i>{{ r.reportStatus }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex flex-wrap gap-1" style="max-width: 180px;">
+                    @for (auth of r.notifiedAuthorities; track auth['email']) {
+                      <span class="badge bg-dark-subtle text-dark fs-9 font-monospace" [title]="auth['email']">
+                        {{ auth['name'] }} ({{ auth['role'] }})
+                      </span>
+                    } @empty {
+                      <span class="text-muted fs-8 font-monospace italic">No routes bound</span>
+                    }
+                  </div>
+                </td>
+                <td class="text-end px-4">
+                  <div class="d-flex justify-content-end gap-1.5">
+                    @if (r.reportStatus !== 'APPROVED') {
+                      <button class="btn btn-icon btn-light text-success" title="Approve & Lock Matrix" (click)="approveReport(r.id)">
+                        <i class="bi bi-check-all fs-6"></i>
+                      </button>
+                    }
+                    <button class="btn btn-icon btn-light text-warning" [disabled]="r.reportStatus === 'APPROVED'" title="Edit Audit Notes" (click)="edit(r)">
+                      <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <!-- <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="deleteReport(r.id)">
+                      <i class="bi bi-trash-fill"></i>
+                    </button> -->
+                  </div>
+                </td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="9" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-clipboard-x fs-1 d-block mb-2 text-secondary"></i>No end-of-day operations manifests compiled in datastore nodes.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+    <div class="drawer-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0"><i class="bi bi-file-earmark-bar-graph me-2"></i>{{ isEdit ? 'Modify Operational Logs' : 'Compile Day-End Summary' }}</h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
+      <form #reportForm="ngForm" (ngSubmit)="reportForm.valid && submitReport()">
+        
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Target Warehouse Asset</label>
+          <select class="form-select fs-7 font-monospace fw-bold" [(ngModel)]="formModel.warehouseId" name="warehouseId" [disabled]="isEdit" required>
+            <option value="">-- Choose Target Depot --</option>
+            @for (wh of warehouses; track wh) { <option [value]="wh">{{ wh }}</option> }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Operation Report Date</label>
+          <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="formModel.reportDate" name="reportDate" [disabled]="isEdit" required>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Total Shifts Tasks Done</label>
+            <input type="number" class="form-control fs-7 font-monospace text-primary fw-bold" [(ngModel)]="formModel.totalTasksDone" name="totalTasksDone" min="0" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Damages / Issues Logged</label>
+            <input type="number" class="form-control fs-7 font-monospace text-danger fw-bold" [(ngModel)]="formModel.issuesLogged" name="issuesLogged" min="0" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Upload Operational Attachment Proof (Image)</label>
+          <input type="file" class="form-control fs-7" (change)="onFileSelected($event)" accept="image/*">
+          <small class="text-muted fs-9 d-block mt-1">Accepts PNG, JPG, JPEG formats up to system storage quota.</small>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">EOD Operational Summary</label>
+          <textarea class="form-control fs-7" [(ngModel)]="formModel.summary" name="summary" rows="4" placeholder="Brief workflow overview..." required></textarea>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-primary text-white flex-grow-1 py-2.5 fw-bold fs-7 text-uppercase" type="submit">
+            <i class="bi bi-cloud-upload-fill me-1"></i> {{ isEdit ? 'Patch Operation Audit' : 'Deploy Manifest & Notify' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="resetForm()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (isDrawerOpen) {
+    <div class="drawer-backdrop" (click)="closeDrawer()"></div>
+  }
+
+</div>

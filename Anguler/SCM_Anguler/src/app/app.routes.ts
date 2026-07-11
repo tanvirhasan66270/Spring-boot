@@ -26,6 +26,14 @@ import { VeryfyEmailComponent } from './auth/auth_component/veryfy-email.compone
 import { RoleDeriectComponent } from './auth/auth_component/role-deriect.component/role-deriect.component';
 import { Routes } from '@angular/router';
 import { CustomerDashboardComponent } from './component/dashboard/customer-dashboard.component/customer-dashboard.component';
+import { ManagerDashboardComponent } from './component/dashboard/manager-dashboard/manager-dashboard.component';
+import { ProcurementDashboardComponent } from './component/dashboard/procurement-dashboard/procurement-dashboard.component';
+import { QCInspectorDashboardComponent } from './component/dashboard/qc-inspector-dashboard/qc-inspector-dashboard.component';
+import { LogisticsDashboardComponent } from './component/dashboard/logistics-dashboard/logistics-dashboard.component';
+import { CommercialDashboardComponent } from './component/dashboard/commercial-dashboard/commercial-dashboard.component';
+import { SalesDashboardComponent } from './component/dashboard/sales-dashboard/sales-dashboard.component';
+import { DriverDashboardComponent } from './component/dashboard/driver-dashboard/driver-dashboard.component';
+import { SupplierDashboardComponent } from './component/dashboard/supplier-dashboard/supplier-dashboard.component';
 import { PurchaseRequisitionComponent } from './component/features/purchase-requisition.component/purchase-requisition.component';
 import { QuatationComponent } from './component/features/quatation.component/quatation.component';
 import { PurchaseOrderComponent } from './component/features/purchase-order.component/purchase-order.component';
@@ -39,15 +47,37 @@ import { InventoryComponent } from './component/features/inventory.component/inv
 import { StockMovementComponent } from './component/features/stock-movement.component/stock-movement.component';
 import { InvoiceComponent } from './component/features/invoice.component/invoice.component';
 import { DeliveryTripComponent } from './component/features/delivery-trip.component/delivery-trip.component';
+import { VehicleComponent } from './component/features/vehicle.component/vehicle.component';
+import { DailyReportComponent } from './component/features/daley-report.component/daley-report.component';
+import { NotificationComponent } from './system/component/notification.component/notification.component';
+import { MassageComponent } from './system/component/massage.component/massage.component';
+import { ActivityLogComponent } from './component/features/activity.log.component/activity.log.component';
+import { PublicLayoutComponent } from './component/public/public-layout/public-layout.component';
+import { PublicLandingComponent } from './component/public/public-landing/public-landing.component';
+import { PublicAboutComponent } from './component/public/public-about/public-about.component';
+import { PublicServicesComponent } from './component/public/public-services/public-services.component';
+import { PublicNetworkComponent } from './component/public/public-network/public-network.component';
+import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
 
 
 export const routes: Routes = [
 
   {
     path: '',
+    component: PublicLayoutComponent,
+    children: [
+      { path: '', component: PublicLandingComponent },
+      { path: 'about', component: PublicAboutComponent },
+      { path: 'services', component: PublicServicesComponent },
+      { path: 'network', component: PublicNetworkComponent },
+      { path: 'contact', component: PublicContactComponent },
+    ]
+  },
+  {
+    path: '',
     component: BlankLayoutComponent,
     children: [
-      { path: '', redirectTo: 'country', pathMatch: 'full' },
+      { path: 'country-redirect', redirectTo: 'country', pathMatch: 'full' },
       { path: 'customer', component: CustomerComponent },
       { path: 'commercial-officer', component: CommercialOfficerComponent },
       { path: 'driver', component: DriverComponent },
@@ -57,9 +87,6 @@ export const routes: Routes = [
       { path: 'sales-officer', component: SalesOfficerComponent },
       { path: 'supplier', component: SupplierComponent },
       { path: 'procurement', component: ProcourmentComponent },
-      { path: 'category', component: CategoryComponent },
-      { path: 'product', component: AddProductComponent },
-    
       { path: 'login', component: LoginComponent },
       { path: 'forgot-password', component: ForgetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
@@ -74,8 +101,19 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
-       { path: 'order', component: CustomerOrderComponent },
-      { path: 'dashboard', component:RoleDeriectComponent  },
+      { path: 'product', component: AddProductComponent },
+      { path: 'category', component: CategoryComponent },
+      { path: 'order', component: CustomerOrderComponent },
+      { path: 'dashboard', component: RoleDeriectComponent },
+      { path: 'dashboard/customer', component: CustomerDashboardComponent },
+      { path: 'dashboard/manager', component: ManagerDashboardComponent },
+      { path: 'dashboard/procurement', component: ProcurementDashboardComponent },
+      { path: 'dashboard/qc-inspector', component: QCInspectorDashboardComponent },
+      { path: 'dashboard/logistics', component: LogisticsDashboardComponent },
+      { path: 'dashboard/commercial', component: CommercialDashboardComponent },
+      { path: 'dashboard/sales', component: SalesDashboardComponent },
+      { path: 'dashboard/driver', component: DriverDashboardComponent },
+      { path: 'dashboard/supplier', component: SupplierDashboardComponent },
       { path: 'country', component: CountryComponent },
       { path: 'division', component: Division },
       { path: 'district', component: DistrictComponent },
@@ -95,19 +133,19 @@ export const routes: Routes = [
       { path: 'inventory', component: InventoryComponent },
       { path: 'stock-movement', component: StockMovementComponent },
       { path: 'invoice', component: InvoiceComponent },
-      { path: 'delivery-trip', component: DeliveryTripComponent }
+      { path: 'delivery-trip', component: DeliveryTripComponent },
+      { path: 'vehicle', component: VehicleComponent },
+      { path: 'daily-report', component: DailyReportComponent },
+      { path: 'notifications', component: NotificationComponent },
+      { path: 'messages', component: MassageComponent },
+      { path: 'activity-log', component: ActivityLogComponent }
+      
+
       // { path: '**', redirectTo: 'good-received-note' }
 
 
     ]
   }
-
-
-
-
-
-
-
 
 
 

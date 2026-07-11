@@ -1,0 +1,120 @@
+<div class="container-fluid py-4 px-4">
+
+  <!-- Header Banner -->
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+    <div>
+      <h4 class="text-dark fw-bold mb-1"><i class="bi bi-mailbox2 text-primary me-2"></i>SCM Enterprise Message Nexus</h4>
+      <p class="text-muted mb-0 small">Active Node Security Context Role: <span class="badge bg-dark font-monospace">{{ currentUserRole }}</span></p>
+    </div>
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm text-white fs-7" (click)="openDrawer()">
+      <i class="bi bi-envelope-plus me-2"></i>Compose Secure Mail
+    </button>
+  </div>
+
+  @if (errorMessage) {
+    <div class="alert alert-danger shadow-sm mb-4 fs-7">{{ errorMessage }}</div>
+  }
+
+  <!-- Data Table Inbox -->
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-7">
+          <thead class="table-light text-uppercase fs-8 fw-bold text-secondary">
+            <tr>
+              <th class="ps-4">Sender Profile</th>
+              <th>Subject Line</th>
+              <th>Message Snippet</th>
+              <th>Priority</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of messages; track m.id) {
+              <tr (click)="openMessage(m)" style="cursor: pointer;" [class.unread-row]="m.status === 'UNREAD'">
+                <td class="ps-4">
+                  <div [class.fw-bold]="m.status === 'UNREAD'" class="text-dark">
+                    <i class="bi bi-envelope-fill me-2" [ngClass]="m.status === 'UNREAD' ? 'text-primary' : 'text-muted'"></i>
+                    {{ m.senderName }}
+                  </div>
+                </td>
+                <td><span [class.fw-bold]="m.status === 'UNREAD'">{{ m.subject }}</span></td>
+                <td><small class="text-muted text-truncate d-block" style="max-width: 280px;">{{ m.body }}</small></td>
+                <td>
+                  <span class="badge rounded-pill px-2.5 py-1 fs-9"
+                    [ngClass]="{
+                      'bg-danger': m.priority === 'HIGH',
+                      'bg-warning text-dark': m.priority === 'MEDIUM',
+                      'bg-secondary': m.priority === 'LOW'
+                    }">
+                    {{ m.priority }}
+                  </span>
+                </td>
+                <td><small class="text-muted font-monospace">{{ m.createdAt | date:'MM-dd HH:mm:ss' }}</small></td>
+              </tr>
+            }
+            @empty {
+              <tr>
+                <td colspan="5" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-folder-x fs-1 d-block mb-2 text-secondary"></i>No messages routed to this identity node.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sliding Drawer Form -->
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+    <div class="drawer-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2"></i>Create Message Stream</h5>
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+    </div>
+
+    <div class="drawer-body p-4">
+      <form #msgForm="ngForm" (ngSubmit)="msgForm.valid && submitMessage()">
+        
+        @if (canSelectUser()) {
+          <div class="mb-3">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Target Recipient Personnel</label>
+            <select class="form-select fs-7" [(ngModel)]="formModel.recipientId" name="recipientId" required>
+              <option value="">-- Choose User Identity --</option>
+              @for (u of availableUsers; track u.id) {
+                <option [value]="u.id">👤 {{ u.name }}</option>
+              }
+            </select>
+          </div>
+        } @else {
+          <div class="alert alert-warning py-2 px-3 fs-8 font-monospace mb-3 border-0 shadow-xs">
+            <i class="bi bi-shield-lock-fill me-1 text-warning"></i> <b>System Automation Rule:</b> Your messages will be auto-routed securely to matching authority clusters based on your context.
+          </div>
+        }
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Subject</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="formModel.subject" name="subject" placeholder="Operational summary topic..." required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Priority Level</label>
+          <select class="form-select fs-7" [(ngModel)]="formModel.priority" name="priority">
+            <option value="LOW">🔵 LOW TIED BACKGROUND</option>
+            <option value="MEDIUM">🟡 MEDIUM REGULAR TASK</option>
+            <option value="HIGH">🔴 HIGH CRITICAL FAULT</option>
+          </select>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Message Core Body</label>
+          <textarea class="form-control fs-7" [(ngModel)]="formModel.body" name="body" rows="5" placeholder="Elaborate details documentation..." required></textarea>
+        </div>
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-primary text-white flex-grow-1 py-2 fw-bold text-uppercase fs-7" type="submit">Route Mail Manifest</button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="closeDrawer()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  @if (isDrawerOpen) { <div class="drawer-backdrop" (click)="closeDrawer()"></div> }
+</div>

@@ -1,0 +1,61 @@
+<div class="public-contact py-5">
+  <div class="container-fluid px-5">
+    
+    <div class="text-center mb-5">
+      <h1 class="fw-extrabold text-dark tracking-tight mb-2">Contact Global SCM Pro</h1>
+      <p class="text-secondary">Submit a support request or find local SCM offices below.</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Contact Form -->
+      <div class="col-md-7">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4">
+          <h4 class="fw-bold text-dark mb-4">Send a Message</h4>
+          
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">Full Name *</label>
+              <input type="text" class="form-control" placeholder="John Doe" [(ngModel)]="feedback.name">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold text-secondary">Email Address *</label>
+              <input type="email" class="form-control" placeholder="john@example.com" [(ngModel)]="feedback.email">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold text-secondary">Subject</label>
+              <input type="text" class="form-control" placeholder="Cargo Quotation, Sourcing request" [(ngModel)]="feedback.subject">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold text-secondary">Detailed Message *</label>
+              <textarea class="form-control" rows="4" placeholder="How can our logistics agents assist you today?" [(ngModel)]="feedback.message"></textarea>
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <button class="btn btn-primary px-4 rounded-3" (click)="submitForm()">Send Message</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hotlines/Offices -->
+      <div class="col-md-5">
+        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+          <h4 class="fw-bold text-dark mb-3">Support Hotlines</h4>
+          
+          <div class="p-3 bg-light rounded-3 mb-3 border-start border-3 border-primary">
+            <strong class="text-dark small d-block">Dhaka HQ Office</strong>
+            <small class="text-secondary font-monospace d-block">Tel: +880 9612 88990</small>
+            <small class="text-secondary font-monospace">Email: support&#64;globalscm.pro</small>
+          </div>
+          
+          <div class="p-3 bg-light rounded-3 border-start border-3 border-success">
+            <strong class="text-dark small d-block">Singapore Logistics Hub</strong>
+            <small class="text-secondary font-monospace d-block">Tel: +65 6712 9011</small>
+            <small class="text-secondary font-monospace">Email: sg-hub&#64;globalscm.pro</small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

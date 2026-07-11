@@ -1,0 +1,7 @@
+.public-services {
+  background-color: #f8fafc;
+}
+
+body.dark-theme .public-services {
+  background-color: #0f172a;
+}

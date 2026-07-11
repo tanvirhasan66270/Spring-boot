@@ -1,0 +1,32 @@
+.hero-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  overflow: hidden;
+}
+
+.text-primary-glow {
+  color: #3b82f6;
+  text-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+}
+
+.service-hover {
+  transition: all 0.25s ease;
+}
+
+.service-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06) !important;
+  border-top: 3px solid #0B5ED7 !important;
+}
+
+.placeholder-white\/50::placeholder {
+  color: rgba(255,255,255,0.5) !important;
+}
+
+body.dark-theme .bg-white {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+body.dark-theme .text-dark {
+  color: #f8fafc !important;
+}

@@ -16,4 +16,5 @@ public class VehicleResponseDTO {
     private Long driverId;
     private String driverName;
     private String driverPhone;
+    private String driverEmail;
 }

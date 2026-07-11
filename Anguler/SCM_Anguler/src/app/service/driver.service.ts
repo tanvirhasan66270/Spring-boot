@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../encironment/environment'; // স্পেলিং প্রজেক্ট অনুযায়ী
+import { environment } from '../../environment/environment'; // স্পেলিং প্রজেক্ট অনুযায়ী
 import { HttpClient } from '@angular/common/http';
 import { DriverRequestModel, DriverResponseModel } from '../component/shared/model/driverModel';
 

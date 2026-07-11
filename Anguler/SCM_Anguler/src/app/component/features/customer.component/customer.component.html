@@ -1,5 +1,80 @@
 <div class="container-fluid px-4 mt-4">
 
+  <!-- ==================== HEADER SECTION ==================== -->
+  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+    <div>
+      <h4 class="mb-1 text-dark fw-bold">Customer Management Hub</h4>
+      <p class="text-muted mb-0 small">Administer global enterprise customer registers, track geographic indices, and regulate credentials.</p>
+    </div>
+    <!-- বাটন টেক্সটটি 'Customer List' থেকে 'Add New Customer' করা হলো (লজিক্যাল ভিউয়ের জন্য) -->
+    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
+      <i class="bi bi-plus-circle-fill"></i> Add New Customer
+    </button>
+  </div>
+
+  <!-- ==================== DATA TABLE SECTION ==================== -->
+  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-uppercase fs-7 tracking-wider">
+            <tr>
+              <th class="ps-4" width="80">ID</th>
+              <th>Customer Details</th>
+              <th>Demographics (NID)</th>
+              <th>Aggregated Address String</th>
+              <th class="text-end pe-4" width="160">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of customers" class="transition-all">
+              <td class="ps-4 text-muted fw-medium font-monospace">#{{ c.id }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 40px; height: 40px; flex-shrink: 0;">
+                    <img *ngIf="c.image" [src]="getImageUrl(c.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
+                    <i *ngIf="!c.image || !isImageAvailable(c.image)" class="bi bi-person-fill fs-5 text-secondary"></i>
+                  </div>
+                  <div>
+                    <span class="fw-semibold text-dark d-block mb-0.5">{{ c.name }}</span>
+                    <span class="text-secondary small d-block"><i class="bi bi-envelope me-1"></i>{{ c.email }}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="d-block small text-dark fw-bold font-monospace">{{ c.nidNumber }}</span>
+                <span class="text-muted small"><i class="bi bi-telephone-fill me-1"></i>{{ c.phone }}</span>
+              </td>
+              <td>
+                <span class="text-dark small fw-medium d-block text-truncate" style="max-width: 250px;" [title]="c.address">
+                  {{ c.address }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-icon btn-light border-0 text-warning" title="Edit Customer" (click)="edit(c)">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Record" (click)="delete(c.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="!customers || customers.length === 0">
+              <td colspan="5" class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+                No records found in the customer registry.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RIGHT SLIDE DRAWER SYSTEM ==================== -->
+  <!-- (টেবিলের বাইরে স্বাধীনভাবে রাখার কারণে এটি আর লেআউট ভাঙবে না) -->
   <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
 
   <div class="slide-drawer" [class.show]="isDrawerOpen">
@@ -14,6 +89,7 @@
     <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
       <form (ngSubmit)="save()">
         
+        <!-- Profile Image Wrapper -->
         <div class="mb-3 text-center p-3 bg-light rounded-3 border">
           <label class="form-label fw-semibold text-secondary small text-uppercase d-block mb-2">Profile Image</label>
           <div class="position-relative d-inline-block mb-2">
@@ -28,6 +104,7 @@
           <input #fileInput type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
         </div>
 
+        <!-- Input Fields -->
         <div class="mb-3">
           <label class="form-label fw-semibold text-secondary small text-uppercase">Customer Full Name</label>
           <div class="input-group">
@@ -89,6 +166,7 @@
           </select>
         </div>
 
+        <!-- Address Engine Hierarchies -->
         <div class="p-3 bg-light rounded-3 mb-3 border shadow-sm">
           <span class="fw-bold d-block text-dark small text-uppercase mb-3 text-primary">
             <i class="bi bi-geo-alt-fill me-1"></i> Territorial Distribution Hierarchy
@@ -144,76 +222,6 @@
           <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
-    <div>
-      <h4 class="mb-1 text-dark fw-bold">Customer Management Hub</h4>
-      <p class="text-muted mb-0 small">Administer global enterprise customer registers, track geographic indices, and regulate credentials.</p>
-    </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
-      <i class="bi bi-plus-circle-fill"></i> Customer List
-    </button>
-  </div>
-
-  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-uppercase fs-7 tracking-wider">
-            <tr>
-              <th class="ps-4" width="80">ID</th>
-              <th>Customer Details</th>
-              <th>Demographics (NID)</th>
-              <th>Aggregated Address String</th>
-              <th class="text-end pe-4" width="160">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let c of customers" class="transition-all">
-              <td class="ps-4 text-muted fw-medium font-monospace">#{{ c.id }}</td>
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 40px; height: 40px;">
-                    <img *ngIf="c.image" [src]="getImageUrl(c.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
-                    <i *ngIf="!c.image || !isImageAvailable(c.image)" class="bi bi-person-fill fs-5 text-secondary"></i>
-                  </div>
-                  <div>
-                    <span class="fw-semibold text-dark d-block mb-0.5">{{ c.name }}</span>
-                    <span class="text-secondary small d-block"><i class="bi bi-envelope me-1"></i>{{ c.email }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="d-block small text-dark fw-bold font-monospace">{{ c.nidNumber }}</span>
-                <span class="text-muted small"><i class="bi bi-telephone-fill me-1"></i>{{ c.phone }}</span>
-              </td>
-              <td>
-                <span class="text-dark small fw-medium d-block text-truncate" style="max-width: 320px;" [title]="c.address">
-                  {{ c.address }}
-                </span>
-              </td>
-              <td class="text-end pe-4">
-                <div class="d-flex justify-content-end gap-2">
-                  <button class="btn btn-icon btn-light border-0 text-warning" title="Edit Customer" (click)="edit(c)">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Record" (click)="delete(c.id)">
-                    <i class="bi bi-trash3-fill"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="!customers || customers.length === 0">
-              <td colspan="5" class="text-center py-5 text-muted">
-                <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
-                No records found in the customer registry.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 

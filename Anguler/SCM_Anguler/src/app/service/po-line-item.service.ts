@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../encironment/environment';
+import { environment } from '../../environment/environment';
 import { POLineItemRequestDTO, POLineItemResponseDTO } from '../component/shared/model/pOLineItemModel';
 
 @Injectable({

@@ -1,19 +1,19 @@
-<app-header></app-header>
+<!-- ১. সাইডবারকে সবার আগে রাখতে হবে, যেন এটি বামপাশে উপর থেকে নিচ পর্যন্ত জায়গা নেয় -->
+<app-sidebar></app-sidebar>
 
+<!-- ২. এই লেআউট ডিভের ভেতরে ডানপাশের সবকিছু (হেডার + কন্টেন্ট) থাকবে -->
 <div class="app-layout">
 
-  <app-sidebar></app-sidebar>
+  <!-- হেডার এখন সাইডবারের ডানপাশ থেকে শুরু হবে -->
+  <app-header></app-header>
 
+  <!-- মেইন কন্টেন্ট এরিয়া -->
   <main class="content">
-
     <div class="page-body">
-
       <router-outlet></router-outlet>
-
     </div>
-
+    
     <app-footer></app-footer>
-
   </main>
 
 </div>

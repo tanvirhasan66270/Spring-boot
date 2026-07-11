@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../encironment/environment';
+import { environment } from '../../../environment/environment';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { ForgotPasswordRequest, LoginRequest, LoginResponse, ResetPasswordRequest } from '../Model/authModel';

@@ -1,6 +1,7 @@
 package com.example.SCM.dto.request;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class DailyReportRequestDTO {
@@ -9,5 +10,5 @@ public class DailyReportRequestDTO {
     private int totalTasksDone;
     private int issuesLogged;
     private String summary;
-    private String attachmentUrl;
+    private MultipartFile attachment;
 }

@@ -15,14 +15,20 @@ import com.example.SCM.service.DailyReportService;
 import com.example.SCM.service.ActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,12 +42,21 @@ public class DailyReportServiceImp implements DailyReportService {
     private final UserRepository userRepository;
     private final HttpServletRequest request;
 
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
+
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
-        return (userId != null && !userId.isBlank()) ? userId : "16";
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+        return "UNKNOWN_USER";
     }
-
-
     @Transactional
     @Override
     public DailyReportResponseDTO save(DailyReportRequestDTO dto) {
@@ -54,15 +69,18 @@ public class DailyReportServiceImp implements DailyReportService {
 
         DailyReport report = reportMapper.toEntity(dto);
         report.setUserId(resolveCurrentUserId());
-
-        // ইনিশিয়াল স্টেট সবসময় ইন্টারনালি DRAFT থাকবে
         report.setReportStatus(ReportStatus.DRAFT);
+
+        // 🎯 ফিক্স: ইমেজ/ফাইল আপলোড প্রসেসিং চেইন
+        if (dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
+            String savedFilePath = uploadFile(dto.getAttachment(), "reports");
+            report.setAttachmentUrl(savedFilePath);
+        }
+
         DailyReport savedReport = reportRepository.save(report);
 
-        // রোল-বেসড ম্যানেজার ও এডমিনদের ইমেইল পাঠানো
         List<Map<String, String>> notifiedList = sendReportToManagersAndAdmins(savedReport);
 
-        // মেইল সফলভাবে সেন্ট হলে স্ট্যাটাস অটোমেটিক SUBMITTED হবে
         if (notifiedList != null && !notifiedList.isEmpty()) {
             savedReport.setReportStatus(ReportStatus.SUBMITTED);
             savedReport = reportRepository.save(savedReport);
@@ -72,21 +90,14 @@ public class DailyReportServiceImp implements DailyReportService {
         responseDTO.setNotifiedAuthorities(notifiedList);
 
         activityLogService.log(
-                resolveCurrentUserId(),
-                null,
-                "CREATE",
-                "DAILY_REPORT",
+                resolveCurrentUserId(), null, "CREATE", "DAILY_REPORT",
                 savedReport.getId().toString(),
                 "Logistics Officer generated daily operational report for Node: " + savedReport.getWarehouseId(),
-                null,
-                savedReport.getReportStatus().toString(),
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
+                null, savedReport.getReportStatus().toString(), ActionStatus.SUCCESS, request.getRemoteAddr()
         );
 
         return responseDTO;
     }
-
 
     @Transactional
     @Override
@@ -94,7 +105,6 @@ public class DailyReportServiceImp implements DailyReportService {
         DailyReport report = reportRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Report index missing for ID: " + id));
 
-        // রুল ফিক্সড: শুধুমাত্র APPROVED হয়ে গেলে কোনো ডেটাই আর আপডেট করা যাবে না
         if (report.getReportStatus() == ReportStatus.APPROVED) {
             throw new RuntimeException("Locked! Approved records cannot be updated.");
         }
@@ -104,27 +114,26 @@ public class DailyReportServiceImp implements DailyReportService {
         if (dto.getSummary() != null) report.setSummary(dto.getSummary());
         if (dto.getTotalTasksDone() > 0) report.setTotalTasksDone(dto.getTotalTasksDone());
         if (dto.getIssuesLogged() >= 0) report.setIssuesLogged(dto.getIssuesLogged());
-        if (dto.getAttachmentUrl() != null) report.setAttachmentUrl(dto.getAttachmentUrl());
+
+        // 🎯 ফিক্স: আপডেট করার সময় নতুন ফাইল দিলে পুরনোটা রিপ্লেস হবে
+        if (dto.getAttachment() != null && !dto.getAttachment().isEmpty()) {
+            String savedFilePath = uploadFile(dto.getAttachment(), "reports");
+            report.setAttachmentUrl(savedFilePath);
+        }
 
         DailyReport updatedReport = reportRepository.save(report);
         DailyReportResponseDTO responseDTO = reportMapper.convertTOResponseDTO(updatedReport);
 
         activityLogService.log(
-                resolveCurrentUserId(),
-                null,
-                "UPDATE",
-                "DAILY_REPORT",
+                resolveCurrentUserId(), null, "UPDATE", "DAILY_REPORT",
                 updatedReport.getId().toString(),
                 "Daily report parameters modified for Node: " + updatedReport.getWarehouseId(),
-                "{\"summary\":\"" + oldSummary + "\"}",
-                "{\"summary\":\"" + updatedReport.getSummary() + "\"}",
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
+                "{\"summary\":\"" + oldSummary + "\"}", "{\"summary\":\"" + updatedReport.getSummary() + "\"}",
+                ActionStatus.SUCCESS, request.getRemoteAddr()
         );
 
         return responseDTO;
     }
-
 
     @Transactional
     @Override
@@ -138,21 +147,14 @@ public class DailyReportServiceImp implements DailyReportService {
         String finalApprover = (approvedByUserId != null) ? approvedByUserId : resolveCurrentUserId();
 
         activityLogService.log(
-                finalApprover,
-                null,
-                "APPROVE",
-                "DAILY_REPORT",
+                finalApprover, null, "APPROVE", "DAILY_REPORT",
                 approvedReport.getId().toString(),
-                "Report officially APPROVED via Manager One-Click Email Gateway for Warehouse: " + approvedReport.getWarehouseId(),
-                "{\"status\":\"SUBMITTED\"}",
-                "{\"status\":\"APPROVED\"}",
-                ActionStatus.SUCCESS,
-                request.getRemoteAddr()
+                "Report officially APPROVED via Manager Gateway for Warehouse: " + approvedReport.getWarehouseId(),
+                "{\"status\":\"SUBMITTED\"}", "{\"status\":\"APPROVED\"}", ActionStatus.SUCCESS, request.getRemoteAddr()
         );
 
         return reportMapper.convertTOResponseDTO(approvedReport);
     }
-
 
     private List<Map<String, String>> sendReportToManagersAndAdmins(DailyReport report) {
         List<Map<String, String>> successfullyNotified = new ArrayList<>();
@@ -169,6 +171,7 @@ public class DailyReportServiceImp implements DailyReportService {
             try {
                 if (user.getEmail() != null) {
                     String approvalUrl = "http://localhost:8085/api/reports/email-approve?id=" + report.getId() + "&approverId=" + user.getId();
+                    String fileDownloadUrl = report.getAttachmentUrl() != null ? "http://localhost:8085/" + report.getAttachmentUrl() : "#";
 
                     String mailContent = """
                     <!DOCTYPE html>
@@ -205,7 +208,7 @@ public class DailyReportServiceImp implements DailyReportService {
                                     <tr><td class='label'>Operation Date:</td><td><b>%s</b></td></tr>
                                     <tr><td class='label'>Total Tasks Processed:</td><td><span style='color:#2B6CB0; font-weight:bold;'>%d Transactions</span></td></tr>
                                     <tr><td class='label'>Issues / Damages Logged:</td><td><span style='color:#C53030; font-weight:bold;'>%d Counter(s)</span></td></tr>
-                                    <tr><td class='label'>Attachment Vault:</td><td><a href='%s' style='color:#2B6CB0;'>Download Manifest PDF</a></td></tr>
+                                    <tr><td class='label'>Attachment Vault:</td><td><a href='%s' style='color:#2B6CB0; font-weight:bold;'>View Uploaded Image Proof</a></td></tr>
                                 </table>
                                 
                                 <h4 style='margin-bottom:5px; color:#4A5568;'>Operational Summary Notes:</h4>
@@ -214,7 +217,6 @@ public class DailyReportServiceImp implements DailyReportService {
                                 <div class='approve-btn-container'>
                                     <a href='%s' class='approve-btn'>✔ APPROVE THIS REPORT</a>
                                 </div>
-                                <p style='text-align:center; font-size:12px; color:#A0AEC0; margin-top:5px;'>Clicking the button above will instantly stamp the APPROVED status in database.</p>
                             </div>
                             <div class='footer'>&copy; SCM Global Sourcing Network. All rights reserved.</div>
                         </div>
@@ -223,8 +225,7 @@ public class DailyReportServiceImp implements DailyReportService {
                     """.formatted(
                             user.getName(), report.getUserId(), report.getWarehouseId(),
                             report.getReportDate().toString(), report.getTotalTasksDone(), report.getIssuesLogged(),
-                            report.getAttachmentUrl() != null ? report.getAttachmentUrl() : "#", report.getSummary(),
-                            approvalUrl
+                            fileDownloadUrl, report.getSummary(), approvalUrl
                     );
 
                     mailService.senderGeneralMail(user.getEmail(), subject, mailContent);
@@ -237,35 +238,38 @@ public class DailyReportServiceImp implements DailyReportService {
                     successfullyNotified.add(authorityInfo);
                 }
             } catch (Exception e) {
-                System.err.println("Skipping failed mail route for node: " + user.getEmail());
+                System.err.println("Skipping failed mail route: " + user.getEmail());
             }
         }
         return successfullyNotified;
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<DailyReportResponseDTO> findAll() {
-        return reportRepository.findAll().stream().map(reportMapper::convertTOResponseDTO).collect(Collectors.toList());
+    // 🎯 ফাইল সেভিং ইউটিলিটি লজিক
+    private String uploadFile(MultipartFile file, String subFolder) {
+        try {
+            Path path = Paths.get(uploadDir, subFolder);
+            if (!Files.exists(path)) Files.createDirectories(path);
+            String fileName = subFolder.toUpperCase() + "_" + UUID.randomUUID() + "_" + file.getOriginalFilename();
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            return subFolder + "/" + fileName;
+        } catch (Exception e) {
+            throw new RuntimeException("Report file syncing operational exception: " + e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Optional<DailyReportResponseDTO> getById(Long id) {
-        return reportRepository.findById(id).map(reportMapper::convertTOResponseDTO);
-    }
+    public List<DailyReportResponseDTO> findAll() { return reportRepository.findAll().stream().map(reportMapper::convertTOResponseDTO).collect(Collectors.toList()); }
 
     @Transactional(readOnly = true)
     @Override
-    public List<DailyReportResponseDTO> getByWarehouse(String warehouseId) {
-        return reportRepository.findByWarehouseIdOrderByReportDateDesc(warehouseId).stream()
-                .map(reportMapper::convertTOResponseDTO).collect(Collectors.toList());
-    }
+    public Optional<DailyReportResponseDTO> getById(Long id) { return reportRepository.findById(id).map(reportMapper::convertTOResponseDTO); }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<DailyReportResponseDTO> getByWarehouse(String warehouseId) { return reportRepository.findByWarehouseIdOrderByReportDateDesc(warehouseId).stream().map(reportMapper::convertTOResponseDTO).collect(Collectors.toList()); }
 
     @Transactional
     @Override
-    public void delete(Long id) {
-        reportRepository.deleteById(id);
-    }
-
+    public void delete(Long id) { reportRepository.deleteById(id); }
 }

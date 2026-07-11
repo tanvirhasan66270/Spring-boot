@@ -23,6 +23,7 @@ public class DeliveryTripResponseDTO {
 
     private Long driverId;
     private String driverName;
+    private String driverPhone;
     private String driverEmail;
 
     private Long vehicleId;
