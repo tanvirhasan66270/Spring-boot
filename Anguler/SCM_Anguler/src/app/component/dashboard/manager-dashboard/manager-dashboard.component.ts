@@ -15,7 +15,7 @@ import { LoginResponse } from '../../../auth/Model/authModel';
 })
 export class ManagerDashboardComponent implements OnInit {
   userName = '';
-  
+
   kpis = [
     { label: 'Total Revenue', value: '৳4.8M', trend: 14, icon: 'bi-graph-up-arrow', color: 'success' },
     { label: 'Monthly Expenses', value: '৳1.9M', trend: -2, icon: 'bi-cash-stack', color: 'danger' },
@@ -39,7 +39,7 @@ export class ManagerDashboardComponent implements OnInit {
 
   userId!: number;
 
-  manager: ManagerResponseModel | null= null;
+  manager: ManagerResponseModel | null = null;
 
   user: LoginResponse | null = null;
 
@@ -49,38 +49,34 @@ export class ManagerDashboardComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private managerService: ManagerService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
+
     const user = this.storage.getUser();
 
-        console.log(this.user)
-
-    if (user) {
-      this.userName = user.name || 'Manager';
+    if (!user) {
+      return;
     }
 
+    this.userName = user.name;
+    this.userId = user.userId;
 
-    if (this.user?.userId) {
-      this.userId = this.user.userId;
-    }
-
-    console.log(this.userId)
-
+    console.log(this.userId);
 
     this.loadManager();
-
   }
 
 
   loadManager(): void {
+    console.log("User ID: " + this.userId)
     this.managerService.getManagerByUserId(this.userId).subscribe({
       next: (res) => {
         this.manager = res;
         console.log(this.manager);
         this.storage.saveData(KEYS.MANAGER, res);
         this.cdr.markForCheck();
-       
+
       },
       error: (err) => console.log(err)
     });

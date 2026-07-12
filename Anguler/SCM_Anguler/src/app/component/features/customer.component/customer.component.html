@@ -1,228 +1,284 @@
-<div class="container-fluid px-4 mt-4">
+<div class="container-fluid py-4 px-4 bg-light min-vh-100">
 
-  <!-- ==================== HEADER SECTION ==================== -->
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+  <!-- Core Page Header Banner -->
+  <div
+    class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
-      <h4 class="mb-1 text-dark fw-bold">Customer Management Hub</h4>
-      <p class="text-muted mb-0 small">Administer global enterprise customer registers, track geographic indices, and regulate credentials.</p>
+      <h4 class="text-dark fw-bold mb-1"><i class="bi bi-people-fill text-primary me-2"></i>Customer Registry Node</h4>
+      <p class="text-muted mb-0 small">Manage global customer accounts, verified authentication access, and location
+        matrix indexes.</p>
     </div>
-    <!-- বাটন টেক্সটটি 'Customer List' থেকে 'Add New Customer' করা হলো (লজিক্যাল ভিউয়ের জন্য) -->
-    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
-      <i class="bi bi-plus-circle-fill"></i> Add New Customer
+    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm text-white fs-7" (click)="openDrawer()">
+      <i class="bi bi-person-plus-fill me-2"></i>Add New Customer
     </button>
   </div>
 
-  <!-- ==================== DATA TABLE SECTION ==================== -->
-  <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+  <!-- Data Display Frame Grid -->
+  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead class="table-light text-uppercase fs-7 tracking-wider">
+        <table class="table table-hover align-middle mb-0 fs-7.5">
+          <thead class="table-light text-uppercase fs-8 fw-bold text-secondary">
             <tr>
-              <th class="ps-4" width="80">ID</th>
-              <th>Customer Details</th>
-              <th>Demographics (NID)</th>
-              <th>Aggregated Address String</th>
-              <th class="text-end pe-4" width="160">Actions</th>
+              <th class="ps-4">Avatar</th>
+              <th>Identity Details</th>
+              <th>Contact Matrix</th>
+              <th>NID & Demographics</th>
+              <th>Assigned Node Location</th>
+              <th class="text-center pe-4">Actions Matrix</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let c of customers" class="transition-all">
-              <td class="ps-4 text-muted fw-medium font-monospace">#{{ c.id }}</td>
-              <td>
-                <div class="d-flex align-items-center">
-                  <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 40px; height: 40px; flex-shrink: 0;">
-                    <img *ngIf="c.image" [src]="imageBaseUrl+c?.image" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
-                    <i *ngIf="!c.image || !isImageAvailable(c.image)" class="bi bi-person-fill fs-5 text-secondary"></i>
-                  </div>
-                  <div>
-                    <span class="fw-semibold text-dark d-block mb-0.5">{{ c.name }}</span>
-                    <span class="text-secondary small d-block"><i class="bi bi-envelope me-1"></i>{{ c.email }}</span>
-                  </div>
+            @for (c of customers; track c.id) {
+            <tr>
+              <td class="ps-4">
+                @if (isImageAvailable(c.image)) {
+                <div class="avatar-wrapper shadow-xs border rounded-circle"
+                  style="width: 42px; height: 42px; overflow: hidden;">
+                  <img [src]="imageBaseUrl+c?.image" (error)="onImageError($event)" alt="Profile"
+                    class="w-100 h-100 object-fit-cover">
                 </div>
+                } @else {
+                <div
+                  class="avatar-placeholder bg-secondary-subtle text-secondary font-monospace fw-bold rounded-circle d-flex align-items-center justify-content-center"
+                  style="width: 42px; height: 42px;">
+                  {{ c.name.substring(0, 2).toUpperCase() }}
+                </div>
+                }
               </td>
               <td>
-                <span class="d-block small text-dark fw-bold font-monospace">{{ c.nidNumber }}</span>
-                <span class="text-muted small"><i class="bi bi-telephone-fill me-1"></i>{{ c.phone }}</span>
+                <div class="fw-bold text-dark">{{ c.name }}</div>
+                <span class="badge bg-primary-subtle text-primary font-monospace fs-9">ID: #{{ c.id }}</span>
               </td>
               <td>
-                <span class="text-dark small fw-medium d-block text-truncate" style="max-width: 250px;" [title]="c.address">
-                  {{ c.address }}
-                </span>
+                <div class="small text-dark"><i class="bi bi-envelope-fill text-muted me-1"></i>{{ c.email }}</div>
+                <div class="small text-muted"><i class="bi bi-telephone-fill text-muted me-1"></i>{{ c.phone }}</div>
               </td>
-              <td class="text-end pe-4">
-                <div class="d-flex justify-content-end gap-2">
-                  <button class="btn btn-icon btn-light border-0 text-warning" title="Edit Customer" (click)="edit(c)">
-                    <i class="bi bi-pencil-square"></i>
+              <td>
+                <div class="small text-dark font-monospace">NID: {{ c.nidNumber }}</div>
+                <div class="small text-muted text-capitalize"><i class="bi bi-gender-ambiguous me-1"></i>{{ c.gender }}
+                  | {{ c.dob }}</div>
+              </td>
+              <td>
+                <div class="small fw-bold text-dark" [title]="c.address">
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ c.policeStationName || 'N/A' }}, {{
+                  c.districtName || 'N/A' }}
+                </div>
+                <small class="text-muted d-block text-truncate" style="max-width: 220px;">{{ c.address }}</small>
+              </td>
+              <td class="text-center pe-4">
+                <div class="d-flex justify-content-center gap-2">
+                  <button class="btn btn-sm btn-action-edit fs-8 px-2.5" (click)="edit(c)">
+                    <i class="bi bi-pencil-square me-1"></i>Modify
                   </button>
-                  <button class="btn btn-icon btn-light border-0 text-danger" title="Purge Record" (click)="delete(c.id)">
-                    <i class="bi bi-trash3-fill"></i>
+                  <button class="btn btn-sm btn-action-delete fs-8 px-2.5" (click)="delete(c.id)">
+                    <i class="bi bi-trash3 me-1"></i>Purge
                   </button>
                 </div>
               </td>
             </tr>
-            <tr *ngIf="!customers || customers.length === 0">
-              <td colspan="5" class="text-center py-5 text-muted">
-                <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
-                No records found in the customer registry.
+            }
+            @empty {
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted font-monospace fs-8">
+                <i class="bi bi-person-x fs-1 d-block mb-2 text-secondary"></i>No matching records resolved on current
+                customer node registry.
               </td>
             </tr>
+            }
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- ==================== RIGHT SLIDE DRAWER SYSTEM ==================== -->
-  <!-- (টেবিলের বাইরে স্বাধীনভাবে রাখার কারণে এটি আর লেআউট ভাঙবে না) -->
-  <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
-
-  <div class="slide-drawer" [class.show]="isDrawerOpen">
-    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h5 class="mb-1 fw-bold">{{ isEdit ? 'Modify Customer Nodes' : 'Configure New Customer' }}</h5>
-        <p class="mb-0 text-muted small">Establish consumer account parameters.</p>
-      </div>
+  <!-- Slide Compose Drawer Panel -->
+  <div class="custom-drawer shadow-lg" [class.open]="isDrawerOpen">
+    <div class="drawer-header bg-primary text-white p-4 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold mb-0">
+        <i class="bi bi-person-lines-fill me-2"></i>{{ isEdit ? 'Mutate Customer Profile' : 'Register New Customer' }}
+      </h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
     </div>
 
-    <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
-      <form (ngSubmit)="save()">
-        
-        <!-- Profile Image Wrapper -->
-        <div class="mb-3 text-center p-3 bg-light rounded-3 border">
-          <label class="form-label fw-semibold text-secondary small text-uppercase d-block mb-2">Profile Image</label>
-          <div class="position-relative d-inline-block mb-2">
-            <div class="avatar-md bg-white rounded-circle d-flex align-items-center justify-content-center overflow-hidden border" style="width: 85px; height: 85px; margin: 0 auto;">
-              <img *ngIf="imagePreview" [src]="imagePreview" class="w-100 h-100 object-fit-cover">
-              <i *ngIf="!imagePreview" class="bi bi-person-bounding-box text-secondary fs-2"></i>
-            </div>
-            <button *ngIf="imagePreview" type="button" class="btn btn-danger btn-sm rounded-circle position-absolute bottom-0 end-0" (click)="removeSelectedFile(fileInput)">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-          <input #fileInput type="file" class="form-control form-control-sm" accept="image/*" (change)="onFileSelected($event)">
-        </div>
+    <!-- Scrollable Form Body Container -->
+    <div class="drawer-body bg-white p-4" style="overflow-y: auto; height: calc(100vh - 100px);">
 
-        <!-- Input Fields -->
+      <!-- Fault Validation Engine Interceptor Alerts -->
+      <div *ngIf="errorMessage"
+        class="alert alert-danger alert-dismissible fade show d-flex align-items-center shadow-sm border-2 mb-4"
+        role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+        <div class="fs-7 fw-semibold">{{ errorMessage }}</div>
+        <button type="button" class="btn-close small" (click)="errorMessage = null" aria-label="Close"></button>
+      </div>
+
+      <form #customerForm="ngForm" (ngSubmit)="customerForm.valid && save()">
+
+        <!-- Profile Core Metadata Section -->
         <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Customer Full Name</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-person"></i></span>
-            <input type="text" class="form-control border-start-0 ps-0 fs-7" placeholder="John Doe" [(ngModel)]="customer.name" name="name" required>
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Full Legal Name</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="customer.name" name="name" placeholder="John Doe"
+            required>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Email Address</label>
+            <input type="email" class="form-control fs-7" [(ngModel)]="customer.email" name="email"
+              placeholder="john@scm.com" required email>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Phone Contact</label>
+            <input type="text" class="form-control fs-7" [(ngModel)]="customer.phone" name="phone"
+              placeholder="017XXXXXXXX" required>
           </div>
         </div>
 
+        <!-- Password Validation Stack -->
+        @if (!isEdit) {
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Password</label>
+            <input type="password" class="form-control fs-7" [(ngModel)]="customer.password" name="password"
+              placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Confirm Password</label>
+            <input type="password" class="form-control fs-7" [(ngModel)]="confirmPassword" name="confirmPassword"
+              placeholder="••••••••" required>
+          </div>
+        </div>
+        } @else {
         <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Email Address</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
-            <input type="email" class="form-control border-start-0 ps-0 fs-7" placeholder="john@domain.com" [(ngModel)]="customer.email" name="email" required>
-          </div>
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Update Security Password <small
+              class="text-muted">(Leave blank to keep current)</small></label>
+          <input type="password" class="form-control fs-7" [(ngModel)]="customer.password" name="password"
+            placeholder="••••••••">
         </div>
+        }
 
-        <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Phone Vector</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-telephone"></i></span>
-            <input type="text" class="form-control border-start-0 ps-0 fs-7" placeholder="017XXXXXXXX" [(ngModel)]="customer.phone" name="phone" required>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Gender Mapping</label>
+            <select class="form-select fs-7" [(ngModel)]="customer.gender" name="gender" required>
+              <option value="">-- Choose --</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
           </div>
-        </div>
-
-        <div class="mb-3" *ngIf="!isEdit">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Access Password</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock"></i></span>
-            <input type="password" class="form-control border-start-0 ps-0 fs-7" placeholder="••••••••" [(ngModel)]="customer.password" name="password" required>
-          </div>
-        </div>
-
-        <div class="mb-3" *ngIf="!isEdit">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Confirm Password</label>
-          <div class="input-group">
-            <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-lock-fill"></i></span>
-            <input type="password" class="form-control border-start-0 ps-0 fs-7" placeholder="Re-enter password" [(ngModel)]="confirmPassword" name="confirmPassword" required>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">National ID (NID)</label>
-            <input type="text" class="form-control fs-7 font-monospace" placeholder="199XXXXXXXXXX" [(ngModel)]="customer.nidNumber" name="nidNumber" required>
-          </div>
-          <div class="col-6">
-            <label class="form-label fw-semibold text-secondary small text-uppercase">Birthdate</label>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Date of Birth</label>
             <input type="date" class="form-control fs-7" [(ngModel)]="customer.dob" name="dob" required>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Gender</label>
-          <select class="form-select fs-7" [(ngModel)]="customer.gender" name="gender" required>
-            <option value="">-- Select Gender --</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">National ID Number (NID)</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="customer.nidNumber" name="nidNumber"
+            placeholder="199XXXXXXXXXXXXXX" required>
         </div>
 
-        <!-- Address Engine Hierarchies -->
-        <div class="p-3 bg-light rounded-3 mb-3 border shadow-sm">
-          <span class="fw-bold d-block text-dark small text-uppercase mb-3 text-primary">
-            <i class="bi bi-geo-alt-fill me-1"></i> Territorial Distribution Hierarchy
-          </span>
-          
-          <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="countryId" (change)="onCountryChange()">
-              <option [ngValue]="null">-- Country --</option>
-              <option *ngFor="let c of countries" [value]="c.id">{{ c.name }}</option>
+        <!-- Geographic Node Mapping -->
+        <h6 class="fs-8 fw-bold text-primary text-uppercase mt-4 mb-2 pb-1 border-bottom"><i class="bi bi-map me-1"></i>
+          Geographic Node Mapping</h6>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Country</label>
+            <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="selectedCountryId"
+              (change)="onCountryChange()" required>
+              <option [ngValue]="null">-- Select Country --</option>
+              @for (co of countries; track co.id) {
+              <option [value]="co.id">{{ co.name }}</option>
+              }
             </select>
           </div>
-
-          <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange()" [disabled]="!divisions || divisions.length === 0">
-              <option [ngValue]="null">-- Division --</option>
-              <option *ngFor="let d of divisions" [value]="d.id">{{ d.name }}</option>
-            </select>
-          </div>
-
-          <div class="mb-2">
-            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange()" [disabled]="!districts || districts.length === 0">
-              <option [ngValue]="null">-- District --</option>
-              <option *ngFor="let dst of districts" [value]="dst.id">{{ dst.name }}</option>
-            </select>
-          </div>
-
-          <div class="mb-1">
-            <select class="form-select fs-7" [(ngModel)]="customer.policeStationId" name="policeStationId" (change)="generateFullAddress()" [disabled]="!policeStations || policeStations.length === 0" required>
-              <option value="0">-- Police Station Terminal --</option>
-              <option *ngFor="let ps of policeStations" [value]="ps.id">{{ ps.name }}</option>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Division</label>
+            <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="selectedDivisionId"
+              (change)="onDivisionChange()" [disabled]="!divisions.length" required>
+              <option [ngValue]="null">-- Select Division --</option>
+              @for (div of divisions; track div.id) {
+              <option [value]="div.id">{{ div.name }}</option>
+              }
             </select>
           </div>
         </div>
 
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">District</label>
+            <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="selectedDistrictId"
+              (change)="onDistrictChange()" [disabled]="!districts.length" required>
+              <option [ngValue]="null">-- Select District --</option>
+              @for (dis of districts; track dis.id) {
+              <option [value]="dis.id">{{ dis.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold text-secondary text-uppercase fs-8">Police Station (Thana)</label>
+            <select class="form-select fs-7" [(ngModel)]="customer.policeStationId" name="policeStationId"
+              (change)="generateFullAddress()" [disabled]="!policeStations.length" required>
+              <option value="0">-- Select Station --</option>
+              @for (ps of policeStations; track ps.id) {
+              <option [value]="ps.id">{{ ps.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Street & Compiled Auto-Address Field -->
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Street / Area Address</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="streetAddress" name="streetAddress"
+            (input)="generateFullAddress()" placeholder="House 12, Road 4, Sector 3" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Compiled Node Location String
+            (Auto)</label>
+          <textarea class="form-control fs-7 text-muted bg-light font-monospace" rows="2" [value]="customer.address"
+            readonly placeholder="Address will auto compile..."></textarea>
+        </div>
+
+        <!-- Avatar Image Proof File System Section -->
+        <h6 class="fs-8 fw-bold text-primary text-uppercase mt-4 mb-2 pb-1 border-bottom"><i
+            class="bi bi-image me-1"></i> Profile Attachment Proof</h6>
         <div class="mb-4">
-          <label class="form-label fw-semibold text-secondary small text-uppercase">Local Street Line (Road/House)</label>
-          <input type="text" class="form-control fs-7" placeholder="e.g., House-12, Road-5" [(ngModel)]="streetAddress" name="streetAddress" (input)="generateFullAddress()" required>
-        </div>
-
-        <div class="mb-4 bg-primary-subtle border border-primary-subtle p-3 rounded-3">
-          <label class="form-label fw-bold text-primary small text-uppercase mb-2">
-            <i class="bi bi-cpu-fill me-1"></i> Full Compiled Address
-          </label>
-          <div class="bg-white p-2.5 rounded border text-dark fs-7 fw-medium font-monospace shadow-sm" style="min-height: 55px; word-break: break-word;">
-            {{ customer.address || 'Standby for location parameters compilation...' }}
+          <div class="input-group">
+            <input type="file" class="form-control fs-7" #fileInput (change)="onFileSelected($event)" accept="image/*">
+            @if (selectedFile || imagePreview) {
+            <button class="btn btn-outline-danger fs-7" type="button" (click)="removeSelectedFile(fileInput)">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            }
           </div>
+
+          <!-- Image Container Engine Preview Render -->
+          @if (imagePreview) {
+          <div class="mt-3 text-center border p-2 rounded bg-light position-relative">
+            <label class="d-block text-start text-muted font-monospace fs-9 mb-1">Manifest Avatar Image Preview:</label>
+            <img [src]="imagePreview" class="img-fluid rounded border shadow-xs"
+              style="max-height: 140px; width: 140px; object-fit: cover;">
+          </div>
+          }
         </div>
 
-        <div class="drawer-footer d-flex gap-2 mt-5">
-          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Update Records' : 'Save' }}
+        <!-- Action Control Elements Form Triggers -->
+        <div class="drawer-footer d-flex gap-2 pt-3 border-top bg-white sticky-bottom">
+          <button class="btn btn-primary text-white flex-grow-1 py-2 fw-bold text-uppercase fs-7" type="submit"
+            [disabled]="customerForm.invalid">
+            {{ isEdit ? 'Update Profile' : 'Deploy Customer Matrix' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3" (click)="reset()">Clear</button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="closeDrawer()">Cancel</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Transparent Backdrop Mask -->
+  <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
 </div>

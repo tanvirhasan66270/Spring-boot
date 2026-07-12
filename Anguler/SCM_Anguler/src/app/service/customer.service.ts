@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
+import { CustomerResponseModel } from '../component/shared/model/customerModel';
 
 @Injectable({
   providedIn: 'root',
@@ -9,46 +10,31 @@ import { environment } from '../../environment/environment';
 export class CustomerService {
   private apiUrl = environment.apiUrl + "customer/";
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getAll(): Observable<any[]> {
-    return this.http.get<any[]>(this.apiUrl);
+  getAll(): Observable<CustomerResponseModel[]> {
+    return this.http.get<CustomerResponseModel[]>(this.apiUrl);
   }
 
-  getById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+  getById(id: number): Observable<CustomerResponseModel> {
+    return this.http.get<CustomerResponseModel>(`${this.apiUrl}${id}`);
   }
 
-  save(customer: any, imageFile: File | null): Observable<any> {
-    const formData = new FormData();
-    
-    formData.append(
-      "customer",
-      new Blob([JSON.stringify(customer)], { type: "application/json" })
-    );
-
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
-
-    return this.http.post<any>(this.apiUrl, formData);
+  getCustomerByUserId(userId: number): Observable<CustomerResponseModel> {
+    return this.http.get<CustomerResponseModel>(`${this.apiUrl}user/${userId}`);
   }
 
-  update(id: number, customer: any, imageFile: File | null): Observable<any> {
-    const formData = new FormData();
-    
-    formData.append( "customer",
-      new Blob([JSON.stringify(customer)], { type: "application/json" })
-    );
+  // Multi-part FormData হ্যান্ডলিং
+  save(formData: FormData): Observable<CustomerResponseModel> {
+    return this.http.post<CustomerResponseModel>(this.apiUrl, formData);
+  }
 
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
-
-    return this.http.put<any>(`${this.apiUrl}${id}`, formData);
+  update(id: number, formData: FormData): Observable<CustomerResponseModel> {
+    return this.http.put<CustomerResponseModel>(`${this.apiUrl}${id}`, formData);
   }
 
   delete(id: number): Observable<string> {
+    // কন্ট্রোলারের Plain text রেসপন্সের কারণে responseType: 'text' বাধ্যতামূলক
     return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
 }

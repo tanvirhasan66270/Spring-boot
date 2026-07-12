@@ -1,5 +1,4 @@
 export interface CommercialOfficerRequestModel {
-  id: number;
   address: string;
   nidNumber: string;
   passportNumber: string;

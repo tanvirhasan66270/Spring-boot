@@ -23,7 +23,7 @@ public class CommercialOfficerController {
     private final CommercialOfficerService officerService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping
     public ResponseEntity<CommercialOfficerResponseDTO> save(
             @RequestPart("commercialOfficer") String officerJson,
             @RequestPart(value = "file", required = false) MultipartFile file
@@ -39,7 +39,7 @@ public class CommercialOfficerController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}")
     public ResponseEntity<CommercialOfficerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("officer") String officerJson,

@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
+import { CommercialOfficerService } from '../../../service/commercial-officer.service';
+import { CommercialOfficerResponseModel } from '../../shared/model/commercialOfficer';
+import { LoginResponse } from '../../../auth/Model/authModel';
 
 @Component({
   selector: 'app-commercial-dashboard',
@@ -32,17 +35,46 @@ export class CommercialDashboardComponent implements OnInit {
     { name: 'Certificate of Origin #CO-332', type: 'Scan', status: 'Approved', date: 'Yesterday' }
   ];
 
+     userId!: number;
+  
+    commercialOfficer: CommercialOfficerResponseModel | null = null;
+  
+    user: LoginResponse | null = null;
+
   constructor(
     private storage: StorageService,
-    private router: Router
+    private commercialOfficerService:CommercialOfficerService,
+    private router: Router,
+    private cdr:ChangeDetectorRef
+    
   ) {}
 
   ngOnInit(): void {
     const user = this.storage.getUser();
-    if (user) {
-      this.userName = user.name || 'Commercial Officer';
+    if (!user) {
+     return;
     }
+
+    this.userName=user.name;
+    this.userId=user.userId;
+    this.loadCommercialOfficer;
+
+  
   }
+
+   loadCommercialOfficer(): void {
+      console.log("User ID: " + this.userId)
+      this.commercialOfficerService.getCommercialOfficerByUserId(this.userId).subscribe({
+        next: (res) => {
+          this.commercialOfficer = res;
+          console.log(this.commercialOfficer);
+          this.storage.saveData(KEYS.COMMERCIAL_OFFICER, res);
+          this.cdr.markForCheck();
+  
+        },
+        error: (err) => console.log(err)
+      });
+    }
 
   logout(): void {
     this.storage.clearSession();

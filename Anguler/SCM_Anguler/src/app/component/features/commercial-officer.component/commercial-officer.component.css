@@ -2,7 +2,7 @@
 .slide-drawer {
   position: fixed;
   top: 0;
-  right: -420px; /* বন্ধ থাকলে ডান দিকে স্ক্রিনের বাইরে থাকবে */
+  right: -420px; 
   width: 400px;
   height: 100vh;
   background-color: #ffffff;
@@ -14,7 +14,7 @@
 }
 
 .slide-drawer.show {
-  right: 0; /* ওপেন বা একটিভ হলে ডান প্রান্তের সাথে লেগে যাবে */
+  right: 0; 
 }
 
 /* --- BACKDROP EFFECT --- */

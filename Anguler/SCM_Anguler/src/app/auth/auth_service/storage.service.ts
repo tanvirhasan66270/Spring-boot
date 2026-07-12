@@ -7,9 +7,16 @@ import { CryptoUtil } from '../utils/CryptoUtil';
 export const KEYS = {
   TOKEN: 'cm_token',
   USER: 'cm_user',
+  ADMIN: 'cm_admin',
   MANAGER: 'cm_manager',
-  RIDER: 'cm_rider',
-  AGENT: 'cm_agent'
+  DRIVER: 'cm_driver',
+  PROCUREMENT: 'cm_procourment',
+  QC_INSPECTOR: 'cm_qcInspector',
+  LOGISTICS_OFFICER: 'cm_logisticsOfficer',
+  COMMERCIAL_OFFICER: 'cm_commercialOfficer',
+  CUSTOMER: 'cm_customer',
+  SUPPLIER: 'cm_supplier',
+  SALES_OFFICER: 'cm_salesOfficer'
 };
 
 
@@ -43,6 +50,7 @@ export class StorageService {
   }
 
   getUser(): LoginResponse | null {
+    
     const raw = localStorage.getItem(KEYS.USER);
     if (!raw) return null;
     const json = CryptoUtil.decrypt(raw);

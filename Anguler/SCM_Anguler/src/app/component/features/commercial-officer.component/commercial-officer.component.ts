@@ -7,8 +7,8 @@ import { DivisionService } from '../../../service/division.service';
 import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
 import { environment } from '../../../../environment/environment';
-import { CommercialOfficerRequestDTO, CommercialOfficerResponseDTO } from '../../shared/model/customerModel';
 import { CommercialOfficerService } from '../../../service/commercial-officer.service';
+import { CommercialOfficerRequestModel, CommercialOfficerResponseModel } from '../../shared/model/commercialOfficer';
 
 @Component({
   selector: 'app-commercial-officer',
@@ -19,7 +19,7 @@ import { CommercialOfficerService } from '../../../service/commercial-officer.se
 })
 export class CommercialOfficerComponent implements OnInit {
 
-  officers: CommercialOfficerResponseDTO[] = [];
+  officers: CommercialOfficerResponseModel[] = [];
 
   countries: any[] = [];
   divisions: any[] = [];
@@ -35,22 +35,23 @@ export class CommercialOfficerComponent implements OnInit {
   errorMessage: string | null = null;
   streetAddress: string = '';
   confirmPassword = '';
-  readonly imageBaseUrl = environment.imgUrl+"commercial_officer/";
+  
+  readonly imageBaseUrl = environment.imgUrl + "commercial_officer/"; 
 
-  officer: CommercialOfficerRequestDTO = {
+  officer: CommercialOfficerRequestModel = {
+    address: '',
+    nidNumber: '',
+    passportNumber: '',
+    dob: '',
+    gender: '',
+    joiningDate: '',
+    designation: '',
+    language: '',
+    policeStationId: 0,
     name: '',
     email: '',
     phone: '',
-    password: '',
-    address: '',
-    gender: '',
-    dob: '',
-    nidNumber: '',
-    passportNumber: '',
-    designation: '',
-    joiningDate: '',
-    language: '',
-    policeStationId: 0
+    password: ''
   };
 
   isEdit = false;
@@ -156,6 +157,19 @@ export class CommercialOfficerComponent implements OnInit {
     });
   }
 
+  onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
+    this.divisionService.getByCountryId(countryId).subscribe(res => {
+      this.divisions = res || [];
+      this.districtService.getByDivisionId(divisionId).subscribe(res2 => {
+        this.districts = res2 || [];
+        this.stationService.getByDistrictId(districtId).subscribe(res3 => {
+          this.policeStations = res3 || [];
+          this.cdr.markForCheck();
+        });
+      });
+    });
+  }
+
   generateFullAddress() {
     const countryName = this.countries.find(x => x.id == this.selectedCountryId)?.name || '';
     const divisionName = this.divisions.find(x => x.id == this.selectedDivisionId)?.name || '';
@@ -163,7 +177,7 @@ export class CommercialOfficerComponent implements OnInit {
     const psName = this.policeStations.find(x => x.id == this.officer.policeStationId)?.name || '';
 
     this.officer.address = [
-      this.streetAddress,
+      this.streetAddress.trim(),
       psName,
       districtName,
       divisionName,
@@ -192,7 +206,7 @@ export class CommercialOfficerComponent implements OnInit {
   }
 
   getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+    return imageName ? `${this.imageBaseUrl}/${imageName}` : '';
   }
 
   onImageError(event: Event): void {
@@ -201,14 +215,15 @@ export class CommercialOfficerComponent implements OnInit {
       target.style.display = 'none';
     }
   }
-private handleBackendError(err: any) {
+
+  private handleBackendError(err: any) {
     this.errorMessage = null;
     const errorContext = err.error?.message || err.message || '';
 
     if (errorContext.includes('Duplicate entry')) {
       if (errorContext.includes('@')) {
         this.errorMessage = 'Deployment Failed: This Email Address is already registered!';
-      } else if (errorContext.includes('phone_number')) {
+      } else if (errorContext.includes('phone_number') || errorContext.includes('phone')) {
         this.errorMessage = 'Deployment Failed: This Phone Number is already in use!';
       } else {
         this.errorMessage = 'Deployment Failed: This NID or Passport number is already assigned!';
@@ -220,14 +235,17 @@ private handleBackendError(err: any) {
     }
     this.cdr.markForCheck();
   }
+
   save() {
+    this.errorMessage = null;
+
     if (!this.isEdit && this.officer.password !== this.confirmPassword) {
-      alert('Password and confirm password do not match.');
+      this.errorMessage = 'Validation Fault: Password and confirm password inputs do not match.';
       return;
     }
 
     if (this.officer.policeStationId === 0) {
-      alert("Please complete the location hierarchy up to Police Station.");
+      this.errorMessage = 'Validation Fault: Please complete the location hierarchy up to Police Station.';
       return;
     }
 
@@ -240,10 +258,7 @@ private handleBackendError(err: any) {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => {
-          console.error(err);
-          alert(err.error?.message || 'Update failed.');
-        }
+        error: (err) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.officer, this.selectedFile).subscribe({
@@ -252,32 +267,30 @@ private handleBackendError(err: any) {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => {
-          console.error(err);
-          alert(err.error?.message || 'Registration failed.');
-        }
+        error: (err) => this.handleBackendError(err)
       });
     }
   }
 
-  edit(o: CommercialOfficerResponseDTO) {
+  edit(o: CommercialOfficerResponseModel) {
     this.currentEditId = o.id;
     this.isEdit = true;
+    this.errorMessage = null;
 
     this.officer = {
       name: o.name,
       email: o.email,
       phone: o.phone,
       password: '', 
-      address: o.address,
-      gender: o.gender,
-      dob: o.dob,
-      nidNumber: o.nidNumber,
-      passportNumber: o.passportNumber,
-      designation: o.designation,
-      joiningDate: o.joiningDate,
-      language: o.language,
-      policeStationId: o.policeStationId
+      address: o.address || '',
+      gender: o.gender || '',
+      dob: o.dob || '',
+      nidNumber: o.nidNumber || '',
+      passportNumber: o.passportNumber || '',
+      designation: o.designation || '',
+      joiningDate: o.joiningDate || '',
+      language: o.language || '',
+      policeStationId: o.policeStationId || 0
     };
 
     const addressParts = o.address ? o.address.split(', ') : [];
@@ -285,26 +298,14 @@ private handleBackendError(err: any) {
     
     this.imagePreview = o.image ? this.getImageUrl(o.image) : null; 
 
+    // Handle incoming locations mapping safely explicitly typing target object variables
     this.selectedCountryId = (o as any).countryId ? +(o as any).countryId : null;
     this.selectedDivisionId = (o as any).divisionId ? +(o as any).divisionId : null;
     this.selectedDistrictId = (o as any).districtId ? +(o as any).districtId : null;
     this.officer.policeStationId = o.policeStationId ? +o.policeStationId : 0;
 
-    if (this.selectedCountryId) {
-      this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-        this.divisions = res || [];
-        if (this.selectedDivisionId) {
-          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
-            this.districts = res2 || [];
-            if (this.selectedDistrictId) {
-              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
-                this.policeStations = res3 || [];
-                this.cdr.markForCheck();
-              });
-            }
-          });
-        }
-      });
+    if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
+      this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
     }
 
     this.isDrawerOpen = true;
@@ -317,7 +318,8 @@ private handleBackendError(err: any) {
         next: () => {
           alert("Officer record successfully purged.");
           this.loadOfficers();
-        }
+        },
+        error: (err) => this.handleBackendError(err)
       });
     }
   }
@@ -350,5 +352,6 @@ private handleBackendError(err: any) {
     this.confirmPassword = '';
     this.isEdit = false;
     this.currentEditId = null;
+    this.errorMessage = null;
   }
 }

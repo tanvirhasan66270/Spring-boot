@@ -24,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +59,7 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
             throw new RuntimeException("This NID number is already registered under another commercial officer!");
         }
 
-        // save user first
+        // 1. Save associated user identity profile
         User user = new User();
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
@@ -74,15 +75,12 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
                     .orElseThrow(() -> new RuntimeException("Police Station not resolved with ID: " + dto.getPoliceStationId()));
         }
 
-        // upload image
-        if (file != null && !file.isEmpty()) {
-            String imagePath = uploadImage(file, dto.getName());
-            dto.setAddress(imagePath);
-        }
-
+        // 2. Map DTO descriptors onto core Entity infrastructure
         CommercialOfficer officer = officerMapper.toOfficerEntity(dto, savedUser, policeStation);
+
         if (file != null && !file.isEmpty()) {
-            officer.setImage(dto.getAddress());
+            String uploadedFileName = uploadImage(file, dto.getName());
+            officer.setImage(uploadedFileName);
         }
 
         CommercialOfficer savedOfficer = officerRepository.save(officer);
@@ -112,7 +110,6 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
         officer.setNidNumber(dto.getNidNumber());
         officer.setPassportNumber(dto.getPassportNumber());
         officer.setDesignation(dto.getDesignation());
-
 
         if (dto.getDob() != null && !dto.getDob().isBlank()) {
             officer.setDob(LocalDate.parse(dto.getDob()));
@@ -186,16 +183,17 @@ public class CommercialOfficerServiceImp implements CommercialOfficerService {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            String cleanedName = name.trim().replaceAll("\\s+", "_");
+            // উইন্ডোজ ফাইল সিস্টেমের অবৈধ ক্যারেক্টার ক্লিনআপ
+            String cleanedName = name.trim()
+                    .replaceAll("[\\\\/:*?\"<>|]", "_")
+                    .replaceAll("\\s+", "_");
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            Files.copy(file.getInputStream(), path.resolve(fileName));
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
             return fileName;
 
         } catch (Exception e) {
             throw new RuntimeException("Commercial file system node upload fault: " + e.getMessage());
         }
     }
-
-
 }

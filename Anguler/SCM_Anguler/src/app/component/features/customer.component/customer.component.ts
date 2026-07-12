@@ -7,6 +7,8 @@ import { DivisionService } from '../../../service/division.service';
 import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
 import { environment } from '../../../../environment/environment';
+import { CustomerResponseModel, CustomerRequestModel } from '../../shared/model/customerModel';
+import { LoginResponse } from '../../../auth/Model/authModel';
 
 @Component({
   selector: 'app-customer',
@@ -17,7 +19,7 @@ import { environment } from '../../../../environment/environment';
 })
 export class CustomerComponent implements OnInit {
 
-  customers: any[] = [];
+  customers: CustomerResponseModel[] = [];
 
   countries: any[] = [];
   divisions: any[] = [];
@@ -32,13 +34,10 @@ export class CustomerComponent implements OnInit {
   imagePreview: string | ArrayBuffer | null = null;
   streetAddress: string = '';
   confirmPassword = '';
+  errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl+"customer/";
-
-
-
-
-  customer: any = {
+  // ফিক্সড: টাইপ সেফটি নিশ্চিত করার জন্য 'any' পরিবর্তন করে রিকোয়েস্ট ইন্টারফেস অ্যাসাইন করা হয়েছে
+  customer: CustomerRequestModel = {
     name: '',
     email: '',
     phone: '',
@@ -47,13 +46,18 @@ export class CustomerComponent implements OnInit {
     gender: '',
     dob: '',
     nidNumber: '',
-    image: '',
     policeStationId: 0
   };
 
   isEdit = false;
   currentEditId: number | null = null;
   isDrawerOpen = false;
+
+  userId!: number;
+  singleCustomerProfile: CustomerResponseModel | null = null;
+  user: LoginResponse | null = null;
+
+  readonly imageBaseUrl = environment.imgUrl + "customer/";
 
   constructor(
     private service: CustomerService,
@@ -67,6 +71,20 @@ export class CustomerComponent implements OnInit {
   ngOnInit() {
     this.loadCustomers();
     this.loadCountries();
+    
+    if (this.userId) {
+      this.loadCustomerByUserId(this.userId);
+    }
+  }
+
+  loadCustomerByUserId(id: number): void {
+    this.service.getCustomerByUserId(id).subscribe({
+      next: (profile) => {
+        this.singleCustomerProfile = profile;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Failed to resolve profile matrix:', err)
+    });
   }
 
   openDrawer() {
@@ -103,59 +121,73 @@ export class CustomerComponent implements OnInit {
   // =====================================================
   // CASCADING LOCATION LOGICS 
   // =====================================================
-onCountryChange() {
-  this.divisions = [];
-  this.districts = [];
-  this.policeStations = [];
-  this.selectedDivisionId = null;
-  this.selectedDistrictId = null;
-  this.customer.policeStationId = 0;
+  onCountryChange() {
+    this.divisions = [];
+    this.districts = [];
+    this.policeStations = [];
+    this.selectedDivisionId = null;
+    this.selectedDistrictId = null;
+    this.customer.policeStationId = 0;
 
-  if (!this.selectedCountryId) {
-    this.generateFullAddress();
-    return;
+    if (!this.selectedCountryId) {
+      this.generateFullAddress();
+      return;
+    }
+
+    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+      this.divisions = res || [];
+      this.generateFullAddress(); 
+      this.cdr.markForCheck();
+    });
   }
 
-  this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-    this.divisions = res || [];
-    this.generateFullAddress(); 
-    this.cdr.markForCheck();
-  });
-}
+  onDivisionChange() {
+    this.districts = [];
+    this.policeStations = [];
+    this.selectedDistrictId = null;
+    this.customer.policeStationId = 0;
 
-onDivisionChange() {
-  this.districts = [];
-  this.policeStations = [];
-  this.selectedDistrictId = null;
-  this.customer.policeStationId = 0;
+    if (!this.selectedDivisionId) {
+      this.generateFullAddress();
+      return;
+    }
 
-  if (!this.selectedDivisionId) {
-    this.generateFullAddress();
-    return;
+    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
+      this.districts = res || [];
+      this.generateFullAddress();
+      this.cdr.markForCheck();
+    });
   }
 
-  this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
-    this.districts = res || [];
-    this.generateFullAddress();
-    this.cdr.markForCheck();
-  });
-}
+  onDistrictChange() {
+    this.policeStations = [];
+    this.customer.policeStationId = 0;
 
-onDistrictChange() {
-  this.policeStations = [];
-  this.customer.policeStationId = 0;
+    if (!this.selectedDistrictId) {
+      this.generateFullAddress();
+      return;
+    }
 
-  if (!this.selectedDistrictId) {
-    this.generateFullAddress();
-    return;
+    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
+      this.policeStations = res || [];
+      this.generateFullAddress();
+      this.cdr.markForCheck();
+    });
   }
 
-  this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
-    this.policeStations = res || [];
-    this.generateFullAddress();
-    this.cdr.markForCheck();
-  });
-}
+  // ফিক্সড: এডিট মোডে চেইন রেন্ডারিং পাইপলাইন যেন ব্রেক না করে
+  onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
+    this.divisionService.getByCountryId(countryId).subscribe(res => {
+      this.divisions = res || [];
+      this.districtService.getByDivisionId(divisionId).subscribe(res2 => {
+        this.districts = res2 || [];
+        this.stationService.getByDistrictId(districtId).subscribe(res3 => {
+          this.policeStations = res3 || [];
+          this.cdr.markForCheck();
+        });
+      });
+    });
+  }
 
   // =====================================================
   // AUTO ADDRESS COMPILER
@@ -167,12 +199,12 @@ onDistrictChange() {
     const psName = this.policeStations.find(x => x.id == this.customer.policeStationId)?.name || '';
 
     this.customer.address = [
-      this.streetAddress,
+      this.streetAddress.trim(),
       psName,
       districtName,
       divisionName,
       countryName
-    ].filter(v => v).join(', ');
+    ].filter(v => v && v.trim() !== '').join(', ');
   }
 
   // =====================================================
@@ -203,7 +235,7 @@ onDistrictChange() {
   }
 
   getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+    return imageName ? `${this.imageBaseUrl}/${imageName}` : '';
   }
 
   onImageError(event: Event): void {
@@ -213,124 +245,151 @@ onDistrictChange() {
     }
   }
 
+  // ফিক্সড: ব্যাকএন্ড থেকে আসা ডুপ্লিকেট ভ্যালিডেশন এরর পার্সিং ইঞ্জিন যুক্ত করা হয়েছে
+  private handleBackendError(err: any) {
+    this.errorMessage = null;
+    const errorContext = err.error?.message || err.message || '';
+
+    if (errorContext.includes('Duplicate entry')) {
+      if (errorContext.includes('@')) {
+        this.errorMessage = 'Deployment Failed: This Email Address is already registered!';
+      } else if (errorContext.includes('phone_number') || errorContext.includes('phone')) {
+        this.errorMessage = 'Deployment Failed: This Phone Number is already in use!';
+      } else {
+        this.errorMessage = 'Deployment Failed: This NID number identity constraint is already assigned!';
+      }
+    } else {
+      this.errorMessage = errorContext || 'An unexpected database transactional error occurred.';
+    }
+    this.cdr.markForCheck();
+  }
+
   // =====================================================
-  // CRUD CORE METHODS
+  // CRUD CORE METHODS (FIXED FOR MULTIPART @REQUESTPART)
   // =====================================================
   save() {
+    this.errorMessage = null;
+
     if (!this.isEdit && this.customer.password !== this.confirmPassword) {
-      alert('Password and confirm password do not match.');
+      this.errorMessage = 'Validation Fault: Password and confirm password inputs do not match.';
       return;
     }
 
     if (this.customer.policeStationId === 0) {
-      alert("Please complete the location hierarchy up to Police Station.");
+      this.errorMessage = 'Validation Fault: Please complete the region distribution up to Police Station.';
       return;
     }
 
     this.generateFullAddress();
 
+    const formData = new FormData();
+
+    const requestDto: CustomerRequestModel = {
+      name: this.customer.name,
+      email: this.customer.email,
+      phone: this.customer.phone,
+      address: this.customer.address,
+      gender: this.customer.gender,
+      dob: this.customer.dob,
+      nidNumber: this.customer.nidNumber,
+      policeStationId: Number(this.customer.policeStationId)
+    };
+
+    if (!this.isEdit) {
+      requestDto.password = this.customer.password;
+    } else if (this.customer.password && this.customer.password.trim() !== '') {
+      requestDto.password = this.customer.password;
+    }
+
+    // JSON কনভার্ট পার্ট ফিক্সিং
+    formData.append(
+      'customer', 
+      new Blob([JSON.stringify(requestDto)], { type: 'application/json' })
+    );
+
+    if (this.selectedFile) {
+      formData.append('image', this.selectedFile);
+    }
+
     if (this.isEdit && this.currentEditId !== null) {
-      this.service.update(this.currentEditId, this.customer, this.selectedFile).subscribe({
+      this.service.update(this.currentEditId, formData).subscribe({
         next: () => {
           alert("Customer profile updated successfully!");
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => {
-          console.error('Customer update failed:', err);
-          alert('Customer update failed. Please check the server response.');
-        }
+        error: (err) => this.handleBackendError(err)
       });
     } else {
-      this.service.save(this.customer, this.selectedFile).subscribe({
+      this.service.save(formData).subscribe({
         next: () => {
           alert("Customer registered successfully!");
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => {
-          console.error('Customer save failed:', err);
-          alert('Customer save failed. Please check the server response.');
-        }
+        error: (err) => this.handleBackendError(err)
       });
     }
   }
 
-  edit(c: any) {
-  this.currentEditId = c.id;
-  this.isEdit = true;
+  edit(c: CustomerResponseModel) {
+    this.currentEditId = c.id;
+    this.isEdit = true;
+    this.errorMessage = null;
 
-  this.customer = {
-    name: c.name,
-    email: c.email,
-    phone: c.phone,
-    password: '', 
-    address: c.address,
-    gender: c.gender,
-    dob: c.dob,
-    nidNumber: c.nidNumber,
-    image: c.image,
-    policeStationId: c.policeStationId
-  };
+    this.customer = {
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      password: '', 
+      address: c.address,
+      gender: c.gender,
+      dob: c.dob,
+      nidNumber: c.nidNumber,
+      policeStationId: c.policeStationId
+    };
 
-  // অ্যাড্রেস স্প্লিট করার সময় স্পেসসহ সেফ স্প্লিট
-  const addressParts = c.address ? c.address.split(', ') : [];
-  this.streetAddress = addressParts[0] || '';
-  
-  // হার্ডকোডেড URL ফিক্স
-  this.imagePreview = c.image ? this.getImageUrl(c.image) : null; 
+    const addressParts = c.address ? c.address.split(', ') : [];
+    this.streetAddress = addressParts[0] || '';
+    
+    this.imagePreview = c.image ? this.getImageUrl(c.image) : null; 
 
-  // আইডি ম্যাপিং
-  this.selectedCountryId = (c as any).countryId ? +(c as any).countryId : null;
-  this.selectedDivisionId = (c as any).divisionId ? +(c as any).divisionId : null;
-  this.selectedDistrictId = (c as any).districtId ? +(c as any).districtId : null;
-  this.customer.policeStationId = c.policeStationId ? +c.policeStationId : 0;
+    this.selectedCountryId = c.countryId ? +c.countryId : null;
+    this.selectedDivisionId = c.divisionId ? +c.divisionId : null;
+    this.selectedDistrictId = c.districtId ? +c.districtId : null;
+    this.customer.policeStationId = c.policeStationId ? +c.policeStationId : 0;
 
-  // এডিট মোডে ড্রপডাউনগুলো ক্রমান্বয়ে লোড করা
-  if (this.selectedCountryId) {
-    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-      this.divisions = res || [];
-      if (this.selectedDivisionId) {
-        this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
-          this.districts = res2 || [];
-          if (this.selectedDistrictId) {
-            this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
-              this.policeStations = res3 || [];
-              this.cdr.markForCheck();
-            });
-          }
-        });
-      }
-    });
+    // ফিক্সড: এডিট মোডে মাল্টি-টিয়ার ড্রপডাউন লোডের জন্য সেফ পাইপলাইন মেথড ট্রিগার
+    if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
+      this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
+    }
+
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
   }
 
-  this.isDrawerOpen = true;
-  this.cdr.markForCheck();
-}
-
-   
   delete(id: number) {
     if (confirm("Purge this customer record definitively?")) {
       this.service.delete(id).subscribe({
         next: () => {
           alert("Customer record successfully purged.");
           this.loadCustomers();
-        }
+        },
+        error: (err) => alert('Delete operation encountered a system error.')
       });
     }
   }
 
   reset() {
     this.customer = {
-      name: '',
-      email: '',
-      phone: '',
-      password: '',
+      name: '', 
+      email: '', 
+      phone: '', 
+      password: '', 
       address: '',
-      gender: '',
-      dob: '',
-      nidNumber: '',
-      image: '',
+      gender: '', 
+      dob: '', 
+      nidNumber: '', 
       policeStationId: 0
     };
     this.selectedCountryId = null;
@@ -345,5 +404,6 @@ onDistrictChange() {
     this.confirmPassword = '';
     this.isEdit = false;
     this.currentEditId = null;
+    this.errorMessage = null;
   }
 }
