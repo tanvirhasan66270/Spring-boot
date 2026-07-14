@@ -27,8 +27,7 @@ export interface LogisticsOfficerResponseModel {
   joiningDate: string;
   designation: string;
   language: string;
-  policeStationId: number;
-  policeStationName: string;
+  
   createdAt: string;
   updatedAt: string;
   userId: number;
@@ -36,5 +35,15 @@ export interface LogisticsOfficerResponseModel {
   email: string;
   phone: string;
   role: string;
+
+ countryId: number ;
+  divisionId: number ;
+  districtId: number ;
+  policeStationId: number ;
+
+  countryName: string ;
+  divisionName: string ;
+  districtName: string ;
+  policeStationName: string ;
 }
 

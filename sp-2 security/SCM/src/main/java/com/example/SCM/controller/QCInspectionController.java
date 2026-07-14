@@ -16,7 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/qc-inspections")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class QCInspectionController {
 
     private final QCInspectionService qcInspectionService;

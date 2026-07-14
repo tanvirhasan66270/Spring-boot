@@ -23,6 +23,7 @@
           <thead class="table-light text-uppercase fs-8">
             <tr>
               <th class="ps-4">Quotation No</th>
+                <th>Image</th>
               <th>Supplier / Product</th>
               <th>Unit Bid Price</th>
               <th>Qty Required</th>
@@ -38,6 +39,18 @@
                   <span class="badge bg-dark font-monospace tracking-wide">{{ q.quotationNumber }}</span>
                   <small class="d-block text-muted font-monospace mt-1"><i class="bi bi-link-45deg"></i>PR Node: #{{ q.purchaseRequisitionId }}</small>
                 </td>
+                <td>
+             <img
+                [src]="getImageUrl(q.attachmentUrl)"
+                alt="Quotation Image"
+                class="rounded border"
+                width="60"
+                height="60"
+                    />
+                <span *ngIf="!q.attachmentUrl" class="text-muted">
+                   No Image
+                   </span>
+                  </td>
                 <td>
                   <div class="fw-bold text-dark">{{ q.productName }}</div>
                   <div class="text-secondary small font-sans"><i class="bi bi-building me-1"></i>{{ q.supplierName }}</div>
@@ -152,10 +165,7 @@
             <label class="form-label fw-bold small text-uppercase text-secondary">Quotation Received Date</label>
             <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.receivedAt" name="receivedAt" required>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Validity Expiry Target</label>
-            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.validUntil" name="validUntil" required>
-          </div>
+          
         </div>
 
         <div class="row g-2 mb-3">

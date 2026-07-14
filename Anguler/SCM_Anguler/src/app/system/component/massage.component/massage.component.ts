@@ -3,7 +3,16 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageRequestModel, MessageResponseModel } from '../../massageModel';
 import { MessageService } from '../../service/massage.service';
-
+import { StorageService } from '../../../auth/auth_service/storage.service';
+import { ManagerService } from '../../../service/manager.service';
+import { LogisticsOfficerService } from '../../../service/logistics-officer.service';
+import { ProcurementService } from '../../../service/procourment.service';
+import { DriverService } from '../../../service/driver.service';
+import { CustomerService } from '../../../service/customer.service';
+import { SupplierService } from '../../../service/supplier.service';
+import { CommercialOfficerService } from '../../../service/commercial-officer.service';
+import { SalesOfficerService } from '../../../service/sales-officer.service';
+import { QcInspectorService } from '../../../service/qc-inspactor.service';
 
 @Component({
   selector: 'app-massage',
@@ -13,40 +22,101 @@ import { MessageService } from '../../service/massage.service';
   styleUrl: './massage.component.css',
 })
 export class MassageComponent implements OnInit {
-
   messages: MessageResponseModel[] = [];
   isDrawerOpen = false;
   errorMessage: string | null = null;
-  
-  // 💡 কারেন্ট লগড-ইন ইউজারের রোল (আপনার AuthService থেকে ডাইনামিকালি ডিকোড হবে)
-  currentUserRole: string = 'DRIVER'; 
-
-  // স্টাফদের জন্য সিলেক্টেবল ড্রপডাউন ডেটা
-  availableUsers: Array<{id: string, name: string}> = [
-    { id: '201', name: 'Al-Amin (Manager Node)' },
-    { id: '202', name: 'Zahid (Logistics Core)' },
-    { id: '203', name: 'Rahat (Procurement Head)' }
-  ];
+  currentUserRole: string = '';
+  availableUsers: Array<{ id: string; name: string }> = [];
 
   formModel: MessageRequestModel = {
     recipientId: '',
     subject: '',
     body: '',
-    priority: 'MEDIUM'
+    priority: 'MEDIUM',
   };
 
   constructor(
     private service: MessageService,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private storage: StorageService,
+    private managerService: ManagerService,
+    private logisticsService: LogisticsOfficerService,
+    private procurementService: ProcurementService,
+    private driverService: DriverService,
+    private customerService: CustomerService,
+    private supplierService: SupplierService,
+    private commercialService: CommercialOfficerService,
+    private salesService: SalesOfficerService,
+    private qcInspectorService: QcInspectorService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
+    const user = this.storage.getUser();
+    if (user) {
+      this.currentUserRole = user.role;
+    }
     this.loadInbox();
+    this.loadAvailableUsers();
   }
 
   canSelectUser(): boolean {
     const restrictedRoles = ['DRIVER', 'CUSTOMER', 'SUPPLIER'];
     return !restrictedRoles.includes(this.currentUserRole.toUpperCase());
+  }
+
+  loadAvailableUsers() {
+    if (!this.canSelectUser()) return;
+
+    this.managerService.findAll().subscribe({
+      next: (data) => {
+        const users = (data || []).map((u: any) => ({
+          id: (u.userId || u.id).toString(),
+          name: u.name || u.managerName,
+        }));
+        this.availableUsers = [...this.availableUsers, ...users];
+        this.cdr.markForCheck();
+      },
+    });
+    this.logisticsService.findAll().subscribe({
+      next: (data) => {
+        const users = (data || []).map((u: any) => ({
+          id: (u.userId || u.id).toString(),
+          name: u.name || u.officerName,
+        }));
+        this.availableUsers = [...this.availableUsers, ...users];
+        this.cdr.markForCheck();
+      },
+    });
+    this.procurementService.findAll().subscribe({
+      next: (data) => {
+        const users = (data || []).map((u: any) => ({
+          id: (u.userId || u.id).toString(),
+          name: u.name || u.procurementName,
+        }));
+        this.availableUsers = [...this.availableUsers, ...users];
+        this.cdr.markForCheck();
+      },
+    });
+    this.commercialService.findAll().subscribe({
+      next: (data) => {
+        const users = (data || []).map((u: any) => ({
+          id: (u.userId || u.id).toString(),
+          name: u.name || u.officerName,
+        }));
+        this.availableUsers = [...this.availableUsers, ...users];
+        this.cdr.markForCheck();
+      },
+    });
+    this.salesService.findAll().subscribe({
+      next: (data) => {
+        const users = (data || []).map((u: any) => ({
+          id: (u.userId || u.id).toString(),
+          name: u.name || u.officerName,
+        }));
+        this.availableUsers = [...this.availableUsers, ...users];
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   loadInbox() {
@@ -57,16 +127,23 @@ export class MassageComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || err.error?.detail || err.message || 'Unable to load inbox messages.';
+        this.errorMessage =
+          err.error?.message ||
+          err.error?.detail ||
+          err.message ||
+          'Unable to load inbox messages.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   openMessage(m: MessageResponseModel) {
     if (m.status === 'UNREAD') {
       this.service.markAsRead(m.id).subscribe({
-        next: () => { m.status = 'READ'; this.cdr.markForCheck(); }
+        next: () => {
+          m.status = 'READ';
+          this.cdr.markForCheck();
+        },
       });
     }
     alert(`From: ${m.senderName}\nSubject: ${m.subject}\n\n${m.body}`);
@@ -86,15 +163,18 @@ export class MassageComponent implements OnInit {
         this.loadInbox();
       },
       error: (err) => {
-        this.errorMessage = err.error?.message || err.error?.detail || err.message || 'Unable to send message.';
+        this.errorMessage =
+          err.error?.message || err.error?.detail || err.message || 'Unable to send message.';
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
-  openDrawer() { this.isDrawerOpen = true; }
-  closeDrawer() { 
-    this.isDrawerOpen = false; 
+  openDrawer() {
+    this.isDrawerOpen = true;
+  }
+  closeDrawer() {
+    this.isDrawerOpen = false;
     this.formModel = { recipientId: '', subject: '', body: '', priority: 'MEDIUM' };
   }
 }

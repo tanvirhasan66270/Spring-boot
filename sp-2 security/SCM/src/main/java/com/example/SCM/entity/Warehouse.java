@@ -13,7 +13,6 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Warehouse {
 
     @Id
@@ -60,6 +59,5 @@ public class Warehouse {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "warehouses", fetch = FetchType.LAZY)
-    @Builder.Default
     private Set<Driver> drivers = new HashSet<>();
 }

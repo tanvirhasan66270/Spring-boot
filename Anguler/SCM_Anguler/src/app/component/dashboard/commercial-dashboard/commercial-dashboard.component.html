@@ -1,50 +1,76 @@
 <div class="commercial-dashboard px-3 py-4">
-
-  <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <!-- TOP BAR -->
+  <div
+    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
+  >
     <div>
       <h3 class="fw-bold mb-1 text-dark">Commercial Import/Export Board</h3>
-      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Letters of Credit and Custom Clearances ledger.</p>
+      <p class="text-secondary small mb-0">
+        Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Letters of Credit
+        and Custom Clearances ledger.
+      </p>
     </div>
-    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Terminate Session
-    </button>
+    <div class="d-flex gap-2">
+      <button class="btn btn-sm btn-outline-secondary fw-semibold" (click)="toggleSettings()">
+        <i class="bi bi-gear"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Terminate Session
+      </button>
+    </div>
   </div>
 
-  <!-- ───────────────── KPI GRID ───────────────── -->
+  <!-- KPI GRID -->
   <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
     <div class="col" *ngFor="let kpi of kpis">
-      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
-        <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
-        <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+      <div
+        class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{
+          kpi.color
+        }} h-100"
+      >
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
+            <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+          </div>
+          <div class="kpi-icon-wrap text-{{ kpi.color }}">
+            <i class="bi {{ kpi.icon }} fs-4"></i>
+          </div>
+        </div>
         <div class="small font-monospace">
-          <span class="text-success fw-bold">
-            <i class="bi bi-arrow-up-right"></i> +15%
-          </span>
-          <span class="text-muted small ms-1">vs target liability</span>
+          <span class="text-muted small">Last updated: {{ today | date: 'shortTime' }}</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ───────────────── QUICK ACTIONS ───────────────── -->
+  <!-- QUICK ACTIONS -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <a routerLink="/letter-of-credit" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/letter-of-credit"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-bank fs-2 text-indigo mb-1 d-block"></i>
         <strong class="text-dark d-block">Create Letter of Credit</strong>
         <small class="text-muted">Issue financial LC backing to bank</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/invoice" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/invoice"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-cash-coin fs-2 text-success mb-1 d-block"></i>
         <strong class="text-dark d-block">Billing Ledger</strong>
         <small class="text-muted">Generate commercial proforma invoices</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/poline-item" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/poline-item"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-file-earmark-lock fs-2 text-warning mb-1 d-block"></i>
         <strong class="text-dark d-block">Customs Manifests</strong>
         <small class="text-muted">Audit customs clearance certifications</small>
@@ -52,11 +78,14 @@
     </div>
   </div>
 
-  <!-- ───────────────── MIDDLE: LC LOGS & DOCUMENTS ───────────────── -->
+  <!-- LC LOGS & DOCUMENTS -->
   <div class="row g-4 mb-4">
     <div class="col-md-7">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-card-checklist text-indigo me-2"></i> Active Letters of Credit (LC) Registry</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-card-checklist text-indigo me-2"></i> Active Letters of Credit (LC)
+          Registry
+        </h6>
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0 fs-8">
             <thead class="table-light">
@@ -71,18 +100,23 @@
             <tbody>
               <tr *ngFor="let lc of lcs">
                 <td class="font-monospace fw-bold text-primary">{{ lc.lcNumber }}</td>
-                <td>{{ lc.bank }}</td>
-                <td class="font-monospace fw-bold text-success">৳{{ lc.value | number }}</td>
-                <td><span class="badge bg-secondary-subtle text-secondary">{{ lc.type }}</span></td>
+                <td>{{ lc.issuingBankName || 'N/A' }}</td>
+                <td class="font-monospace fw-bold text-success">৳{{ lc.amount | number }}</td>
                 <td>
-                  <span class="badge rounded"
-                        [ngClass]="{
-                          'bg-success': lc.status === 'Approved',
-                          'bg-warning text-dark': lc.status === 'Document Verification',
-                          'bg-secondary': lc.status === 'Under Review'
-                        }">
-                    {{ lc.status }}
+                  <span class="badge bg-secondary-subtle text-secondary">{{
+                    lc.shipmentIncoTerms || 'Import'
+                  }}</span>
+                </td>
+                <td>
+                  <span class="badge rounded" [ngClass]="getLCStatusClass(lc.lcStatus)">
+                    {{ lc.lcStatus }}
                   </span>
+                </td>
+              </tr>
+              <tr *ngIf="lcs.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox fs-4 d-block mb-2"></i>
+                  No active letters of credit found
                 </td>
               </tr>
             </tbody>
@@ -90,27 +124,162 @@
         </div>
       </div>
     </div>
-    
+
     <div class="col-md-5">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-arrow-up text-primary me-2"></i> Shipping Documents Manifest</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-file-earmark-arrow-up text-primary me-2"></i> Shipping Documents Manifest
+        </h6>
         <div class="d-flex flex-column gap-3">
-          <div *ngFor="let doc of documents" class="p-2.5 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+          <div
+            *ngFor="let doc of documents"
+            class="p-2.5 border rounded-3 bg-light d-flex justify-content-between align-items-center"
+          >
             <div>
               <strong class="text-dark small d-block">{{ doc.name }}</strong>
-              <small class="text-muted font-monospace">{{ doc.type }} | logged {{ doc.date }}</small>
+              <small class="text-muted font-monospace"
+                >{{ doc.type }} | logged {{ doc.date }}</small
+              >
             </div>
-            <span class="badge text-uppercase" 
-                  [ngClass]="{
-                    'bg-success-subtle text-success': doc.status === 'Approved',
-                    'bg-warning-subtle text-warning': doc.status === 'Pending Review'
-                  }">
+            <span
+              class="badge text-uppercase"
+              [ngClass]="{
+                'bg-success-subtle text-success': doc.status === 'Approved',
+                'bg-warning-subtle text-warning': doc.status === 'Pending Review',
+              }"
+            >
               {{ doc.status }}
             </span>
+          </div>
+          <div *ngIf="documents.length === 0" class="text-center text-muted py-4">
+            <i class="bi bi-file-earmark-x fs-4 d-block mb-2"></i>
+            No documents available
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- INVOICES TABLE -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-receipt text-success me-2"></i> Recent Invoices
+        </h6>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0 fs-8">
+            <thead class="table-light">
+              <tr>
+                <th>Invoice #</th>
+                <th>Issued To</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of invoices">
+                <td class="font-monospace fw-bold text-primary">{{ inv.invoiceNumber }}</td>
+                <td>{{ inv.issuedToName }}</td>
+                <td class="font-monospace fw-bold text-success">৳{{ inv.totalAmount | number }}</td>
+                <td>
+                  <span
+                    class="badge rounded"
+                    [ngClass]="{
+                      'bg-success-subtle text-success': inv.invoiceStatus === 'ISSUED',
+                      'bg-secondary-subtle text-secondary': inv.invoiceStatus === 'DRAFT',
+                      'bg-danger-subtle text-danger': inv.invoiceStatus === 'CANCELLED',
+                    }"
+                  >
+                    {{ inv.invoiceStatus }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="invoices.length === 0">
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="bi bi-receipt fs-4 d-block mb-2"></i>
+                  No invoices found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-activity text-warning me-2"></i> Recent Activity Log
+        </h6>
+        <div class="d-flex flex-column gap-2">
+          <div
+            *ngFor="let act of activities"
+            class="activity-item p-2 rounded-3 d-flex align-items-start gap-2"
+          >
+            <div class="activity-icon mt-1">
+              <i class="bi" [ngClass]="getActionIcon(act.action)"></i>
+            </div>
+            <div class="flex-grow-1">
+              <div class="small fw-semibold text-dark">
+                {{ act.description || act.action + ' on ' + act.module }}
+              </div>
+              <small class="text-muted">
+                <span class="font-monospace">{{ act.referenceId }}</span> &middot;
+                {{ act.performedAt | date: 'short' }}
+              </small>
+            </div>
+            <span
+              class="badge rounded"
+              [ngClass]="{
+                'bg-success-subtle text-success': act.actionStatus === 'SUCCESS',
+                'bg-danger-subtle text-danger': act.actionStatus === 'FAILED',
+              }"
+            >
+              {{ act.actionStatus }}
+            </span>
+          </div>
+          <div *ngIf="activities.length === 0" class="text-center text-muted py-4">
+            <i class="bi bi-clock-history fs-4 d-block mb-2"></i>
+            No recent activity
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-bell text-primary me-2"></i> Notifications
+        </h6>
+        <div class="row g-3">
+          <div class="col-md-3" *ngFor="let notif of notifications">
+            <div class="notification-card p-3 rounded-3 h-100" [class.unread-notif]="!notif.isRead">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="bi" [ngClass]="getNotifIcon(notif.type)"></i>
+                <span class="badge bg-light text-dark font-monospace small">{{ notif.type }}</span>
+              </div>
+              <div class="small fw-bold text-dark mb-1">{{ notif.title }}</div>
+              <small class="text-muted d-block mb-2">{{ notif.message }}</small>
+              <small class="text-muted">{{ notif.createdAt | date: 'short' }}</small>
+            </div>
+          </div>
+          <div *ngIf="notifications.length === 0" class="col-12 text-center text-muted py-4">
+            <i class="bi bi-bell-slash fs-4 d-block mb-2"></i>
+            No notifications
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <app-dashboard-settings
+    [isOpen]="showSettings"
+    (close)="closeSettings()"
+  ></app-dashboard-settings>
 </div>

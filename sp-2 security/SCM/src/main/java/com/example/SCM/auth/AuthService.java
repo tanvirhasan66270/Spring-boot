@@ -142,6 +142,7 @@ public class AuthService {
 
     }
 
+    @Transactional
     public void forgotPassword(ForgotPasswordRequestDTO dto) {
         User user = userRepository.findByEmail(dto.getEmail())
                 .orElseThrow(() -> new RuntimeException("No account found with email: " + dto.getEmail()));
@@ -155,13 +156,23 @@ public class AuthService {
         }
     }
 
+    @Transactional
     public void resetPassword(ResetPasswordRequestDTO dto) {
         if (!jwtUtil.isValidForPurpose(dto.getToken(), "PASSWORD_RESET")) {
             throw new RuntimeException("Invalid or expired reset link");
         }
 
-        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 4) {
-            throw new RuntimeException("Password must be at least 4 characters");
+        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 8) {
+            throw new RuntimeException("Password must be at least 8 characters");
+        }
+        if (!dto.getNewPassword().matches(".*[A-Z].*")) {
+            throw new RuntimeException("Password must contain at least one uppercase letter");
+        }
+        if (!dto.getNewPassword().matches(".*[a-z].*")) {
+            throw new RuntimeException("Password must contain at least one lowercase letter");
+        }
+        if (!dto.getNewPassword().matches(".*\\d.*")) {
+            throw new RuntimeException("Password must contain at least one digit");
         }
 
         String email = jwtUtil.extractEmail(dto.getToken());

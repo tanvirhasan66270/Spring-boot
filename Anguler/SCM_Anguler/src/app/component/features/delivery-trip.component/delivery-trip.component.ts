@@ -1,85 +1,107 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DeliveryTripRequestModel, DeliveryTripResponseModel } from '../../shared/model/DeliveryTripModel';
+import {
+  DeliveryTripRequestModel,
+  DeliveryTripResponseModel,
+} from '../../shared/model/DeliveryTripModel';
 import { DeliveryTripService } from '../../../service/delivery-trip.service';
-import { VehicleService } from '../../../service/vehicle.service'; // ভেহিকল ডাটা ফেচ করার জন্য
+import { VehicleService } from '../../../service/vehicle.service';
+import { CustomerService } from '../../../service/customer.service';
+import { StorageService } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-delivery-trip',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './delivery-trip.component.html',
-  styleUrl: './delivery-trip.component.css'
+  styleUrl: './delivery-trip.component.css',
 })
 export class DeliveryTripComponent implements OnInit {
-
   trips: DeliveryTripResponseModel[] = [];
   customers: any[] = [];
-  
-  // ── ফ্লিট ডাটা মেমোরি ──
-  allVehicles: any[] = [];      
-  filteredVehicles: any[] = [];  
-  
-  selectedVehicleType: string = ''; 
-
+  allVehicles: any[] = [];
+  filteredVehicles: any[] = [];
+  selectedVehicleType: string = '';
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isStatusModalOpen = false;
   isEdit = false;
   currentTripId: number | null = null;
-
   selectedSignature: File | null = null;
   selectedPhoto: File | null = null;
   statusUpdateValue = 'PENDING';
+  currentUserId: number = 0;
 
   formModel: DeliveryTripRequestModel = {
-    dispatcherId: 1, 
+    dispatcherId: 0,
     customerId: 0,
     vehicleId: 0,
     status: 'PENDING',
     customerAddress: '',
-    remarks: ''
+    remarks: '',
   };
 
   constructor(
     private service: DeliveryTripService,
-    private vehicleService: VehicleService, 
-    private cdr: ChangeDetectorRef
-  ) { }
+    private vehicleService: VehicleService,
+    private customerService: CustomerService,
+    private storage: StorageService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
+    const user = this.storage.getUser();
+    if (user) {
+      this.currentUserId = user.userId;
+      this.formModel.dispatcherId = user.userId;
+    }
     this.loadTrips();
     this.loadActiveFleetData();
   }
 
   loadTrips() {
     this.service.findAll().subscribe({
-      next: (data) => { this.trips = data || []; this.cdr.markForCheck(); },
-      error: (err) => this.handleError(err)
+      next: (data) => {
+        this.trips = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => this.handleError(err),
     });
   }
 
   loadActiveFleetData() {
     this.vehicleService.findAll().subscribe({
-      next: (data) => {   this.cdr.markForCheck();
+      next: (data) => {
         this.allVehicles = data || [];
-     
+        this.cdr.markForCheck();
       },
-      error: () => this.mockDropdownFeeds() 
+      error: (err) => {
+        this.errorMessage = 'Failed to load vehicle data.';
+        this.cdr.markForCheck();
+      },
     });
-    
-    this.customers = [{ id: 1, name: "Tanvir Rahman" }];
+
+    this.customerService.getAll().subscribe({
+      next: (data) => {
+        this.customers = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.customers = [];
+      },
+    });
   }
 
   onVehicleTypeChange() {
     this.formModel.vehicleId = 0;
-    
+
     if (!this.selectedVehicleType) {
       this.filteredVehicles = [];
     } else {
-      this.filteredVehicles = this.allVehicles.filter(v => 
-        v.type.toUpperCase() === this.selectedVehicleType.toUpperCase() && v.driverId != null
+      this.filteredVehicles = this.allVehicles.filter(
+        (v) =>
+          v.type.toUpperCase() === this.selectedVehicleType.toUpperCase() && v.driverId != null,
       );
     }
     this.cdr.markForCheck();
@@ -88,31 +110,44 @@ export class DeliveryTripComponent implements OnInit {
   submitTrip() {
     this.errorMessage = null;
 
-    if (!this.formModel.customerId || +this.formModel.customerId === 0 ||
-        !this.formModel.vehicleId || +this.formModel.vehicleId === 0) {
-      this.errorMessage = "Validation Fault: Customer mapping and Fleet allocation with assigned captain are required.";
+    if (
+      !this.formModel.customerId ||
+      +this.formModel.customerId === 0 ||
+      !this.formModel.vehicleId ||
+      +this.formModel.vehicleId === 0
+    ) {
+      this.errorMessage =
+        'Validation Fault: Customer mapping and Fleet allocation with assigned captain are required.';
       this.cdr.markForCheck();
       return;
     }
 
     const payload: DeliveryTripRequestModel = {
-      dispatcherId: this.formModel.dispatcherId ? +this.formModel.dispatcherId : 1,
+      dispatcherId: +this.formModel.dispatcherId || this.currentUserId,
       customerId: +this.formModel.customerId,
       vehicleId: +this.formModel.vehicleId,
-      status: this.formModel.status.toUpperCase(), 
+      status: this.formModel.status.toUpperCase(),
       customerAddress: this.formModel.customerAddress.trim(),
-      remarks: this.formModel.remarks?.trim() || null
+      remarks: this.formModel.remarks?.trim() || null,
     };
 
     if (this.isEdit && this.currentTripId) {
       this.service.update(this.currentTripId, payload).subscribe({
-        next: () => { alert("Trip manifest routing modified."); this.closeDrawer(); this.loadTrips(); },
-        error: (err) => this.handleError(err)
+        next: () => {
+          alert('Trip manifest routing modified.');
+          this.closeDrawer();
+          this.loadTrips();
+        },
+        error: (err) => this.handleError(err),
       });
     } else {
       this.service.create(payload).subscribe({
-        next: () => { alert("New delivery trip blueprint deployed successfully."); this.closeDrawer(); this.loadTrips(); },
-        error: (err) => this.handleError(err)
+        next: () => {
+          alert('New delivery trip blueprint deployed successfully.');
+          this.closeDrawer();
+          this.loadTrips();
+        },
+        error: (err) => this.handleError(err),
       });
     }
   }
@@ -126,7 +161,10 @@ export class DeliveryTripComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  closeStatusModal() { this.isStatusModalOpen = false; this.currentTripId = null; }
+  closeStatusModal() {
+    this.isStatusModalOpen = false;
+    this.currentTripId = null;
+  }
 
   onFileChange(event: any, type: 'sig' | 'photo') {
     const file = event.target.files[0];
@@ -139,21 +177,28 @@ export class DeliveryTripComponent implements OnInit {
   executeStatusPatch() {
     if (!this.currentTripId) return;
 
-    this.service.changeStatus(this.currentTripId, this.statusUpdateValue.toUpperCase(), this.selectedSignature, this.selectedPhoto).subscribe({
-      next: () => {
-        alert("Trip execution console state patched successfully.");
-        this.closeStatusModal();
-        this.loadTrips();
-      },
-      error: (err) => this.handleError(err)
-    });
+    this.service
+      .changeStatus(
+        this.currentTripId,
+        this.statusUpdateValue.toUpperCase(),
+        this.selectedSignature,
+        this.selectedPhoto,
+      )
+      .subscribe({
+        next: () => {
+          alert('Trip execution console state patched successfully.');
+          this.closeStatusModal();
+          this.loadTrips();
+        },
+        error: (err) => this.handleError(err),
+      });
   }
 
   edit(trip: DeliveryTripResponseModel) {
     this.isEdit = true;
     this.currentTripId = trip.id;
-    
-    const matchedVehicle = this.allVehicles.find(v => v.id === trip.vehicleId);
+
+    const matchedVehicle = this.allVehicles.find((v) => v.id === trip.vehicleId);
     if (matchedVehicle) {
       this.selectedVehicleType = matchedVehicle.type;
       this.onVehicleTypeChange();
@@ -165,26 +210,42 @@ export class DeliveryTripComponent implements OnInit {
       vehicleId: trip.vehicleId,
       status: trip.status,
       customerAddress: trip.customerAddress,
-      remarks: trip.remarks
+      remarks: trip.remarks,
     };
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
 
   deleteTrip(id: number) {
-    if (confirm("Are you sure you want to terminate this delivery manifest pointer from matrix?")) {
+    if (confirm('Are you sure you want to terminate this delivery manifest pointer from matrix?')) {
       this.service.delete(id).subscribe({
-        next: (msg) => { alert(msg); this.loadTrips(); },
-        error: (err) => alert(err.error?.message || err.message)
+        next: (msg) => {
+          alert(msg);
+          this.loadTrips();
+        },
+        error: (err) => alert(err.error?.message || err.message),
       });
     }
   }
 
-  openDrawer() { this.resetForm(); this.isDrawerOpen = true; }
-  closeDrawer() { this.isDrawerOpen = false; this.resetForm(); }
+  openDrawer() {
+    this.resetForm();
+    this.isDrawerOpen = true;
+  }
+  closeDrawer() {
+    this.isDrawerOpen = false;
+    this.resetForm();
+  }
 
   resetForm() {
-    this.formModel = { dispatcherId: 1, customerId: 0, vehicleId: 0, status: 'PENDING', customerAddress: '', remarks: '' };
+    this.formModel = {
+      dispatcherId: this.currentUserId,
+      customerId: 0,
+      vehicleId: 0,
+      status: 'PENDING',
+      customerAddress: '',
+      remarks: '',
+    };
     this.selectedVehicleType = '';
     this.filteredVehicles = [];
     this.isEdit = false;
@@ -193,18 +254,7 @@ export class DeliveryTripComponent implements OnInit {
   }
 
   private handleError(err: any) {
-    this.errorMessage = err.error?.message || err.message || "Runtime Communication Exception.";
-    this.cdr.markForCheck();
-  }
-
-  private mockDropdownFeeds() {
-    // ব্যাকএন্ড সার্ভিস ফেসিং এরর হলে রিলেশন প্রটেক্টেড ডামি ডাটা আর্কিটেকচার
-    this.allVehicles = [
-      { id: 1, plateNumber: "Dhaka Metro-GA-11-2026", type: "TRUCK", driverId: 10, driverName: "Captain Rafiq" },
-      { id: 2, plateNumber: "Dhaka Metro-HA-22-9981", type: "TRUCK", driverId: 11, driverName: "Captain Asif" },
-      { id: 3, plateNumber: "Dhaka Metro-THA-55-1024", type: "VAN", driverId: 12, driverName: "Captain Karim" },
-      { id: 4, plateNumber: "Dhaka Metro-MOTO-88-1122", type: "BIKE", driverId: 13, driverName: "Rider Sohel" }
-    ];
+    this.errorMessage = err.error?.message || err.message || 'Runtime Communication Exception.';
     this.cdr.markForCheck();
   }
 }

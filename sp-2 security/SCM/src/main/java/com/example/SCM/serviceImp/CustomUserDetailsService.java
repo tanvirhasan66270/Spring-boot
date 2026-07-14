@@ -34,7 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
            if (!user.isActive()){
 
                throw new DisabledException(
-                       "User Accoun is inactive please contuct Manager"
+                       "User Account is inactive please contact Manager"
                );
            }
 

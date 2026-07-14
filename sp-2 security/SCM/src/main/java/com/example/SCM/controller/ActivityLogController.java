@@ -5,6 +5,7 @@ import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.repository.ActivityLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/logs")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@PreAuthorize("hasRole('MANAGER')")
 public class ActivityLogController {
 
     private final ActivityLogRepository logRepository;

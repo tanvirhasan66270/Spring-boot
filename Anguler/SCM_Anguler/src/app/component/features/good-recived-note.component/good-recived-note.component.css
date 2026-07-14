@@ -1,32 +1,48 @@
 .custom-drawer {
   position: fixed;
   top: 0;
-  right: -520px; /* ডিফল্টভাবে স্ক্রিনের বাইরে লুকিয়ে থাকবে */
+  right: -520px;
   width: 500px;
   height: 100vh;
   background-color: #ffffff;
-  z-index: 1060; /* বুটস্ট্র্যাপ মডালের ওপরে রাখার জন্য */
+  z-index: 1060;
   box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
-  transition: right 0.3s ease-in-out; /* স্মুথ অ্যানিমেশন */
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .custom-drawer.open {
-  right: 0 !important; 
+  right: 0;
 }
-
 
 .container-fluid {
   background-color: #f8fafc;
   min-height: 100vh;
 }
 
-.bg-white { background-color: #ffffff !important; }
-.btn-indigo { background-color: #4f46e5 !important; border-color: #4f46e5 !important; }
-.btn-indigo:hover { background-color: #4338ca !important; }
-.text-indigo { color: #4f46e5 !important; }
-.border-indigo { border-color: #4f46e5 !important; }
-.btn-outline-indigo { color: #4f46e5; border-color: #4f46e5; }
-.btn-outline-indigo:hover { background-color: #4f46e5; color: white; }
+.bg-white {
+  background-color: #ffffff !important;
+}
+.btn-indigo {
+  background-color: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+}
+.btn-indigo:hover {
+  background-color: #4338ca !important;
+}
+.text-indigo {
+  color: #4f46e5 !important;
+}
+.border-indigo {
+  border-color: #4f46e5 !important;
+}
+.btn-outline-indigo {
+  color: #4f46e5;
+  border-color: #4f46e5;
+}
+.btn-outline-indigo:hover {
+  background-color: #4f46e5;
+  color: white;
+}
 
 .table-responsive {
   border-radius: 8px;
@@ -66,22 +82,6 @@
   transform: translateY(-1px);
 }
 
-.custom-drawer {
-  position: fixed;
-  top: 0;
-  right: -510px;
-  width: 500px;
-  height: 100vh;
-  background-color: #ffffff;
-  z-index: 1050;
-  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
-  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.custom-drawer.open {
-  right: 0;
-}
-
 .drawer-backdrop {
   position: fixed;
   top: 0;
@@ -93,6 +93,12 @@
   z-index: 1040;
 }
 
-.border-dashed { border-style: dashed !important; }
-.fs-7 { font-size: 13px !important; }
-.fs-8 { font-size: 11px !important; }
+.border-dashed {
+  border-style: dashed !important;
+}
+.fs-7 {
+  font-size: 13px !important;
+}
+.fs-8 {
+  font-size: 11px !important;
+}

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,12 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/delivery-trips")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class DeliveryTripController {
 
     private final DeliveryTripService tripService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> create(@RequestBody DeliveryTripRequestDTO dto) {
         return new ResponseEntity<>(
                 tripService.save(dto),
@@ -29,6 +30,7 @@ public class DeliveryTripController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> update(
             @PathVariable Long id,
             @RequestBody DeliveryTripRequestDTO dto
@@ -37,6 +39,7 @@ public class DeliveryTripController {
     }
 
     @PatchMapping(value = "/{id}/status", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     public ResponseEntity<DeliveryTripResponseDTO> changeStatus(
             @PathVariable Long id,
             @RequestParam("status") String status,
@@ -48,6 +51,7 @@ public class DeliveryTripController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<List<DeliveryTripResponseDTO>> getAll() {
         List<DeliveryTripResponseDTO> list = tripService.findAll();
 
@@ -59,6 +63,7 @@ public class DeliveryTripController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER')")
     public ResponseEntity<DeliveryTripResponseDTO> getById(@PathVariable Long id) {
         return tripService.getById(id)
                 .map(ResponseEntity::ok)
@@ -66,6 +71,7 @@ public class DeliveryTripController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         tripService.delete(id);
         return ResponseEntity.ok("Delivery trip cluster index cleared successfully from control matrix.");

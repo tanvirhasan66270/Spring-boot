@@ -2,9 +2,7 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.LogisticsOfficerRequestDTO;
 import com.example.SCM.dto.response.LogisticsOfficerResponseDTO;
-import com.example.SCM.entity.Logistics_Officer;
-import com.example.SCM.entity.PoliceStation;
-import com.example.SCM.entity.User;
+import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import org.springframework.stereotype.Component;
@@ -58,9 +56,40 @@ public class LogisticsOfficerMapper {
         dto.setCreatedAt(officer.getCreatedAt());
         dto.setUpdatedAt(officer.getUpdatedAt());
 
+        // =========================
+        // LOCATION INFORMATION
+        // =========================
         if (officer.getPoliceStation() != null) {
-            dto.setPoliceStationId(officer.getPoliceStation().getId());
-            dto.setPoliceStationName(officer.getPoliceStation().getName());
+
+            PoliceStation ps = officer.getPoliceStation();
+
+            dto.setPoliceStationId(ps.getId());
+            dto.setPoliceStationName(ps.getName());
+
+            District district = ps.getDistrict();
+
+            if (district != null) {
+
+                dto.setDistrictId(district.getId());
+                dto.setDistrictName(district.getName());
+
+                Division division = district.getDivision();
+
+                if (division != null) {
+
+                    dto.setDivisionId(division.getId());
+                    dto.setDivisionName(division.getName());
+
+                    Country country = division.getCountry();
+
+                    if (country != null) {
+
+                        dto.setCountryId(country.getId());
+                        dto.setCountryName(country.getName());
+
+                    }
+                }
+            }
         }
 
         if (officer.getUser() != null) {

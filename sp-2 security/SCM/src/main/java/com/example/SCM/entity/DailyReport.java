@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class DailyReport {
 
     @Id
@@ -36,7 +35,6 @@ public class DailyReport {
     private String summary;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private ReportStatus reportStatus = ReportStatus.DRAFT;
 
 

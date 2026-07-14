@@ -1,253 +1,45 @@
-:host{
-    display:block;
+:host {
+  display: block;
 }
 
-.footer{
-
-    background:#181c26;
-
-    color:#d6d9e0;
-
-    margin-top:auto;
-
+.footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--gray-200);
+  background: var(--surface-card);
+  padding: 0.75rem 1.5rem;
 }
 
-.footer-container{
-
-    max-width:1400px;
-
-    margin:auto;
-
-    display:grid;
-
-    grid-template-columns:2fr 1fr 1fr 1fr 1fr;
-
-    gap:40px;
-
-    padding:55px 40px;
-
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
 }
 
-/* Brand */
-
-.logo{
-
-display:flex;
-
-align-items:center;
-
-gap:12px;
-
-margin-bottom:18px;
-
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 600;
+  color: var(--gray-500);
 }
 
-.logo-box{
-
-width:42px;
-
-height:42px;
-
-background:linear-gradient(135deg,#4f63f0,#6d83ff);
-
-border-radius:10px;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-weight:bold;
-
-color:white;
-
+.footer-brand i {
+  color: var(--primary-500);
+  font-size: 0.75rem;
 }
 
-.logo-text{
-
-font-size:22px;
-
-font-weight:700;
-
-color:white;
-
+.footer-brand span {
+  color: var(--gray-400);
+  font-weight: 400;
 }
 
-.logo-text span{
-
-color:#6c83ff;
-
+.footer-sep {
+  color: var(--gray-300);
 }
 
-.footer-brand p{
-
-line-height:1.7;
-
-font-size:14px;
-
-color:#9ca3af;
-
-margin-bottom:22px;
-
-max-width:320px;
-
-}
-
-/* Social */
-
-.socials{
-
-display:flex;
-
-gap:12px;
-
-}
-
-.socials a{
-
-width:38px;
-
-height:38px;
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-border-radius:10px;
-
-background:#262d3c;
-
-color:white;
-
-transition:.25s;
-
-text-decoration:none;
-
-}
-
-.socials a:hover{
-
-background:#4f63f0;
-
-}
-
-/* Column */
-
-.column h3{
-
-color:white;
-
-font-size:15px;
-
-margin-bottom:18px;
-
-}
-
-.column{
-
-display:flex;
-
-flex-direction:column;
-
-}
-
-.column a{
-
-color:#9ca3af;
-
-text-decoration:none;
-
-margin-bottom:12px;
-
-transition:.25s;
-
-font-size:14px;
-
-}
-
-.column a:hover{
-
-color:white;
-
-padding-left:6px;
-
-}
-
-/* Bottom */
-
-.footer-bottom{
-
-border-top:1px solid #2c3445;
-
-display:flex;
-
-justify-content:space-between;
-
-align-items:center;
-
-padding:22px 40px;
-
-color:#8d94a3;
-
-font-size:14px;
-
-flex-wrap:wrap;
-
-gap:15px;
-
-}
-
-.bottom-links{
-
-display:flex;
-
-gap:24px;
-
-}
-
-.bottom-links a{
-
-color:#8d94a3;
-
-text-decoration:none;
-
-transition:.25s;
-
-}
-
-.bottom-links a:hover{
-
-color:white;
-
-}
-
-/* Responsive */
-
-@media(max-width:1100px){
-
-.footer-container{
-
-grid-template-columns:1fr 1fr;
-
-}
-
-}
-
-@media(max-width:700px){
-
-.footer-container{
-
-grid-template-columns:1fr;
-
-}
-
-.footer-bottom{
-
-flex-direction:column;
-
-}
-
+.footer-copy {
+  color: var(--gray-400);
 }

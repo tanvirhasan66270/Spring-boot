@@ -35,7 +35,7 @@ export class LogisticsOfficerComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl+"logistics_officer/";
 
   officer: LogisticsOfficerRequestModel = {
     id: 0,

@@ -8,9 +8,9 @@ import { SupplierRequestDTO, SupplierResponseDTO } from '../component/shared/mod
   providedIn: 'root',
 })
 export class SupplierService {
-  private apiUrl = environment.apiUrl + "suppliers";
+  private apiUrl = environment.apiUrl + 'suppliers';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   findAll(): Observable<SupplierResponseDTO[]> {
     return this.http.get<SupplierResponseDTO[]>(this.apiUrl);
@@ -23,28 +23,36 @@ export class SupplierService {
   save(supplier: SupplierRequestDTO, file: File | null): Observable<SupplierResponseDTO> {
     const formData = new FormData();
     formData.append(
-      "suppliers",
-      new Blob([JSON.stringify(supplier)], { type: "application/json" })
+      'suppliers',
+      new Blob([JSON.stringify(supplier)], { type: 'application/json' }),
     );
     if (file) {
-      formData.append("image", file);
+      formData.append('image', file);
     }
     return this.http.post<SupplierResponseDTO>(this.apiUrl, formData);
   }
 
-  update(id: number, supplier: SupplierRequestDTO, file: File | null): Observable<SupplierResponseDTO> {
+  update(
+    id: number,
+    supplier: SupplierRequestDTO,
+    file: File | null,
+  ): Observable<SupplierResponseDTO> {
     const formData = new FormData();
     formData.append(
-      "suppliers",
-      new Blob([JSON.stringify(supplier)], { type: "application/json" })
+      'suppliers',
+      new Blob([JSON.stringify(supplier)], { type: 'application/json' }),
     );
     if (file) {
-      formData.append("image", file);
+      formData.append('image', file);
     }
     return this.http.put<SupplierResponseDTO>(`${this.apiUrl}/${id}`, formData);
   }
 
   delete(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+  }
+
+  getSupplierByUserId(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`);
   }
 }

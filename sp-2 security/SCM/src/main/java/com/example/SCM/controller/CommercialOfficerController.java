@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/commercial-officer")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class CommercialOfficerController {
 
     private final CommercialOfficerService officerService;
@@ -70,7 +71,9 @@ public class CommercialOfficerController {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CommercialOfficerResponseDTO> getByUserId(@PathVariable Long id) {
         return officerService.findUserById(id)
                 .map(ResponseEntity::ok)

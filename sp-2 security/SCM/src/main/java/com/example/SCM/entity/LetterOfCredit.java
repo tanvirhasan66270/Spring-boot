@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class LetterOfCredit {
 
     @Id
@@ -53,20 +52,17 @@ public class LetterOfCredit {
     @Column(nullable = false)
     private String portOfDischarge;
 
-    @Builder.Default
     private int amendmentCount = 0;
 
     private double amount;
 
     @Column(nullable = false)
-    @Builder.Default
     private String currency = "USD";
 
     @Column(nullable = false)
     private LocalDate expiryDate;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private LcStatus lcStatus = LcStatus.DRAFT;
 
     private String documentVaultUrl;

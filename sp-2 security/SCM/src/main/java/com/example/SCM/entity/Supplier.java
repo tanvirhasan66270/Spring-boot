@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Supplier {
 
     @Id
@@ -34,13 +33,11 @@ public class Supplier {
     private String passportNumber;
     private String gender; // MALE / FEMALE / OTHER
 
-    @Temporal(TemporalType.DATE)
     private String dob;
 
     private String image;
 
     // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
-    @Builder.Default
     private double rating = 0.0;
 
     private int averageLeadTimeDays;

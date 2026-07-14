@@ -20,7 +20,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class CustomerOrder {
 
     @Id
@@ -37,7 +36,6 @@ public class CustomerOrder {
     private double weight;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private ServiceType serviceType = ServiceType.STANDARD;
 
     @Column(nullable = false)
@@ -53,14 +51,12 @@ public class CustomerOrder {
     private String dueAmount;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private CustomerOrderStatus status = CustomerOrderStatus.PENDING;
 
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -84,7 +80,6 @@ public class CustomerOrder {
     private User customer;
 
     @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<OrderLineItem> lineItems = new ArrayList<>();
 
     @PrePersist

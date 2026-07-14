@@ -8,7 +8,6 @@ public class QuotationRequestDTO {
     private Long productIds;
     private String productName;
     private Long purchaseRequisitionId;    // এই আইডি সিলেক্ট হলে ফ্রন্টএন্ড থ্রু-তে quantity রিড হবে
-    private String validUntil;              // "YYYY-MM-DD"
     private int leadTimeDays;
     private boolean isSelected;
     private String receivedAt;              // "YYYY-MM-DD"

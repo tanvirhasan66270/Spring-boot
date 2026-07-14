@@ -31,7 +31,7 @@ public class QuotationServiceImpTest {
     private QuotationMapper quotationMapper;
 
     @InjectMocks
-    private QuotationServiceImpl quotationService;
+    private QuotationServiceImp quotationService;
 
     private QuotationRequestDTO dto;
 

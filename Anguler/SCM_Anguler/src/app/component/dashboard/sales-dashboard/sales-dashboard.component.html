@@ -1,27 +1,58 @@
-<div class="sales-dashboard px-3 py-4">
-
+<div class="sales-dashboard px-3 py-4" *ngIf="!isLoading">
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <div
+    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
+  >
     <div>
       <h3 class="fw-bold mb-1 text-dark">Sales Sourcing Board</h3>
-      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Leads funnel and accounts pipeline metrics.</p>
+      <p class="text-secondary small mb-0">
+        Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Leads funnel and
+        accounts pipeline metrics.
+      </p>
     </div>
-    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Terminate Session
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        class="btn btn-sm btn-outline-secondary rounded-3"
+        (click)="showSettings = !showSettings"
+        title="Dashboard Settings"
+      >
+        <i class="bi bi-gear fs-6"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Terminate Session
+      </button>
+    </div>
   </div>
 
   <!-- ───────────────── KPI GRID ───────────────── -->
   <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
     <div class="col" *ngFor="let kpi of kpis">
-      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
+      <div
+        class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{
+          kpi.color
+        }} h-100"
+      >
         <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
         <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
-        <div class="small font-monospace">
-          <span class="text-success fw-bold">
-            <i class="bi bi-arrow-up-right"></i> +18%
+        <div class="small font-monospace" *ngIf="kpi.label === 'Total Revenue'">
+          <span class="text-success fw-bold"> <i class="bi bi-check-circle"></i> Revenue </span>
+          <span class="text-muted small ms-1">from issued invoices</span>
+        </div>
+        <div class="small font-monospace" *ngIf="kpi.label === 'Pipeline Leads'">
+          <span class="text-primary fw-bold"> <i class="bi bi-funnel"></i> Pipeline </span>
+          <span class="text-muted small ms-1">active quotations</span>
+        </div>
+        <div class="small font-monospace" *ngIf="kpi.label === 'Conversion Rate'">
+          <span class="text-info fw-bold">
+            <i class="bi bi-graph-up"></i> {{ conversionRate }}%
           </span>
-          <span class="text-muted small ms-1">vs monthly target</span>
+          <span class="text-muted small ms-1">order completion</span>
+        </div>
+        <div class="small font-monospace" *ngIf="kpi.label === 'Pending Quotations'">
+          <span class="text-warning fw-bold">
+            <i class="bi bi-hourglass-split"></i> {{ pendingQuotes }}
+          </span>
+          <span class="text-muted small ms-1">awaiting response</span>
         </div>
       </div>
     </div>
@@ -30,21 +61,30 @@
   <!-- ───────────────── QUICK ACTIONS ───────────────── -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <a routerLink="/order" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/order"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-file-earmark-plus fs-2 text-success mb-1 d-block"></i>
         <strong class="text-dark d-block">Issue Quotation</strong>
         <small class="text-muted">Draft a component price quotation</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/customer" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/customer"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-person-plus fs-2 text-primary mb-1 d-block"></i>
         <strong class="text-dark d-block">Add Customer Node</strong>
         <small class="text-muted">Register a new client profile signature</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/invoice" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/invoice"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-cash-stack fs-2 text-warning mb-1 d-block"></i>
         <strong class="text-dark d-block">Sales Invoicing</strong>
         <small class="text-muted">Dispatch billing records for closure</small>
@@ -56,7 +96,9 @@
   <div class="row g-4 mb-4">
     <div class="col-md-7">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-funnel text-primary me-2"></i> Lead Pipeline Sourcing Funnel</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-funnel text-primary me-2"></i> Lead Pipeline Sourcing Funnel
+        </h6>
         <div class="table-responsive">
           <table class="table table-hover align-middle mb-0 fs-8">
             <thead class="table-light">
@@ -73,29 +115,171 @@
                 <td class="fw-bold text-dark">{{ l.company }}</td>
                 <td class="text-secondary">{{ l.contact }}</td>
                 <td class="font-monospace text-success fw-bold">৳{{ l.value | number }}</td>
-                <td><span class="badge bg-primary-subtle text-primary">{{ l.stage }}</span></td>
+                <td>
+                  <span class="badge" [ngClass]="getStageBadgeClass(l.status)">{{ l.stage }}</span>
+                </td>
                 <td class="font-monospace text-primary fw-bold">{{ l.probability }}</td>
+              </tr>
+              <tr *ngIf="leads.length === 0">
+                <td colspan="5" class="text-center py-4 text-muted">
+                  <i class="bi bi-funnel fs-3 d-block mb-2 opacity-25"></i>
+                  No pipeline leads from quotations yet.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
-    
+
     <div class="col-md-5">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-trophy text-warning me-2"></i> Top Accounts Leaderboard</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-trophy text-warning me-2"></i> Top Accounts Leaderboard
+        </h6>
         <div class="d-flex flex-column gap-3">
-          <div *ngFor="let c of customers" class="p-2.5 border rounded-3 bg-light d-flex justify-content-between align-items-center">
+          <div
+            *ngFor="let c of customers"
+            class="p-2.5 border rounded-3 bg-light d-flex justify-content-between align-items-center"
+          >
             <div>
               <strong class="text-dark small d-block">{{ c.name }}</strong>
-              <small class="text-muted">{{ c.ordersCount }} deals closed</small>
+              <small class="text-muted"
+                >{{ c.ordersCount }} deal{{ c.ordersCount !== 1 ? 's' : '' }} closed</small
+              >
             </div>
             <strong class="text-success font-monospace small">৳{{ c.spent | number }}</strong>
+          </div>
+          <div *ngIf="customers.length === 0" class="text-center py-4 text-muted">
+            <i class="bi bi-people fs-3 d-block mb-2 opacity-25"></i>
+            <small>No customer data available</small>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ───────────────── NOTIFICATIONS & ACTIVITY LOG ───────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-bell text-warning me-2"></i> Notifications
+          </h6>
+          <span class="badge bg-primary rounded-pill" *ngIf="notifications.length > 0">{{
+            notifications.length
+          }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="notifications.length === 0" class="text-center py-4 text-muted">
+            <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
+            <small>No notifications</small>
+          </div>
+          <div
+            *ngFor="let notif of notifications; let last = last"
+            class="notification-item px-4 py-3 d-flex align-items-start gap-3"
+            [class.border-bottom]="!last"
+            [class.bg-light]="!notif.isRead"
+          >
+            <div
+              class="notification-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+            >
+              <i
+                class="bi"
+                [ngClass]="{
+                  'bi-truck text-primary': notif.type === 'SHIPMENT',
+                  'bi-exclamation-triangle text-warning': notif.type === 'TRIP_ALERT',
+                  'bi-check-circle text-success': notif.type === 'REPORT_APPROVED',
+                }"
+              ></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <div class="fw-semibold text-dark small">{{ notif.title }}</div>
+              <div class="text-muted small text-truncate">{{ notif.message }}</div>
+              <div class="text-muted mt-1" style="font-size: 0.7rem">
+                {{ getTimeAgo(notif.createdAt) }}
+              </div>
+            </div>
+            <span
+              *ngIf="!notif.isRead"
+              class="badge bg-primary rounded-circle p-1 mt-1"
+              style="width: 8px; height: 8px"
+            ></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-clock-history text-info me-2"></i> Recent Activity
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="activities.length === 0" class="text-center py-4 text-muted">
+            <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
+            <small>No recent activity</small>
+          </div>
+          <div
+            *ngFor="let act of activities; let last = last"
+            class="activity-item px-4 py-3 d-flex align-items-start gap-3"
+            [class.border-bottom]="!last"
+          >
+            <div
+              class="activity-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 bg-light"
+            >
+              <i class="bi" [ngClass]="getActionIcon(act.action)"></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <div class="small">
+                <span class="fw-semibold text-dark">{{ act.action }}</span>
+                <span class="text-muted mx-1">on</span>
+                <span class="fw-semibold text-primary">{{ act.module }}</span>
+              </div>
+              <div class="text-muted small text-truncate">
+                {{ act.description || 'Reference #' + act.referenceId }}
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <span
+                  class="badge rounded-pill"
+                  [ngClass]="{
+                    'bg-success-subtle text-success': act.actionStatus === 'SUCCESS',
+                    'bg-danger-subtle text-danger': act.actionStatus === 'FAILED',
+                  }"
+                  style="font-size: 0.65rem"
+                  >{{ act.actionStatus }}</span
+                >
+                <span class="text-muted" style="font-size: 0.7rem">{{
+                  getTimeAgo(act.performedAt)
+                }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- ───────────────── LOADING STATE ───────────────── -->
+<div *ngIf="isLoading" class="d-flex justify-content-center align-items-center py-5">
+  <div class="text-center">
+    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted fw-semibold">Loading Sales Dashboard...</p>
+  </div>
+</div>
+
+<!-- ───────────────── SETTINGS PANEL ───────────────── -->
+<app-dashboard-settings
+  [isOpen]="showSettings"
+  (close)="showSettings = false"
+></app-dashboard-settings>

@@ -1,0 +1,185 @@
+import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
+import { LoginResponse } from '../../../auth/Model/authModel';
+import { NotificationService } from '../../../system/service/notification.service';
+import { NotificationModel } from '../../../system/NotificationModel';
+import { environment } from '../../../../environment/environment';
+
+@Component({
+  selector: 'app-dashboard-settings',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './dashboard-settings.component.html',
+  styleUrls: ['./dashboard-settings.component.css'],
+})
+export class DashboardSettingsComponent implements OnInit {
+  @Input() isOpen = false;
+  @Output() close = new EventEmitter<void>();
+
+  user: LoginResponse | null = null;
+  activeTab = 'profile';
+  isDarkMode = false;
+  sidebarCollapsed = false;
+  notificationsEnabled = true;
+  emailNotifications = false;
+  showWidgets = true;
+  language = 'en';
+  dateFormat = 'MM/dd/yyyy';
+  timeZone = 'Asia/Dhaka';
+  imageUrl = environment.imgUrl;
+
+  notifications: NotificationModel[] = [];
+  unreadCount = 0;
+
+  editMode = false;
+  editName = '';
+  editEmail = '';
+  editPhone = '';
+
+  changePasswordMode = false;
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+
+  constructor(
+    private storage: StorageService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    private notificationService: NotificationService,
+  ) {}
+
+  ngOnInit(): void {
+    this.user = this.storage.getUser();
+    if (this.user) {
+      this.editName = this.user.name || '';
+      this.editEmail = this.user.email || '';
+      this.editPhone = this.user.phone || '';
+    }
+    this.isDarkMode = document.body.classList.contains('dark-theme');
+    this.loadSettings();
+    this.loadNotifications();
+  }
+
+  loadSettings(): void {
+    const settings = this.storage.getData<any>('dashboard_settings');
+    if (settings) {
+      this.sidebarCollapsed = settings.sidebarCollapsed ?? false;
+      this.notificationsEnabled = settings.notificationsEnabled ?? true;
+      this.emailNotifications = settings.emailNotifications ?? false;
+      this.showWidgets = settings.showWidgets ?? true;
+      this.language = settings.language ?? 'en';
+      this.dateFormat = settings.dateFormat ?? 'MM/dd/yyyy';
+      this.timeZone = settings.timeZone ?? 'Asia/Dhaka';
+    }
+  }
+
+  saveSettings(): void {
+    const settings = {
+      sidebarCollapsed: this.sidebarCollapsed,
+      notificationsEnabled: this.notificationsEnabled,
+      emailNotifications: this.emailNotifications,
+      showWidgets: this.showWidgets,
+      language: this.language,
+      dateFormat: this.dateFormat,
+      timeZone: this.timeZone,
+    };
+    this.storage.saveData('dashboard_settings', settings);
+  }
+
+  loadNotifications(): void {
+    this.notificationService.findAll().subscribe({
+      next: (data) => {
+        this.notifications = (data || []).slice(0, 10);
+        this.unreadCount = this.notifications.filter((n) => !n.isRead).length;
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+  }
+
+  markAsRead(id: number): void {
+    this.notificationService.markAsRead(id).subscribe({
+      next: () => {
+        const notif = this.notifications.find((n) => n.id === id);
+        if (notif) notif.isRead = true;
+        this.unreadCount = this.notifications.filter((n) => !n.isRead).length;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  markAllAsRead(): void {
+    this.notificationService.markAllAsRead().subscribe({
+      next: () => {
+        this.notifications.forEach((n) => (n.isRead = true));
+        this.unreadCount = 0;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  toggleTheme(): void {
+    this.isDarkMode = !this.isDarkMode;
+    document.body.classList.toggle('dark-theme', this.isDarkMode);
+    localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
+    this.saveSettings();
+  }
+
+  onSettingsChange(): void {
+    this.saveSettings();
+  }
+
+  closePanel(): void {
+    this.close.emit();
+  }
+
+  setTab(tab: string): void {
+    this.activeTab = tab;
+    this.cdr.markForCheck();
+  }
+
+  saveProfile(): void {
+    this.editMode = false;
+    this.cdr.markForCheck();
+  }
+
+  changePassword(): void {
+    if (this.newPassword !== this.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    this.changePasswordMode = false;
+    this.currentPassword = '';
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.cdr.markForCheck();
+  }
+
+  getRoleDisplayName(role: string): string {
+    const roleMap: Record<string, string> = {
+      ADMIN: 'Administrator',
+      MANAGER: 'Manager',
+      DRIVER: 'Driver',
+      PROCUREMENT: 'Procurement Officer',
+      QC_INSPECTOR: 'QC Inspector',
+      LOGISTICS_OFFICER: 'Logistics Officer',
+      COMMERCIAL_OFFICER: 'Commercial Officer',
+      CUSTOMER: 'Customer',
+      SUPPLIER: 'Supplier',
+      SALES_OFFICER: 'Sales Officer',
+    };
+    return roleMap[role] || role;
+  }
+
+  getInitials(): string {
+    if (!this.user?.name) return 'U';
+    const parts = this.user.name.split(' ');
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+}

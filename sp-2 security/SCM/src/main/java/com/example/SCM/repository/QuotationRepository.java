@@ -7,11 +7,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface QuotationRepository extends JpaRepository<Quotation, Long> {
+
+    List<Quotation> findByValidUntilLessThanEqual(LocalDate date);
+
 
     // ১. ইউনিক কোটেশন নাম্বার দিয়ে কোটেশন খুঁজে বের করার জন্য
     Optional<Quotation> findByQuotationNumber(String quotationNumber);

@@ -6,6 +6,7 @@ import com.example.SCM.service.LCBankService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,18 +14,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/banks")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
 public class LCBankController {
 
     private final LCBankService bankService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> createBank(@RequestBody LCBankRequestDTO dto) {
         LCBankResponseDTO response = bankService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> updateBank(
             @PathVariable Long id,
             @RequestBody LCBankRequestDTO dto) {
@@ -49,6 +52,7 @@ public class LCBankController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBank(@PathVariable Long id) {
         bankService.delete(id);
         return ResponseEntity.ok("LC Bank mapping profile wiped successfully.");

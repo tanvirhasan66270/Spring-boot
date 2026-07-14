@@ -7,6 +7,7 @@ import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
 import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.PurchaseOrderStatus;
 import com.example.SCM.repository.PurchaseOrderRepository;
+import com.example.SCM.repository.PurchaseOrderTokenRepository;
 import com.example.SCM.repository.QuotationRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.role.Role;
@@ -15,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +31,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final QuotationRepository quotationRepository;
     private final PurchaseOrderMapper purchaseOrderMapper;
     private final MailService mailService;
+    private final PurchaseOrderTokenRepository tokenRepository;
 
     private final UserRepository userRepository;
 
@@ -57,6 +61,41 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         // প্রকিউরমেন্ট টিম যখন ডাটা সেভ/সেন্ড করবে প্রাথমিক স্টেট সবসময় DRAFT থাকবে
         po.setStatus(PurchaseOrderStatus.DRAFT);
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
+        PurchaseOrderToken token = new PurchaseOrderToken();
+
+        token.setToken(UUID.randomUUID().toString());
+
+        token.setActive(true);
+
+        token.setExpiryDate(savedPo.getExpectedDeliveryDate());
+
+        token.setPurchaseOrderId(savedPo.getId());
+
+        token.setPoNumber(savedPo.getPoNumber());
+
+        token.setIssuedBy(savedPo.getIssuedBy());
+
+        token.setQuantity(savedPo.getQuantity());
+
+        token.setTotalAmount(savedPo.getTotalAmount());
+
+        token.setCurrency(savedPo.getCurrency());
+
+        token.setExpectedDeliveryDate(savedPo.getExpectedDeliveryDate());
+
+        token.setStatus(savedPo.getStatus());
+
+        token.setSupplierId(savedPo.getSupplier().getId());
+
+        token.setPurchaseRequisitionId(savedPo.getPurchaseRequisition().getId());
+
+        token.setQuotationId(savedPo.getQuotation().getId());
+
+        token.setPurchaseCreatedAt(savedPo.getCreatedAt());
+
+        token.setPurchaseUpdatedAt(savedPo.getUpdatedAt());
+
+      tokenRepository.save(token);
 
         //ম্যানেজারকে ইমেইলে ওয়ান-ক্লিক ISSUED গেটওয়ে রিকোয়েস্ট পাঠানো
         sendPoApprovalMailToManager(savedPo);
@@ -66,8 +105,9 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
     //  Manager One-Click Gateway: Status -> ISSUED & Mail to Supplier
 
-    @Transactional
-    public PurchaseOrderResponseDTO managerIssueOrder(Long id, Long managerId) {
+    @Override
+    public PurchaseOrderResponseDTO managerIssuedOrder(Long id, Long managerId) {
+
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
 
@@ -87,8 +127,9 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
       //Supplier Dashboard / One-Click Gateway: Status -> RECEIVED
 
-    @Transactional
-    public PurchaseOrderResponseDTO supplierReceiveOrder(Long id) {
+    @Override
+    public PurchaseOrderResponseDTO supplierReceivedOrder(Long id) {
+
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
 
@@ -237,28 +278,83 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     @Override
     @Transactional
     public PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto) {
-        if (dto == null) throw new IllegalArgumentException("Update data cannot be null");
-        PurchaseOrder po = purchaseOrderRepository.findByIdWithDetails(id).orElseThrow(() -> new RuntimeException("PO not found with ID: " + id));
-        Quotation quotation = po.getQuotation(); Supplier supplier = po.getSupplier(); PurchaseRequisition pr = po.getPurchaseRequisition();
-        if (dto.getQuotationId() != null && !dto.getQuotationId().equals(quotation.getId())) {
-            quotation = quotationRepository.findById(dto.getQuotationId()).orElseThrow(() -> new RuntimeException("Quotation not found with ID: " + dto.getQuotationId()));
-            supplier = quotation.getSupplier(); pr = quotation.getPurchaseRequisition();
+
+        if (dto == null) {
+            throw new IllegalArgumentException("Update data cannot be null");
         }
+
+        PurchaseOrder po = purchaseOrderRepository.findByIdWithDetails(id)
+                .orElseThrow(() ->
+                        new RuntimeException("PO not found with ID: " + id));
+
+        Quotation quotation = po.getQuotation();
+        Supplier supplier = po.getSupplier();
+        PurchaseRequisition pr = po.getPurchaseRequisition();
+
+        // Quotation Change হলে Supplier ও PR Auto Update
+        if (dto.getQuotationId() != null &&
+                !dto.getQuotationId().equals(quotation.getId())) {
+
+            quotation = quotationRepository.findById(dto.getQuotationId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Quotation not found with ID: "
+                                    + dto.getQuotationId()));
+
+            supplier = quotation.getSupplier();
+            pr = quotation.getPurchaseRequisition();
+        }
+
+        // Update Purchase Order
         purchaseOrderMapper.updateEntity(dto, po, quotation, supplier, pr);
-        return purchaseOrderMapper.convertTOResponseDTO(purchaseOrderRepository.save(po));
+
+        PurchaseOrder updated = purchaseOrderRepository.save(po);
+
+        // ===========================
+        // Update Purchase Order Token
+        // ===========================
+
+        PurchaseOrderToken token =
+                tokenRepository
+                        .findByPurchaseOrderId(updated.getId())
+                        .orElse(null);
+
+        if (token != null) {
+
+            token.setPoNumber(updated.getPoNumber());
+
+            token.setIssuedBy(updated.getIssuedBy());
+
+            token.setQuantity(updated.getQuantity());
+
+            token.setTotalAmount(updated.getTotalAmount());
+
+            token.setCurrency(updated.getCurrency());
+
+            token.setExpectedDeliveryDate(updated.getExpectedDeliveryDate());
+
+            token.setStatus(updated.getStatus());
+
+            token.setSupplierId(updated.getSupplier().getId());
+
+            token.setPurchaseRequisitionId(
+                    updated.getPurchaseRequisition().getId());
+
+            token.setQuotationId(updated.getQuotation().getId());
+
+            token.setPurchaseUpdatedAt(updated.getUpdatedAt());
+
+            tokenRepository.save(token);
+        }
+
+        return purchaseOrderMapper.convertTOResponseDTO(updated);
     }
+
+
 
     @Override @Transactional(readOnly = true) public List<PurchaseOrderResponseDTO> findAll() { return purchaseOrderRepository.findAllPurchaseOrders().stream().map(purchaseOrderMapper::convertTOResponseDTO).collect(Collectors.toList()); }
     @Override @Transactional(readOnly = true) public Optional<PurchaseOrderResponseDTO> getById(Long id) { return purchaseOrderRepository.findByIdWithDetails(id).map(purchaseOrderMapper::convertTOResponseDTO); }
     @Override @Transactional public void delete(Long id) { if (!purchaseOrderRepository.existsById(id)) throw new RuntimeException("PO not found with ID: " + id); purchaseOrderRepository.deleteById(id); }
 
-    @Override
-    public PurchaseOrderResponseDTO managerIssuedOrder(Long id, Long managerId) {
-        return null;
-    }
 
-    @Override
-    public PurchaseOrderResponseDTO supplierReceivedOrder(Long id) {
-        return null;
-    }
+
 }

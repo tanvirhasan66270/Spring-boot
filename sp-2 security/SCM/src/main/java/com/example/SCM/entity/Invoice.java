@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Invoice {
 
     @Id
@@ -36,35 +35,28 @@ public class Invoice {
     private String issuedToName;
 
     @Column(nullable = false)
-    @Builder.Default
     private String currency = "BDT";
 
     private double subtotal;
 
-    @Builder.Default
     private double taxRate = 0.0;
 
     private double taxAmount;
 
-    @Builder.Default
     private double discountAmount = 0.0;
 
-    @Builder.Default
     private double discountPercentage = 0.0;
 
-    @Builder.Default
     private double shippingFees = 0.0;
 
     private double totalAmount;
 
-    @Builder.Default
     private double paidAmount = 0.0;
 
     private double dueAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Enumerated(EnumType.STRING)
@@ -74,7 +66,6 @@ public class Invoice {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Builder.Default
     private InvoiceStatus invoiceStatus = InvoiceStatus.DRAFT;
 
     // Logistics Fields

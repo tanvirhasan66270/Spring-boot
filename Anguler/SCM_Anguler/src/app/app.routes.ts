@@ -1,3 +1,5 @@
+import { Routes } from '@angular/router';
+import { authGuard, roleGuard } from './auth/guard/auth-guard';
 
 import { CountryComponent } from './component/features/address/country.component/country.component';
 import { Division } from './component/features/address/division.component/division.component';
@@ -24,7 +26,6 @@ import { BlankLayoutComponent } from './component/shared/layout/blank-layout.com
 import { MainLayoutComponent } from './component/shared/layout/main-layout.component/main-layout.component';
 import { VeryfyEmailComponent } from './auth/auth_component/veryfy-email.component/veryfy-email.component';
 import { RoleDeriectComponent } from './auth/auth_component/role-deriect.component/role-deriect.component';
-import { Routes } from '@angular/router';
 import { CustomerDashboardComponent } from './component/dashboard/customer-dashboard.component/customer-dashboard.component';
 import { ManagerDashboardComponent } from './component/dashboard/manager-dashboard/manager-dashboard.component';
 import { ProcurementDashboardComponent } from './component/dashboard/procurement-dashboard/procurement-dashboard.component';
@@ -59,9 +60,20 @@ import { PublicServicesComponent } from './component/public/public-services/publ
 import { PublicNetworkComponent } from './component/public/public-network/public-network.component';
 import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
 
+const ALL_ROLES = [
+  'ADMIN',
+  'MANAGER',
+  'DRIVER',
+  'PROCUREMENT',
+  'QC_INSPECTOR',
+  'LOGISTICS_OFFICER',
+  'COMMERCIAL_OFFICER',
+  'CUSTOMER',
+  'SUPPLIER',
+  'SALES_OFFICER',
+];
 
 export const routes: Routes = [
-
   {
     path: '',
     component: PublicLayoutComponent,
@@ -71,39 +83,68 @@ export const routes: Routes = [
       { path: 'services', component: PublicServicesComponent },
       { path: 'network', component: PublicNetworkComponent },
       { path: 'contact', component: PublicContactComponent },
-    ]
+    ],
   },
   {
     path: '',
     component: BlankLayoutComponent,
     children: [
-      { path: 'country-redirect', redirectTo: 'country', pathMatch: 'full' },
-      { path: 'customer', component: CustomerComponent },
-      { path: 'commercial-officer', component: CommercialOfficerComponent },
-      { path: 'driver', component: DriverComponent },
-      { path: 'logistics-officer', component: LogisticsOfficerComponent },
-      { path: 'manager', component: ManagerComponent },
-      { path: 'qc-inspector', component: QcinspactorComponent },
-      { path: 'sales-officer', component: SalesOfficerComponent },
-      { path: 'supplier', component: SupplierComponent },
-      { path: 'procurement', component: ProcourmentComponent },
       { path: 'login', component: LoginComponent },
       { path: 'forgot-password', component: ForgetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
-      { path: 'verify-email', component: VeryfyEmailComponent }
-
-
-
-    ]
+      { path: 'verify-email', component: VeryfyEmailComponent },
+      {
+        path: 'customer',
+        component: CustomerComponent
+     
+      },
+      {
+        path: 'commercial-officer',
+        component: CommercialOfficerComponent,
+      
+      },
+      {
+        path: 'driver',
+        component: DriverComponent,
+     
+      },
+      {
+        path: 'logistics-officer',
+        component: LogisticsOfficerComponent
+      
+      },
+      {
+        path: 'manager',
+        component: ManagerComponent
+      
+      },
+      {
+        path: 'qc-inspector',
+        component: QcinspactorComponent
+      
+      },
+      {
+        path: 'sales-officer',
+        component: SalesOfficerComponent
+     
+      },
+      {
+        path: 'supplier',
+        component: SupplierComponent
+       
+      },
+      {
+        path: 'procurement',
+        component: ProcourmentComponent
+       
+      },
+    ],
   },
-
   {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
-      { path: 'product', component: AddProductComponent },
-      { path: 'category', component: CategoryComponent },
-      { path: 'order', component: CustomerOrderComponent },
       { path: 'dashboard', component: RoleDeriectComponent },
       { path: 'dashboard/customer', component: CustomerDashboardComponent },
       { path: 'dashboard/manager', component: ManagerDashboardComponent },
@@ -114,6 +155,9 @@ export const routes: Routes = [
       { path: 'dashboard/sales', component: SalesDashboardComponent },
       { path: 'dashboard/driver', component: DriverDashboardComponent },
       { path: 'dashboard/supplier', component: SupplierDashboardComponent },
+      { path: 'product', component: AddProductComponent },
+      { path: 'category', component: CategoryComponent },
+      { path: 'order', component: CustomerOrderComponent },
       { path: 'country', component: CountryComponent },
       { path: 'division', component: Division },
       { path: 'district', component: DistrictComponent },
@@ -138,18 +182,7 @@ export const routes: Routes = [
       { path: 'daily-report', component: DailyReportComponent },
       { path: 'notifications', component: NotificationComponent },
       { path: 'messages', component: MassageComponent },
-      { path: 'activity-log', component: ActivityLogComponent }
-      
-
-      // { path: '**', redirectTo: 'good-received-note' }
-
-
-    ]
-  }
-
-
-
-
-
-
+      { path: 'activity-log', component: ActivityLogComponent },
+    ],
+  },
 ];

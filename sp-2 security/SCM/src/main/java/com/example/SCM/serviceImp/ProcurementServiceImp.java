@@ -82,7 +82,7 @@ public class ProcurementServiceImp implements ProcurementService {
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getName());
 
-            dto.setAddress("uploads/procurement/" + imagePath);
+            dto.setAddress(imagePath);
         }
 
         Procurement procurement = procurementMapper.toProcurementEntity(dto, savedUser, policeStation);
@@ -144,7 +144,7 @@ public class ProcurementServiceImp implements ProcurementService {
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getName());
-            procurement.setImage("uploads/procurement/" + newImagePath);
+            procurement.setImage( newImagePath);
         }
 
         return procurementMapper.convertTOResponseDTO(procurementRepository.save(procurement));

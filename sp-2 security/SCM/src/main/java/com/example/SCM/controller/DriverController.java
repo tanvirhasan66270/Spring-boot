@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class DriverController {
 
     private final DriverService driverService;
@@ -72,12 +73,13 @@ public class DriverController {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @driverSecurity.isSelf(#id, authentication)")
     public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {
         return driverService.findUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
 }

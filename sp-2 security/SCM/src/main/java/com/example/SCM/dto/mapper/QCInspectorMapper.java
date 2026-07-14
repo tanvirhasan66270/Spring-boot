@@ -2,9 +2,7 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.QCInspectorRequestDTO;
 import com.example.SCM.dto.response.QCInspectorResponseDTO;
-import com.example.SCM.entity.PoliceStation;
-import com.example.SCM.entity.QCInspector;
-import com.example.SCM.entity.User;
+import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import org.springframework.stereotype.Component;
@@ -47,21 +45,41 @@ public class QCInspectorMapper {
             dto.setRole(user.getRole());
             dto.setUserActive(user.isActive());
         }
+         // =========================
+         // LOCATION INFORMATION
+         // =========================
+         if (inspector.getPoliceStation() != null) {
 
-        // Location Hierarchy (PoliceStation -> District -> Division) ম্যাপিং
-        PoliceStation policeStation = inspector.getPoliceStation();
-        if (policeStation != null) {
-            dto.setPoliceStationId(policeStation.getId());
-            dto.setPoliceStationName(policeStation.getName());
+             PoliceStation ps = inspector.getPoliceStation();
 
-            if (policeStation.getDistrict() != null) {
-                dto.setDistrictName(policeStation.getDistrict().getName());
+             dto.setPoliceStationId(ps.getId());
+             dto.setPoliceStationName(ps.getName());
 
-                if (policeStation.getDistrict().getDivision() != null) {
-                    dto.setDivisionName(policeStation.getDistrict().getDivision().getName());
-                }
-            }
-        }
+             District district = ps.getDistrict();
+
+             if (district != null) {
+
+                 dto.setDistrictId(district.getId());
+                 dto.setDistrictName(district.getName());
+
+                 Division division = district.getDivision();
+
+                 if (division != null) {
+
+                     dto.setDivisionId(division.getId());
+                     dto.setDivisionName(division.getName());
+
+                     Country country = division.getCountry();
+
+                     if (country != null) {
+
+                         dto.setCountryId(country.getId());
+                         dto.setCountryName(country.getName());
+
+                     }
+                 }
+             }
+         }
 
         return dto;
     }

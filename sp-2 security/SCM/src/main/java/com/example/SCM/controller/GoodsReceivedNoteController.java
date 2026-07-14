@@ -6,6 +6,7 @@ import com.example.SCM.service.GoodsReceivedNoteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,12 +14,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/goods-received-notes")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class GoodsReceivedNoteController {
 
     private final GoodsReceivedNoteService goodsReceivedNoteService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> create(@RequestBody GoodsReceivedNoteRequestDTO dto) {
         GoodsReceivedNoteResponseDTO response = goodsReceivedNoteService.save(dto);
         return new ResponseEntity<>(
@@ -28,6 +29,7 @@ public class GoodsReceivedNoteController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> update(
             @PathVariable Long id,
             @RequestBody GoodsReceivedNoteRequestDTO dto
@@ -37,6 +39,7 @@ public class GoodsReceivedNoteController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GoodsReceivedNoteResponseDTO>> getAll() {
         List<GoodsReceivedNoteResponseDTO> list = goodsReceivedNoteService.findAll();
 
@@ -48,6 +51,7 @@ public class GoodsReceivedNoteController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> getById(@PathVariable Long id) {
         return goodsReceivedNoteService.getById(id)
                 .map(ResponseEntity::ok)
@@ -55,6 +59,7 @@ public class GoodsReceivedNoteController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         goodsReceivedNoteService.delete(id);
         return ResponseEntity.ok("Deleted successfully");

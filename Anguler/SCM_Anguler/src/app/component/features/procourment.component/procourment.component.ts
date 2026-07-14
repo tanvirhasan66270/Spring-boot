@@ -35,7 +35,7 @@ export class ProcourmentComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '');
+  readonly imageBaseUrl = environment.imgUrl + "procourment/";
 
   procurement: ProcurementRequestModel = {
     id: 0,
@@ -104,6 +104,9 @@ export class ProcourmentComponent implements OnInit {
     });
   }
 
+  // =====================================================
+  // CASCADING LOCATION LOGICS 
+  // =====================================================
   onCountryChange() {
     this.divisions = [];
     this.districts = [];
@@ -158,6 +161,22 @@ export class ProcourmentComponent implements OnInit {
     });
   }
 
+  onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
+    this.divisionService.getByCountryId(countryId).subscribe(res => {
+      this.divisions = res || [];
+      this.districtService.getByDivisionId(divisionId).subscribe(res2 => {
+        this.districts = res2 || [];
+        this.stationService.getByDistrictId(districtId).subscribe(res3 => {
+          this.policeStations = res3 || [];
+          this.cdr.markForCheck();
+        });
+      });
+    });
+  }
+
+  // =====================================================
+  // AUTO ADDRESS COMPILER
+  // =====================================================
   generateFullAddress() {
     const countryName = this.countries.find(x => x.id == this.selectedCountryId)?.name || '';
     const divisionName = this.divisions.find(x => x.id == this.selectedDivisionId)?.name || '';
@@ -165,7 +184,7 @@ export class ProcourmentComponent implements OnInit {
     const psName = this.policeStations.find(x => x.id == this.procurement.policeStationId)?.name || '';
 
     this.procurement.address = [
-      this.streetAddress,
+      this.streetAddress.trim(),
       psName,
       districtName,
       divisionName,
@@ -173,6 +192,9 @@ export class ProcourmentComponent implements OnInit {
     ].filter(v => v && v.trim() !== '').join(', ');
   }
 
+  // =====================================================
+  // FILE CAPTURE HANDLER
+  // =====================================================
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
@@ -186,24 +208,7 @@ export class ProcourmentComponent implements OnInit {
     reader.readAsDataURL(file);
   }
 
-  removeSelectedFile(fileInput: HTMLInputElement) {
-    this.selectedFile = null;
-    this.imagePreview = null;
-    fileInput.value = '';
-    this.cdr.markForCheck();
-  }
-
-  getImageUrl(imagePath: string | null | undefined): string {
-    return imagePath ? `${this.imageBaseUrl}${imagePath}` : '';
-  }
-
-  onImageError(event: Event): void {
-    const target = event.target as HTMLImageElement | null;
-    if (target) {
-      target.style.display = 'none';
-    }
-  }
-
+ 
   private handleBackendError(err: any) {
     this.errorMessage = null;
     const errorContext = err.error?.message || err.message || '';
@@ -224,6 +229,33 @@ export class ProcourmentComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  removeSelectedFile(fileInput: HTMLInputElement) {
+    this.selectedFile = null;
+    this.imagePreview = null;
+    fileInput.value = '';
+    this.cdr.markForCheck();
+  }
+
+  getImageUrl(imagePath: string | null | undefined): string {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+
+    const baseUrl = this.imageBaseUrl.replace(/\/$/, '');
+    const cleanImagePath = imagePath.replace(/^\//, '');
+
+    return `${baseUrl}/${cleanImagePath}`;
+  }
+
+  onImageError(event: Event): void {
+    const target = event.target as HTMLImageElement | null;
+    if (target) {
+      target.style.display = 'none';
+    }
+  }
+
+  // =====================================================
+  // SAVE / UPDATE MATRIX HANDLER
+  // =====================================================
   save() {
     this.errorMessage = null;
 
@@ -260,6 +292,9 @@ export class ProcourmentComponent implements OnInit {
     }
   }
 
+  // =====================================================
+  // EDIT ENTRY ROW MAPPING
+  // =====================================================
   edit(o: ProcurementResponseDTO) {
     this.errorMessage = null;
     this.currentEditId = o.id;
@@ -287,26 +322,19 @@ export class ProcourmentComponent implements OnInit {
     this.streetAddress = addressParts[0] || '';
     this.imagePreview = o.image ? this.getImageUrl(o.image) : null;
 
-    this.selectedCountryId = (o as any).countryId ? +(o as any).countryId : null;
-    this.selectedDivisionId = (o as any).divisionId ? +(o as any).divisionId : null;
-    this.selectedDistrictId = (o as any).districtId ? +(o as any).districtId : null;
+    this.selectedCountryId = (o as any).countryId ? +(o as any).countryId : ((o as any).policeStation?.district?.division?.country?.id || null);
+    this.selectedDivisionId = (o as any).divisionId ? +(o as any).divisionId : ((o as any).policeStation?.district?.division?.id || null);
+    this.selectedDistrictId = (o as any).districtId ? +(o as any).districtId : ((o as any).policeStation?.district?.id || null);
     this.procurement.policeStationId = o.policeStationId ? +o.policeStationId : 0;
 
-    if (this.selectedCountryId) {
-      this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
-        this.divisions = res || [];
-        if (this.selectedDivisionId) {
-          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
-            this.districts = res2 || [];
-            if (this.selectedDistrictId) {
-              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
-                this.policeStations = res3 || [];
-                this.cdr.markForCheck();
-              });
-            }
-          });
-        }
-      });
+    // ব্যাকআপ চেক: যদি প্যারেন্ট নোড প্রোপার্টি অবজেক্ট আকারে থাকে
+    if (!this.selectedCountryId && (o as any).country) { this.selectedCountryId = +(o as any).country.id; }
+    if (!this.selectedDivisionId && (o as any).division) { this.selectedDivisionId = +(o as any).division.id; }
+    if (!this.selectedDistrictId && (o as any).district) { this.selectedDistrictId = +(o as any).district.id; }
+
+    // পাইপলাইন মেথড ট্রিগার করে রিজিওনাল অপশন অপটিমাইজেশন লোড করা
+    if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
+      this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
     }
 
     this.isDrawerOpen = true;

@@ -13,7 +13,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/qc-checklists")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class QCChecklistController {
 
     private final QCChecklistService qcChecklistService;

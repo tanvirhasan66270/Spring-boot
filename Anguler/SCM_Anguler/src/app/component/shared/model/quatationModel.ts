@@ -4,7 +4,6 @@ export interface QuotationRequestModel {
   productIds: number;
   productName: string;
   purchaseRequisitionId: number;
-  validUntil: string;       // YYYY-MM-DD
   leadTimeDays: number;
   isSelected: boolean;
   receivedAt: string;        // YYYY-MM-DD

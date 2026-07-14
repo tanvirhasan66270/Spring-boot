@@ -2,10 +2,7 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.DriverRequestDTO;
 import com.example.SCM.dto.response.DriverResponseDTO;
-import com.example.SCM.entity.Driver;
-import com.example.SCM.entity.PoliceStation;
-import com.example.SCM.entity.User;
-import com.example.SCM.entity.Warehouse;
+import com.example.SCM.entity.*;
 import com.example.SCM.role.Role;
 import org.springframework.stereotype.Component;
 
@@ -34,26 +31,25 @@ public class DriverMapper {
      * @return Driver entity instance
      */
     public Driver toDriverEntity(DriverRequestDTO dto, User user, Set<Warehouse> warehouses , PoliceStation policeStation) {
-        return Driver.builder()
-                .driverName(dto.getDriverName())
-                .phone(dto.getPhone())
-                .address(dto.getAddress())
-                .nidNumber(dto.getNidNumber())
-                .gender(dto.getGender())
-                .email(dto.getEmail())
-                .vehicleType(dto.getVehicleType())
-                .vehicleNumber(dto.getVehicleNumber())
-                .dob(dto.getDob())
-                .rating(dto.getRating())
-                .totalDeliveries(dto.getTotalDeliveries())
-                .totalEarnings(dto.getTotalEarnings())
-                .image(dto.getImage())
-                .user(user)
-                .active(false)
-                .policeStation(policeStation)
-                .warehouses(warehouses)
-                .build()
-               ;
+        Driver driver = new Driver();
+        driver.setDriverName(dto.getDriverName());
+        driver.setPhone(dto.getPhone());
+        driver.setAddress(dto.getAddress());
+        driver.setNidNumber(dto.getNidNumber());
+        driver.setGender(dto.getGender());
+        driver.setEmail(dto.getEmail());
+        driver.setVehicleType(dto.getVehicleType());
+        driver.setVehicleNumber(dto.getVehicleNumber());
+        driver.setDob(dto.getDob());
+        driver.setRating(dto.getRating());
+        driver.setTotalDeliveries(dto.getTotalDeliveries());
+        driver.setTotalEarnings(dto.getTotalEarnings());
+        driver.setImage(dto.getImage());
+        driver.setUser(user);
+        driver.setActive(false);
+        driver.setPoliceStation(policeStation);
+        driver.setWarehouses(warehouses);
+        return driver;
 
     }
 
@@ -83,9 +79,40 @@ public class DriverMapper {
         dto.setCreatedAt(driver.getCreatedAt());
         dto.setUpdatedAt(driver.getUpdatedAt());
 
+        // =========================
+        // LOCATION INFORMATION
+        // =========================
         if (driver.getPoliceStation() != null) {
-            dto.setPoliceStationId(driver.getPoliceStation().getId());
-            dto.setPoliceStationName(driver.getPoliceStation().getName());
+
+            PoliceStation ps = driver.getPoliceStation();
+
+            dto.setPoliceStationId(ps.getId());
+            dto.setPoliceStationName(ps.getName());
+
+            District district = ps.getDistrict();
+
+            if (district != null) {
+
+                dto.setDistrictId(district.getId());
+                dto.setDistrictName(district.getName());
+
+                Division division = district.getDivision();
+
+                if (division != null) {
+
+                    dto.setDivisionId(division.getId());
+                    dto.setDivisionName(division.getName());
+
+                    Country country = division.getCountry();
+
+                    if (country != null) {
+
+                        dto.setCountryId(country.getId());
+                        dto.setCountryName(country.getName());
+
+                    }
+                }
+            }
         }
 
         if (driver.getUser() != null) {

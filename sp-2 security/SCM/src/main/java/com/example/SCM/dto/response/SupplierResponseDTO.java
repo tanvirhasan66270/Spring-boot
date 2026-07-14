@@ -29,9 +29,15 @@ public class SupplierResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Location
+    // Location IDs
+    private Long countryId;
+    private Long divisionId;
+    private Long districtId;
     private Long policeStationId;
-    private String policeStationName;
-    private String districtName;
+
+    // Location Names
+    private String countryName;
     private String divisionName;
+    private String districtName;
+    private String policeStationName;
 }

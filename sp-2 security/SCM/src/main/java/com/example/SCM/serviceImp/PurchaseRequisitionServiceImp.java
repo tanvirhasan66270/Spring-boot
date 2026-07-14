@@ -4,16 +4,10 @@ import com.example.SCM.Util.MailService;
 import com.example.SCM.dto.mapper.PurchaseRequisitionMapper;
 import com.example.SCM.dto.request.PurchaseRequisitionRequestDTO;
 import com.example.SCM.dto.response.PurchaseRequisitionResponseDTO;
-import com.example.SCM.entity.Product;
-import com.example.SCM.entity.PurchaseRequisition;
-import com.example.SCM.entity.Supplier;
-import com.example.SCM.entity.User;
+import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.PurchaseRequisitionStatus;
-import com.example.SCM.repository.ProductRepository;
-import com.example.SCM.repository.PurchaseRequisitionRepository;
-import com.example.SCM.repository.SupplierRepository;
-import com.example.SCM.repository.UserRepository;
+import com.example.SCM.repository.*;
 import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.PurchaseRequisitionService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,25 +34,33 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     private final MailService mailService;
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
+    private final PurchaseRequisitionTokenRepository tokenRepository;
 
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO save(PurchaseRequisitionRequestDTO dto) {
+
         if (dto == null) {
             throw new IllegalArgumentException("Requisition data cannot be null");
         }
 
         List<Product> products = null;
+
         if (dto.getProductIds() != null && !dto.getProductIds().isEmpty()) {
+
             products = productRepository.findAllById(dto.getProductIds());
+
             if (products.size() != dto.getProductIds().size()) {
                 throw new RuntimeException("One or more Product IDs are invalid!");
             }
         }
 
         List<Supplier> suppliers = null;
+
         if (dto.getSupplierIds() != null && !dto.getSupplierIds().isEmpty()) {
+
             suppliers = supplierRepository.findAllById(dto.getSupplierIds());
+
             if (suppliers.size() != dto.getSupplierIds().size()) {
                 throw new RuntimeException("One or more Supplier IDs are invalid!");
             }
@@ -66,11 +69,71 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         PurchaseRequisition pr = requisitionMapper.toEntity(dto, products, suppliers);
 
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
+
         PurchaseRequisition savedPr = requisitionRepository.save(pr);
+
+        // ===========================
+        // Create Purchase Requisition Token
+        // ===========================
+
+        PurchaseRequisitionToken token = new PurchaseRequisitionToken();
+
+        token.setToken(UUID.randomUUID().toString());
+
+        token.setActive(true);
+
+        token.setExpiryDate(savedPr.getRequiredByDate());
+
+        token.setPurchaseRequisitionId(savedPr.getId());
+
+        token.setRequestedBy(savedPr.getRequestedBy());
+
+        token.setCurrency(savedPr.getCurrency());
+
+        token.setQuantityRequired(savedPr.getQuantityRequired());
+
+        token.setUrgencyLevel(savedPr.getUrgencyLevel());
+
+        token.setRequiredByDate(savedPr.getRequiredByDate());
+
+        token.setApprovalStatus(savedPr.getApprovalStatus());
+
+        token.setApprovedBy(savedPr.getApprovedBy());
+
+        token.setRemarks(savedPr.getRemarks());
+
+        token.setPurchaseCreatedAt(savedPr.getCreatedAt());
+
+        token.setPurchaseUpdatedAt(savedPr.getUpdatedAt());
+
+        token.setTotalProducts(
+                savedPr.getProducts() == null ? 0 : savedPr.getProducts().size()
+        );
+
+        if (savedPr.getProducts() != null && !savedPr.getProducts().isEmpty()) {
+
+            token.setProductNames(
+                    savedPr.getProducts()
+                            .stream()
+                            .map(Product::getName)
+                            .collect(Collectors.joining(", "))
+            );
+        }
+
+        if (savedPr.getSuppliers() != null && !savedPr.getSuppliers().isEmpty()) {
+
+            token.setSupplierNames(
+                    savedPr.getSuppliers()
+                            .stream()
+                            .map(Supplier::getName)
+                            .collect(Collectors.joining(", "))
+            );
+        }
+
+        tokenRepository.save(token);
 
         return requisitionMapper.convertTOResponseDTO(savedPr);
     }
-
     // Manager Approval Node (Auto-Tracks Manager Context & Returns DTO)
     @Transactional
     @Override
@@ -156,18 +219,108 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO update(Long id, PurchaseRequisitionRequestDTO dto) {
+
         PurchaseRequisition pr = requisitionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + id));
 
-        // প্রজেক্ট রুলস অনুযায়ী লক থাকা অবস্থায় এডিট ব্লক করা হলো
+        // Locked Status Check
         if (pr.getApprovalStatus() == PurchaseRequisitionStatus.PENDING ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.APPROVED ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.REJECTED ||
                 pr.getApprovalStatus() == PurchaseRequisitionStatus.CANCELLED) {
-            throw new RuntimeException("Locked! Requisitions in " + pr.getApprovalStatus() + " state cannot be modified.");
+
+            throw new RuntimeException(
+                    "Locked! Requisitions in " + pr.getApprovalStatus() + " state cannot be modified."
+            );
         }
 
-        return requisitionMapper.convertTOResponseDTO(pr);
+        // Product List
+        List<Product> products = null;
+
+        if (dto.getProductIds() != null && !dto.getProductIds().isEmpty()) {
+
+            products = productRepository.findAllById(dto.getProductIds());
+
+            if (products.size() != dto.getProductIds().size()) {
+                throw new RuntimeException("One or more Product IDs are invalid!");
+            }
+        }
+
+        // Supplier List
+        List<Supplier> suppliers = null;
+
+        if (dto.getSupplierIds() != null && !dto.getSupplierIds().isEmpty()) {
+
+            suppliers = supplierRepository.findAllById(dto.getSupplierIds());
+
+            if (suppliers.size() != dto.getSupplierIds().size()) {
+                throw new RuntimeException("One or more Supplier IDs are invalid!");
+            }
+        }
+
+        // Update Entity
+        requisitionMapper.updateEntity(dto, pr, products, suppliers);
+
+        PurchaseRequisition updated = requisitionRepository.save(pr);
+
+        // ===========================
+        // Update Token
+        // ===========================
+
+        PurchaseRequisitionToken token =
+                tokenRepository.findByPurchaseRequisitionId(updated.getId())
+                        .orElse(null);
+
+        if (token != null) {
+
+            token.setExpiryDate(updated.getRequiredByDate());
+
+            token.setRequestedBy(updated.getRequestedBy());
+
+            token.setCurrency(updated.getCurrency());
+
+            token.setQuantityRequired(updated.getQuantityRequired());
+
+            token.setUrgencyLevel(updated.getUrgencyLevel());
+
+            token.setRequiredByDate(updated.getRequiredByDate());
+
+            token.setApprovalStatus(updated.getApprovalStatus());
+
+            token.setApprovedBy(updated.getApprovedBy());
+
+            token.setRemarks(updated.getRemarks());
+
+            token.setPurchaseUpdatedAt(updated.getUpdatedAt());
+
+            token.setTotalProducts(
+                    updated.getProducts() == null ? 0 : updated.getProducts().size()
+            );
+
+            if (updated.getProducts() != null && !updated.getProducts().isEmpty()) {
+
+                token.setProductNames(
+                        updated.getProducts()
+                                .stream()
+                                .map(Product::getName)
+                                .collect(Collectors.joining(", "))
+                );
+            }
+
+            if (updated.getSuppliers() != null && !updated.getSuppliers().isEmpty()) {
+
+                token.setSupplierNames(
+                        updated.getSuppliers()
+                                .stream()
+                                .map(Supplier::getName)
+                                .collect(Collectors.joining(", "))
+                );
+            }
+
+            tokenRepository.save(token);
+        }
+
+        return requisitionMapper.convertTOResponseDTO(updated);
     }
 
     private void sendRequisitionEmailToSuppliers(PurchaseRequisition pr) {

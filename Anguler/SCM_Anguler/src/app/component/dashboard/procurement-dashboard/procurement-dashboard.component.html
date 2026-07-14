@@ -1,27 +1,100 @@
 <div class="procurement-dashboard px-3 py-4">
-
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <div
+    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
+  >
     <div>
       <h3 class="fw-bold mb-1 text-dark">Procurement Control Board</h3>
-      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Sourcing operations and supplier bidding matrix.</p>
+      <p class="text-secondary small mb-0">
+        Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Sourcing
+        operations and supplier bidding matrix.
+      </p>
     </div>
-    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Terminate Session
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        class="btn btn-sm btn-outline-secondary rounded-pill"
+        (click)="showSettings = !showSettings"
+        title="Dashboard Settings"
+      >
+        <i class="bi bi-gear"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Terminate Session
+      </button>
+    </div>
   </div>
 
   <!-- ───────────────── KPI GRID ───────────────── -->
-  <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">
     <div class="col" *ngFor="let kpi of kpis">
-      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
-        <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
-        <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+      <div
+        class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{
+          kpi.color
+        }} h-100"
+      >
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
+            <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+          </div>
+          <div class="kpi-icon-wrap bg-{{ kpi.color }}-subtle">
+            <i class="bi {{ kpi.icon }} text-{{ kpi.color }}"></i>
+          </div>
+        </div>
         <div class="small font-monospace">
-          <span class="text-success fw-bold">
-            <i class="bi bi-arrow-up-right"></i> +{{ kpi.trend }}%
+          <span [class]="kpi.trendDir === 'up' ? 'text-success fw-bold' : 'text-danger fw-bold'">
+            <i
+              class="bi"
+              [ngClass]="kpi.trendDir === 'up' ? 'bi-arrow-up-right' : 'bi-arrow-down-right'"
+            ></i>
+            {{ kpi.trendDir === 'up' ? '+' : '-' }}{{ kpi.trend }}%
           </span>
           <span class="text-muted small ms-1">vs last period</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── SECONDARY KPI ROW ───────────────── -->
+  <div class="row row-cols-1 row-cols-md-3 g-3 mb-4">
+    <div class="col">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon-wrap bg-success-subtle">
+            <i class="bi bi-cash-stack text-success"></i>
+          </div>
+          <div>
+            <div class="text-secondary small text-uppercase fw-bold">Total Spend</div>
+            <div class="fs-5 fw-bold text-dark font-monospace">
+              {{ formatCurrency(totalSpend) }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon-wrap bg-warning-subtle">
+            <i class="bi bi-hourglass-split text-warning"></i>
+          </div>
+          <div>
+            <div class="text-secondary small text-uppercase fw-bold">Pending POs</div>
+            <div class="fs-5 fw-bold text-dark font-monospace">{{ pendingPOs }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+        <div class="d-flex align-items-center gap-3">
+          <div class="kpi-icon-wrap bg-teal-subtle">
+            <i class="bi bi-check2-circle text-teal"></i>
+          </div>
+          <div>
+            <div class="text-secondary small text-uppercase fw-bold">Approved PRs</div>
+            <div class="fs-5 fw-bold text-dark font-monospace">{{ approvedPRs }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -30,21 +103,30 @@
   <!-- ───────────────── QUICK ACTIONS ───────────────── -->
   <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <a routerLink="/purchase-requisition" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/purchase-requisition"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-file-earmark-plus fs-2 text-teal mb-1 d-block"></i>
         <strong class="text-dark d-block">Create Requisition</strong>
         <small class="text-muted">Launch component sourcing request</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/purchase-order" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/purchase-order"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-cart-plus fs-2 text-primary mb-1 d-block"></i>
         <strong class="text-dark d-block">Issue Purchase Order</strong>
         <small class="text-muted">Dispatch approved component PO to vendor</small>
       </a>
     </div>
     <div class="col-md-4">
-      <a routerLink="/quotation" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/quotation"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-file-richtext fs-2 text-warning mb-1 d-block"></i>
         <strong class="text-dark d-block">Award Quotations</strong>
         <small class="text-muted">Approve and bind supplier quotation rates</small>
@@ -55,9 +137,17 @@
   <!-- ───────────────── MIDDLE LAYOUT: SHORTAGE ALERTS & COST ───────────────── -->
   <div class="row g-4 mb-4">
     <div class="col-md-5">
-      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 border-top border-danger border-4">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-exclamation-triangle text-danger me-2"></i> Inventory Critical Shortages</h6>
-        <div class="table-responsive">
+      <div
+        class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 border-top border-danger border-4"
+      >
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-exclamation-triangle text-danger me-2"></i> Inventory Critical Shortages
+        </h6>
+        <div *ngIf="shortages.length === 0" class="text-center text-muted py-4">
+          <i class="bi bi-check-circle fs-1 text-success d-block mb-2"></i>
+          <small>No critical shortages detected</small>
+        </div>
+        <div class="table-responsive" *ngIf="shortages.length > 0">
           <table class="table table-hover align-middle mb-0 fs-8">
             <thead class="table-light">
               <tr>
@@ -72,7 +162,9 @@
                 <td class="fw-bold text-dark">{{ s.item }}</td>
                 <td class="font-monospace text-danger">{{ s.stock }}</td>
                 <td class="font-monospace text-muted">{{ s.threshold }}</td>
-                <td><span class="badge bg-danger">{{ s.urgency }}</span></td>
+                <td>
+                  <span class="badge bg-danger">{{ s.urgency }}</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -82,23 +174,26 @@
 
     <div class="col-md-7">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-currency-dollar text-success me-2"></i> Procurement Cost Analytics</h6>
-        <svg viewBox="0 0 500 150" width="100%" height="150">
-          <line x1="45" y1="10" x2="480" y2="10" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="45" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="45" y1="110" x2="480" y2="110" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="45" y1="130" x2="480" y2="130" stroke="#cbd5e1" stroke-width="1.5"></line>
-          
-          <rect x="75" y="30" width="30" height="100" fill="#0d9488" rx="3"></rect>
-          <rect x="175" y="50" width="30" height="80" fill="#0d9488" rx="3"></rect>
-          <rect x="275" y="20" width="30" height="110" fill="#0d9488" rx="3"></rect>
-          <rect x="375" y="70" width="30" height="60" fill="#0d9488" rx="3"></rect>
-          
-          <text x="90" y="145" font-size="10.5" fill="#64748b" text-anchor="middle">Sourcing</text>
-          <text x="190" y="145" font-size="10.5" fill="#64748b" text-anchor="middle">Logistics</text>
-          <text x="290" y="145" font-size="10.5" fill="#64748b" text-anchor="middle">Bidding</text>
-          <text x="390" y="145" font-size="10.5" fill="#64748b" text-anchor="middle">Tariff</text>
-        </svg>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-currency-dollar text-success me-2"></i> Procurement Cost Analytics
+        </h6>
+        <div class="d-flex align-items-end gap-3 mb-3" style="height: 160px">
+          <div
+            *ngFor="let cat of costCategories"
+            class="flex-fill d-flex flex-column align-items-center justify-content-end h-100"
+          >
+            <small class="font-monospace fw-bold text-dark mb-1" *ngIf="cat.value > 0">{{
+              formatCurrency(cat.value)
+            }}</small>
+            <div class="cost-bar w-100 rounded-top" [style.height.%]="cat.pct || 5"></div>
+            <small class="text-muted mt-1 text-center">{{ cat.label }}</small>
+            <small class="text-secondary font-monospace">{{ cat.pct }}%</small>
+          </div>
+        </div>
+        <div class="border-top pt-2 d-flex justify-content-between">
+          <small class="text-muted">Total Procurement Spend</small>
+          <small class="fw-bold text-dark font-monospace">{{ formatCurrency(costTotal) }}</small>
+        </div>
       </div>
     </div>
   </div>
@@ -106,10 +201,16 @@
   <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
     <div class="card-header bg-white py-3 border-0">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase"><i class="bi bi-clock-history text-teal me-2"></i> SCM Request For Quotations (RFQ) Log</h6>
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-clock-history text-teal me-2"></i> SCM Request For Quotations (RFQ) Log
+      </h6>
     </div>
     <div class="card-body p-0">
-      <div class="table-responsive">
+      <div *ngIf="rfqs.length === 0 && !loading" class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        <small>No RFQs recorded yet</small>
+      </div>
+      <div class="table-responsive" *ngIf="rfqs.length > 0">
         <table class="table table-hover align-middle mb-0 fs-8">
           <thead class="table-light text-uppercase">
             <tr>
@@ -127,12 +228,16 @@
               <td class="font-monospace">{{ r.qty }} Units</td>
               <td>{{ r.supplier }}</td>
               <td>
-                <span class="badge text-uppercase" 
-                      [ngClass]="{
-                        'bg-success': r.status === 'Awarded',
-                        'bg-primary': r.status === 'Active',
-                        'bg-secondary': r.status === 'Draft'
-                      }">
+                <span
+                  class="badge text-uppercase"
+                  [ngClass]="{
+                    'bg-success': r.status === 'Awarded' || r.status === 'APPROVED',
+                    'bg-primary': r.status === 'Active' || r.status === 'ACTIVE',
+                    'bg-secondary': r.status === 'Draft' || r.status === 'DRAFT',
+                    'bg-warning': r.status === 'PENDING',
+                    'bg-info': r.status === 'SENT',
+                  }"
+                >
                   {{ r.status }}
                 </span>
               </td>
@@ -143,4 +248,109 @@
     </div>
   </div>
 
+  <!-- ───────────────── NOTIFICATIONS & ACTIVITY ───────────────── -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-bell text-warning me-2"></i> Recent Notifications
+          </h6>
+          <span class="badge bg-warning-subtle text-warning">{{ notifications.length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="notifications.length === 0" class="text-center text-muted py-4">
+            <i class="bi bi-bell-slash fs-3 d-block mb-1"></i>
+            <small>No notifications</small>
+          </div>
+          <div class="notification-list" *ngIf="notifications.length > 0">
+            <div
+              class="notification-item px-4 py-3 border-bottom"
+              *ngFor="let n of notifications"
+              [class.unread]="!n.isRead"
+            >
+              <div class="d-flex align-items-start gap-3">
+                <i class="bi {{ getNotificationTypeIcon(n.type) }} text-primary mt-1"></i>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold text-dark small">{{ n.title }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem">{{ n.message }}</div>
+                </div>
+                <small class="text-muted font-monospace">{{ formatTime(n.createdAt) }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-activity text-info me-2"></i> Activity Log
+          </h6>
+          <span class="badge bg-info-subtle text-info">{{ activities.length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="activities.length === 0" class="text-center text-muted py-4">
+            <i class="bi bi-clock-history fs-3 d-block mb-1"></i>
+            <small>No activity recorded</small>
+          </div>
+          <div class="activity-list" *ngIf="activities.length > 0">
+            <div class="activity-item px-4 py-3 border-bottom" *ngFor="let a of activities">
+              <div class="d-flex align-items-start gap-3">
+                <i class="bi {{ getActionIcon(a.action) }} mt-1"></i>
+                <div class="flex-grow-1">
+                  <div class="small">
+                    <span class="fw-bold text-dark">{{ a.userEmail || 'System' }}</span>
+                    <span class="text-muted mx-1">{{ a.action.toLowerCase() }}</span>
+                    <span class="fw-semibold text-primary">{{ a.module }}</span>
+                    <span class="text-muted mx-1">#{{ a.referenceId }}</span>
+                  </div>
+                  <div *ngIf="a.description" class="text-muted" style="font-size: 0.72rem">
+                    {{ a.description }}
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span
+                    class="badge"
+                    [ngClass]="
+                      a.actionStatus === 'SUCCESS'
+                        ? 'bg-success-subtle text-success'
+                        : 'bg-danger-subtle text-danger'
+                    "
+                  >
+                    {{ a.actionStatus }}
+                  </span>
+                  <small
+                    class="d-block text-muted font-monospace mt-1"
+                    style="font-size: 0.68rem"
+                    >{{ formatTime(a.performedAt) }}</small
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── LOADING STATE ───────────────── -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-teal" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2 mb-0">Loading procurement data...</p>
+  </div>
+
+  <!-- ───────────────── SETTINGS PANEL ───────────────── -->
+  <app-dashboard-settings
+    [isOpen]="showSettings"
+    (close)="showSettings = false"
+  ></app-dashboard-settings>
 </div>

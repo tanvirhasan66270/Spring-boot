@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -17,13 +18,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/procurements")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class ProcurementController {
 
     private final ProcurementService procurementService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PostMapping
     public ResponseEntity<ProcurementResponseDTO> save(
             @RequestPart("procurement") String procurementJson,
             @RequestPart(value = "file", required = false) MultipartFile file) {
@@ -35,7 +36,7 @@ public class ProcurementController {
         }
     }
 
-    @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    @PutMapping(value = "/{id}")
     public ResponseEntity<ProcurementResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("procurement") String procurementJson,
@@ -65,7 +66,9 @@ public class ProcurementController {
         procurementService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @procurementSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ProcurementResponseDTO> getByUserId(@PathVariable Long id) {
         return procurementService.findUserById(id)
                 .map(ResponseEntity::ok)

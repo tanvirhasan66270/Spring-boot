@@ -1,25 +1,49 @@
 <div class="manager-dashboard px-3 py-4">
-
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <div
+    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
+  >
     <div>
       <h3 class="fw-bold mb-1 text-dark">Manager Command Console</h3>
-      <p class="text-secondary small mb-0">System Node User: <strong class="text-primary">{{ userName }}</strong> | Overview of SCM ecosystem health and metrics.</p>
+      <p class="text-secondary small mb-0">
+        System Node User: <strong class="text-primary">{{ userName }}</strong> | Overview of SCM
+        ecosystem health and metrics.
+      </p>
     </div>
-    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Terminate Session
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        class="btn btn-sm btn-outline-secondary rounded-3"
+        (click)="showSettings = !showSettings"
+        title="Dashboard Settings"
+      >
+        <i class="bi bi-gear fs-6"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Terminate Session
+      </button>
+    </div>
   </div>
 
   <!-- ───────────────── KPI ROW ───────────────── -->
   <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
     <div class="col" *ngFor="let kpi of kpis">
-      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
+      <div
+        class="card border-0 shadow-sm p-3 rounded-4 bg-white border-start border-5 border-{{
+          kpi.color
+        }} h-100"
+      >
         <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
         <div class="fs-3 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
         <div class="small font-monospace">
-          <span class="fw-bold" [class.text-success]="kpi.trend > 0" [class.text-danger]="kpi.trend < 0">
-            <i class="bi" [ngClass]="kpi.trend > 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-left'"></i>
+          <span
+            class="fw-bold"
+            [class.text-success]="kpi.trend > 0"
+            [class.text-danger]="kpi.trend < 0"
+          >
+            <i
+              class="bi"
+              [ngClass]="kpi.trend > 0 ? 'bi-arrow-up-right' : 'bi-arrow-down-left'"
+            ></i>
             {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}%
           </span>
           <span class="text-muted small ms-1">vs last month</span>
@@ -28,34 +52,76 @@
     </div>
   </div>
 
+  <!-- ───────────────── LOADING SKELETON ───────────────── -->
+  <div *ngIf="isLoading" class="row g-4 mb-4">
+    <div class="col-md-7">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <div class="skeleton skeleton-title mb-3"></div>
+        <div class="skeleton skeleton-chart"></div>
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+        <div class="skeleton skeleton-title mb-3"></div>
+        <div class="skeleton skeleton-bar mb-2"></div>
+        <div class="skeleton skeleton-bar mb-2"></div>
+        <div class="skeleton skeleton-bar mb-2"></div>
+        <div class="skeleton skeleton-bar"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ───────────────── QUICK ACTIONS ───────────────── -->
   <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
-    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i> Managerial Quick Shortcuts</h6>
+    <h6 class="fw-bold text-dark mb-3">
+      <i class="bi bi-lightning-charge text-warning me-2"></i> Managerial Quick Shortcuts
+    </h6>
     <div class="row g-3">
-      <div class="col-md-4">
-        <a routerLink="/daily-report" class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none">
+      <div class="col-md-3">
+        <a
+          routerLink="/daily-report"
+          class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none"
+        >
           <i class="bi bi-file-earmark-bar-graph fs-2 text-primary"></i>
           <div>
-            <strong class="text-dark d-block">Generate Daily Report</strong>
-            <small class="text-muted">Export active operational matrices</small>
+            <strong class="text-dark d-block">Daily Report</strong>
+            <small class="text-muted">Export operational matrices</small>
           </div>
         </a>
       </div>
-      <div class="col-md-4">
-        <a routerLink="/activity-log" class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none">
+      <div class="col-md-3">
+        <a
+          routerLink="/activity-log"
+          class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none"
+        >
           <i class="bi bi-shield-check fs-2 text-success"></i>
           <div>
-            <strong class="text-dark d-block">Audit Activity Logs</strong>
-            <small class="text-muted">Trace node modifications compliance</small>
+            <strong class="text-dark d-block">Audit Logs</strong>
+            <small class="text-muted">Trace node modifications</small>
           </div>
         </a>
       </div>
-      <div class="col-md-4">
-        <a routerLink="/warehouse" class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none">
+      <div class="col-md-3">
+        <a
+          routerLink="/warehouse"
+          class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none"
+        >
           <i class="bi bi-building-up fs-2 text-warning"></i>
           <div>
-            <strong class="text-dark d-block">Manage Infrastructure</strong>
-            <small class="text-muted">Monitor warehouse layout capacity</small>
+            <strong class="text-dark d-block">Infrastructure</strong>
+            <small class="text-muted">Warehouse capacity</small>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-3">
+        <a
+          routerLink="/purchase-requisitions"
+          class="action-card p-3 rounded-3 border d-flex align-items-center gap-3 text-decoration-none"
+        >
+          <i class="bi bi-clipboard-check fs-2 text-info"></i>
+          <div>
+            <strong class="text-dark d-block">Requisitions</strong>
+            <small class="text-muted">Manage PR workflows</small>
           </div>
         </a>
       </div>
@@ -63,39 +129,246 @@
   </div>
 
   <!-- ───────────────── CHARTS GRID ───────────────── -->
-  <div class="row g-4 mb-4">
-    <div class="col-md-7">
+  <div class="row g-4 mb-4" *ngIf="!isLoading">
+    <div class="col-md-8">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-cash-stack text-primary me-2"></i> Revenue & Spend Analytics (Simulated)</h6>
-        <svg viewBox="0 0 500 200" width="100%" height="180">
-          <line x1="40" y1="20" x2="480" y2="20" stroke="#f3f3f3" stroke-width="1"></line>
-          <line x1="40" y1="80" x2="480" y2="80" stroke="#f3f3f3" stroke-width="1"></line>
-          <line x1="40" y1="140" x2="480" y2="140" stroke="#f3f3f3" stroke-width="1"></line>
-          <line x1="40" y1="170" x2="480" y2="170" stroke="#ddd" stroke-width="1.5"></line>
-          
-          <!-- Area/Path for Revenue -->
-          <path d="M 40 170 Q 120 100, 200 120 T 360 60 T 480 40 L 480 170 Z" fill="rgba(79, 99, 240, 0.15)"></path>
-          <path d="M 40 170 Q 120 100, 200 120 T 360 60 T 480 40" fill="none" stroke="#4f63f0" stroke-width="3"></path>
-          
-          <text x="40" y="190" font-size="10.5" fill="#999">Q1</text>
-          <text x="200" y="190" font-size="10.5" fill="#999">Q2</text>
-          <text x="360" y="190" font-size="10.5" fill="#999">Q3</text>
-          <text x="480" y="190" font-size="10.5" fill="#999" text-anchor="end">Active Q4</text>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0">
+            <i class="bi bi-cash-stack text-primary me-2"></i> Revenue & Spend Analytics
+          </h6>
+          <div class="d-flex gap-3 small">
+            <span
+              ><span
+                class="d-inline-block rounded-circle me-1"
+                style="width: 10px; height: 10px; background: #4f63f0"
+              ></span>
+              Revenue</span
+            >
+            <span
+              ><span
+                class="d-inline-block rounded-circle me-1"
+                style="width: 10px; height: 10px; background: #f97066"
+              ></span>
+              Expenses</span
+            >
+          </div>
+        </div>
+        <svg *ngIf="chartMonths.length" viewBox="0 0 520 200" width="100%" height="180">
+          <line
+            *ngFor="let y of [30, 80, 130, 170]"
+            x1="40"
+            [attr.y1]="y"
+            x2="500"
+            [attr.y2]="y"
+            stroke="#f3f3f3"
+            stroke-width="1"
+          ></line>
+          <line x1="40" y1="170" x2="500" y2="170" stroke="#ddd" stroke-width="1.5"></line>
+
+          <!-- Revenue line -->
+          <polyline
+            *ngIf="chartRevenue.length"
+            [attr.points]="chartRevenue.map((v, i) => 60 + i * 80 + ',' + getChartY(v)).join(' ')"
+            fill="none"
+            stroke="#4f63f0"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></polyline>
+          <circle
+            *ngFor="let v of chartRevenue; let i = index"
+            [attr.cx]="60 + i * 80"
+            [attr.cy]="getChartY(v)"
+            r="4"
+            fill="#4f63f0"
+          ></circle>
+
+          <!-- Expenses line -->
+          <polyline
+            *ngIf="chartExpenses.length"
+            [attr.points]="chartExpenses.map((v, i) => 60 + i * 80 + ',' + getChartY(v)).join(' ')"
+            fill="none"
+            stroke="#f97066"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-dasharray="6 3"
+          ></polyline>
+          <circle
+            *ngFor="let v of chartExpenses; let i = index"
+            [attr.cx]="60 + i * 80"
+            [attr.cy]="getChartY(v)"
+            r="4"
+            fill="#f97066"
+          ></circle>
+
+          <!-- Labels -->
+          <text
+            *ngFor="let m of chartMonths; let i = index"
+            [attr.x]="60 + i * 80"
+            y="192"
+            font-size="10.5"
+            fill="#999"
+            text-anchor="middle"
+          >
+            {{ m }}
+          </text>
         </svg>
+        <div *ngIf="!chartMonths.length" class="text-center text-muted py-5">
+          <i class="bi bi-bar-chart fs-1 d-block mb-2 opacity-25"></i>
+          <small>No chart data available</small>
+        </div>
       </div>
     </div>
-    
-    <div class="col-md-5">
+
+    <div class="col-md-4">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-stack text-success me-2"></i> Department Performance Indicators</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-stack text-success me-2"></i> Department Performance
+        </h6>
         <div class="d-flex flex-column gap-3">
           <div *ngFor="let dept of deptPerformance">
             <div class="d-flex justify-content-between small fw-bold mb-1">
               <span class="text-dark">{{ dept.name }}</span>
               <span class="text-muted">{{ dept.score }}%</span>
             </div>
-            <div class="progress" style="height: 8px;">
-              <div class="progress-bar bg-{{ dept.color }}" role="progressbar" [style.width.%]="dept.score"></div>
+            <div class="progress" style="height: 8px">
+              <div
+                class="progress-bar bg-{{ dept.color }}"
+                role="progressbar"
+                [style.width.%]="dept.score"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-top">
+          <div class="row text-center">
+            <div class="col">
+              <div class="fw-bold text-dark fs-5 font-monospace">
+                {{ totalRevenue > 0 ? '৳' + formatNumber(totalRevenue) : '৳0' }}
+              </div>
+              <div class="small text-muted">Revenue</div>
+            </div>
+            <div class="col">
+              <div class="fw-bold text-danger fs-5 font-monospace">
+                {{ totalExpenses > 0 ? '৳' + formatNumber(totalExpenses) : '৳0' }}
+              </div>
+              <div class="small text-muted">Expenses</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── NOTIFICATIONS & ACTIVITY ───────────────── -->
+  <div class="row g-4 mb-4" *ngIf="!isLoading">
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-bell text-warning me-2"></i> Recent Notifications
+          </h6>
+          <span class="badge bg-primary rounded-pill" *ngIf="notifications.length">{{
+            notifications.length
+          }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="notifications.length === 0" class="text-center py-4 text-muted">
+            <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
+            <small>No recent notifications</small>
+          </div>
+          <div
+            *ngFor="let notif of notifications; let last = last"
+            class="notif-item px-4 py-3 d-flex align-items-start gap-3"
+            [class.border-bottom]="!last"
+          >
+            <div
+              class="notif-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+              [ngClass]="{
+                'bg-success-subtle text-success': notif.type === 'SHIPMENT',
+                'bg-warning-subtle text-warning': notif.type === 'TRIP_ALERT',
+                'bg-primary-subtle text-primary': notif.type === 'REPORT_APPROVED',
+              }"
+            >
+              <i
+                class="bi"
+                [ngClass]="{
+                  'bi-truck': notif.type === 'SHIPMENT',
+                  'bi-exclamation-triangle': notif.type === 'TRIP_ALERT',
+                  'bi-check-circle': notif.type === 'REPORT_APPROVED',
+                }"
+              ></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <div class="fw-semibold text-dark small">{{ notif.title }}</div>
+              <div class="text-muted small text-truncate">{{ notif.message }}</div>
+              <div class="text-muted mt-1" style="font-size: 0.7rem">
+                {{ getTimeAgo(notif.createdAt) }}
+              </div>
+            </div>
+            <span
+              *ngIf="!notif.isRead"
+              class="badge bg-primary rounded-circle p-1 mt-1"
+              style="width: 8px; height: 8px"
+            ></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark">
+            <i class="bi bi-clock-history text-info me-2"></i> Recent Activity
+          </h6>
+          <a routerLink="/activity-log" class="text-primary small text-decoration-none fw-semibold"
+            >View All</a
+          >
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="activities.length === 0" class="text-center py-4 text-muted">
+            <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
+            <small>No recent activity</small>
+          </div>
+          <div
+            *ngFor="let act of activities; let last = last"
+            class="activity-item px-4 py-3 d-flex align-items-start gap-3"
+            [class.border-bottom]="!last"
+          >
+            <div
+              class="activity-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 bg-light"
+            >
+              <i class="bi" [ngClass]="getActionIcon(act.action)"></i>
+            </div>
+            <div class="flex-grow-1 min-width-0">
+              <div class="small">
+                <span class="fw-semibold text-dark">{{ act.action }}</span>
+                <span class="text-muted mx-1">on</span>
+                <span class="fw-semibold text-primary">{{ act.module }}</span>
+              </div>
+              <div class="text-muted small text-truncate">
+                {{ act.description || 'Reference #' + act.referenceId }}
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-1">
+                <span
+                  class="badge rounded-pill"
+                  [ngClass]="{
+                    'bg-success-subtle text-success': act.actionStatus === 'SUCCESS',
+                    'bg-danger-subtle text-danger': act.actionStatus === 'FAILED',
+                  }"
+                  style="font-size: 0.65rem"
+                  >{{ act.actionStatus }}</span
+                >
+                <span class="text-muted" style="font-size: 0.7rem">{{
+                  getTimeAgo(act.performedAt)
+                }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -104,9 +377,11 @@
   </div>
 
   <!-- ───────────────── PENDING APPROVALS ───────────────── -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" *ngIf="!isLoading">
     <div class="card-header bg-white py-3 border-0">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase"><i class="bi bi-shield-exclamation text-danger me-2"></i> Manager Pending Approvals</h6>
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-shield-exclamation text-danger me-2"></i> Manager Pending Approvals
+      </h6>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -122,19 +397,32 @@
           </thead>
           <tbody>
             <tr *ngFor="let req of approvals">
-              <td class="ps-4 font-monospace fw-bold text-secondary">{{ req.id }}</td>
+              <td class="ps-4 font-monospace fw-bold text-secondary">#PR-{{ req.id }}</td>
               <td class="fw-semibold text-dark">{{ req.type }}</td>
               <td>{{ req.requester }}</td>
               <td class="font-monospace fw-bold text-success">
                 {{ req.amount > 0 ? '৳' + (req.amount | number) : 'No Financial impact' }}
               </td>
               <td class="text-end pe-4">
-                <button class="btn btn-sm btn-outline-success me-1 px-2.5 py-0.5 rounded-2" (click)="approve(req.id)">Approve</button>
-                <button class="btn btn-sm btn-outline-danger px-2.5 py-0.5 rounded-2" (click)="reject(req.id)">Reject</button>
+                <button
+                  class="btn btn-sm btn-outline-success me-1 px-2 py-0.5 rounded-2"
+                  (click)="approve(req.id)"
+                >
+                  <i class="bi bi-check-lg"></i> Approve
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-danger px-2 py-0.5 rounded-2"
+                  (click)="reject(req.id)"
+                >
+                  <i class="bi bi-x-lg"></i> Reject
+                </button>
               </td>
             </tr>
             <tr *ngIf="approvals.length === 0">
-              <td colspan="5" class="text-center py-4 text-muted">All compliance approval items cleared.</td>
+              <td colspan="5" class="text-center py-4 text-muted">
+                <i class="bi bi-check-circle text-success me-1"></i> All compliance approval items
+                cleared.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -142,4 +430,53 @@
     </div>
   </div>
 
+  <!-- ───────────────── SUMMARY ROW ───────────────── -->
+  <div class="row g-3 mb-4" *ngIf="!isLoading">
+    <div class="col-md-3">
+      <div
+        class="card border-0 shadow-sm bg-gradient-primary text-white rounded-4 p-3 text-center summary-card"
+      >
+        <i class="bi bi-currency-dollar fs-2 mb-1"></i>
+        <div class="fw-bold fs-4 font-monospace">
+          {{ totalRevenue > 0 ? '৳' + formatNumber(totalRevenue) : '৳0' }}
+        </div>
+        <div class="small opacity-75">Total Revenue (Issued)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div
+        class="card border-0 shadow-sm bg-gradient-danger text-white rounded-4 p-3 text-center summary-card"
+      >
+        <i class="bi bi-wallet2 fs-2 mb-1"></i>
+        <div class="fw-bold fs-4 font-monospace">
+          {{ totalExpenses > 0 ? '৳' + formatNumber(totalExpenses) : '৳0' }}
+        </div>
+        <div class="small opacity-75">Total PO Spend</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div
+        class="card border-0 shadow-sm bg-gradient-success text-white rounded-4 p-3 text-center summary-card"
+      >
+        <i class="bi bi-building fs-2 mb-1"></i>
+        <div class="fw-bold fs-4 font-monospace">{{ warehouseCount }}</div>
+        <div class="small opacity-75">Active Warehouses</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div
+        class="card border-0 shadow-sm bg-gradient-info text-white rounded-4 p-3 text-center summary-card"
+      >
+        <i class="bi bi-shield-check fs-2 mb-1"></i>
+        <div class="fw-bold fs-4 font-monospace">{{ pendingApprovalsCount }}</div>
+        <div class="small opacity-75">Pending Approvals</div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- ───────────────── SETTINGS PANEL ───────────────── -->
+<app-dashboard-settings
+  [isOpen]="showSettings"
+  (close)="showSettings = false"
+></app-dashboard-settings>

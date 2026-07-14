@@ -64,14 +64,14 @@ public class MessageServiceImp {
     }
 
     private Message buildMessageObject(MessageRequestDTO dto, String senderId, String senderName, String recipientId) {
-        return Message.builder()
-                .senderId(senderId)
-                .senderName(senderName)
-                .recipientId(recipientId)
-                .subject(dto.getSubject())
-                .body(dto.getBody())
-                .priority(dto.getPriority().toUpperCase())
-                .build();
+        Message message = new Message();
+        message.setSenderId(senderId);
+        message.setSenderName(senderName);
+        message.setRecipientId(recipientId);
+        message.setSubject(dto.getSubject());
+        message.setBody(dto.getBody());
+        message.setPriority(dto.getPriority().toUpperCase());
+        return message;
     }
 
     @Transactional(readOnly = true)

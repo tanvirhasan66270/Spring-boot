@@ -15,10 +15,21 @@ public class SalesOfficerResponseDTO {
     private LocalDate joiningDate;
     private String designation;
     private String language;
-    private Long policeStationId;
-    private String policeStationName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+
+    // Location IDs
+    private Long countryId;
+    private Long divisionId;
+    private Long districtId;
+    private Long policeStationId;
+
+    // Location Names
+    private String countryName;
+    private String divisionName;
+    private String districtName;
+    private String policeStationName;
 
     // Flattened Security Core User Details
     private Long userId;

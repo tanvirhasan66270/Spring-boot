@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Quotation {
 
     @Id
@@ -48,13 +47,13 @@ public class Quotation {
 
     private int leadTimeDays;
 
+
     private boolean isSelected = false;
 
     @Column(nullable = false)
     private LocalDate receivedAt;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private QuotationStatus status = QuotationStatus.PENDING;
 
     @Column(columnDefinition = "TEXT", nullable = false)
@@ -85,6 +84,11 @@ public class Quotation {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+
+        if(this.validUntil == null){
+            this.validUntil = LocalDate.now().plusDays(30);
+        }
+
         calculateTotalPrice();
 
         if (this.status == null) {

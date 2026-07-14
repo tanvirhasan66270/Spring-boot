@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -17,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/managers")
 @RequiredArgsConstructor
-@CrossOrigin("*")
+@PreAuthorize("hasRole('ADMIN')")
 public class ManagerController {
 
     private final ManagerService managerService;
@@ -65,12 +66,13 @@ public class ManagerController {
         managerService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
     @GetMapping("/user/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ManagerResponseDTO> getByUserId(@PathVariable Long id) {
         return managerService.findUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
-
 
 }

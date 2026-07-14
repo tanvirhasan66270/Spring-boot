@@ -12,7 +12,7 @@
 .action-btn:hover {
   transform: translateY(-4px);
   border-color: #a855f7;
-  box-shadow: 0 10px 18px rgba(0,0,0,0.04);
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.04);
 }
 
 .fs-8 {
@@ -25,4 +25,70 @@
 
 .border-purple {
   border-color: #c084fc !important;
+}
+
+.bg-purple-subtle {
+  background-color: #f3e8ff !important;
+}
+
+.bg-warning-subtle {
+  background-color: #fff8e1 !important;
+}
+
+.bg-info-subtle {
+  background-color: #e0f7fa !important;
+}
+
+.bg-success-subtle {
+  background-color: #e8f5e9 !important;
+}
+
+.bg-danger-subtle {
+  background-color: #ffebee !important;
+}
+
+.fill-dark {
+  fill: #1e293b;
+}
+
+.fill-muted {
+  fill: #6b7280;
+}
+
+.notification-list,
+.activity-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notification-list::-webkit-scrollbar,
+.activity-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-list::-webkit-scrollbar-thumb,
+.activity-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+.notification-item {
+  transition: background-color 0.15s ease;
+}
+
+.notification-item:hover {
+  background-color: #f8fafc;
+}
+
+.activity-item {
+  transition: background-color 0.15s ease;
+}
+
+.activity-item:hover {
+  background-color: #f8fafc;
+}
+
+.badge.rounded-circle.p-1 {
+  width: 8px;
+  height: 8px;
 }

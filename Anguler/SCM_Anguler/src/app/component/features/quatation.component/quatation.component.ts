@@ -1,30 +1,45 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+
+import {
+  QuotationRequestModel,
+  QuotationResponseModel
+} from '../../shared/model/quatationModel';
+
 import { QuotationService } from '../../../service/quatation.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-quatation.component',
-  imports: [CommonModule,FormsModule],
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './quatation.component.html',
   styleUrl: './quatation.component.css',
 })
 export class QuatationComponent {
 
+  // ==========================
+  // Image Base URL
+  // ==========================
 
-quotations: QuotationResponseModel[] = [];
+  readonly imageBaseUrl = environment.imgUrl + "quotation/";
+
+  quotations: QuotationResponseModel[] = [];
   products: any[] = [];
   suppliers: any[] = [];
   requisitions: any[] = [];
 
   errorMessage: string | null = null;
+
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
+
   selectedFile: File | null = null;
 
   quotation: QuotationRequestModel = {
@@ -32,7 +47,6 @@ quotations: QuotationResponseModel[] = [];
     productIds: 0,
     productName: '',
     purchaseRequisitionId: 0,
-    validUntil: '',
     leadTimeDays: 1,
     isSelected: false,
     receivedAt: '',
@@ -52,79 +66,150 @@ quotations: QuotationResponseModel[] = [];
     private supplierService: SupplierService,
     private requisitionService: PurchaseRequisitionService,
     private cdr: ChangeDetectorRef
-  ) { }
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadQuotations();
     this.loadProducts();
     this.loadSuppliers();
     this.loadRequisitions();
   }
 
-  loadQuotations() {
-    this.service.findAll().subscribe({ next: (data) => { this.quotations = data || []; this.cdr.markForCheck(); } });
+  // ==========================
+  // Image URL
+  // ==========================
+
+  getImageUrl(fileName: string | null | undefined): string {
+
+    if (!fileName) {
+      return 'assets/no-image.png';
+    }
+
+    return this.imageBaseUrl + fileName;
   }
 
-  loadProducts() {
-    this.productService.findAll().subscribe({ next: (data) => this.products = data || [] });
+  // ==========================
+  // Load Data
+  // ==========================
+
+  loadQuotations(): void {
+    this.service.findAll().subscribe({
+      next: (data) => {
+        this.quotations = data || [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
-  loadSuppliers() {
-    this.supplierService.findAll().subscribe({ next: (data) => this.suppliers = data || [] });
+  loadProducts(): void {
+    this.productService.findAll().subscribe({
+      next: data => this.products = data || []
+    });
   }
 
-  loadRequisitions() {
-    this.requisitionService.findAll().subscribe({ next: (data) => this.requisitions = data || [] });
+  loadSuppliers(): void {
+    this.supplierService.findAll().subscribe({
+      next: data => this.suppliers = data || []
+    });
   }
 
-  onProductChange(event: any) {
+  loadRequisitions(): void {
+    this.requisitionService.findAll().subscribe({
+      next: data => this.requisitions = data || []
+    });
+  }
+
+  onProductChange(event: any): void {
+
     const id = +event.target.value;
-    const targetProduct = this.products.find(p => p.id === id);
-    if (targetProduct) {
-      this.quotation.productName = targetProduct.name; // স্ন্যাপশট নেম অটো সিঙ্ক
+
+    const target = this.products.find(p => p.id === id);
+
+    if (target) {
+      this.quotation.productName = target.name;
     }
   }
 
-  onFileChange(event: any) {
-    if (event.target.files && event.target.files.length > 0) {
+  onFileChange(event: any): void {
+
+    if (event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
     }
   }
 
-  openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
-  closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
+  openDrawer(): void {
+    this.reset();
+    this.isEdit = false;
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
+  }
 
-  save() {
+  closeDrawer(): void {
+    this.isDrawerOpen = false;
+    this.reset();
+    this.cdr.markForCheck();
+  }
+
+  save(): void {
+
     this.errorMessage = null;
 
-    if (this.quotation.supplierId === 0 || this.quotation.productIds === 0 || this.quotation.purchaseRequisitionId === 0) {
-      this.errorMessage = "Validation Exception: SCM cluster mappings (Supplier, Product, PR Node) are mandatory.";
+    if (
+      this.quotation.supplierId === 0 ||
+      this.quotation.productIds === 0 ||
+      this.quotation.purchaseRequisitionId === 0
+    ) {
+      this.errorMessage =
+        "Supplier, Product and Purchase Requisition are required.";
       return;
     }
 
-    if (this.isEdit && this.currentEditId !== null) {
+    if (this.isEdit && this.currentEditId != null) {
+
       this.service.update(this.currentEditId, this.quotation).subscribe({
-        next: () => { alert("Quotation entry updated successfully."); this.closeDrawer(); this.loadQuotations(); },
-        error: (err) => this.errorMessage = err.error?.message || "Modification pipeline fault."
+
+        next: () => {
+          alert("Quotation Updated Successfully");
+          this.closeDrawer();
+          this.loadQuotations();
+        },
+
+        error: err =>
+          this.errorMessage =
+            err.error?.message || "Update Failed"
+
       });
+
     } else {
+
       this.service.save(this.quotation, this.selectedFile).subscribe({
-        next: () => { alert("New supplier quotation authorized and logged."); this.closeDrawer(); this.loadQuotations(); },
-        error: (err) => this.errorMessage = err.error?.message || "Deployment exception."
+
+        next: () => {
+          alert("Quotation Saved Successfully");
+          this.closeDrawer();
+          this.loadQuotations();
+        },
+
+        error: err =>
+          this.errorMessage =
+            err.error?.message || "Save Failed"
+
       });
+
     }
   }
 
-  edit(o: QuotationResponseModel) {
-    this.errorMessage = null;
+  edit(o: QuotationResponseModel): void {
+
     this.currentEditId = o.id;
     this.isEdit = true;
+
     this.quotation = {
+
       supplierId: o.supplierId,
       productIds: o.productIds,
       productName: o.productName,
       purchaseRequisitionId: o.purchaseRequisitionId,
-      validUntil: o.validUntil,
       leadTimeDays: o.leadTimeDays,
       isSelected: o.isSelected,
       receivedAt: o.receivedAt,
@@ -136,27 +221,40 @@ quotations: QuotationResponseModel[] = [];
       warranty: o.warranty,
       notes: o.notes || '',
       attachmentUrl: o.attachmentUrl || ''
+
     };
+
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
 
-  delete(id: number) {
-    if (confirm("Definitively wipe this supplier quotation envelope instance?")) {
-      this.service.delete(id).subscribe({
-        next: () => { alert("Quotation node pruned successfully."); this.loadQuotations(); },
-        error: (err) => alert(err.error?.message || err.message)
-      });
+  delete(id: number): void {
+
+    if (!confirm("Delete this quotation?")) {
+      return;
     }
+
+    this.service.delete(id).subscribe({
+
+      next: () => {
+        alert("Deleted Successfully");
+        this.loadQuotations();
+      },
+
+      error: err =>
+        alert(err.error?.message || err.message)
+
+    });
   }
 
-  reset() {
+  reset(): void {
+
     this.quotation = {
+
       supplierId: 0,
       productIds: 0,
       productName: '',
       purchaseRequisitionId: 0,
-      validUntil: '',
       leadTimeDays: 1,
       isSelected: false,
       receivedAt: '',
@@ -168,10 +266,12 @@ quotations: QuotationResponseModel[] = [];
       warranty: '',
       notes: '',
       attachmentUrl: ''
+
     };
+
     this.selectedFile = null;
-    this.isEdit = false;
     this.currentEditId = null;
+    this.isEdit = false;
     this.errorMessage = null;
   }
 

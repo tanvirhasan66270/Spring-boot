@@ -14,7 +14,6 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Driver {
 
     @Id
@@ -43,13 +42,10 @@ public class Driver {
     private String dob;
 
     // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
-    @Builder.Default
     private Double rating = 0.0;
 
-    @Builder.Default
     private Integer totalDeliveries = 0;
 
-    @Builder.Default
     private Double totalEarnings = 0.0;
 
     @Column(name = "active",nullable = false)
@@ -81,7 +77,6 @@ public class Driver {
             joinColumns = @JoinColumn(name = "driver_id"),
             inverseJoinColumns = @JoinColumn(name = "warehouse_id")
     )
-    @Builder.Default
     private Set<Warehouse> warehouses = new HashSet<>();
 
     @PrePersist

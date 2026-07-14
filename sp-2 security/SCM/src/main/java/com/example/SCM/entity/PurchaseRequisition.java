@@ -15,7 +15,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PurchaseRequisition {
     
 
@@ -58,7 +57,6 @@ public class PurchaseRequisition {
     private LocalDate requiredByDate;
 
     @Enumerated(EnumType.STRING)
-     @Builder.Default
     private PurchaseRequisitionStatus approvalStatus = PurchaseRequisitionStatus.PENDING;
 
     private Long approvedBy;

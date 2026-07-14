@@ -33,9 +33,7 @@ public class QuotationMapper {
         Quotation quotation = new Quotation();
 
         // String থেকে LocalDate-এ কনভার্সন (Null চেক সহ)
-        if (dto.getValidUntil() != null) {
-            quotation.setValidUntil(LocalDate.parse(dto.getValidUntil(), DATE_FORMATTER));
-        }
+
         if (dto.getReceivedAt() != null) {
             quotation.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), DATE_FORMATTER));
         }
@@ -123,9 +121,7 @@ public class QuotationMapper {
             return;
         }
 
-        if (dto.getValidUntil() != null) {
-            quotation.setValidUntil(LocalDate.parse(dto.getValidUntil(), DATE_FORMATTER));
-        }
+
         if (dto.getReceivedAt() != null) {
             quotation.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), DATE_FORMATTER));
         }

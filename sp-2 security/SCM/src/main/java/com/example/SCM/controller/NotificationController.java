@@ -1,46 +1,43 @@
 package com.example.SCM.controller;
 
 import com.example.SCM.entity.Notification;
+import com.example.SCM.entity.User;
 import com.example.SCM.service.NotificationService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@PreAuthorize("isAuthenticated()")
 public class NotificationController {
 
     private final NotificationService service;
-    private final HttpServletRequest request;
-
-    private String resolveUser() {
-        String uid = request.getHeader("X-User-Id");
-        return (uid != null && !uid.isBlank()) ? uid : "16"; // ডিফল্ট মক ইউজার টোকেন
-    }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getUserNotifications() {
-        return ResponseEntity.ok(service.getNotificationsForUser(resolveUser()));
+    public ResponseEntity<List<Notification>> getUserNotifications(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.getNotificationsForUser(currentUser.getId().toString()));
     }
 
     @GetMapping("/unread-count")
-    public ResponseEntity<Long> getCount() {
-        return ResponseEntity.ok(service.getUnreadCount(resolveUser()));
+    public ResponseEntity<Long> getCount(@AuthenticationPrincipal User currentUser) {
+        return ResponseEntity.ok(service.getUnreadCount(currentUser.getId().toString()));
     }
 
     @PatchMapping("/{id}/read")
+    @PreAuthorize("@notificationSecurity.isOwner(#id, authentication)")
     public ResponseEntity<Void> markRead(@PathVariable Long id) {
         service.markAsRead(id);
         return ResponseEntity.ok().build();
     }
 
     @PatchMapping("/read-all")
-    public ResponseEntity<Void> markAllRead() {
-        service.markAllAsRead(resolveUser());
+    public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal User currentUser) {
+        service.markAllAsRead(currentUser.getId().toString());
         return ResponseEntity.ok().build();
     }
 }

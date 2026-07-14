@@ -19,18 +19,17 @@ public class ActivityLogServiceImp implements ActivityLogService {
     public void log(String userId, String userEmail, String action, String module,String referenceId, String description,
                     String oldValue,String newValue, ActionStatus actionStatus, String ipAddress) {
 
-        ActivityLog auditLog = ActivityLog.builder()
-                .userId(userId)
-                .userEmail(userEmail)
-                .action(action)
-                .module(module != null ? module.toUpperCase() : "UNKNOWN")
-                .referenceId(referenceId)
-                .description(description)
-                .oldValue(oldValue)
-                .newValue(newValue)
-                .actionStatus(actionStatus != null ? actionStatus : ActionStatus.SUCCESS)
-                .ipAddress(ipAddress != null ? ipAddress : "UNKNOWN_IP")
-                .build();
+        ActivityLog auditLog = new ActivityLog();
+        auditLog.setUserId(userId);
+        auditLog.setUserEmail(userEmail);
+        auditLog.setAction(action);
+        auditLog.setModule(module != null ? module.toUpperCase() : "UNKNOWN");
+        auditLog.setReferenceId(referenceId);
+        auditLog.setDescription(description);
+        auditLog.setOldValue(oldValue);
+        auditLog.setNewValue(newValue);
+        auditLog.setActionStatus(actionStatus != null ? actionStatus : ActionStatus.SUCCESS);
+        auditLog.setIpAddress(ipAddress != null ? ipAddress : "UNKNOWN_IP");
 
         logRepository.save(auditLog);
     }

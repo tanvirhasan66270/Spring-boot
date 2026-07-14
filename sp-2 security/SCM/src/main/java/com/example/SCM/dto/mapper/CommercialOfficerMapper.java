@@ -2,9 +2,7 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.CommercialOfficerRequestDTO;
 import com.example.SCM.dto.response.CommercialOfficerResponseDTO;
-import com.example.SCM.entity.CommercialOfficer;
-import com.example.SCM.entity.PoliceStation;
-import com.example.SCM.entity.User;
+import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.GenderStatus;
 import com.example.SCM.enumClass.LanguageStatus;
 import com.example.SCM.role.Role;
@@ -57,6 +55,9 @@ public class CommercialOfficerMapper {
         }
 
         officer.setPoliceStation(policeStation);
+
+
+
         return officer;
     }
 
@@ -83,8 +84,36 @@ public class CommercialOfficerMapper {
         dto.setUpdatedAt(entity.getUpdatedAt());
 
         if (entity.getPoliceStation() != null) {
-            dto.setPoliceStationId(entity.getPoliceStation().getId());
-            dto.setPoliceStationName(entity.getPoliceStation().getName());
+
+            PoliceStation ps = entity.getPoliceStation();
+
+            dto.setPoliceStationId(ps.getId());
+            dto.setPoliceStationName(ps.getName());
+
+            District district = ps.getDistrict();
+
+            if (district != null) {
+
+                dto.setDistrictId(district.getId());
+                dto.setDistrictName(district.getName());
+
+                Division division = district.getDivision();
+
+                if (division != null) {
+
+                    dto.setDivisionId(division.getId());
+                    dto.setDivisionName(division.getName());
+
+                    Country country = division.getCountry();
+
+                    if (country != null) {
+
+                        dto.setCountryId(country.getId());
+                        dto.setCountryName(country.getName());
+
+                    }
+                }
+            }
         }
 
         if (entity.getUser() != null) {

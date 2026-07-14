@@ -1,46 +1,40 @@
 :host {
-    display: flex;
-    flex-direction: row; /* 👈 পরিবর্তন: পুরো স্ক্রিনকে কলামের বদলে রো (Row) করা হলো যাতে সাইডবার ও মেইন বডি পাশাপাশি বসে */
-    height: 100vh;
-    width: 100%;
-    overflow: hidden;
+  display: block;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
 }
 
-/* আপনার সাইডবার কম্পোনেন্টটি এখন স্ক্রিনের একদম উপর থেকে নিচ পর্যন্ত জায়গা নেবে */
-app-sidebar {
-    width: 260px;
-    min-width: 260px;
-    height: 100%;
-    background: #ffffff;
-    border-right: 1px solid #e2e8f0;
+.layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
 }
 
-/* 👈 নতুন ক্লাস: সাইডবারের ডানপাশের পুরো অংশকে (হেডার + কন্টেন্ট) এক সুতোয় রাখার জন্য */
-.app-layout {
-    display: flex;
-    flex-direction: column; /* হেডার এবং নিচের কন্টেন্টকে উপর-নিচ করে সাজাবে */
-    flex: 1;
-    overflow: hidden;
+.layout-sidebar {
+  width: 260px;
+  min-width: 260px;
+  height: 100%;
+  flex-shrink: 0;
 }
 
-/* হেডারটি এখন সাইডবারের ডানপাশ থেকে শুরু হয়ে পুরো মাথা জুড়ে থাকবে */
-app-header {
-    height: 70px;
-    width: 100%;
-    background: #ffffff;
-    border-bottom: 1px solid #e2e8f0;
-    flex-shrink: 0; /* যেন হেডার কোনো কারণে সংকুচিত না হয় */
+.layout-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
-.content {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow-y: auto; /* শুধু কন্টেন্ট অংশটুকু স্ক্রোল হবে, সাইডবার ও হেডার ফিক্সড থাকবে */
-    background: #f6f7fb;
+.layout-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  background: var(--surface-bg);
 }
 
 .page-body {
-    flex: 1;
-    padding: 30px;
+  flex: 1;
+  padding: 1.5rem;
 }

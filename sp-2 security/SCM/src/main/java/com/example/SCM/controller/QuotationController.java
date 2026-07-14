@@ -17,7 +17,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/quotations")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class QuotationController {
 
     private final QuotationService quotationService;

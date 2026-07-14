@@ -32,9 +32,15 @@ public class QCInspectorResponseDTO {
     private Role role;
     private boolean userActive;
 
-    //  Flattened Location Details ---
+    // Location IDs
+    private Long countryId;
+    private Long divisionId;
+    private Long districtId;
     private Long policeStationId;
-    private String policeStationName;
-    private String districtName;
+
+    // Location Names
+    private String countryName;
     private String divisionName;
+    private String districtName;
+    private String policeStationName;
 }

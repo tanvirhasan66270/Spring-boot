@@ -13,108 +13,118 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/purchase-orders")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
 
-
     @PostMapping
-    public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
-        PurchaseOrderResponseDTO response = purchaseOrderService.save(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<PurchaseOrderResponseDTO> create(
+            @RequestBody PurchaseOrderRequestDTO dto) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(purchaseOrderService.save(dto));
     }
 
-
-    @PutMapping("/{id}") // 💡 বেস্ট প্র্যাকটিস: শুরুতে "/" যোগ করা হয়েছে
+    @PutMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
             @RequestBody PurchaseOrderRequestDTO dto) {
-        PurchaseOrderResponseDTO response = purchaseOrderService.update(id, dto);
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok(
+                purchaseOrderService.update(id, dto)
+        );
     }
 
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
-        List<PurchaseOrderResponseDTO> list = purchaseOrderService.findAll();
+
+        List<PurchaseOrderResponseDTO> list =
+                purchaseOrderService.findAll();
+
         if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
+
         return ResponseEntity.ok(list);
     }
 
-
     @GetMapping("/{id}")
-    public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
+    public ResponseEntity<PurchaseOrderResponseDTO> getById(
+            @PathVariable Long id) {
+
         return purchaseOrderService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
+
         purchaseOrderService.delete(id);
-        return ResponseEntity.ok("Deleted successfully");
+
+        return ResponseEntity.ok("Deleted Successfully");
     }
 
-   //  অপ্টিমাইজেশন: ইমেইল থ্রু-তে সফলভাবে সাবমিট হলে ম্যানেজার যেন একটি সুন্দর এবং পরিচ্ছন্ন স্ক্রিন দেখতে পান
+    // ===========================
+    // Manager Issue Purchase Order
+    // ===========================
 
     @GetMapping("/email-issue")
-    public ResponseEntity<String> emailIssueOrder(@RequestParam Long id, @RequestParam Long managerId) {
+    public ResponseEntity<String> emailIssueOrder(
+            @RequestParam Long id,
+            @RequestParam Long managerId) {
+
         purchaseOrderService.managerIssuedOrder(id, managerId);
 
-        String htmlResponse = """
+        String html = """
             <!DOCTYPE html>
             <html>
             <head>
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background-color: #F7FAFC; padding: 50px; }
-                    .card { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid #3182CE; }
-                    h1 { color: #2B6CB0; margin-bottom: 10px; font-size: 24px; }
-                    p { color: #4A5568; font-size: 15px; line-height: 1.6; }
-                </style>
+                <title>Purchase Order Issued</title>
             </head>
-            <body>
-                <div class='card'>
-                    <h1>✔ Order Dispatched Successfully!</h1>
-                    <p>The Purchase Order status has been updated to <b>ISSUED</b> in SCM core matrix, and a live notification tracking stack has been transmitted to the Supplier's profile.</p>
+            <body style="font-family:Arial;text-align:center;padding:60px;background:#f5f7fa;">
+                <div style="background:#fff;padding:40px;border-radius:8px;max-width:600px;margin:auto;">
+                    <h2 style="color:#2b6cb0;">✔ Purchase Order Issued Successfully</h2>
+                    <p>
+                        Purchase Order has been successfully issued.
+                        The supplier has been notified by email.
+                    </p>
                 </div>
             </body>
             </html>
             """;
-        return ResponseEntity.ok(htmlResponse);
+
+        return ResponseEntity.ok(html);
     }
 
-    /**
-     * 7. 🤝 Supplier One-Click Email / Dashboard Gateway (GET)
-     */
+    // ===========================
+    // Supplier Receive Purchase Order
+    // ===========================
+
     @GetMapping("/email-receive")
-    public ResponseEntity<String> emailReceiveOrder(@RequestParam Long id) {
+    public ResponseEntity<String> emailReceiveOrder(
+            @RequestParam Long id) {
+
         purchaseOrderService.supplierReceivedOrder(id);
 
-        String htmlResponse = """
+        String html = """
             <!DOCTYPE html>
             <html>
             <head>
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; text-align: center; background-color: #F7FAFC; padding: 50px; }
-                    .card { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-top: 5px solid #38A169; }
-                    h1 { color: #2F855A; margin-bottom: 10px; font-size: 24px; }
-                    p { color: #4A5568; font-size: 15px; line-height: 1.6; }
-                </style>
+                <title>Purchase Order Received</title>
             </head>
-            <body>
-                <div class='card'>
-                    <h1>🤝 Order Acknowledged!</h1>
-                    <p>Thank you for your business confirmation. The target procurement order status is now updated to <b>RECEIVED</b> inside our SCM hub.</p>
+            <body style="font-family:Arial;text-align:center;padding:60px;background:#f5f7fa;">
+                <div style="background:#fff;padding:40px;border-radius:8px;max-width:600px;margin:auto;">
+                    <h2 style="color:#38a169;">✔ Purchase Order Received</h2>
+                    <p>
+                        Thank you.
+                        Your acknowledgement has been recorded successfully.
+                    </p>
                 </div>
             </body>
             </html>
             """;
 
-
-
-        return ResponseEntity.ok(htmlResponse);
+        return ResponseEntity.ok(html);
     }
 }

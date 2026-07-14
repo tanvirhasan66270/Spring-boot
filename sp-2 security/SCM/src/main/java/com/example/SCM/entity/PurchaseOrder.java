@@ -25,9 +25,9 @@ public class PurchaseOrder {
     private String poNumber;
 
     @Column(name = "issued_by", nullable = false)
-    private Long issuedBy; // Login User ID (String from TS converted to Long)
+    private Long issuedBy;
 
-    private Integer quantity; // Auto loaded from Quotation Table
+    private Integer quantity;
 
     @Column( nullable = false)
     private double totalAmount;

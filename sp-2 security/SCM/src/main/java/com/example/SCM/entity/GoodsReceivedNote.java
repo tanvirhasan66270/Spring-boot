@@ -16,7 +16,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder // ফিউচারে সার্ভিস লেয়ারে সহজে অবজেক্ট ক্রিয়েট করার জন্য যুক্ত করা হলো
 public class GoodsReceivedNote {
 
     @Id
@@ -70,7 +69,6 @@ public class GoodsReceivedNote {
     private User inspectedBy;
 
     @OneToMany(mappedBy = "goodsReceivedNote", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<GRNLineItem> lineItems = new ArrayList<>();
 
     @PrePersist

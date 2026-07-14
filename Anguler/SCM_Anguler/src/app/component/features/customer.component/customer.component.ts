@@ -18,7 +18,6 @@ import { LoginResponse } from '../../../auth/Model/authModel';
   styleUrl: './customer.component.css',
 })
 export class CustomerComponent implements OnInit {
-
   customers: CustomerResponseModel[] = [];
 
   countries: any[] = [];
@@ -46,7 +45,7 @@ export class CustomerComponent implements OnInit {
     gender: '',
     dob: '',
     nidNumber: '',
-    policeStationId: 0
+    policeStationId: 0,
   };
 
   isEdit = false;
@@ -57,7 +56,7 @@ export class CustomerComponent implements OnInit {
   singleCustomerProfile: CustomerResponseModel | null = null;
   user: LoginResponse | null = null;
 
-  readonly imageBaseUrl = environment.imgUrl + "customer/";
+  readonly imageBaseUrl = environment.imgUrl + 'customer/';
 
   constructor(
     private service: CustomerService,
@@ -65,13 +64,13 @@ export class CustomerComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.loadCustomers();
     this.loadCountries();
-    
+
     if (this.userId) {
       this.loadCustomerByUserId(this.userId);
     }
@@ -83,7 +82,7 @@ export class CustomerComponent implements OnInit {
         this.singleCustomerProfile = profile;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Failed to resolve profile matrix:', err)
+      error: (err) => console.error('Failed to resolve profile matrix:', err),
     });
   }
 
@@ -105,7 +104,7 @@ export class CustomerComponent implements OnInit {
       next: (data) => {
         this.customers = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -114,12 +113,12 @@ export class CustomerComponent implements OnInit {
       next: (data) => {
         this.countries = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   // =====================================================
-  // CASCADING LOCATION LOGICS 
+  // CASCADING LOCATION LOGICS
   // =====================================================
   onCountryChange() {
     this.divisions = [];
@@ -134,9 +133,9 @@ export class CustomerComponent implements OnInit {
       return;
     }
 
-    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+    this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
       this.divisions = res || [];
-      this.generateFullAddress(); 
+      this.generateFullAddress();
       this.cdr.markForCheck();
     });
   }
@@ -152,7 +151,7 @@ export class CustomerComponent implements OnInit {
       return;
     }
 
-    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
+    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe((res) => {
       this.districts = res || [];
       this.generateFullAddress();
       this.cdr.markForCheck();
@@ -168,7 +167,7 @@ export class CustomerComponent implements OnInit {
       return;
     }
 
-    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
+    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe((res) => {
       this.policeStations = res || [];
       this.generateFullAddress();
       this.cdr.markForCheck();
@@ -177,11 +176,11 @@ export class CustomerComponent implements OnInit {
 
   // ফিক্সড: এডিট মোডে চেইন রেন্ডারিং পাইপলাইন যেন ব্রেক না করে
   onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
-    this.divisionService.getByCountryId(countryId).subscribe(res => {
+    this.divisionService.getByCountryId(countryId).subscribe((res) => {
       this.divisions = res || [];
-      this.districtService.getByDivisionId(divisionId).subscribe(res2 => {
+      this.districtService.getByDivisionId(divisionId).subscribe((res2) => {
         this.districts = res2 || [];
-        this.stationService.getByDistrictId(districtId).subscribe(res3 => {
+        this.stationService.getByDistrictId(districtId).subscribe((res3) => {
           this.policeStations = res3 || [];
           this.cdr.markForCheck();
         });
@@ -193,18 +192,21 @@ export class CustomerComponent implements OnInit {
   // AUTO ADDRESS COMPILER
   // =====================================================
   generateFullAddress() {
-    const countryName = this.countries.find(x => x.id == this.selectedCountryId)?.name || '';
-    const divisionName = this.divisions.find(x => x.id == this.selectedDivisionId)?.name || '';
-    const districtName = this.districts.find(x => x.id == this.selectedDistrictId)?.name || '';
-    const psName = this.policeStations.find(x => x.id == this.customer.policeStationId)?.name || '';
+    const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
+    const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
+    const districtName = this.districts.find((x) => x.id == this.selectedDistrictId)?.name || '';
+    const psName =
+      this.policeStations.find((x) => x.id == this.customer.policeStationId)?.name || '';
 
     this.customer.address = [
       this.streetAddress.trim(),
       psName,
       districtName,
       divisionName,
-      countryName
-    ].filter(v => v && v.trim() !== '').join(', ');
+      countryName,
+    ]
+      .filter((v) => v && v.trim() !== '')
+      .join(', ');
   }
 
   // =====================================================
@@ -235,7 +237,7 @@ export class CustomerComponent implements OnInit {
   }
 
   getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}/${imageName}` : '';
+    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
   }
 
   onImageError(event: Event): void {
@@ -256,7 +258,8 @@ export class CustomerComponent implements OnInit {
       } else if (errorContext.includes('phone_number') || errorContext.includes('phone')) {
         this.errorMessage = 'Deployment Failed: This Phone Number is already in use!';
       } else {
-        this.errorMessage = 'Deployment Failed: This NID number identity constraint is already assigned!';
+        this.errorMessage =
+          'Deployment Failed: This NID number identity constraint is already assigned!';
       }
     } else {
       this.errorMessage = errorContext || 'An unexpected database transactional error occurred.';
@@ -276,7 +279,8 @@ export class CustomerComponent implements OnInit {
     }
 
     if (this.customer.policeStationId === 0) {
-      this.errorMessage = 'Validation Fault: Please complete the region distribution up to Police Station.';
+      this.errorMessage =
+        'Validation Fault: Please complete the region distribution up to Police Station.';
       return;
     }
 
@@ -292,7 +296,7 @@ export class CustomerComponent implements OnInit {
       gender: this.customer.gender,
       dob: this.customer.dob,
       nidNumber: this.customer.nidNumber,
-      policeStationId: Number(this.customer.policeStationId)
+      policeStationId: Number(this.customer.policeStationId),
     };
 
     if (!this.isEdit) {
@@ -303,8 +307,8 @@ export class CustomerComponent implements OnInit {
 
     // JSON কনভার্ট পার্ট ফিক্সিং
     formData.append(
-      'customer', 
-      new Blob([JSON.stringify(requestDto)], { type: 'application/json' })
+      'customer',
+      new Blob([JSON.stringify(requestDto)], { type: 'application/json' }),
     );
 
     if (this.selectedFile) {
@@ -314,20 +318,20 @@ export class CustomerComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, formData).subscribe({
         next: () => {
-          alert("Customer profile updated successfully!");
+          alert('Customer profile updated successfully!');
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err) => this.handleBackendError(err),
       });
     } else {
       this.service.save(formData).subscribe({
         next: () => {
-          alert("Customer registered successfully!");
+          alert('Customer registered successfully!');
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err) => this.handleBackendError(err),
       });
     }
   }
@@ -341,18 +345,18 @@ export class CustomerComponent implements OnInit {
       name: c.name,
       email: c.email,
       phone: c.phone,
-      password: '', 
+      password: '',
       address: c.address,
       gender: c.gender,
       dob: c.dob,
       nidNumber: c.nidNumber,
-      policeStationId: c.policeStationId
+      policeStationId: c.policeStationId,
     };
 
     const addressParts = c.address ? c.address.split(', ') : [];
     this.streetAddress = addressParts[0] || '';
-    
-    this.imagePreview = c.image ? this.getImageUrl(c.image) : null; 
+
+    this.imagePreview = c.image ? this.getImageUrl(c.image) : null;
 
     this.selectedCountryId = c.countryId ? +c.countryId : null;
     this.selectedDivisionId = c.divisionId ? +c.divisionId : null;
@@ -361,7 +365,11 @@ export class CustomerComponent implements OnInit {
 
     // ফিক্সড: এডিট মোডে মাল্টি-টিয়ার ড্রপডাউন লোডের জন্য সেফ পাইপলাইন মেথড ট্রিগার
     if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
-      this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
+      this.onDivisionOrDistrictEditPipeline(
+        this.selectedCountryId,
+        this.selectedDivisionId,
+        this.selectedDistrictId,
+      );
     }
 
     this.isDrawerOpen = true;
@@ -369,28 +377,28 @@ export class CustomerComponent implements OnInit {
   }
 
   delete(id: number) {
-    if (confirm("Purge this customer record definitively?")) {
+    if (confirm('Purge this customer record definitively?')) {
       this.service.delete(id).subscribe({
         next: () => {
-          alert("Customer record successfully purged.");
+          alert('Customer record successfully purged.');
           this.loadCustomers();
         },
-        error: (err) => alert('Delete operation encountered a system error.')
+        error: (err) => alert('Delete operation encountered a system error.'),
       });
     }
   }
 
   reset() {
     this.customer = {
-      name: '', 
-      email: '', 
-      phone: '', 
-      password: '', 
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
       address: '',
-      gender: '', 
-      dob: '', 
-      nidNumber: '', 
-      policeStationId: 0
+      gender: '',
+      dob: '',
+      nidNumber: '',
+      policeStationId: 0,
     };
     this.selectedCountryId = null;
     this.selectedDivisionId = null;

@@ -3,7 +3,6 @@ import { BehaviorSubject } from 'rxjs';
 import { LoginResponse } from '../Model/authModel';
 import { CryptoUtil } from '../utils/CryptoUtil';
 
-
 export const KEYS = {
   TOKEN: 'cm_token',
   USER: 'cm_user',
@@ -16,32 +15,22 @@ export const KEYS = {
   COMMERCIAL_OFFICER: 'cm_commercialOfficer',
   CUSTOMER: 'cm_customer',
   SUPPLIER: 'cm_supplier',
-  SALES_OFFICER: 'cm_salesOfficer'
+  SALES_OFFICER: 'cm_salesOfficer',
 };
-
 
 @Injectable({
   providedIn: 'root',
 })
-
-
 export class StorageService {
   private roleSubject = new BehaviorSubject<string>('');
 
- // ── Write ────────────────────────────────────────────
+  // ── Write ────────────────────────────────────────────
 
   saveSession(data: LoginResponse): void {
-    localStorage.setItem(
-      KEYS.TOKEN,
-      CryptoUtil.encrypt(data.token)
-    );
-    localStorage.setItem(
-      KEYS.USER,
-      CryptoUtil.encrypt(JSON.stringify(data))
-    );
+    localStorage.setItem(KEYS.TOKEN, CryptoUtil.encrypt(data.token));
+    localStorage.setItem(KEYS.USER, CryptoUtil.encrypt(JSON.stringify(data)));
   }
 
-  
   // ── Read ─────────────────────────────────────────────
 
   getToken(): string | null {
@@ -50,12 +39,9 @@ export class StorageService {
   }
 
   getUser(): LoginResponse | null {
-    
     const raw = localStorage.getItem(KEYS.USER);
     if (!raw) return null;
     const json = CryptoUtil.decrypt(raw);
-
-    console.log(json);
     try {
       return json ? JSON.parse(json) : null;
     } catch {
@@ -95,34 +81,29 @@ export class StorageService {
 
   // ── Clear ─────────────────────────────────────────────
 
- clearSession(): void {
-    Object.values(KEYS).forEach(k => localStorage.removeItem(k));
+  clearSession(): void {
+    Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
   }
 
   // Generic Method for ALl
 
-saveData(key: string, data: any): void {
-  localStorage.setItem(
-    key,
-    CryptoUtil.encrypt(JSON.stringify(data))
-  );
-} 
-
-getData<T>(key: string): T | null {
-  const raw = localStorage.getItem(key);
-  if (!raw) return null;
-
-  try {
-    const json = CryptoUtil.decrypt(raw);
-    return json ? JSON.parse(json) : null;
-  } catch {
-    return null;
+  saveData(key: string, data: any): void {
+    localStorage.setItem(key, CryptoUtil.encrypt(JSON.stringify(data)));
   }
-}  
 
-removeData(key: string): void {
-  localStorage.removeItem(key);
-}
+  getData<T>(key: string): T | null {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
 
+    try {
+      const json = CryptoUtil.decrypt(raw);
+      return json ? JSON.parse(json) : null;
+    } catch {
+      return null;
+    }
+  }
 
+  removeData(key: string): void {
+    localStorage.removeItem(key);
+  }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router'; 
+import { RouterModule, Router } from '@angular/router';
 import { NotificationService } from '../../../../system/service/notification.service';
 import { StorageService } from '../../../../auth/auth_service/storage.service';
 import { AuthService } from '../../../../auth/auth_service/auth-service';
@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterModule,FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './header.html',
   styleUrls: ['./header.css'],
 })
@@ -18,30 +18,48 @@ export class Header implements OnInit, OnDestroy {
   user: any = null;
   showDropdown = false;
   showLogoutModal = false;
-  onlineStatus = true; // green active status
+  onlineStatus = true;
   currentDateTime = '';
   private clockInterval: any;
 
-  // Mock profile details
-  employeeId = 'EMP-90881';
+  employeeId = '';
   departmentName = 'SCM Corporate Node';
-  lastLoginTime = 'Today, 08:34 AM';
 
   constructor(
     private notificationService: NotificationService,
     private storage: StorageService,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
     this.user = this.storage.getUser();
+    if (this.user) {
+      this.employeeId = `EMP-${this.user.userId}`;
+      this.departmentName = this.getDepartmentName(this.user.role);
+    }
     this.loadUnreadCount();
     this.updateTime();
     this.clockInterval = setInterval(() => {
       this.updateTime();
     }, 1000);
+  }
+
+  private getDepartmentName(role: string): string {
+    const departments: Record<string, string> = {
+      ADMIN: 'SCM Administration',
+      MANAGER: 'SCM Management',
+      PROCUREMENT: 'Procurement Division',
+      QC_INSPECTOR: 'Quality Control',
+      LOGISTICS_OFFICER: 'Logistics & Fleet',
+      COMMERCIAL_OFFICER: 'Commercial Imports',
+      SALES_OFFICER: 'Sales Division',
+      DRIVER: 'Delivery Operations',
+      SUPPLIER: 'Supplier Portal',
+      CUSTOMER: 'Customer Portal',
+    };
+    return departments[role] || 'SCM Corporate Node';
   }
 
   ngOnDestroy() {
@@ -56,7 +74,7 @@ export class Header implements OnInit, OnDestroy {
         this.unreadNotificationCount = count;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error("Header Sync Interrupted:", err)
+      error: () => {},
     });
   }
 
@@ -91,8 +109,6 @@ export class Header implements OnInit, OnDestroy {
       this.showLogoutModal = true;
     } else if (action === 'theme') {
       this.toggleTheme();
-    } else {
-      alert(`Simulation Triggered: ${action}`);
     }
     this.cdr.markForCheck();
   }
@@ -110,6 +126,13 @@ export class Header implements OnInit, OnDestroy {
   confirmLogout() {
     this.showLogoutModal = false;
     this.authService.logout();
-    alert('You have been logged out successfully.');
+  }
+
+  closeDropdown(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.profile-container')) {
+      this.showDropdown = false;
+      this.cdr.markForCheck();
+    }
   }
 }

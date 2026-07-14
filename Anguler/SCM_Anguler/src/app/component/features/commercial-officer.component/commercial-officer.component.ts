@@ -8,7 +8,10 @@ import { DistrictService } from '../../../service/district.service';
 import { PoliceStationService } from '../../../service/police-station.service';
 import { environment } from '../../../../environment/environment';
 import { CommercialOfficerService } from '../../../service/commercial-officer.service';
-import { CommercialOfficerRequestModel, CommercialOfficerResponseModel } from '../../shared/model/commercialOfficer';
+import {
+  CommercialOfficerRequestModel,
+  CommercialOfficerResponseModel,
+} from '../../shared/model/commercialOfficer';
 
 @Component({
   selector: 'app-commercial-officer',
@@ -18,7 +21,6 @@ import { CommercialOfficerRequestModel, CommercialOfficerResponseModel } from '.
   styleUrl: './commercial-officer.component.css',
 })
 export class CommercialOfficerComponent implements OnInit {
-
   officers: CommercialOfficerResponseModel[] = [];
 
   countries: any[] = [];
@@ -35,8 +37,8 @@ export class CommercialOfficerComponent implements OnInit {
   errorMessage: string | null = null;
   streetAddress: string = '';
   confirmPassword = '';
-  
-  readonly imageBaseUrl = environment.imgUrl + "commercial_officer/"; 
+
+  readonly imageBaseUrl = environment.imgUrl + 'commercial_officer/';
 
   officer: CommercialOfficerRequestModel = {
     address: '',
@@ -51,7 +53,7 @@ export class CommercialOfficerComponent implements OnInit {
     name: '',
     email: '',
     phone: '',
-    password: ''
+    password: '',
   };
 
   isEdit = false;
@@ -64,8 +66,8 @@ export class CommercialOfficerComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
     this.loadOfficers();
@@ -90,7 +92,7 @@ export class CommercialOfficerComponent implements OnInit {
       next: (data) => {
         this.officers = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -99,7 +101,7 @@ export class CommercialOfficerComponent implements OnInit {
       next: (data) => {
         this.countries = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -116,7 +118,7 @@ export class CommercialOfficerComponent implements OnInit {
       return;
     }
 
-    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+    this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
       this.divisions = res || [];
       this.generateFullAddress();
       this.cdr.markForCheck();
@@ -134,7 +136,7 @@ export class CommercialOfficerComponent implements OnInit {
       return;
     }
 
-    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res => {
+    this.districtService.getByDivisionId(this.selectedDivisionId).subscribe((res) => {
       this.districts = res || [];
       this.generateFullAddress();
       this.cdr.markForCheck();
@@ -150,7 +152,7 @@ export class CommercialOfficerComponent implements OnInit {
       return;
     }
 
-    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res => {
+    this.stationService.getByDistrictId(this.selectedDistrictId).subscribe((res) => {
       this.policeStations = res || [];
       this.generateFullAddress();
       this.cdr.markForCheck();
@@ -158,11 +160,11 @@ export class CommercialOfficerComponent implements OnInit {
   }
 
   onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
-    this.divisionService.getByCountryId(countryId).subscribe(res => {
+    this.divisionService.getByCountryId(countryId).subscribe((res) => {
       this.divisions = res || [];
-      this.districtService.getByDivisionId(divisionId).subscribe(res2 => {
+      this.districtService.getByDivisionId(divisionId).subscribe((res2) => {
         this.districts = res2 || [];
-        this.stationService.getByDistrictId(districtId).subscribe(res3 => {
+        this.stationService.getByDistrictId(districtId).subscribe((res3) => {
           this.policeStations = res3 || [];
           this.cdr.markForCheck();
         });
@@ -171,18 +173,21 @@ export class CommercialOfficerComponent implements OnInit {
   }
 
   generateFullAddress() {
-    const countryName = this.countries.find(x => x.id == this.selectedCountryId)?.name || '';
-    const divisionName = this.divisions.find(x => x.id == this.selectedDivisionId)?.name || '';
-    const districtName = this.districts.find(x => x.id == this.selectedDistrictId)?.name || '';
-    const psName = this.policeStations.find(x => x.id == this.officer.policeStationId)?.name || '';
+    const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
+    const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
+    const districtName = this.districts.find((x) => x.id == this.selectedDistrictId)?.name || '';
+    const psName =
+      this.policeStations.find((x) => x.id == this.officer.policeStationId)?.name || '';
 
     this.officer.address = [
       this.streetAddress.trim(),
       psName,
       districtName,
       divisionName,
-      countryName
-    ].filter(v => v && v.trim() !== '').join(', ');
+      countryName,
+    ]
+      .filter((v) => v && v.trim() !== '')
+      .join(', ');
   }
 
   onFileSelected(event: any) {
@@ -206,7 +211,7 @@ export class CommercialOfficerComponent implements OnInit {
   }
 
   getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}/${imageName}` : '';
+    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
   }
 
   onImageError(event: Event): void {
@@ -229,7 +234,8 @@ export class CommercialOfficerComponent implements OnInit {
         this.errorMessage = 'Deployment Failed: This NID or Passport number is already assigned!';
       }
     } else if (errorContext.includes('Illegal char') || errorContext.includes('file system node')) {
-      this.errorMessage = 'File System Fault: Special characters or colons (:) are forbidden in Name fields!';
+      this.errorMessage =
+        'File System Fault: Special characters or colons (:) are forbidden in Name fields!';
     } else {
       this.errorMessage = errorContext || 'An unexpected server gateway error occurred.';
     }
@@ -245,7 +251,8 @@ export class CommercialOfficerComponent implements OnInit {
     }
 
     if (this.officer.policeStationId === 0) {
-      this.errorMessage = 'Validation Fault: Please complete the location hierarchy up to Police Station.';
+      this.errorMessage =
+        'Validation Fault: Please complete the location hierarchy up to Police Station.';
       return;
     }
 
@@ -254,20 +261,20 @@ export class CommercialOfficerComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.officer, this.selectedFile).subscribe({
         next: () => {
-          alert("Commercial Officer profile updated successfully!");
+          alert('Commercial Officer profile updated successfully!');
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err) => this.handleBackendError(err),
       });
     } else {
       this.service.save(this.officer, this.selectedFile).subscribe({
         next: () => {
-          alert("Commercial Officer deployed successfully!");
+          alert('Commercial Officer deployed successfully!');
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err) => this.handleBackendError(err),
       });
     }
   }
@@ -281,7 +288,7 @@ export class CommercialOfficerComponent implements OnInit {
       name: o.name,
       email: o.email,
       phone: o.phone,
-      password: '', 
+      password: '',
       address: o.address || '',
       gender: o.gender || '',
       dob: o.dob || '',
@@ -290,13 +297,13 @@ export class CommercialOfficerComponent implements OnInit {
       designation: o.designation || '',
       joiningDate: o.joiningDate || '',
       language: o.language || '',
-      policeStationId: o.policeStationId || 0
+      policeStationId: o.policeStationId || 0,
     };
 
     const addressParts = o.address ? o.address.split(', ') : [];
     this.streetAddress = addressParts[0] || '';
-    
-    this.imagePreview = o.image ? this.getImageUrl(o.image) : null; 
+
+    this.imagePreview = o.image ? this.getImageUrl(o.image) : null;
 
     // Handle incoming locations mapping safely explicitly typing target object variables
     this.selectedCountryId = (o as any).countryId ? +(o as any).countryId : null;
@@ -305,7 +312,11 @@ export class CommercialOfficerComponent implements OnInit {
     this.officer.policeStationId = o.policeStationId ? +o.policeStationId : 0;
 
     if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
-      this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
+      this.onDivisionOrDistrictEditPipeline(
+        this.selectedCountryId,
+        this.selectedDivisionId,
+        this.selectedDistrictId,
+      );
     }
 
     this.isDrawerOpen = true;
@@ -313,13 +324,13 @@ export class CommercialOfficerComponent implements OnInit {
   }
 
   delete(id: number) {
-    if (confirm("Purge this commercial officer node definitively?")) {
+    if (confirm('Purge this commercial officer node definitively?')) {
       this.service.delete(id).subscribe({
         next: () => {
-          alert("Officer record successfully purged.");
+          alert('Officer record successfully purged.');
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err) => this.handleBackendError(err),
       });
     }
   }
@@ -338,7 +349,7 @@ export class CommercialOfficerComponent implements OnInit {
       designation: '',
       joiningDate: '',
       language: '',
-      policeStationId: 0
+      policeStationId: 0,
     };
     this.selectedCountryId = null;
     this.selectedDivisionId = null;

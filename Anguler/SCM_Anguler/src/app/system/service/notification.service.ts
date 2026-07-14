@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environment/environment';
 import { NotificationModel } from '../NotificationModel';
-
+import { StorageService } from '../../auth/auth_service/storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,11 +11,14 @@ import { NotificationModel } from '../NotificationModel';
 export class NotificationService {
   private apiUrl = environment.apiUrl + 'notifications';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService,
+  ) {}
 
-  // 💡 সিকিউরড আর্কিটেকচার ইন্টিগ্রেশনের জন্য হেডার মেথড
   private getHeaders(): HttpHeaders {
-    return new HttpHeaders().set('X-User-Id', '16'); // আপনার প্রজেক্টের কারেন্ট মক/লগড-ইন ইউজার আইডি
+    const userId = this.storage.getUser()?.userId?.toString() ?? '1';
+    return new HttpHeaders().set('X-User-Id', userId);
   }
 
   /**

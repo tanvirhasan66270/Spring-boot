@@ -15,7 +15,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/qc-inspectors")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor // লম্বক দিয়ে ফাইনাল ফিল্ডের জন্য কনস্ট্রাক্টর তৈরি
 public class QCInspectorController {
 

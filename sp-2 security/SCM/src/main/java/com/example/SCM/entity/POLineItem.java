@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class POLineItem {
 
     @Id
@@ -51,7 +50,6 @@ public class POLineItem {
     private String notes;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
     private POLineItemStatus status = POLineItemStatus.PENDING;
 
     @Column(updatable = false)

@@ -6,6 +6,7 @@ import com.example.SCM.service.CustomerOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,13 +14,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/customerOrders")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class CustomerOrderController {
 
     private final CustomerOrderService orderService;
 
     // 1. Place a New Order (Initial calculations & appropriate email trigger)
     @PostMapping
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody CustomerOrderRequestDTO dto) {
         CustomerOrderResponseDTO response = orderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -27,6 +28,7 @@ public class CustomerOrderController {
 
     //  2. General Update Order Metadata
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
             @RequestBody CustomerOrderRequestDTO dto
@@ -37,6 +39,7 @@ public class CustomerOrderController {
 
     //  3. Fetch All Logistics Orders
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders() {
         List<CustomerOrderResponseDTO> responseList = orderService.findAll();
         return ResponseEntity.ok(responseList);
@@ -44,6 +47,8 @@ public class CustomerOrderController {
 
     //  4. Find Single Order Context By ID
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
+            "or @customerOrderSecurity.isOwner(#id, authentication)")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
         return orderService.getById(id)
                 .map(ResponseEntity::ok)
@@ -52,6 +57,7 @@ public class CustomerOrderController {
 
     //  5. Delete Order Record
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         orderService.delete(id);
         return ResponseEntity.ok("Customer order instance purged successfully from cluster cache mapping.");
@@ -59,6 +65,7 @@ public class CustomerOrderController {
 
     // 6. Live Track Package via Order Number
     @GetMapping("/track")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CustomerOrderResponseDTO> trackOrderByNumber(@RequestParam String orderNumber) {
         return orderService.trackOrder(orderNumber)
                 .map(ResponseEntity::ok)
@@ -72,7 +79,7 @@ public class CustomerOrderController {
             @RequestParam double amountPaid,
             @RequestParam String method) {
 
-        // এটি আপনার নতুন পেমেন্ট কন্ডিশন ও ২য় ফাইনাল ইমেইল ইনভয়েস ইঞ্জিন সাকসেসফুলি রান করবে
+        // এটি আপনার নতুন পেমেন্ট কন্ডিশন ও ২য় ফাইনাল ইমেইল ইনভয়েস ইঞ্জিন সাকসেসফুলি রান করবে
         orderService.processFinalPaymentConfirmation(orderId, amountPaid, method);
 
         return ResponseEntity.ok("""

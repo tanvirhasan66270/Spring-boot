@@ -191,7 +191,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 invoice.getCurrency(),
                 invoice.getDeliveryAddress(),
                 invoice.getPaymentStatus().name().equals("PAID") ? "status-paid" :
-                        invoice.getPaymentStatus().name().equals("PARTIALLY_PAID") ? "status-partial" : "status-unpaid",
+                 invoice.getPaymentStatus().name().equals("PARTIALLY_PAID") ? "status-partial" : "status-unpaid",
                 invoice.getPaymentStatus().name(),
                 invoice.getSubtotal(),
                 invoice.getTaxRate(),

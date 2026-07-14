@@ -23,7 +23,7 @@ export class AddProductComponent implements OnInit {
   imagePreview: string | ArrayBuffer | null = null;
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.apiUrl.replace(/api\/$/, '') + 'uploads/product/';
+  readonly imageBaseUrl = environment.imgUrl+"product/";
 
   product: ProductRequestModel = {
     id: 0,

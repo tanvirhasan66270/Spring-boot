@@ -8,6 +8,7 @@ import { DistrictService } from '../../../../service/district.service';
 import { PoliceStationService } from '../../../../service/police-station.service';
 import { WarehouseRequestModel, WarehouseResponseModel } from '../../../shared/model/warehouse';
 import { environment } from '../../../../../environment/environment';
+import { StorageService } from '../../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-warehouse',
@@ -17,7 +18,6 @@ import { environment } from '../../../../../environment/environment';
   styleUrl: './warehouse.component.css',
 })
 export class WarehouseComponent implements OnInit {
-  
   warehouses: WarehouseResponseModel[] = [];
 
   countries: any[] = [];
@@ -32,17 +32,18 @@ export class WarehouseComponent implements OnInit {
   warehouse: WarehouseRequestModel = {
     name: '',
     email: '',
-    location: '', 
-    address: '',  
+    location: '',
+    address: '',
     capacity: 0,
-    managerId: 1, 
+    managerId: 0,
     isActive: true,
-    policeStationId: 0
+    policeStationId: 0,
   };
 
   isEdit = false;
   currentEditId: number | null = null;
-  isDrawerOpen = false; 
+  isDrawerOpen = false;
+  currentUserId: number = 0;
 
   constructor(
     private service: WarehouseService,
@@ -50,18 +51,23 @@ export class WarehouseComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
-    private cdr: ChangeDetectorRef
-  ) { }
-
+    private storage: StorageService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit() {
+    const user = this.storage.getUser();
+    if (user) {
+      this.currentUserId = user.userId;
+      this.warehouse.managerId = user.userId;
+    }
     this.loadWarehouses();
     this.loadCountries();
   }
 
   openDrawer() {
-    this.reset();          
-    this.isEdit = false;   
+    this.reset();
+    this.isEdit = false;
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
@@ -77,7 +83,7 @@ export class WarehouseComponent implements OnInit {
       next: (data) => {
         this.warehouses = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -86,12 +92,12 @@ export class WarehouseComponent implements OnInit {
       next: (data) => {
         this.countries = data || [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
   // =====================================================
-  // CASCADING LOCATION LOGICS 
+  // CASCADING LOCATION LOGICS
   // =====================================================
 
   onCountryChange() {
@@ -105,7 +111,7 @@ export class WarehouseComponent implements OnInit {
 
     if (!this.selectedCountryId) return;
 
-    this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+    this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
       this.divisions = res || [];
       this.cdr.markForCheck();
       console.log(this.divisions);
@@ -130,7 +136,7 @@ export class WarehouseComponent implements OnInit {
         console.error('Failed to load districts:', err);
         this.districts = [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -150,7 +156,7 @@ export class WarehouseComponent implements OnInit {
         console.error('Failed to load police stations:', err);
         this.policeStations = [];
         this.cdr.markForCheck();
-      }
+      },
     });
   }
 
@@ -158,23 +164,26 @@ export class WarehouseComponent implements OnInit {
   // AUTO ADDRESS COMPILER
   // =====================================================
   generateFullAddress() {
-    const countryName = this.countries.find(x => x.id == this.selectedCountryId)?.name || '';
-    const divisionName = this.divisions.find(x => x.id == this.selectedDivisionId)?.name || '';
-    const districtName = this.districts.find(x => x.id == this.selectedDistrictId)?.name || '';
-    const psName = this.policeStations.find(x => x.id == this.warehouse.policeStationId)?.name || '';
+    const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
+    const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
+    const districtName = this.districts.find((x) => x.id == this.selectedDistrictId)?.name || '';
+    const psName =
+      this.policeStations.find((x) => x.id == this.warehouse.policeStationId)?.name || '';
 
     this.warehouse.address = [
       this.warehouse.location,
       psName,
       districtName,
       divisionName,
-      countryName
-    ].filter(v => v).join(', ');
+      countryName,
+    ]
+      .filter((v) => v)
+      .join(', ');
   }
 
   save() {
     if (!this.warehouse.policeStationId || this.warehouse.policeStationId === 0) {
-      alert("Please complete the location hierarchy up to Police Station.");
+      alert('Please complete the location hierarchy up to Police Station.');
       return;
     }
 
@@ -183,18 +192,18 @@ export class WarehouseComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.warehouse).subscribe({
         next: () => {
-          alert("Warehouse updated successfully!");
+          alert('Warehouse updated successfully!');
           this.closeDrawer();
           this.loadWarehouses();
-        }
+        },
       });
     } else {
       this.service.save(this.warehouse).subscribe({
         next: () => {
-          alert("Warehouse deployed successfully!");
+          alert('Warehouse deployed successfully!');
           this.closeDrawer();
           this.loadWarehouses();
-        }
+        },
       });
     }
   }
@@ -211,7 +220,7 @@ export class WarehouseComponent implements OnInit {
       capacity: w.capacity,
       managerId: w.managerId,
       isActive: w.isActive,
-      policeStationId: w.policeStationId
+      policeStationId: w.policeStationId,
     };
 
     this.selectedCountryId = (w as any).countryId || null;
@@ -219,13 +228,13 @@ export class WarehouseComponent implements OnInit {
     this.selectedDistrictId = (w as any).districtId || null;
 
     if (this.selectedCountryId) {
-      this.divisionService.getByCountryId(this.selectedCountryId).subscribe(res => {
+      this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
         this.divisions = res || [];
         if (this.selectedDivisionId) {
-          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe(res2 => {
+          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe((res2) => {
             this.districts = res2 || [];
             if (this.selectedDistrictId) {
-              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe(res3 => {
+              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe((res3) => {
                 this.policeStations = res3 || [];
                 this.cdr.markForCheck();
               });
@@ -240,12 +249,12 @@ export class WarehouseComponent implements OnInit {
   }
 
   delete(id: number) {
-    if (confirm("Purge this warehouse node?")) {
+    if (confirm('Purge this warehouse node?')) {
       this.service.delete(id).subscribe({
         next: () => {
-          alert("Warehouse deleted successfully");
+          alert('Warehouse deleted successfully');
           this.loadWarehouses();
-        }
+        },
       });
     }
   }
@@ -257,9 +266,9 @@ export class WarehouseComponent implements OnInit {
       location: '',
       address: '',
       capacity: 0,
-      managerId: 1,
+      managerId: this.currentUserId,
       isActive: true,
-      policeStationId: 0
+      policeStationId: 0,
     };
     this.selectedCountryId = null;
     this.selectedDivisionId = null;

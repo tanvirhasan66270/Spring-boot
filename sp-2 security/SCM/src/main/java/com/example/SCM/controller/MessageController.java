@@ -6,6 +6,7 @@ import com.example.SCM.entity.User;
 import com.example.SCM.serviceImp.MessageServiceImp;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@PreAuthorize("isAuthenticated()")
 public class MessageController {
 
     private final MessageServiceImp service;
@@ -22,7 +23,7 @@ public class MessageController {
     @PostMapping
     public ResponseEntity<List<MessageResponseDTO>> composeMessage(
             @RequestBody MessageRequestDTO dto,
-            @AuthenticationPrincipal User currentUser) { // 🎯 লগইন ইউজার ডিটেইলস অটো ইনজেক্টেড
+            @AuthenticationPrincipal User currentUser) {
         return ResponseEntity.ok(service.sendMessage(dto, currentUser));
     }
 
@@ -32,6 +33,7 @@ public class MessageController {
     }
 
     @PatchMapping("/{id}/read")
+    @PreAuthorize("@messageSecurity.isRecipient(#id, authentication)")
     public ResponseEntity<Void> toggleReadStatus(@PathVariable Long id) {
         service.markAsRead(id);
         return ResponseEntity.ok().build();

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 
-public class QuotationServiceImpl implements QuotationService {
+public class QuotationServiceImp implements QuotationService {
 
     private final QuotationRepository quotationRepository;
     private final QuotationMapper quotationMapper;

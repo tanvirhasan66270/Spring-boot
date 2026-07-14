@@ -255,7 +255,7 @@ export class DriverComponent implements OnInit {
   }
 
   save() {
-    this.errorMessage = null; // নতুন সাবমিশনে পুরাতন এরর রিসেট
+    this.errorMessage = null; 
 
     if (!this.isEdit && this.driver.password !== this.confirmPassword) {
       this.errorMessage = 'Validation Fault: Password and confirm password inputs do not match.';

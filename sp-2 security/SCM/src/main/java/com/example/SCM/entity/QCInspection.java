@@ -16,7 +16,6 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class QCInspection {
 
     @Id
@@ -62,7 +61,6 @@ public class QCInspection {
 
     @JsonIgnore
     @OneToMany(mappedBy = "qcInspection", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @Builder.Default
     private List<QCChecklist> checklists = new ArrayList<>();
 
     @Column(updatable = false, nullable = false)

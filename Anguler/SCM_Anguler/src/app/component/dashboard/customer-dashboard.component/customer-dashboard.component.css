@@ -21,7 +21,7 @@
 .quick-action-btn:hover {
   transform: translateY(-4px);
   border-color: rgba(99, 102, 241, 0.2);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
 }
 
 .recommendation-item {
@@ -41,5 +41,91 @@
 }
 
 .opacity-20 {
-  opacity: 0.20;
+  opacity: 0.2;
+}
+
+/* ──── Loading Skeleton ──── */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+.skeleton-card {
+  min-height: 80px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ──── Notification Section ──── */
+.notification-item {
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-unread {
+  background-color: #eff6ff;
+  border-color: #bfdbfe;
+}
+
+.notification-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.min-width-0 {
+  min-width: 0;
+}
+
+/* ──── Activity Log Section ──── */
+.activity-item {
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.activity-item:hover {
+  background-color: #f8f9fa;
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ──── Empty State ──── */
+.empty-state {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #9ca3af;
+}
+
+.empty-state i {
+  font-size: 2rem;
+  opacity: 0.25;
+  display: block;
+  margin-bottom: 0.5rem;
 }

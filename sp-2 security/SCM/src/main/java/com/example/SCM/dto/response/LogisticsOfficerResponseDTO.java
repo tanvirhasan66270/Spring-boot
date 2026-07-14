@@ -17,9 +17,7 @@ public class LogisticsOfficerResponseDTO {
     private LocalDate joiningDate;
     private String designation;
     private String language;
-    private Long policeStationId;
-    private String policeStationName;
-    private LocalDateTime createdAt;
+     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     // Auth User Flattened Details
@@ -28,4 +26,16 @@ public class LogisticsOfficerResponseDTO {
     private String email;
     private String phone;
     private String role;
+
+    // Location IDs
+    private Long countryId;
+    private Long divisionId;
+    private Long districtId;
+    private Long policeStationId;
+
+    // Location Names
+    private String countryName;
+    private String divisionName;
+    private String districtName;
+    private String policeStationName;
 }

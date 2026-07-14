@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class ActivityLog {
 
     @Id
@@ -45,7 +44,6 @@ public class ActivityLog {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    @Builder.Default
     private ActionStatus actionStatus = ActionStatus.SUCCESS;
 
 

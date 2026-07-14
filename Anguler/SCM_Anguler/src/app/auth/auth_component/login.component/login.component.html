@@ -1,82 +1,152 @@
-<app-header></app-header>
-<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-  <div class="card shadow border-0" style="width: 100%; max-width: 420px;">
+<div class="login-wrapper">
+  <!-- Left Panel - Branding -->
+  <div class="login-branding">
+    <div class="branding-content">
+      <div class="brand-logo">
+        <i class="bi bi-box-seam-fill"></i>
+      </div>
+      <h1 class="brand-title">SCM<span>PRO</span></h1>
+      <p class="brand-subtitle">Enterprise Supply Chain Management Platform</p>
 
-    <!-- Header -->
-    <div class="card-header bg-primary text-white text-center py-4">
-      <i class="bi bi-box-seam fs-1 d-block mb-1"></i>
-      <h5 class="fw-bold mb-0">SCM Management</h5>
-      <small class="opacity-75">Sign in to your account</small>
+      <div class="feature-list">
+        <div class="feature-item">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Real-time Inventory Tracking</span>
+        </div>
+        <div class="feature-item">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Automated Procurement Workflows</span>
+        </div>
+        <div class="feature-item">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>End-to-end Logistics Management</span>
+        </div>
+        <div class="feature-item">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Quality Control & Compliance</span>
+        </div>
+      </div>
     </div>
+    <div class="branding-footer">
+      <p>Trusted by 500+ enterprises worldwide</p>
+    </div>
+  </div>
 
-    <div class="card-body p-4">
+  <!-- Right Panel - Login Form -->
+  <div class="login-form-panel">
+    <div class="form-container">
+      <!-- Mobile Logo -->
+      <div class="mobile-logo">
+        <i class="bi bi-box-seam-fill"></i>
+        <span>SCM<span>PRO</span></span>
+      </div>
 
-      <!-- Error alert -->
-      <div *ngIf="errorMessage" class="alert alert-danger d-flex align-items-center gap-2 py-2">
+      <div class="form-header">
+        <h2>Welcome back</h2>
+        <p>Sign in to your account to continue</p>
+      </div>
+
+      <!-- Error Alert -->
+      <div *ngIf="errorMessage" class="error-alert animate-slideUp">
         <i class="bi bi-exclamation-triangle-fill"></i>
         <span>{{ errorMessage }}</span>
+        <button type="button" class="error-close" (click)="errorMessage = null">
+          <i class="bi bi-x"></i>
+        </button>
       </div>
 
       <form #loginForm="ngForm" (ngSubmit)="loginForm.valid && login()" novalidate>
-
         <!-- Email -->
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Email</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+        <div class="form-group">
+          <label class="form-label">Email address</label>
+          <div class="input-wrapper" [class.input-error]="emailRef.invalid && emailRef.touched">
+            <i class="bi bi-envelope"></i>
             <input
               type="email"
-              class="form-control"
+              class="form-input"
               [(ngModel)]="dto.email"
               name="email"
               #emailRef="ngModel"
               required
               email
-              placeholder="you@example.com">
+              placeholder="name@company.com"
+              autocomplete="email"
+            />
           </div>
-          <div class="text-danger small mt-1" *ngIf="emailRef.invalid && emailRef.touched">
-            Enter a valid email.
+          <div class="field-error" *ngIf="emailRef.invalid && emailRef.touched">
+            <i class="bi bi-info-circle"></i> Please enter a valid email address
           </div>
         </div>
 
         <!-- Password -->
-        <div class="mb-4">
-          <div class="d-flex justify-content-between">
-            <label class="form-label fw-semibold">Password</label>
-            <a href="forgot-password" class="small text-primary text-decoration-none">
-              Forgot password?
-            </a>
+        <div class="form-group">
+          <div class="form-label-row">
+            <label class="form-label">Password</label>
+            <a routerLink="/forgot-password" class="forgot-link">Forgot password?</a>
           </div>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+          <div
+            class="input-wrapper"
+            [class.input-error]="passwordRef.invalid && passwordRef.touched"
+          >
+            <i class="bi bi-lock"></i>
             <input
               [type]="showPassword ? 'text' : 'password'"
-              class="form-control"
+              class="form-input"
               [(ngModel)]="dto.password"
               name="password"
               #passwordRef="ngModel"
               required
-              placeholder="Your password">
-            <button class="btn btn-outline-secondary" type="button" (click)="showPassword = !showPassword">
+              placeholder="Enter your password"
+              autocomplete="current-password"
+            />
+            <button type="button" class="toggle-password" (click)="showPassword = !showPassword">
               <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
             </button>
           </div>
-          <div class="text-danger small mt-1" *ngIf="passwordRef.invalid && passwordRef.touched">
-            Password is required.
+          <div class="field-error" *ngIf="passwordRef.invalid && passwordRef.touched">
+            <i class="bi bi-info-circle"></i> Password is required
           </div>
         </div>
 
-        <!-- Submit -->
-        <button
-          class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2"
-          type="submit"
-          [disabled]="loading">
-          <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
-          <i class="bi bi-box-arrow-in-right" *ngIf="!loading"></i>
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
+        <!-- Remember Me -->
+        <div class="form-options">
+          <label class="checkbox-wrapper">
+            <input type="checkbox" [(ngModel)]="rememberMe" name="remember" />
+            <span class="checkmark"></span>
+            <span class="checkbox-label">Remember me</span>
+          </label>
+        </div>
 
+        <!-- Submit Button -->
+        <button type="submit" class="submit-btn" [disabled]="loading" [class.loading]="loading">
+          <span *ngIf="loading" class="btn-spinner"></span>
+          <span *ngIf="!loading">Sign in</span>
+          <span *ngIf="loading">Signing in...</span>
+        </button>
       </form>
+
+      <div class="form-footer">
+        <p>Demo Credentials:</p>
+        <div class="demo-accounts">
+          <button type="button" class="demo-btn" (click)="fillDemo('admin@scm.com', 'admin123')">
+            <i class="bi bi-person-gear"></i> Admin
+          </button>
+          <button
+            type="button"
+            class="demo-btn"
+            (click)="fillDemo('manager@scm.com', 'manager123')"
+          >
+            <i class="bi bi-person-badge"></i> Manager
+          </button>
+          <button
+            type="button"
+            class="demo-btn"
+            (click)="fillDemo('customer@scm.com', 'customer123')"
+          >
+            <i class="bi bi-person"></i> Customer
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -4,35 +4,83 @@ import { FormsModule } from '@angular/forms';
 import { LoginRequest } from '../../Model/authModel';
 import { AuthService } from '../../auth_service/auth-service';
 import { Router } from '@angular/router';
-import { Header } from '../../../component/shared/layout/header/header';
 
 @Component({
   selector: 'app-login.component',
-  imports: [CommonModule, FormsModule ,Header],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
 export class LoginComponent {
-
-
-
   dto: LoginRequest = { email: '', password: '' };
 
   showPassword = false;
   loading = false;
+  rememberMe = false;
   errorMessage: string | null = null;
 
-  constructor(private auth: AuthService, private router: Router) { }
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+  ) {}
 
+  fillDemo(email: string, password: string): void {
+    this.dto.email = email;
+    this.dto.password = password;
+  }
 
   login(): void {
     this.loading = true;
     this.errorMessage = null;
 
     this.auth.login(this.dto).subscribe({
-      next: () => {
+      next: (res) => {
         this.loading = false;
-        this.router.navigate(['/dashboard']);
+
+        switch (res.role) {
+          case 'ADMIN':
+            this.router.navigate(['/dashboard/admin']);
+            break;
+
+          case 'MANAGER':
+            this.router.navigate(['/dashboard/manager']);
+            break;
+
+          case 'CUSTOMER':
+            this.router.navigate(['/dashboard/customer']);
+            break;
+
+          case 'SUPPLIER':
+            this.router.navigate(['/dashboard/supplier']);
+            break;
+
+          case 'DRIVER':
+            this.router.navigate(['/dashboard/driver']);
+            break;
+
+          case 'PROCUREMENT':
+            this.router.navigate(['/dashboard/procurement']);
+            break;
+
+          case 'QC_INSPECTOR':
+            this.router.navigate(['/dashboard/qc-inspector']);
+            break;
+
+          case 'LOGISTICS_OFFICER':
+            this.router.navigate(['/dashboard/logistics']);
+            break;
+
+          case 'COMMERCIAL_OFFICER':
+            this.router.navigate(['/dashboard/commercial']);
+            break;
+
+          case 'SALES_OFFICER':
+            this.router.navigate(['/dashboard/sales']);
+            break;
+
+          default:
+            this.router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         this.loading = false;
@@ -42,10 +90,7 @@ export class LoginComponent {
             : err.status === 403
               ? 'Your account is not verified or has been disabled.'
               : 'Something went wrong. Please try again.';
-      }
+      },
     });
   }
-
-
-
 }

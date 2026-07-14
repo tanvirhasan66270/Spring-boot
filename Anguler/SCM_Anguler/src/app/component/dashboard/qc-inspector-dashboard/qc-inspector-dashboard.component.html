@@ -1,27 +1,48 @@
 <div class="qc-dashboard px-3 py-4">
-
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <div
+    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
+  >
     <div>
       <h3 class="fw-bold mb-1 text-dark">QC Assurance Center</h3>
-      <p class="text-secondary small mb-0">Inspector: <strong class="text-primary">{{ userName }}</strong> | Quality audits and product testing console.</p>
+      <p class="text-secondary small mb-0">
+        Inspector: <strong class="text-primary">{{ userName }}</strong> | Quality audits and product
+        testing console.
+      </p>
     </div>
-    <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-      <i class="bi bi-box-arrow-right"></i> Terminate Session
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <button
+        class="btn btn-sm btn-outline-secondary fw-semibold rounded-3"
+        (click)="toggleSettings()"
+      >
+        <i class="bi bi-gear"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Terminate Session
+      </button>
+    </div>
   </div>
 
   <!-- ───────────────── KPI GRID ───────────────── -->
   <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
     <div class="col" *ngFor="let kpi of kpis">
-      <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
-        <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
+      <div
+        class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{
+          kpi.color
+        }} h-100"
+      >
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div class="text-secondary small text-uppercase fw-bold">{{ kpi.label }}</div>
+          <i class="bi {{ kpi.icon }} text-{{ kpi.color }} fs-5"></i>
+        </div>
         <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
         <div class="small font-monospace">
-          <span class="text-success fw-bold">
-            <i class="bi bi-arrow-up-right"></i> +12%
+          <span *ngIf="kpi.trendDir === 'up'" class="text-success fw-bold">
+            <i class="bi bi-arrow-up-right"></i> {{ kpi.trend }}
           </span>
-          <span class="text-muted small ms-1">vs target score</span>
+          <span *ngIf="kpi.trendDir === 'down'" class="text-danger fw-bold">
+            <i class="bi bi-arrow-down-right"></i> {{ kpi.trend }}
+          </span>
         </div>
       </div>
     </div>
@@ -30,14 +51,20 @@
   <!-- ───────────────── QUICK ACTIONS ───────────────── -->
   <div class="row g-3 mb-4">
     <div class="col-md-6">
-      <a routerLink="/qc-inspection" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/qc-inspection"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-patch-check fs-2 text-purple mb-1 d-block"></i>
         <strong class="text-dark d-block">Record Inspection</strong>
         <small class="text-muted">Upload a new product quality control audit log</small>
       </a>
     </div>
     <div class="col-md-6">
-      <a routerLink="/daily-report" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+      <a
+        routerLink="/daily-report"
+        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+      >
         <i class="bi bi-clipboard-x fs-2 text-danger mb-1 d-block"></i>
         <strong class="text-dark d-block">Defect Incident Ledger</strong>
         <small class="text-muted">Archive critical defects in production components</small>
@@ -46,12 +73,32 @@
   </div>
 
   <!-- ───────────────── TEST QUEUE GRID ───────────────── -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-purple border-4">
-    <div class="card-header bg-white py-3 border-0">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase"><i class="bi bi-clock-history text-purple me-2"></i> Quality Assurance Inspection Queue</h6>
+  <div
+    class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-purple border-4"
+  >
+    <div
+      class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+    >
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-clock-history text-purple me-2"></i> Quality Assurance Inspection Queue
+      </h6>
+      <span class="badge bg-purple-subtle text-purple rounded-pill">{{ queue.length }} items</span>
     </div>
     <div class="card-body p-0">
-      <div class="table-responsive">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-purple" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted small mt-2 mb-0">Loading inspection queue...</p>
+      </div>
+      <!-- Empty State -->
+      <div *ngIf="!loading && queue.length === 0" class="text-center py-5">
+        <i class="bi bi-inbox fs-1 text-muted d-block mb-2"></i>
+        <p class="text-muted mb-0">No inspection batches in queue</p>
+      </div>
+      <!-- Table -->
+      <div *ngIf="!loading && queue.length > 0" class="table-responsive">
         <table class="table table-hover align-middle mb-0 fs-8">
           <thead class="table-light text-uppercase">
             <tr>
@@ -70,19 +117,31 @@
               <td class="font-monospace">{{ q.sampleSize }} Units</td>
               <td class="font-monospace text-danger fw-bold">{{ q.defectsFound }}</td>
               <td>
-                <span class="badge text-uppercase" 
-                      [ngClass]="{
-                        'bg-success-subtle text-success': q.status === 'PASS',
-                        'bg-danger-subtle text-danger': q.status === 'FAIL',
-                        'bg-warning-subtle text-warning': q.status === 'PENDING'
-                      }">
+                <span
+                  class="badge text-uppercase"
+                  [ngClass]="{
+                    'bg-success-subtle text-success': q.status === 'PASS',
+                    'bg-danger-subtle text-danger': q.status === 'FAIL',
+                    'bg-warning-subtle text-warning': q.status === 'PENDING',
+                  }"
+                >
                   {{ q.status }}
                 </span>
               </td>
               <td class="text-end pe-4">
                 @if (q.status === 'PENDING') {
-                  <button class="btn btn-sm btn-outline-success me-1 px-2.5 py-0.5 rounded-2" (click)="pass(q.batchId)">Pass</button>
-                  <button class="btn btn-sm btn-outline-danger px-2.5 py-0.5 rounded-2" (click)="fail(q.batchId)">Fail</button>
+                  <button
+                    class="btn btn-sm btn-outline-success me-1 px-2.5 py-0.5 rounded-2"
+                    (click)="pass(q.batchId)"
+                  >
+                    Pass
+                  </button>
+                  <button
+                    class="btn btn-sm btn-outline-danger px-2.5 py-0.5 rounded-2"
+                    (click)="fail(q.batchId)"
+                  >
+                    Fail
+                  </button>
                 } @else {
                   <span class="text-muted small">Logged</span>
                 }
@@ -95,12 +154,21 @@
   </div>
 
   <!-- ───────────────── DEFECT DESCRIPTIONS & CHARTS ───────────────── -->
-  <div class="row g-4">
+  <div class="row g-4 mb-4">
     <div class="col-md-5">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-x-octagon text-danger me-2"></i> Quality Defect Types</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-x-octagon text-danger me-2"></i> Quality Defect Types
+        </h6>
+        <div *ngIf="defects.length === 0" class="text-center py-4">
+          <i class="bi bi-check-circle fs-2 text-success d-block mb-2"></i>
+          <p class="text-muted small mb-0">No defects recorded</p>
+        </div>
         <div class="d-flex flex-column gap-3">
-          <div *ngFor="let d of defects" class="p-2 border rounded border-start border-3 border-danger">
+          <div
+            *ngFor="let d of defects"
+            class="p-2 border rounded border-start border-3 border-danger"
+          >
             <div class="d-flex justify-content-between small fw-bold mb-1">
               <span class="text-dark">{{ d.code }} - {{ d.severity }} severity</span>
               <span class="badge bg-danger">{{ d.count }} incidents</span>
@@ -110,22 +178,163 @@
         </div>
       </div>
     </div>
-    
+
     <div class="col-md-7">
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-percent text-success me-2"></i> QC Pass vs Fail Proportions</h6>
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-percent text-success me-2"></i> QC Pass vs Fail Proportions
+        </h6>
         <div class="d-flex align-items-center justify-content-around h-100">
           <svg viewBox="0 0 100 100" width="120" height="120">
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#ef4444" stroke-width="12"></circle>
-            <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10b981" stroke-width="12" stroke-dasharray="230 251" stroke-dashoffset="0"></circle>
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="transparent"
+              stroke="#ef4444"
+              stroke-width="12"
+            ></circle>
+            <circle
+              cx="50"
+              cy="50"
+              r="40"
+              fill="transparent"
+              stroke="#10b981"
+              stroke-width="12"
+              [attr.stroke-dasharray]="passRate * 2.51 + ' ' + (251 - passRate * 2.51)"
+              stroke-dashoffset="0"
+              style="transform: rotate(-90deg); transform-origin: center"
+            ></circle>
+            <text x="50" y="47" text-anchor="middle" class="fs-5 fw-bold fill-dark font-monospace">
+              {{ passRate }}%
+            </text>
+            <text x="50" y="57" text-anchor="middle" class="fs-8 fill-muted">pass rate</text>
           </svg>
           <div>
-            <div class="small mb-1"><span class="badge bg-success rounded-circle">&nbsp;</span> Pass Batch Rate (92.4%)</div>
-            <div class="small"><span class="badge bg-danger rounded-circle">&nbsp;</span> Reject Rate (7.6%)</div>
+            <div class="small mb-2">
+              <span class="badge bg-success rounded-circle me-1">&nbsp;</span>
+              <span class="fw-bold">Pass Batch Rate</span>
+              <span class="ms-1 font-monospace text-success">{{ passRate }}%</span>
+            </div>
+            <div class="small mb-2">
+              <span class="badge bg-danger rounded-circle me-1">&nbsp;</span>
+              <span class="fw-bold">Reject Rate</span>
+              <span class="ms-1 font-monospace text-danger">{{ failRate }}%</span>
+            </div>
+            <div class="small">
+              <span class="text-muted">Total inspections:</span>
+              <span class="fw-bold font-monospace ms-1">{{ totalInspections }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- ───────────────── NOTIFICATIONS & ACTIVITY LOG ───────────────── -->
+  <div class="row g-4">
+    <!-- Notifications -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-bell text-warning me-2"></i> Notifications
+          </h6>
+          <span class="badge bg-warning-subtle text-warning rounded-pill">{{
+            notifications.length
+          }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="notifications.length === 0" class="text-center py-4">
+            <i class="bi bi-bell-slash fs-2 text-muted d-block mb-2"></i>
+            <p class="text-muted small mb-0">No new notifications</p>
+          </div>
+          <div class="notification-list">
+            <div *ngFor="let n of notifications" class="notification-item px-4 py-3 border-bottom">
+              <div class="d-flex align-items-start gap-3">
+                <i
+                  class="bi {{ getNotificationIcon(n.type) }} {{
+                    getNotificationColor(n.type)
+                  }} fs-5 mt-1"
+                ></i>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold text-dark small">{{ n.title }}</div>
+                  <div class="text-muted small text-truncate">{{ n.message }}</div>
+                  <div class="text-muted small mt-1">
+                    <i class="bi bi-clock me-1"></i>{{ formatDate(n.createdAt) }}
+                  </div>
+                </div>
+                <span *ngIf="!n.isRead" class="badge bg-primary rounded-circle p-1 mt-1"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="col-md-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100">
+        <div
+          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
+        >
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-activity text-info me-2"></i> Recent Activity
+          </h6>
+          <span class="badge bg-info-subtle text-info rounded-pill">{{ activities.length }}</span>
+        </div>
+        <div class="card-body p-0">
+          <div *ngIf="activities.length === 0" class="text-center py-4">
+            <i class="bi bi-clock-history fs-2 text-muted d-block mb-2"></i>
+            <p class="text-muted small mb-0">No activity logs found</p>
+          </div>
+          <div class="activity-list">
+            <div *ngFor="let a of activities" class="activity-item px-4 py-3 border-bottom">
+              <div class="d-flex align-items-start gap-3">
+                <i
+                  class="bi {{ getActionIcon(a.action) }} {{ getActionColor(a.action) }} fs-5 mt-1"
+                ></i>
+                <div class="flex-grow-1">
+                  <div class="fw-semibold text-dark small">
+                    {{ a.action }}
+                    <span class="badge bg-light text-secondary ms-1">{{ a.module }}</span>
+                  </div>
+                  <div class="text-muted small text-truncate">
+                    {{ a.description || 'No description' }}
+                  </div>
+                  <div class="text-muted small mt-1">
+                    <i class="bi bi-clock me-1"></i>{{ formatDate(a.performedAt) }}
+                    <span
+                      *ngIf="a.actionStatus"
+                      class="ms-2"
+                      [ngClass]="{
+                        'text-success': a.actionStatus === 'SUCCESS',
+                        'text-danger': a.actionStatus === 'FAILED',
+                      }"
+                    >
+                      <i
+                        class="bi"
+                        [ngClass]="
+                          a.actionStatus === 'SUCCESS' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'
+                        "
+                      ></i>
+                      {{ a.actionStatus }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── SETTINGS PANEL ───────────────── -->
+  <app-dashboard-settings
+    [isOpen]="showSettings"
+    (close)="closeSettings()"
+  ></app-dashboard-settings>
 </div>

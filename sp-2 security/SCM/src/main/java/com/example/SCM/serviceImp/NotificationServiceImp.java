@@ -17,12 +17,11 @@ public class NotificationServiceImp implements NotificationService {
     @Override
     @Transactional
     public Notification send(String recipientId, String type, String title, String message) {
-        Notification notification = Notification.builder()
-                .recipientId(recipientId)
-                .type(type)
-                .title(title)
-                .message(message)
-                .build();
+        Notification notification = new Notification();
+        notification.setRecipientId(recipientId);
+        notification.setType(type);
+        notification.setTitle(title);
+        notification.setMessage(message);
         return repository.save(notification);
     }
 

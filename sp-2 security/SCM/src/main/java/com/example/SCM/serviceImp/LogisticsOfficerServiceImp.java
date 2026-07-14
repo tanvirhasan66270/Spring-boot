@@ -68,7 +68,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
 
         if (file != null && !file.isEmpty()) {
             String imagePath = uploadImage(file, dto.getContactPerson());
-            dto.setAddress("uploads/logistics_officer/" + imagePath);
+            dto.setAddress( imagePath);
         }
 
         Logistics_Officer officer = officerMapper.toOfficerEntity(dto, savedUser, policeStation);
@@ -129,7 +129,7 @@ public class LogisticsOfficerServiceImp implements LogisticsOfficerService {
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getContactPerson());
-            officer.setImage("uploads/logistics_officer/" + newImagePath);
+            officer.setImage( newImagePath);
         }
 
         return officerMapper.convertTOResponseDTO(officerRepository.save(officer));

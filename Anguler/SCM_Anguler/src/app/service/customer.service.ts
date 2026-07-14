@@ -20,9 +20,7 @@ export class CustomerService {
     return this.http.get<CustomerResponseModel>(`${this.apiUrl}${id}`);
   }
 
-  getCustomerByUserId(userId: number): Observable<CustomerResponseModel> {
-    return this.http.get<CustomerResponseModel>(`${this.apiUrl}user/${userId}`);
-  }
+  
 
   // Multi-part FormData হ্যান্ডলিং
   save(formData: FormData): Observable<CustomerResponseModel> {
@@ -34,7 +32,11 @@ export class CustomerService {
   }
 
   delete(id: number): Observable<string> {
-    // কন্ট্রোলারের Plain text রেসপন্সের কারণে responseType: 'text' বাধ্যতামূলক
     return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
+
+   getCustomerByUserId(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}user/${userId}`);
+  }
+
 }
