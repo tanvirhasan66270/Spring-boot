@@ -33,11 +33,7 @@ public class PurchaseRequisitionToken {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Token Expiry Date
-    @Column(nullable = false)
-    private LocalDate expiryDate;
-
-    // Auto Delete Time
+   // Auto Delete Time
     private LocalDateTime deletedAt;
 
     // ===========================

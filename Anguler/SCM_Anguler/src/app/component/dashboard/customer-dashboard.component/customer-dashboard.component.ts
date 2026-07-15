@@ -268,6 +268,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.storage.clearSession();
-    this.router.navigate(['/login']);
+    this.router.navigate(['']);
   }
 }

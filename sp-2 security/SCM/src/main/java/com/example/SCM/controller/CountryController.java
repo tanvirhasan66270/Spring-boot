@@ -19,14 +19,14 @@ public class CountryController {
     private final CountryService countryService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CountryResponseDTO> create(@RequestBody CountryRequestDTO dto) {
         CountryResponseDTO response = countryService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<CountryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody CountryRequestDTO dto) {
@@ -37,7 +37,7 @@ public class CountryController {
     //ড্রপডাউনের জন্য শুধুমাত্র একটিভ দেশগুলো ফিল্টার করার ব্যবস্থা রাখা হয়েছে।
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<CountryResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
         List<CountryResponseDTO> list = countryService.findAll(onlyActive);
@@ -45,7 +45,7 @@ public class CountryController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CountryResponseDTO> getById(@PathVariable Long id) {
         return countryService.getById(id)
                 .map(ResponseEntity::ok)
@@ -53,7 +53,7 @@ public class CountryController {
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         countryService.delete(id);
         return ResponseEntity.ok("Country deleted successfully with ID: " + id);

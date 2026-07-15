@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class DriverController {
 
     private final DriverService driverService;
@@ -75,7 +75,7 @@ public class DriverController {
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @driverSecurity.isSelf(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @driverSecurity.isSelf(#id, authentication)")
     public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {
         return driverService.findUserById(id)
                 .map(ResponseEntity::ok)

@@ -55,7 +55,7 @@ CREATE TABLE `qc_inspectors` (
 
 LOCK TABLES `qc_inspectors` WRITE;
 /*!40000 ALTER TABLE `qc_inspectors` DISABLE KEYS */;
-INSERT INTO `qc_inspectors` VALUES (3,'House 56, Road 2, Sector 10, Uttara, Dhaka','MD. Tanvir','2026-06-30 18:06:42.210591','Senior QC Auditor','1999-10-10','MALE','uploads/qc_inspector/Robin_0f9cf98d-f18c-46b8-89f2-7121601b1298.JPG',_binary '','2026-07-01','BANGLA','1999261025777','Q07778889','2026-06-30 18:13:31.404140',6,26),(4,'মিরপুর ১২, Mirpur, Dhaka, Dhaka, Bangladesh','mitu','2026-07-05 17:14:00.361313','Senior QC IUnspactor','2026-06-28','MALE','uploads/qc_inspector/Miskat_c1d8d344-4854-4bf5-98a9-3f019285e2bf.jpg',_binary '\0','2026-07-21','BANGLA','65432154115','2332352325','2026-07-05 17:14:00.361313',1,68);
+INSERT INTO `qc_inspectors` VALUES (3,'House 56, Uttara, Dhaka, Dhaka, Bangladesh','MD. Tanvir','2026-06-30 18:06:42.210591','Senior QC Auditor','1999-10-10','MALE','Robin_c27295c8-8ff7-44d5-8ac3-69991e2f65e4.jpg',_binary '','2026-07-01','BANGLA','1999261025777','Q07778889','2026-07-11 16:51:06.732275',2,26),(4,'মিরপুর ১২, Mirpur, Dhaka, Dhaka, Bangladesh','mitu','2026-07-05 17:14:00.361313','Senior QC IUnspactor','2026-06-28','MALE','uploads/qc_inspector/Miskat_c1d8d344-4854-4bf5-98a9-3f019285e2bf.jpg',_binary '\0','2026-07-21','BANGLA','65432154115','2332352325','2026-07-05 17:14:00.361313',1,68);
 /*!40000 ALTER TABLE `qc_inspectors` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -68,4 +68,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-09 19:17:49
+-- Dump completed on 2026-07-15 19:20:46

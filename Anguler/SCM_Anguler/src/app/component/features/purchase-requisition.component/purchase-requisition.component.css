@@ -1,20 +1,21 @@
 /* --- SLIDE DRAWER CONTAINER (RIGHT SIDE) --- */
 .slide-drawer {
-  position: fixed;
-  top: 0;
-  right: -420px; /* বন্ধ থাকলে ডান দিকে স্ক্রিনের বাইরে থাকবে */
-  width: 400px;
-  height: 100vh;
-  background-color: #ffffff;
-  box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
-  z-index: 1060;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: -560px;      /* width + একটু extra */
+    width: 540px;       /* 400 → 540 */
+    max-width: 95vw;    /* ছোট স্ক্রিনে responsive */
+    height: 100vh;
+    background: #fff;
+    box-shadow: -8px 0 30px rgba(0,0,0,.18);
+    transition: right .35s ease;
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
 }
 
 .slide-drawer.show {
-  right: 0; /* ওপেন বা একটিভ হলে ডান প্রান্তের সাথে লেগে যাবে */
+    right: 0;
 }
 
 /* --- BACKDROP EFFECT --- */

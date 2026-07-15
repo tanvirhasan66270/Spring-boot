@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/po-line-items")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
 public class POLineItemController {
 
     private final POLineItemService poLineItemService;
@@ -50,7 +50,7 @@ public class POLineItemController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         poLineItemService.delete(id);
         return ResponseEntity.ok("Purchase Order Line Item deleted and parent order total amount updated successfully!");
@@ -60,8 +60,8 @@ public class POLineItemController {
     //লজিস্টিকস ও ট্র্যাকিং ড্যাশবোর্ডে মার্চেন্ট বা ক্লায়েন্ট কোড দিয়ে সার্চ করার জন্য এন্ডপয়েন্ট
 
     @GetMapping("/track/{trackingNumber}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER') " +
-            "or @poLineItemSecurity.isSupplierOwner(#trackingNumber, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER') " +
+//            "or @poLineItemSecurity.isSupplierOwner(#trackingNumber, authentication)")
     public ResponseEntity<POLineItemResponseDTO> trackByNumber(@PathVariable String trackingNumber) {
         POLineItemResponseDTO response = poLineItemService.tracking(trackingNumber);
         return ResponseEntity.ok(response);

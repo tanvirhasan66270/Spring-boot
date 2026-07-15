@@ -22,7 +22,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router,
-  ) {}
+  ) { }
 
   fillDemo(email: string, password: string): void {
     this.dto.email = email;
@@ -38,48 +38,49 @@ export class LoginComponent {
         this.loading = false;
 
         switch (res.role) {
+
           case 'ADMIN':
-            this.router.navigate(['/dashboard/admin']);
+            this.navigateAndReload('/dashboard/admin');
             break;
 
           case 'MANAGER':
-            this.router.navigate(['/dashboard/manager']);
+            this.navigateAndReload('/dashboard/manager');
             break;
 
           case 'CUSTOMER':
-            this.router.navigate(['/dashboard/customer']);
+            this.navigateAndReload('/dashboard/customer');
             break;
 
           case 'SUPPLIER':
-            this.router.navigate(['/dashboard/supplier']);
+            this.navigateAndReload('/dashboard/supplier');
             break;
 
           case 'DRIVER':
-            this.router.navigate(['/dashboard/driver']);
+            this.navigateAndReload('/dashboard/driver');
             break;
 
           case 'PROCUREMENT':
-            this.router.navigate(['/dashboard/procurement']);
+            this.navigateAndReload('/dashboard/procurement');
             break;
 
           case 'QC_INSPECTOR':
-            this.router.navigate(['/dashboard/qc-inspector']);
+            this.navigateAndReload('/dashboard/qc-inspector');
             break;
 
           case 'LOGISTICS_OFFICER':
-            this.router.navigate(['/dashboard/logistics']);
+            this.navigateAndReload('/dashboard/logistics');
             break;
 
           case 'COMMERCIAL_OFFICER':
-            this.router.navigate(['/dashboard/commercial']);
+            this.navigateAndReload('/dashboard/commercial');
             break;
 
           case 'SALES_OFFICER':
-            this.router.navigate(['/dashboard/sales']);
+            this.navigateAndReload('/dashboard/sales');
             break;
 
           default:
-            this.router.navigate(['/dashboard']);
+            this.navigateAndReload('/dashboard');
         }
       },
       error: (err) => {
@@ -91,6 +92,12 @@ export class LoginComponent {
               ? 'Your account is not verified or has been disabled.'
               : 'Something went wrong. Please try again.';
       },
+    });
+  }
+
+  private navigateAndReload(url: string): void {
+    this.router.navigate([url]).then(() => {
+      window.location.reload();
     });
   }
 }

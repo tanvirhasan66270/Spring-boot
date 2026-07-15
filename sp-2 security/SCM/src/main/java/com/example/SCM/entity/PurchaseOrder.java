@@ -35,6 +35,8 @@ public class PurchaseOrder {
     @Column(nullable = false)
     private String currency ; //USD
 
+
+
     @Column( nullable = false)
     private LocalDate expectedDeliveryDate;
 

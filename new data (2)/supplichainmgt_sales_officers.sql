@@ -52,7 +52,7 @@ CREATE TABLE `sales_officers` (
 
 LOCK TABLES `sales_officers` WRITE;
 /*!40000 ALTER TABLE `sales_officers` DISABLE KEYS */;
-INSERT INTO `sales_officers` VALUES (8,'Holding 12, Sector 4, Uttara','2026-06-30 19:07:59.114531','Senior Sales Executive','1992-11-15','MALE','uploads/sales_officer/Kamal_Hasan_7dd5b9d6-c8ff-4cfa-a953-1ce168448af9.jpg',_binary '\0','2026-07-01','ENGLISH','1992987654321','2026-06-30 22:16:35.860409',12,35);
+INSERT INTO `sales_officers` VALUES (8,'Holding 12, Khilgaon, Dhaka, Dhaka, Bangladesh','2026-06-30 19:07:59.114531','Senior Sales Executive','1992-11-15','MALE','Kamal_Hasan_1c45b9e2-b82f-4876-83a2-0a3d7af9b6e6.png',_binary '\0','2026-07-01','ENGLISH','1992987654321','2026-07-11 16:57:02.274843',10,35);
 /*!40000 ALTER TABLE `sales_officers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-09 19:17:50
+-- Dump completed on 2026-07-15 19:20:48

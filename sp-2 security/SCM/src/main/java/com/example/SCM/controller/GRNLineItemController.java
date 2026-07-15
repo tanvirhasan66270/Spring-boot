@@ -21,7 +21,7 @@ public class GRNLineItemController {
     // এটি সিঙ্গেল লাইন আইটেম আলাদাভাবে ইনভেন্টরিতে অ্যাড করার জন্য ব্যবহৃত হবে।
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> create(@RequestBody GRNLineItemRequestDTO dto) {
         GRNLineItemResponseDTO response = grnLineItemService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -30,7 +30,7 @@ public class GRNLineItemController {
     // Update Existing GRN Line Item (PUT)
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> update(
             @PathVariable Long id,
             @RequestBody GRNLineItemRequestDTO dto) {
@@ -42,7 +42,7 @@ public class GRNLineItemController {
     // আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GRNLineItemResponseDTO>> getAll() {
         List<GRNLineItemResponseDTO> list = grnLineItemService.findAll();
 
@@ -56,7 +56,7 @@ public class GRNLineItemController {
     // 4. Get GRN Line Item By ID (GET)
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
         return grnLineItemService.getById(id)
                 .map(ResponseEntity::ok)
@@ -66,7 +66,7 @@ public class GRNLineItemController {
     // Delete GRN Line Item By ID (DELETE)
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         grnLineItemService.delete(id);
         return ResponseEntity.ok("GRN Line Item deleted successfully with ID: " + id);

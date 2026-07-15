@@ -19,19 +19,19 @@ public class PoliceStationController {
     private final PoliceStationService policeStationService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<PoliceStationResponseDTO> create(@RequestBody PoliceStationRequestDTO dto) {
         return new ResponseEntity<>(policeStationService.save(dto), HttpStatus.CREATED);
     }
 
     @PutMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<PoliceStationResponseDTO> update(@PathVariable Long id, @RequestBody PoliceStationRequestDTO dto) {
         return ResponseEntity.ok(policeStationService.update(id, dto));
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PoliceStationResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
         List<PoliceStationResponseDTO> list = policeStationService.findAll(onlyActive);
@@ -49,20 +49,20 @@ public class PoliceStationController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<PoliceStationResponseDTO> getById(@PathVariable Long id) {
         return policeStationService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         policeStationService.delete(id);
         return ResponseEntity.ok("Police Station deleted successfully");
     }
 
     @GetMapping("search")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PoliceStationResponseDTO>> search(@RequestParam String keyword) {
         return ResponseEntity.ok(policeStationService.search(keyword));
     }

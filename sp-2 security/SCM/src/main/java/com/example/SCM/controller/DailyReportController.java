@@ -30,7 +30,7 @@ public class DailyReportController {
     private String uploadDir;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> create(
             @RequestPart("report") DailyReportRequestDTO dto,
             @RequestPart(value = "attachment", required = false) MultipartFile attachment
@@ -40,7 +40,7 @@ public class DailyReportController {
     }
 
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("report") DailyReportRequestDTO dto,
@@ -50,7 +50,7 @@ public class DailyReportController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getAll() {
         List<DailyReportResponseDTO> list = reportService.findAll();
         if (list.isEmpty()) {
@@ -60,7 +60,7 @@ public class DailyReportController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> getById(@PathVariable Long id) {
         return reportService.getById(id)
                 .map(ResponseEntity::ok)
@@ -68,7 +68,7 @@ public class DailyReportController {
     }
 
     @GetMapping("warehouse/{warehouseId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
         List<DailyReportResponseDTO> list = reportService.getByWarehouse(warehouseId);
         if (list.isEmpty()) {
@@ -79,13 +79,13 @@ public class DailyReportController {
 
     @Transactional
     @PatchMapping("approve/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<DailyReportResponseDTO> approve(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.approveReport(id, null));
     }
 
     @GetMapping("email-approve")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> emailApprove(
             @RequestParam Long id,
             @RequestParam String approverId
@@ -112,14 +112,14 @@ public class DailyReportController {
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         reportService.delete(id);
         return ResponseEntity.ok("Daily report record purged successfully.");
     }
 
     @GetMapping("uploads/reports/{filename:.+}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<Resource> viewReportImage(@PathVariable String filename) {
         try {
             Path fileStorageLocation = Paths.get(uploadDir).resolve("reports").normalize();

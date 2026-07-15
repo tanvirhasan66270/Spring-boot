@@ -1,6 +1,6 @@
 package com.example.SCM.serviceImp;
 
-import com.example.SCM.Util.MailService; // 💡 মেইলিং ইঞ্জিন ইম্পোর্ট
+import com.example.SCM.Util.MailService;
 import com.example.SCM.dto.mapper.PurchaseOrderMapper;
 import com.example.SCM.dto.request.PurchaseOrderRequestDTO;
 import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
     private final PurchaseOrderRepository purchaseOrderRepository;
@@ -32,9 +31,10 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final PurchaseOrderMapper purchaseOrderMapper;
     private final MailService mailService;
     private final PurchaseOrderTokenRepository tokenRepository;
-
     private final UserRepository userRepository;
 
+    private static final int APPROVAL_LINK_VALID_DAYS = 7;
+    private static final int RECEIVE_LINK_VALID_DAYS = 30;
 
     @Override
     @Transactional
@@ -57,81 +57,78 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         }
 
         PurchaseOrder po = purchaseOrderMapper.toEntity(dto, quotation, supplier, purchaseRequisition);
-
-        // প্রকিউরমেন্ট টিম যখন ডাটা সেভ/সেন্ড করবে প্রাথমিক স্টেট সবসময় DRAFT থাকবে
         po.setStatus(PurchaseOrderStatus.DRAFT);
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
+
         PurchaseOrderToken token = new PurchaseOrderToken();
-
         token.setToken(UUID.randomUUID().toString());
-
         token.setActive(true);
-
-        token.setExpiryDate(savedPo.getExpectedDeliveryDate());
-
+        token.setExpiryDate(LocalDateTime.now().plusDays(APPROVAL_LINK_VALID_DAYS));
         token.setPurchaseOrderId(savedPo.getId());
-
         token.setPoNumber(savedPo.getPoNumber());
-
         token.setIssuedBy(savedPo.getIssuedBy());
-
         token.setQuantity(savedPo.getQuantity());
-
         token.setTotalAmount(savedPo.getTotalAmount());
-
         token.setCurrency(savedPo.getCurrency());
-
         token.setExpectedDeliveryDate(savedPo.getExpectedDeliveryDate());
-
         token.setStatus(savedPo.getStatus());
-
         token.setSupplierId(savedPo.getSupplier().getId());
-
         token.setPurchaseRequisitionId(savedPo.getPurchaseRequisition().getId());
-
         token.setQuotationId(savedPo.getQuotation().getId());
-
         token.setPurchaseCreatedAt(savedPo.getCreatedAt());
-
         token.setPurchaseUpdatedAt(savedPo.getUpdatedAt());
 
-      tokenRepository.save(token);
+        PurchaseOrderToken savedToken = tokenRepository.save(token);
 
-        //ম্যানেজারকে ইমেইলে ওয়ান-ক্লিক ISSUED গেটওয়ে রিকোয়েস্ট পাঠানো
-        sendPoApprovalMailToManager(savedPo);
+        sendPoApprovalMailToManager(savedPo, savedToken);
 
         return purchaseOrderMapper.convertTOResponseDTO(savedPo);
     }
 
-    //  Manager One-Click Gateway: Status -> ISSUED & Mail to Supplier
-
     @Override
-    public PurchaseOrderResponseDTO managerIssuedOrder(Long id, Long managerId) {
+    @Transactional
+    public PurchaseOrderResponseDTO managerIssuedOrderByToken(String token) {
+        PurchaseOrderToken poToken = tokenRepository.findByTokenAndActiveTrue(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired approval link"));
 
-        PurchaseOrder po = purchaseOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
+        if (poToken.getExpiryDate() != null && poToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This approval link has expired");
+        }
+
+        PurchaseOrder po = purchaseOrderRepository.findById(poToken.getPurchaseOrderId())
+                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + poToken.getPurchaseOrderId()));
 
         if (po.getStatus() != PurchaseOrderStatus.DRAFT) {
             throw new RuntimeException("Order has already been processed or Issued!");
         }
 
-
         po.setStatus(PurchaseOrderStatus.ISSUED);
         PurchaseOrder issuedPo = purchaseOrderRepository.save(po);
 
-        //সাপ্লায়ারের জিমেইলে অফিশিয়াল ডাইনামিক PO নোটিফিকেশন পাঠানো
-        sendPoIssuedMailToSupplier(issuedPo);
+        // পরবর্তী ধাপ (সাপ্লায়ার-রিসিভ) এর জন্য নতুন টোকেন ও নতুন এক্সপায়ারি
+        poToken.setToken(UUID.randomUUID().toString());
+        poToken.setExpiryDate(LocalDateTime.now().plusDays(RECEIVE_LINK_VALID_DAYS));
+        poToken.setStatus(issuedPo.getStatus());
+        poToken.setPurchaseUpdatedAt(issuedPo.getUpdatedAt());
+        PurchaseOrderToken receiveToken = tokenRepository.save(poToken);
+
+        sendPoIssuedMailToSupplier(issuedPo, receiveToken);
 
         return purchaseOrderMapper.convertTOResponseDTO(issuedPo);
     }
 
-      //Supplier Dashboard / One-Click Gateway: Status -> RECEIVED
-
     @Override
-    public PurchaseOrderResponseDTO supplierReceivedOrder(Long id) {
+    @Transactional
+    public PurchaseOrderResponseDTO supplierReceivedOrder(String token) {
+        PurchaseOrderToken poToken = tokenRepository.findByTokenAndActiveTrue(token)
+                .orElseThrow(() -> new RuntimeException("Invalid or expired acknowledgement link"));
 
-        PurchaseOrder po = purchaseOrderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
+        if (poToken.getExpiryDate() != null && poToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This acknowledgement link has expired");
+        }
+
+        PurchaseOrder po = purchaseOrderRepository.findById(poToken.getPurchaseOrderId())
+                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + poToken.getPurchaseOrderId()));
 
         if (po.getStatus() != PurchaseOrderStatus.ISSUED) {
             throw new RuntimeException("Only ISSUED orders can be acknowledged or Received by Supplier!");
@@ -140,17 +137,20 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         po.setStatus(PurchaseOrderStatus.RECEIVED);
         PurchaseOrder receivedPo = purchaseOrderRepository.save(po);
 
+        poToken.setActive(false); // একবার ব্যবহারের পর টোকেন পুড়িয়ে ফেলা — replay protection
+        poToken.setStatus(receivedPo.getStatus());
+        poToken.setPurchaseUpdatedAt(receivedPo.getUpdatedAt());
+        tokenRepository.save(poToken);
+
         return purchaseOrderMapper.convertTOResponseDTO(receivedPo);
     }
 
-      //Quantities Match -> PARTIALLY_RECEIVED Trigger
-
+    @Override
     @Transactional
     public PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Purchase Order missing for Cargo Update at ID: " + id));
 
-        // শিপমেন্ট কোয়ান্টিটি যদি অরিজিনাল অর্ডারের তুলনায় কম হয়, তবে স্ট্যাটাস অটোমেটিক আপডেট হবে
         if (shippedQuantity < po.getQuantity()) {
             po.setStatus(PurchaseOrderStatus.PARTIALLY_RECEIVED);
         } else {
@@ -160,19 +160,11 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         return purchaseOrderMapper.convertTOResponseDTO(purchaseOrderRepository.save(po));
     }
 
-
-    private void sendPoApprovalMailToManager(PurchaseOrder po) {
-
+    private void sendPoApprovalMailToManager(PurchaseOrder po, PurchaseOrderToken token) {
         List<User> managers = userRepository.findByRole(Role.MANAGER);
 
-
-
-
-        //প্রজেক্টে কোম্পানির ম্যানেজারের অফিশিয়াল মেইল বসে যাবে
-        String managerEmail = "manager@company.com";
         String subject = "SCM Approval Request: Authorize Purchase Order #" + po.getPoNumber();
-
-        String issueUrl = "http://localhost:8085/api/purchase-orders/email-issue?id=" + po.getId() + "&managerId=1";
+        String issueUrl = "http://localhost:8085/api/purchase-orders/email-issue?token=" + token.getToken();
 
         String mailContent = """
         <!DOCTYPE html>
@@ -201,38 +193,30 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                     <div style='text-align: center; margin: 30px 0;'>
                         <a href='%s' class='btn'>✔ ISSUE THIS ORDER NOW</a>
                     </div>
+                    <p style='color:#718096; font-size:12px;'>This link is valid for %d days and can only be used once.</p>
                 </div>
             </div>
         </body>
         </html>
         """.formatted(po.getPoNumber(), po.getSupplier().getName(), po.getQuantity(),
-                po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(), issueUrl);
+                po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(),
+                issueUrl, APPROVAL_LINK_VALID_DAYS);
 
         try {
-
-
             for (User manager : managers) {
-                mailService.senderGeneralMail(
-                        manager.getEmail(),
-                        subject,
-                        mailContent
-                );
+                mailService.senderGeneralMail(manager.getEmail(), subject, mailContent);
             }
-
-
-            mailService.senderGeneralMail(managerEmail, subject, mailContent);
         } catch (Exception e) {
             System.err.println("Manager PO Dispatch Pipeline Failed: " + e.getMessage());
         }
     }
 
-    private void sendPoIssuedMailToSupplier(PurchaseOrder po) {
+    private void sendPoIssuedMailToSupplier(PurchaseOrder po, PurchaseOrderToken token) {
         if (po.getSupplier() == null || po.getSupplier().getEmail() == null) return;
 
         String supplierEmail = po.getSupplier().getEmail();
         String subject = "SCM Commercial Dispatch: Official Purchase Order #" + po.getPoNumber();
-
-        String receiveUrl = "http://localhost:8085/api/purchase-orders/email-receive?id=" + po.getId();
+        String receiveUrl = "http://localhost:8085/api/purchase-orders/email-receive?token=" + token.getToken();
 
         String mailContent = """
         <!DOCTYPE html>
@@ -261,12 +245,14 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
                     <div style='text-align: center; margin: 30px 0;'>
                         <a href='%s' class='btn'>🤝 ACKNOWLEDGE & RECEIVE ORDER</a>
                     </div>
+                    <p style='color:#718096; font-size:12px;'>This link is valid for %d days and can only be used once.</p>
                 </div>
             </div>
         </body>
         </html>
         """.formatted(po.getSupplier().getName(), po.getPoNumber(), po.getQuantity(),
-                po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(), receiveUrl);
+                po.getTotalAmount(), po.getCurrency(), po.getExpectedDeliveryDate().toString(),
+                receiveUrl, RECEIVE_LINK_VALID_DAYS);
 
         try {
             mailService.senderGeneralMail(supplierEmail, subject, mailContent);
@@ -278,83 +264,79 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     @Override
     @Transactional
     public PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto) {
-
         if (dto == null) {
             throw new IllegalArgumentException("Update data cannot be null");
         }
 
         PurchaseOrder po = purchaseOrderRepository.findByIdWithDetails(id)
-                .orElseThrow(() ->
-                        new RuntimeException("PO not found with ID: " + id));
+                .orElseThrow(() -> new RuntimeException("PO not found with ID: " + id));
+
+        if (po.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new RuntimeException(
+                    "Cannot modify a Purchase Order that has already been " + po.getStatus() +
+                            ". Please raise an amendment or cancel and recreate instead.");
+        }
 
         Quotation quotation = po.getQuotation();
         Supplier supplier = po.getSupplier();
         PurchaseRequisition pr = po.getPurchaseRequisition();
 
-        // Quotation Change হলে Supplier ও PR Auto Update
-        if (dto.getQuotationId() != null &&
-                !dto.getQuotationId().equals(quotation.getId())) {
-
+        if (dto.getQuotationId() != null && !dto.getQuotationId().equals(quotation.getId())) {
             quotation = quotationRepository.findById(dto.getQuotationId())
-                    .orElseThrow(() ->
-                            new RuntimeException("Quotation not found with ID: "
-                                    + dto.getQuotationId()));
-
+                    .orElseThrow(() -> new RuntimeException("Quotation not found with ID: " + dto.getQuotationId()));
             supplier = quotation.getSupplier();
             pr = quotation.getPurchaseRequisition();
         }
 
-        // Update Purchase Order
         purchaseOrderMapper.updateEntity(dto, po, quotation, supplier, pr);
-
         PurchaseOrder updated = purchaseOrderRepository.save(po);
 
-        // ===========================
-        // Update Purchase Order Token
-        // ===========================
-
-        PurchaseOrderToken token =
-                tokenRepository
-                        .findByPurchaseOrderId(updated.getId())
-                        .orElse(null);
-
+        PurchaseOrderToken token = tokenRepository.findByPurchaseOrderId(updated.getId()).orElse(null);
         if (token != null) {
-
             token.setPoNumber(updated.getPoNumber());
-
             token.setIssuedBy(updated.getIssuedBy());
-
             token.setQuantity(updated.getQuantity());
-
             token.setTotalAmount(updated.getTotalAmount());
-
             token.setCurrency(updated.getCurrency());
-
             token.setExpectedDeliveryDate(updated.getExpectedDeliveryDate());
-
             token.setStatus(updated.getStatus());
-
             token.setSupplierId(updated.getSupplier().getId());
-
-            token.setPurchaseRequisitionId(
-                    updated.getPurchaseRequisition().getId());
-
+            token.setPurchaseRequisitionId(updated.getPurchaseRequisition().getId());
             token.setQuotationId(updated.getQuotation().getId());
-
             token.setPurchaseUpdatedAt(updated.getUpdatedAt());
-
             tokenRepository.save(token);
         }
 
         return purchaseOrderMapper.convertTOResponseDTO(updated);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseOrderResponseDTO> findAll() {
+        return purchaseOrderRepository.findAllPurchaseOrders().stream()
+                .map(purchaseOrderMapper::convertTOResponseDTO)
+                .collect(Collectors.toList());
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PurchaseOrderResponseDTO> getById(Long id) {
+        return purchaseOrderRepository.findByIdWithDetails(id)
+                .map(purchaseOrderMapper::convertTOResponseDTO);
+    }
 
-    @Override @Transactional(readOnly = true) public List<PurchaseOrderResponseDTO> findAll() { return purchaseOrderRepository.findAllPurchaseOrders().stream().map(purchaseOrderMapper::convertTOResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<PurchaseOrderResponseDTO> getById(Long id) { return purchaseOrderRepository.findByIdWithDetails(id).map(purchaseOrderMapper::convertTOResponseDTO); }
-    @Override @Transactional public void delete(Long id) { if (!purchaseOrderRepository.existsById(id)) throw new RuntimeException("PO not found with ID: " + id); purchaseOrderRepository.deleteById(id); }
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("PO not found with ID: " + id));
 
+        if (po.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new RuntimeException(
+                    "Cannot delete a Purchase Order that has already been " + po.getStatus() +
+                            ". Consider cancelling it instead.");
+        }
 
-
+        purchaseOrderRepository.deleteById(id);
+    }
 }

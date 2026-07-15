@@ -17,15 +17,9 @@ public class PurchaseOrderMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // PurchaseOrder Entity -> PurchaseOrderResponseDTO (Flattening Operations)
-
-
     public PurchaseOrderResponseDTO convertTOResponseDTO(PurchaseOrder po) {
-
-
         PurchaseOrderResponseDTO dto = new PurchaseOrderResponseDTO();
 
-        // কোর প্রোফাইল ফিল্ডস ম্যাপিং
         dto.setId(po.getId());
         dto.setPoNumber(po.getPoNumber());
         dto.setQuantity(po.getQuantity());
@@ -37,20 +31,16 @@ public class PurchaseOrderMapper {
         dto.setCreatedAt(po.getCreatedAt());
         dto.setUpdatedAt(po.getUpdatedAt());
 
-        // Supplier Details Flattening (কোটিশন টেবিল হয়ে আসা সাপ্লায়ার নাম)
         if (po.getSupplier() != null) {
             dto.setSupplierId(po.getSupplier().getId());
-            // যদি সাপ্লায়ারের নাম User টেবিল থেকে আসে তবে po.getSupplier().getUser().getName() ব্যবহার করবেন
             dto.setSupplierName(po.getSupplier().getName());
             dto.setSupplierEmail(po.getSupplier().getEmail());
         }
 
-        // Purchase Requisition Details Flattening
         if (po.getPurchaseRequisition() != null) {
             dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
         }
 
-        // Original Quotation ID Flattening
         if (po.getQuotation() != null) {
             dto.setQuotationId(po.getQuotation().getId());
         }
@@ -58,44 +48,31 @@ public class PurchaseOrderMapper {
         return dto;
     }
 
-
     public PurchaseOrder toEntity(PurchaseOrderRequestDTO dto, Quotation quotation, Supplier supplier, PurchaseRequisition pr) {
-
         PurchaseOrder po = new PurchaseOrder();
-
-        // DTO থেকে ইনপুট ফিল্ডস সেট করা
 
         po.setTotalAmount(dto.getTotalAmount());
         po.setIssuedBy(dto.getIssuedBy());
         po.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "USD");
 
-        // অটো-লোডিং মেকানিজম: কোটেশন টেবিল থেকে কোয়ান্টিটি সরাসরি এসাইন করা হলো
         if (quotation != null && quotation.getQuantity() != null) {
-            // আপনার Quotation এনটিটির quantity টাইপ যদি Integer না হয়ে String হয়, তবে Integer.parseInt() করে নেবেন
             po.setQuantity(quotation.getQuantity());
         }
 
-        // String -> LocalDate রূপান্তর
         if (dto.getExpectedDeliveryDate() != null && !dto.getExpectedDeliveryDate().trim().isEmpty()) {
             po.setExpectedDeliveryDate(LocalDate.parse(dto.getExpectedDeliveryDate(), dateFormatter));
         }
 
-        // String -> Enum কাস্টিং (নাল সেফটিসহ)
-        if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
-            po.setStatus(PurchaseOrderStatus.valueOf(dto.getStatus().toUpperCase()));
-        } else {
-            po.setStatus(PurchaseOrderStatus.DRAFT); // ডিফল্ট ডাফট স্ট্যাটাস
-        }
+        // ⚠️ নতুন PO সবসময় DRAFT-এ তৈরি হবে — dto.getStatus() থেকে কখনোই সেট হবে না।
+        // অন্যথায় কেউ চাইলে creation-এই status="ISSUED" পাঠিয়ে পুরো অ্যাপ্রুভাল ফ্লো বাইপাস করতে পারত।
+        po.setStatus(PurchaseOrderStatus.DRAFT);
 
-        // সার্ভিস লেয়ার থেকে অটো-লোড হয়ে আসা অবজেক্টগুলোর ম্যাপিং লিঙ্ক
         po.setQuotation(quotation);
         po.setSupplier(supplier);
         po.setPurchaseRequisition(pr);
 
         return po;
     }
-
-    // এক্সিস্টিং PurchaseOrder Entity-কে RequestDTO এবং নতুন অবজেক্ট চেইন দিয়ে আপডেট করা (Update Operation)
 
     public void updateEntity(PurchaseOrderRequestDTO dto, PurchaseOrder po, Quotation quotation, Supplier supplier, PurchaseRequisition pr) {
         if (dto == null || po == null) {
@@ -109,22 +86,22 @@ public class PurchaseOrderMapper {
             po.setCurrency(dto.getCurrency());
         }
 
-        // কোটেশন চেঞ্জ হলে কোয়ান্টিটি রি-লোডিং হ্যান্ডেলিং
         if (quotation != null && quotation.getQuantity() != null) {
             po.setQuantity(quotation.getQuantity());
         }
 
-        // ডেট আপডেট
         if (dto.getExpectedDeliveryDate() != null && !dto.getExpectedDeliveryDate().trim().isEmpty()) {
             po.setExpectedDeliveryDate(LocalDate.parse(dto.getExpectedDeliveryDate(), dateFormatter));
         }
 
-        // স্ট্যাটাস এনাম আপডেট
-        if (dto.getStatus() != null && !dto.getStatus().trim().isEmpty()) {
-            po.setStatus(PurchaseOrderStatus.valueOf(dto.getStatus().toUpperCase()));
-        }
+        //  dto.getStatus() থেকে সরাসরি status সেট করা যাবে না।
+        // PurchaseOrder-এর স্ট্যাটাস-পরিবর্তন শুধুমাত্র নির্দিষ্ট, নিয়ন্ত্রিত মেথডের মাধ্যমে হবে:
+        //   - managerIssuedOrderByToken(token)  -> DRAFT to ISSUED
+        //   - supplierReceivedOrder(token)      -> ISSUED to RECEIVED
+        //   - updateShipmentQuantityCheck(id,q) -> PARTIALLY_RECEIVED / RECEIVED
+        // এই জেনারেল updateEntity() মেথড দিয়ে status বদলানো একটা নিরাপত্তা/ওয়ার্কফ্লো-বাইপাস
+        // দুর্বলতা তৈরি করত, তাই এই ব্লকটা বাদ দেওয়া হলো।
 
-        // ফরেন অবজেক্ট আপডেট চেইন
         if (quotation != null) po.setQuotation(quotation);
         if (supplier != null) po.setSupplier(supplier);
         if (pr != null) po.setPurchaseRequisition(pr);

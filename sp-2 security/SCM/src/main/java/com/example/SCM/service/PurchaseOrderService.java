@@ -7,8 +7,6 @@ import java.util.Optional;
 
 public interface PurchaseOrderService {
 
-    // (CRUD)
-
     PurchaseOrderResponseDTO save(PurchaseOrderRequestDTO dto);
 
     PurchaseOrderResponseDTO update(Long id, PurchaseOrderRequestDTO dto);
@@ -19,15 +17,9 @@ public interface PurchaseOrderService {
 
     void delete(Long id);
 
+    PurchaseOrderResponseDTO managerIssuedOrderByToken(String token);
 
-
-
-
-    PurchaseOrderResponseDTO managerIssuedOrder(Long id, Long managerId);
-
-
-    PurchaseOrderResponseDTO supplierReceivedOrder(Long id);
-
+    PurchaseOrderResponseDTO supplierReceivedOrder(String token);
 
     PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity);
 }

@@ -56,7 +56,7 @@ CREATE TABLE `suppliers` (
 
 LOCK TABLES `suppliers` WRITE;
 /*!40000 ALTER TABLE `suppliers` DISABLE KEYS */;
-INSERT INTO `suppliers` VALUES (1,'Plot 24, Mirpur, Dhaka, Dhaka, Bangladesh',7,'Mr. Rafiqul Islam','2026-06-30 22:21:13.184116','1988-04-12','srabonhasn66270@gmail.com','MALE','uploads/supplier/Apex_Logistics_Group_0e8d1adf-1f5b-4796-925a-3734d4f67245.jpg',_binary '\0','Apex Logistics Group','1988123456789','A01234567','+8801555443322',4.5,'2026-07-08 17:00:16.455922',1,36),(2,'মিরপুর ১২, Mirpur, Dhaka, Dhaka, Bangladesh',200,'emon','2026-07-08 17:18:21.980163','2026-07-15','badrulaminidb69@gmail.com','MALE','uploads/supplier/Badrul_e4817849-9eee-469d-bded-e13f5608fe5d.jpg',_binary '\0','Badrul','21313245510245','3212316541','32132135422341',5,'2026-07-08 17:18:21.980163',1,83);
+INSERT INTO `suppliers` VALUES (1,'Plot 24, Gulshan, Dhaka, Dhaka, Bangladesh',7,'Mr. Rafiqul Islam','2026-06-30 22:21:13.184116','1988-04-12','srabonhasn66270@gmail.com','MALE','Apex_Logistics_Group_338ed05d-6089-49f7-ad7b-7f10cc2ea2e7.jpg',_binary '\0','Apex Logistics Group','1988123456789','A01234567','+8801555443322',4.5,'2026-07-11 17:00:59.258499',3,36),(2,'মিরপুর ১২, Mirpur, Dhaka, Dhaka, Bangladesh',200,'emon','2026-07-08 17:18:21.980163','2026-07-15','badrulaminidb69@gmail.com','MALE','uploads/supplier/Badrul_e4817849-9eee-469d-bded-e13f5608fe5d.jpg',_binary '\0','Badrul','21313245510245','3212316541','32132135422341',5,'2026-07-08 17:18:21.980163',1,83);
 /*!40000 ALTER TABLE `suppliers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -69,4 +69,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-09 19:17:50
+-- Dump completed on 2026-07-15 19:20:45

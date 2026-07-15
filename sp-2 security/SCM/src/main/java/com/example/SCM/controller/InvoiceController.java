@@ -21,7 +21,7 @@ public class InvoiceController {
     // 1. Create New Invoice Ledger Node (POST)
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<InvoiceResponseDTO> create(@RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -30,7 +30,7 @@ public class InvoiceController {
     //Mutate/Update Existing Invoice State Matrix (PUT)
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<InvoiceResponseDTO> update(@PathVariable Long id, @RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.update(id, dto);
         return ResponseEntity.ok(response);
@@ -38,7 +38,7 @@ public class InvoiceController {
     // Fetch All Invoices Register Dataset (GET)
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<List<InvoiceResponseDTO>> findAll() {
         List<InvoiceResponseDTO> list = service.findAll();
         if (list.isEmpty()) {
@@ -50,8 +50,8 @@ public class InvoiceController {
     // Fetch Invoice Instance Details By Unique Record ID (GET)
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER') " +
-            "or @invoiceSecurity.isOwner(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER') " +
+//            "or @invoiceSecurity.isOwner(#id, authentication)")
     public ResponseEntity<InvoiceResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
                 .map(ResponseEntity::ok)
@@ -61,7 +61,7 @@ public class InvoiceController {
     // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

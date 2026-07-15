@@ -16,40 +16,45 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `warehouses`
+-- Table structure for table `purchase_order_tokens`
 --
 
-DROP TABLE IF EXISTS `warehouses`;
+DROP TABLE IF EXISTS `purchase_order_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `warehouses` (
+CREATE TABLE `purchase_order_tokens` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `capacity` double NOT NULL,
+  `active` bit(1) NOT NULL,
   `created_at` datetime(6) DEFAULT NULL,
-  `email` varchar(255) NOT NULL,
-  `is_active` bit(1) NOT NULL,
-  `location` text NOT NULL,
-  `manager_id` bigint DEFAULT NULL,
-  `name` varchar(150) NOT NULL,
-  `updated_at` datetime(6) DEFAULT NULL,
-  `police_station_id` bigint DEFAULT NULL,
-  `address` varchar(255) DEFAULT NULL,
+  `currency` varchar(255) DEFAULT NULL,
+  `deleted_at` datetime(6) DEFAULT NULL,
+  `expected_delivery_date` date DEFAULT NULL,
+  `expiry_date` datetime(6) DEFAULT NULL,
+  `issued_by` bigint DEFAULT NULL,
+  `po_number` varchar(255) DEFAULT NULL,
+  `purchase_created_at` datetime(6) DEFAULT NULL,
+  `purchase_order_id` bigint DEFAULT NULL,
+  `purchase_requisition_id` bigint DEFAULT NULL,
+  `purchase_updated_at` datetime(6) DEFAULT NULL,
+  `quantity` int DEFAULT NULL,
+  `quotation_id` bigint DEFAULT NULL,
+  `status` enum('CANCELLED','DRAFT','ISSUED','PARTIALLY_RECEIVED','RECEIVED') DEFAULT NULL,
+  `supplier_id` bigint DEFAULT NULL,
+  `token` varchar(255) NOT NULL,
+  `total_amount` double DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `UKqbw0k0w8nl2rwl1sfa7bocli0` (`email`),
-  UNIQUE KEY `UK2qm0l82n5ivhyqwmgejxxefm1` (`name`),
-  KEY `FKookqoqrmqnl7j2pibx0pmj2yo` (`police_station_id`),
-  CONSTRAINT `FKookqoqrmqnl7j2pibx0pmj2yo` FOREIGN KEY (`police_station_id`) REFERENCES `policestations` (`id`)
+  UNIQUE KEY `UK2xc0p4apor4eu33cdc6u3ueep` (`token`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `warehouses`
+-- Dumping data for table `purchase_order_tokens`
 --
 
-LOCK TABLES `warehouses` WRITE;
-/*!40000 ALTER TABLE `warehouses` DISABLE KEYS */;
-INSERT INTO `warehouses` VALUES (1,230,'2026-07-09 15:38:14.507772','warehousechattrogram@gmail.com',_binary '\0','house No:112',1,'Badrul amin','2026-07-09 15:38:14.507772',49,NULL);
-/*!40000 ALTER TABLE `warehouses` ENABLE KEYS */;
+LOCK TABLES `purchase_order_tokens` WRITE;
+/*!40000 ALTER TABLE `purchase_order_tokens` DISABLE KEYS */;
+INSERT INTO `purchase_order_tokens` VALUES (1,_binary '','2026-07-15 16:13:20.912193','USD',NULL,'2026-07-16','2026-07-22 16:13:20.912193',80,'PO-1784110400890','2026-07-15 16:13:20.890221',12,1,'2026-07-15 16:13:20.890221',50,3,'DRAFT',1,'33a7610b-5eba-4ec6-8944-56ce63e55322',6025);
+/*!40000 ALTER TABLE `purchase_order_tokens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -61,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-15 19:20:47
+-- Dump completed on 2026-07-15 19:20:45

@@ -20,7 +20,7 @@ public class CustomerOrderController {
 
     // 1. Place a New Order (Initial calculations & appropriate email trigger)
     @PostMapping
-    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('CUSTOMER', 'ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody CustomerOrderRequestDTO dto) {
         CustomerOrderResponseDTO response = orderService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -28,7 +28,7 @@ public class CustomerOrderController {
 
     //  2. General Update Order Metadata
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
             @RequestBody CustomerOrderRequestDTO dto
@@ -39,7 +39,7 @@ public class CustomerOrderController {
 
     //  3. Fetch All Logistics Orders
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders() {
         List<CustomerOrderResponseDTO> responseList = orderService.findAll();
         return ResponseEntity.ok(responseList);
@@ -47,8 +47,8 @@ public class CustomerOrderController {
 
     //  4. Find Single Order Context By ID
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
-            "or @customerOrderSecurity.isOwner(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
+//            "or @customerOrderSecurity.isOwner(#id, authentication)")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
         return orderService.getById(id)
                 .map(ResponseEntity::ok)

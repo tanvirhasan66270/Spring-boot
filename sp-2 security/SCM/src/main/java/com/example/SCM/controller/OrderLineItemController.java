@@ -20,8 +20,8 @@ public class OrderLineItemController {
     // URL: GET http://localhost:8080/api/order-items/order/{orderId}
 
     @GetMapping("/order/{orderId}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
-            "or @customerOrderSecurity.isOwner(#orderId, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
+//            "or @customerOrderSecurity.isOwner(#orderId, authentication)")
     public ResponseEntity<List<OrderLineItemResponseDTO>> getItemsByOrderId(@PathVariable Long orderId) {
         List<OrderLineItemResponseDTO> list = lineItemService.findByOrderId(orderId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
@@ -30,8 +30,8 @@ public class OrderLineItemController {
     //Get Single Line Item Specifications By ID
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
-            "or @orderLineItemSecurity.isOwner(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
+//            "or @orderLineItemSecurity.isOwner(#id, authentication)")
     public ResponseEntity<OrderLineItemResponseDTO> getItemById(@PathVariable Long id) {
         return lineItemService.getById(id)
                 .map(ResponseEntity::ok)
@@ -41,7 +41,7 @@ public class OrderLineItemController {
     // Remove/Delete Single Item from Order Cart Node
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<String> removeLineItem(@PathVariable Long id) {
         lineItemService.deleteItem(id);
         return ResponseEntity.ok("Target line item node removed and order subtotal recalculated.");

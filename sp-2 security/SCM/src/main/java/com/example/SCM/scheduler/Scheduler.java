@@ -30,7 +30,7 @@ public class Scheduler {
         LocalDate today = LocalDate.now();
 
         List<PurchaseRequisitionToken> list =
-                tokenRepository.findByActiveTrueAndExpiryDateLessThanEqual(today);
+                tokenRepository.findByActiveTrueAndRequiredByDateLessThanEqual(today);
 
         for (PurchaseRequisitionToken token : list) {
 

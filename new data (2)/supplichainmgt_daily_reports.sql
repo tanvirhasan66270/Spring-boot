@@ -35,7 +35,7 @@ CREATE TABLE `daily_reports` (
   `user_id` varchar(255) NOT NULL,
   `warehouse_id` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `daily_reports` (
 
 LOCK TABLES `daily_reports` WRITE;
 /*!40000 ALTER TABLE `daily_reports` DISABLE KEYS */;
+INSERT INTO `daily_reports` VALUES (8,'REPORTS_e0cf1c4e-c907-492c-be14-ceecf2af9f5e.png','2026-07-11 18:59:55.333144',20,'2026-07-15','SUBMITTED','SDMFKngbw sjrwef',500,'2026-07-11 19:00:06.213724','tanvirhasan66270@gmail.com','WH-DHAKA-01'),(9,'REPORTS_a2a7e6cb-194e-4ad6-a4f3-98b645e796f9.png','2026-07-11 18:59:56.213706',20,'2026-07-15','SUBMITTED','SDMFKngbw sjrwef',500,'2026-07-11 19:00:07.222288','tanvirhasan66270@gmail.com','WH-DHAKA-01'),(10,'REPORTS_0176f100-da4a-4c3c-b7d9-4adbff784a71.png','2026-07-11 18:59:56.461372',20,'2026-07-15','SUBMITTED','SDMFKngbw sjrwef',500,'2026-07-11 19:00:05.182431','tanvirhasan66270@gmail.com','WH-DHAKA-01'),(11,'REPORTS_5469c213-fb4d-46bd-b532-40aa23bc417f.png','2026-07-11 18:59:57.174253',20,'2026-07-15','SUBMITTED','SDMFKngbw sjrwef',500,'2026-07-11 19:00:08.064731','tanvirhasan66270@gmail.com','WH-DHAKA-01');
 /*!40000 ALTER TABLE `daily_reports` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-09 19:17:48
+-- Dump completed on 2026-07-15 19:20:48

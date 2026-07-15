@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/logistics-officers")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class LogisticsOfficerController {
 
     private final LogisticsOfficerService officerService;
@@ -69,7 +69,7 @@ public class LogisticsOfficerController {
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @logisticsOfficerSecurity.isSelf(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @logisticsOfficerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<LogisticsOfficerResponseDTO> getByUserId(@PathVariable Long id) {
         return officerService.findUserById(id)
                 .map(ResponseEntity::ok)

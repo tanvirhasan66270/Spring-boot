@@ -82,7 +82,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         token.setActive(true);
 
-        token.setExpiryDate(savedPr.getRequiredByDate());
 
         token.setPurchaseRequisitionId(savedPr.getId());
 
@@ -273,9 +272,8 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         if (token != null) {
 
-            token.setExpiryDate(updated.getRequiredByDate());
-
-            token.setRequestedBy(updated.getRequestedBy());
+                  token.setRequestedBy(updated.getRequestedBy());
+                  token.setRequestedBy(updated.getRequestedBy());
 
             token.setCurrency(updated.getCurrency());
 

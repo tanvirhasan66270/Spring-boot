@@ -26,8 +26,8 @@ public class PurchaseOrderToken {
     @Column(nullable = false)
     private boolean active = true;
 
-    @Column(nullable = false)
-    private LocalDate expiryDate;
+    // expectedDeliveryDate (PO-এর ডেলিভারি ডেট) থেকে সম্পূর্ণ আলাদা
+    private LocalDateTime expiryDate;
 
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -35,7 +35,6 @@ public class PurchaseOrderToken {
     private LocalDateTime deletedAt;
 
     // Purchase Order History
-
     private Long purchaseOrderId;
 
     private String poNumber;

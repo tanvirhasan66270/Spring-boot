@@ -17,14 +17,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/lc")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
 public class LetterOfCreditController {
 
     private final LetterOfCreditService lcService;
 
     // 1. Create New Letter of Credit (POST - Multipart Form Data)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> createLC(
             @RequestPart("lcData") String lcDataJson,
             @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
@@ -38,7 +38,7 @@ public class LetterOfCreditController {
 
     // 2. Update Existing Letter of Credit (PUT - Multipart Form Data)
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
             @RequestPart("lcData") String lcDataJson,
@@ -53,7 +53,7 @@ public class LetterOfCreditController {
 
     // 3. Commercial Amendment Gateway (PATCH - Standard JSON Request)
     @PatchMapping("/amend/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
             @PathVariable Long id,
             @RequestBody LetterOfCreditRequestDTO dto) {
@@ -77,7 +77,7 @@ public class LetterOfCreditController {
 
     // 6. Delete LC (DELETE)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {
         lcService.delete(id);
         return ResponseEntity.ok("Letter of credit cluster mapping wiped successfully.");

@@ -211,6 +211,6 @@ export class SupplierDashboardComponent implements OnInit {
 
   logout(): void {
     this.storage.clearSession();
-    this.router.navigate(['/login']);
+    this.router.navigate(['']);
   }
 }

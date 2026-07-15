@@ -22,7 +22,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> create(
             @RequestPart("customer") CustomerRequestDTO dto,
             @RequestPart(value = "image", required = false) MultipartFile image
@@ -35,7 +35,7 @@ public class CustomerController {
     }
 
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("customer") CustomerRequestDTO dto,
@@ -45,7 +45,7 @@ public class CustomerController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
         List<CustomerResponseDTO> list = customerService.findAll();
 
@@ -57,7 +57,7 @@ public class CustomerController {
     }
 
     @GetMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
         return customerService.getById(id)
                 .map(ResponseEntity::ok)
@@ -65,15 +65,15 @@ public class CustomerController {
     }
 
     @DeleteMapping("{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER') " +
-            "or @customerSecurity.isSelf(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER') " +
+//            "or @customerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<CustomerResponseDTO> getByUserId(@PathVariable Long id) {
         return customerService.findUserById(id)
                 .map(ResponseEntity::ok)
