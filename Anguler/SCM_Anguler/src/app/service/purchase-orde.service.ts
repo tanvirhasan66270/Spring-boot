@@ -28,7 +28,20 @@ export class PurchaseOrderService {
     return this.http.put<PurchaseOrderResponseModel>(`${this.apiUrl}/${id}`, order);
   }
 
+  // 🚀 নতুন মেথড: ব্যাকএন্ডের DRAFT ভ্যালিডেশন লক বাইপাস করে সরাসরি স্ট্যাটাস পরিবর্তন করার জন্য
+  changeStatus(id: number, status: 'RECEIVED' | 'CANCELLED'): Observable<PurchaseOrderResponseModel> {
+    return this.http.put<PurchaseOrderResponseModel>(
+      `${this.apiUrl}/${id}/status`, 
+      {}, 
+      { params: { status: status } }
+    );
+  }
+
   delete(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
+
+  getOrdersBySupplierId(supplierId: number): Observable<PurchaseOrderResponseModel[]> {
+  return this.http.get<PurchaseOrderResponseModel[]>(`${this.apiUrl}/supplier/${supplierId}`);
+}
 }

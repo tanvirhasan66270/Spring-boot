@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { StorageService } from '../../../../auth/auth_service/storage.service';
 import { Subscription } from 'rxjs';
@@ -43,5 +43,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
   hasAccess(allowedRoles: string[]): boolean {
     if (this.activeRole === 'ADMIN') return true;
     return allowedRoles.includes(this.activeRole);
+  }
+
+ 
+  showPoLineItemMenu(): boolean {
+    return localStorage.getItem('hasReceivedPO') === 'true';
   }
 }

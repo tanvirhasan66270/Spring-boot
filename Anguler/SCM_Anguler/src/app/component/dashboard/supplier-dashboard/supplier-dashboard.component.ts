@@ -32,27 +32,21 @@ export class SupplierDashboardComponent implements OnInit {
 
   kpis = [
     { label: 'Purchase Orders', value: '0 POs', trend: 0, icon: 'bi-inboxes', color: 'primary' },
-    {
-      label: 'Pending Delivery',
-      value: '0 Consignments',
-      trend: 0,
-      icon: 'bi-truck-flatbed',
-      color: 'warning',
-    },
-    {
-      label: 'Outstanding Payments',
-      value: '৳0',
-      trend: 0,
-      icon: 'bi-currency-exchange',
-      color: 'success',
-    },
+    { label: 'Pending Delivery', value: '0 Consignments', trend: 0, icon: 'bi-truck-flatbed', color: 'warning' },
+    { label: 'Outstanding Payments', value: '৳0', trend: 0, icon: 'bi-currency-exchange', color: 'success' },
     { label: 'Supply Accuracy', value: '0%', trend: 0, icon: 'bi-patch-check', color: 'success' },
   ];
 
-  pos: any[] = [];
+  pos: any[] = [];          
+  receivedPOs: any[] = [];  
   rfqs: any[] = [];
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
+  
+  lcOpen = false;
+  lettersOfCredit: any[] = [];
+  poRegistryOpen = false;
+  allSupplierPOs: any[] = [];
 
   showSettings = false;
   loading = true;
@@ -81,44 +75,103 @@ export class SupplierDashboardComponent implements OnInit {
     this.userName = user.name || 'Supplier Node';
     this.userId = user.userId;
     this.loadSupplier();
-    this.loadDashboardData();
     this.loadNotifications();
     this.loadActivities();
   }
 
-  loadDashboardData() {
+  // 🔒 সিকিউরড ডাটা লোড: প্রথমে নিশ্চিত করা হচ্ছে সাপ্লায়ার প্রোফাইল
+  loadSupplier(): void {
+    this.supplierService.getSupplierByUserId(this.userId).subscribe({
+      next: (res) => {
+        this.supplier = res;
+        this.storage.saveData(KEYS.SUPPLIER, res);
+        
+        // প্রোফাইল নিশ্চিত হওয়ার পরেই কেবল তার নিজস্ব ডেটাবেজ ট্র্যাকিং ওপেন হবে
+        this.loadDashboardData(res.id);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Profile verification failed:', err);
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  loadDashboardData(supplierId: number) {
     this.loading = true;
 
+    // 🎯 ১. নির্দিষ্ট ভেন্ডারের অল-টাইম ও অ্যাক্টিভ পারচেজ অর্ডার ফিল্টারিং
     this.poService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
-        const delivered = all.filter((o: PurchaseOrderResponseModel) => o.status === 'RECEIVED');
-        this.pendingDeliveries = all.filter(
-          (o: PurchaseOrderResponseModel) => o.status === 'ISSUED',
-        ).length;
+        
+        // Strict Data Isolation: শুধুমাত্র বর্তমান সাপ্লায়ারের সাথে ম্যাচিং ডেটা
+        const supplierSpecificOrders = all.filter((o: any) => {
+          const sId = o.supplierId || (o.supplier ? o.supplier.id : null);
+          return sId === supplierId;
+        });
 
-        if (all.length > 0) {
-          this.supplyAccuracy = Math.round((delivered.length / all.length) * 100);
+        const issuedOrders = supplierSpecificOrders.filter((o: PurchaseOrderResponseModel) => o.status === 'ISSUED');
+        const delivered = supplierSpecificOrders.filter((o: PurchaseOrderResponseModel) => o.status === 'RECEIVED');
+        this.pendingDeliveries = issuedOrders.length;
+
+        if (supplierSpecificOrders.length > 0) {
+          this.supplyAccuracy = Math.round((delivered.length / supplierSpecificOrders.length) * 100);
         }
 
-        this.kpis[0] = { ...this.kpis[0], value: `${all.length} POs` };
+        this.kpis[0] = { ...this.kpis[0], value: `${supplierSpecificOrders.length} POs` };
         this.kpis[1] = { ...this.kpis[1], value: `${this.pendingDeliveries} Consignments` };
         this.kpis[3] = { ...this.kpis[3], value: `${this.supplyAccuracy}%` };
 
-        this.pos = all.slice(0, 5).map((o: PurchaseOrderResponseModel) => ({
+        this.pos = issuedOrders.slice(0, 5).map((o: PurchaseOrderResponseModel) => ({
+          id: o.id,
           poNumber: o.poNumber || `PO-${o.id}`,
           date: o.createdAt || 'N/A',
           amount: o.totalAmount || 0,
           deliveryDue: o.expectedDeliveryDate || 'N/A',
-          status: o.status || 'DRAFT',
+          status: o.status || 'ISSUED',
         }));
+
+        this.receivedPOs = delivered.slice(0, 5).map((o: PurchaseOrderResponseModel) => ({
+          id: o.id,
+          poNumber: o.poNumber || `PO-${o.id}`,
+          date: o.createdAt || 'N/A',
+          amount: o.totalAmount || 0,
+          deliveryDue: o.expectedDeliveryDate || 'N/A',
+          status: o.status || 'RECEIVED',
+        }));
+
+        // 🎯 ডাইনামিক LC ডাটা ম্যাপিং শুধুমাত্র নিজস্ব RECEIVED অর্ডারের উপর ভিত্তি করে
+        this.lettersOfCredit = delivered.map((o: any) => ({
+          lcNumber: `LC-${100000 + o.id}`,
+          poReference: o.poNumber || `PO-${o.id}`,
+          expiryDate: o.expectedDeliveryDate ? new Date(new Date(o.expectedDeliveryDate).getTime() + (30 * 24 * 60 * 60 * 1000)) : 'N/A',
+          amount: o.totalAmount || 0,
+          status: 'OPEN'
+        }));
+
+        if (delivered.length > 0) {
+          localStorage.setItem('hasReceivedPO', 'true');
+        } else {
+          localStorage.removeItem('hasReceivedPO');
+        }
+
         this.cdr.markForCheck();
       },
+      error: (err) => console.error('PO Stream Load Error:', err),
     });
 
+    // 🎯 ২. নির্দিষ্ট ভেন্ডারের আন্ডারে থাকা RFQInvitations ফিল্টারিং
     this.quotationService.findAll().subscribe({
       next: (data) => {
-        this.rfqs = (data || []).slice(0, 3).map((q: QuotationResponseModel) => ({
+        const allRfqs = data || [];
+        const supplierSpecificRfqs = allRfqs.filter((q: any) => {
+          const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
+          return sId === supplierId;
+        });
+
+        this.rfqs = supplierSpecificRfqs.slice(0, 3).map((q: QuotationResponseModel) => ({
           id: q.quotationNumber || `RFQ-${q.id}`,
           item: q.productName || 'N/A',
           closingDate: q.validUntil || 'N/A',
@@ -128,10 +181,16 @@ export class SupplierDashboardComponent implements OnInit {
       },
     });
 
+    // 🎯 ৩. ইনভয়েস / কমার্শিয়াল আউটস্ট্যান্ডিং ফিল্টারিং
     this.invoiceService.findAll().subscribe({
       next: (data) => {
         const invoices = data || [];
-        this.outstandingPayments = invoices.reduce(
+        const supplierSpecificInvoices = invoices.filter((inv: any) => {
+          const sId = inv.supplierId || (inv.supplier ? inv.supplier.id : null);
+          return sId === supplierId;
+        });
+
+        this.outstandingPayments = supplierSpecificInvoices.reduce(
           (sum: number, inv: InvoiceResponseModel) => sum + (inv.dueAmount || 0),
           0,
         );
@@ -144,6 +203,55 @@ export class SupplierDashboardComponent implements OnInit {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  toggleBillingLCSection(event: Event) {
+    event.preventDefault();
+    this.lcOpen = !this.lcOpen;
+    this.cdr.markForCheck();
+  }
+
+  updatePoStatus(id: number, nextStatus: 'RECEIVED' | 'CANCELLED') {
+    this.poService.changeStatus(id, nextStatus).subscribe({
+      next: () => {
+        alert(`Purchase Order successfully marked as ${nextStatus}!`);
+        if (this.supplier) {
+          this.loadDashboardData(this.supplier.id);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to change PO status matrix:', err);
+        alert(err.error?.message || 'Transaction failed.');
+      },
+    });
+  }
+
+  togglePurchaseOrderRegistry(event: Event) {
+    event.preventDefault();
+    this.poRegistryOpen = !this.poRegistryOpen;
+
+    if (this.poRegistryOpen && this.supplier) {
+      this.loading = true; 
+      // সরাসরি ডেডিকেটেড সিকিউরড ব্যাকএন্ড মেথড কল
+      this.poService.getOrdersBySupplierId(this.supplier.id).subscribe({
+        next: (data) => {
+          this.allSupplierPOs = (data || []).map((o: any) => ({
+            poNumber: o.poNumber || `PO-${o.id}`,
+            date: o.createdAt || 'N/A',
+            amount: o.totalAmount || 0,
+            deliveryDue: o.expectedDeliveryDate || 'N/A',
+            status: o.status || 'DRAFT'
+          }));
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          console.error('Supplier PO history pipeline missing:', err);
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    }
   }
 
   loadNotifications(): void {
@@ -198,18 +306,8 @@ export class SupplierDashboardComponent implements OnInit {
     return map[status] || 'bg-secondary text-white';
   }
 
-  loadSupplier(): void {
-    this.supplierService.getSupplierByUserId(this.userId).subscribe({
-      next: (res) => {
-        this.supplier = res;
-        this.storage.saveData(KEYS.SUPPLIER, res);
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.log(err),
-    });
-  }
-
   logout(): void {
+    localStorage.removeItem('hasReceivedPO');
     this.storage.clearSession();
     this.router.navigate(['']);
   }

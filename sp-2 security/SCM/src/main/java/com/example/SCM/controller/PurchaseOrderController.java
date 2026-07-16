@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -30,6 +31,22 @@ public class PurchaseOrderController {
             @PathVariable Long id,
             @RequestBody PurchaseOrderRequestDTO dto) {
         return ResponseEntity.ok(purchaseOrderService.update(id, dto));
+    }
+
+    @GetMapping("/supplier/{supplierId}")
+    public ResponseEntity<List<PurchaseOrderResponseDTO>> getOrdersBySupplier(@PathVariable Long supplierId) {
+        // সার্ভিস লেয়ার থেকে সমস্ত PO নিয়ে আসা
+        List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
+
+        // জাভা ৮ স্ট্রিম ব্যবহার করে শুধুমাত্র লগইন করা সাপ্লায়ারের PO গুলো ফিল্টার করা
+        List<PurchaseOrderResponseDTO> supplierOrders = allOrders.stream()
+                .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(supplierId))
+                .collect(Collectors.toList());
+
+        if (supplierOrders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(supplierOrders);
     }
 
     @GetMapping
@@ -55,6 +72,15 @@ public class PurchaseOrderController {
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted Successfully");
+    }
+    @PutMapping("/{id}/status")
+    public ResponseEntity<PurchaseOrderResponseDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestParam com.example.SCM.enumClass.PurchaseOrderStatus status) {
+
+        // আমাদের কাস্টম সার্ভিস মেথড কল করা হলো যা DRAFT লক বাইপাস করবে
+        PurchaseOrderResponseDTO response = purchaseOrderService.updateStatus(id, status);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/email-issue")

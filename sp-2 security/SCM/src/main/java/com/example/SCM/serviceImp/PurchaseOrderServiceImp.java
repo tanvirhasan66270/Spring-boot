@@ -160,6 +160,42 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         return purchaseOrderMapper.convertTOResponseDTO(purchaseOrderRepository.save(po));
     }
 
+    @Override
+    public PurchaseOrderResponseDTO updateStatus(Long id, PurchaseOrderStatus status) {
+        if (id == null || status == null) {
+            throw new IllegalArgumentException("Purchase Order ID and Status cannot be null");
+        }
+
+        // ১. ডাটাবেজ থেকে রিয়েল-টাইম PO নোড ট্র্যাক করা
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
+
+        // ২. বিজনেস রুলস ভ্যালিডেশন: শুধুমাত্র ISSUED অর্ডারইRECEIVED বা CANCELLED হতে পারবে
+        if (po.getStatus() != PurchaseOrderStatus.ISSUED) {
+            throw new RuntimeException("Action denied: Only ISSUED purchase orders can be updated by the supplier.");
+        }
+
+        // ৩. অবজেক্ট স্টেট ট্র্যান্সিশন
+        po.setStatus(status);
+        PurchaseOrder updatedPo = purchaseOrderRepository.save(po);
+
+        // ৪. রিলেশনাল টোকেন ও রিপ্লে সিকিউরিটি লাইফসাইকেল সিঙ্ক
+        Optional<PurchaseOrderToken> tokenOpt = tokenRepository.findByPurchaseOrderId(id);
+        if (tokenOpt.isPresent()) {
+            PurchaseOrderToken poToken = tokenOpt.get();
+            poToken.setStatus(updatedPo.getStatus());
+            poToken.setPurchaseUpdatedAt(updatedPo.getUpdatedAt());
+
+            // যদি RECEIVED বা CANCELLED চূড়ান্ত অবস্থায় যায়, সিকিউরিটি পারপাসে টোকেন বার্ন/ডিঅ্যাক্টিভেট করা
+            if (status == PurchaseOrderStatus.RECEIVED || status == PurchaseOrderStatus.CANCELLED) {
+                poToken.setActive(false);
+            }
+            tokenRepository.save(poToken);
+        }
+
+        return purchaseOrderMapper.convertTOResponseDTO(updatedPo);
+    }
+
     private void sendPoApprovalMailToManager(PurchaseOrder po, PurchaseOrderToken token) {
         List<User> managers = userRepository.findByRole(Role.MANAGER);
 
