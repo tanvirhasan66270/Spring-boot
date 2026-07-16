@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/procurements")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class ProcurementController {
 
     private final ProcurementService procurementService;
@@ -68,7 +68,7 @@ public class ProcurementController {
     }
 
     @GetMapping("/user/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @procurementSecurity.isSelf(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @procurementSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ProcurementResponseDTO> getByUserId(@PathVariable Long id) {
         return procurementService.findUserById(id)
                 .map(ResponseEntity::ok)

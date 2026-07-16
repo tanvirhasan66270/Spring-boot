@@ -3,22 +3,21 @@ import { AuthService } from '../../auth_service/auth-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-forget-password.component',
-  imports: [CommonModule,FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './forget-password.component.html',
   styleUrl: './forget-password.component.css',
 })
 export class ForgetPasswordComponent {
-
-  
-email = '';
+  email = '';
   loading = false;
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
-  constructor(private auth: AuthService) { }
+  constructor(private auth: AuthService) {}
 
   submit(): void {
     this.loading = true;
@@ -33,13 +32,11 @@ email = '';
       error: () => {
         this.loading = false;
         this.errorMessage = 'No account found with that email address.';
-      }
+      },
     });
   }
-
 
   scrollTo(id: string): void {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
-
 }

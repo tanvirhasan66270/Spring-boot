@@ -83,7 +83,7 @@ export class SalesDashboardComponent implements OnInit {
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
-    const totalCalls = 5;
+    const totalCalls = 6;
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -98,7 +98,7 @@ export class SalesDashboardComponent implements OnInit {
     this.loadInvoices(checkDone);
     this.loadNotifications(checkDone);
     this.loadActivityLogs(checkDone);
-    this.loadCustomers();
+    this.loadCustomers(checkDone);
   }
 
   loadOrders(done: () => void): void {
@@ -207,7 +207,7 @@ export class SalesDashboardComponent implements OnInit {
     });
   }
 
-  loadCustomers(): void {
+  loadCustomers(done: () => void): void {
     this.customerService.getAll().subscribe({
       next: (data) => {
         this.customers = (data || []).slice(0, 5).map((c: any) => ({
@@ -220,7 +220,9 @@ export class SalesDashboardComponent implements OnInit {
         this.customersLoaded = true;
         this.buildCustomerStats();
         this.cdr.markForCheck();
+        done();
       },
+      error: () => done(),
     });
   }
 

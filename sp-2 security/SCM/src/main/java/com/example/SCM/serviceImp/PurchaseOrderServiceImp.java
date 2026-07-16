@@ -146,6 +146,40 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     }
 
     @Override
+    public PurchaseOrderResponseDTO approveOrder(Long id) {
+        // ১. ডাটাবেজ থেকে Purchase Order খুঁজে বের করা
+        PurchaseOrder po = purchaseOrderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Purchase Order node missing at ID: " + id));
+
+        // ২. ড্রাফট মোড ভ্যালিডেশন চেক
+        if (po.getStatus() != PurchaseOrderStatus.DRAFT) {
+            throw new RuntimeException("Order has already been processed or Issued!");
+        }
+
+        // ৩. স্ট্যাটাস পরিবর্তন করে ISSUED করা
+        po.setStatus(PurchaseOrderStatus.ISSUED);
+        PurchaseOrder issuedPo = purchaseOrderRepository.save(po);
+
+        // ৪. এই অর্ডারের সাথে যুক্ত টোকেনটি খুঁজে বের করে সাপ্লায়ারের পরবর্তী ধাপের জন্য সিঙ্ক করা
+        PurchaseOrderToken poToken = tokenRepository.findByPurchaseOrderId(id)
+                .orElse(null);
+
+        if (poToken != null && poToken.isActive()) {
+            // নতুন রিসিভ টোকেন জেনারেট ও এক্সপায়ারি সেট (সাপ্লায়ার একনলেজমেন্টের জন্য)
+            poToken.setToken(UUID.randomUUID().toString());
+            poToken.setExpiryDate(LocalDateTime.now().plusDays(RECEIVE_LINK_VALID_DAYS));
+            poToken.setStatus(issuedPo.getStatus());
+            poToken.setPurchaseUpdatedAt(issuedPo.getUpdatedAt());
+            tokenRepository.save(poToken);
+
+            // সাপ্লায়ারকে অটোমেটিক ইমেইল নোটিফিকেশন ডিসপ্যাচ
+            sendPoIssuedMailToSupplier(issuedPo, poToken);
+        }
+
+        return purchaseOrderMapper.convertTOResponseDTO(issuedPo);
+    }
+
+    @Override
     @Transactional
     public PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity) {
         PurchaseOrder po = purchaseOrderRepository.findById(id)
@@ -309,6 +343,8 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
 
         return purchaseOrderMapper.convertTOResponseDTO(updated);
     }
+
+
 
     @Override
     @Transactional(readOnly = true)

@@ -194,6 +194,76 @@
       </div>
     </div>
 
+
+   <!-- ───────────────── CENTRAL PR DEMAND MATRIX GRID ───────────────── -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-teal border-4">
+  <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+    <h6 class="mb-0 fw-bold text-dark text-uppercase">
+      <i class="bi bi-file-earmark-ruled text-teal me-2"></i> Corporate Demand Slips & Purchase Requisitions
+    </h6>
+    <a routerLink="/purchase-requisition" class="btn btn-sm btn-outline-teal fw-semibold">View All Pipeline</a>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 fs-8">
+        <thead class="table-light text-uppercase">
+          <tr>
+            <th class="ps-4">PR Reference</th>
+            <th>Material Component Specs</th>
+            <th>Target Sourcing Node</th>
+            <th>Volume Required</th>
+            <th>Priority / Deadline</th>
+            <th>Workflow Stage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- টাইপস্ক্রিপ্ট থেকে ফিল্টার হয়ে আসা শুধুমাত্র APPROVED রিকুইজিশন এখানে রেন্ডার হবে -->
+          <tr *ngFor="let pr of requisitions">
+            <td class="ps-4 font-monospace fw-bold text-dark">#PRQ-{{ pr.id }}</td>
+            <td>
+              <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
+                <span *ngFor="let pName of pr.productNames" class="badge bg-light text-dark border">{{ pName }}</span>
+                <span *ngIf="pr.productNames.length === 0" class="text-muted italic small">No Components</span>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex flex-wrap gap-1" style="max-width: 200px;">
+                <span *ngFor="let sName of pr.supplierNames" class="badge bg-secondary-subtle text-secondary fs-9">{{ sName }}</span>
+                <span *ngIf="pr.supplierNames.length === 0" class="text-muted small">Broadcast Routing</span>
+              </div>
+            </td>
+            <td class="font-monospace fw-bold text-primary">{{ pr.quantity }} Units</td>
+            <td>
+              <span class="badge px-2 py-0.5 text-uppercase mb-1 d-inline-block fs-9"
+                [ngClass]="{
+                  'bg-secondary text-white': pr.urgency === 'LOW',
+                  'bg-success text-white': pr.urgency === 'MEDIUM',
+                  'bg-warning text-dark': pr.urgency === 'HIGH',
+                  'bg-danger text-white': pr.urgency === 'CRITICAL'
+                }">
+                {{ pr.urgency }}
+              </span>
+              <small class="d-block text-muted font-monospace"><i class="bi bi-clock me-0.5"></i>{{ pr.deadline | date:'mediumDate' }}</small>
+            </td>
+            <td>
+              <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getPrStatusClass(pr.status)">
+                {{ pr.status }}
+              </span>
+            </td>
+          </tr>
+          
+          <!-- যদি কোনো APPROVED রিকুইজিশন না থাকে তবেই এটি শো করবে -->
+          <tr *ngIf="requisitions.length === 0">
+            <td colspan="6" class="text-center py-4 text-muted font-monospace">
+              <i class="bi bi-folder-x d-block fs-3 mb-1 opacity-50"></i> No approved corporate purchase requisitions logged.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
     <!-- ───────────────── NOTIFICATIONS + ACTIVITY LOG ───────────────── -->
     <div class="row g-4 mb-4">
       <div class="col-md-6">

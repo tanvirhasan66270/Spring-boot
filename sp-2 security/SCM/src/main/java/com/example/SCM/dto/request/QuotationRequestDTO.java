@@ -5,16 +5,14 @@ import lombok.Data;
 @Data
 public class QuotationRequestDTO {
     private Long supplierId;
-    private Long productIds;
-    private String productName;
-    private Long purchaseRequisitionId;    // এই আইডি সিলেক্ট হলে ফ্রন্টএন্ড থ্রু-তে quantity রিড হবে
+    private Long purchaseRequisitionId;
     private int leadTimeDays;
     private boolean isSelected;
     private String receivedAt;              // "YYYY-MM-DD"
     private String status;                  // "PENDING", "UNDER_REVIEW" ইত্যাদি
     private String productDescription;
     private double unitPrice;
-    private int quantity;                   // ফ্রন্টএন্ড ফর্ম সাবমিশনের সময় আসা রিকুইজিশনের quantityRequired ভ্যালু
+    private int quantity;                   // PR থেকে ফ্রন্টএন্ডে রিড হওয়া quantityRequired ভ্যালু
     private String deliveryTime;            // "YYYY-MM-DD"
     private String warranty;
     private String notes;

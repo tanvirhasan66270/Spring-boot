@@ -3,7 +3,6 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NotificationModel } from '../../NotificationModel';
 import { NotificationService } from '../../service/notification.service';
 
-
 @Component({
   selector: 'app-notification',
   standalone: true,
@@ -26,15 +25,28 @@ export class NotificationComponent implements OnInit {
     this.loadNotifications();
   }
 
+ loadNotifications() {
+  this.errorMessage = null;
+  this.service.findAll().subscribe({
+    next: (data) => {
+      this.notifications = data || [];
+      this.updateUnreadCount();
+      
+      // 🎯 ফোর্সফুলি চেঞ্জ ডিটেকশন পুশ করা হলো যাতে অ্যাসিনক্রোনাস ডাটা আসার সাথে সাথে UI রেন্ডার হয়
+      this.cdr.detectChanges(); 
+    },
+    error: (err) => this.handleError(err)
+  });
+}
+
   /**
-   * ডাটাবেজ থেকে লাইভ নোটিফিকেশন ফিড লোড করা
+   * 🔔 ড্যাশবোর্ড বা কম্পোনেন্টের জন্য কারেন্ট আনরিড কাউন্ট সিঙ্ক করা
+   * (🎯 কোনো প্যারামিটার ছাড়াই সার্ভিস কল হবে, যা ৪০০ এরর প্রতিরোধ করবে)
    */
-  loadNotifications() {
-    this.errorMessage = null;
-    this.service.findAll().subscribe({
-      next: (data) => {
-        this.notifications = data || [];
-        this.updateUnreadCount();
+  updateUnreadCount() {
+    this.service.getUnreadCount().subscribe({
+      next: (count) => {
+        this.unreadCount = count;
         this.cdr.markForCheck();
       },
       error: (err) => this.handleError(err)
@@ -42,19 +54,7 @@ export class NotificationComponent implements OnInit {
   }
 
   /**
-   * আনরিড ব্যাজ কাউন্টার সিঙ্ক করা
-   */
-  updateUnreadCount() {
-    this.service.getUnreadCount().subscribe({
-      next: (count) => {
-        this.unreadCount = count;
-        this.cdr.markForCheck();
-      }
-    });
-  }
-
-  /**
-   * কোনো নোটিফিকেশনে ক্লিক করলে সেটি রিড হিসেবে মার্ক হবে
+   * 🔄 নির্দিষ্ট কোনো নোটিফিকেশনে ক্লিক করলে সেটি রিড (Read) হিসেবে স্ট্যাম্প করা
    */
   toggleRead(notification: NotificationModel) {
     if (notification.isRead || !notification.id) return;
@@ -62,7 +62,7 @@ export class NotificationComponent implements OnInit {
     this.service.markAsRead(notification.id).subscribe({
       next: () => {
         notification.isRead = true;
-        this.updateUnreadCount();
+        this.updateUnreadCount(); // কাউন্টার রি-ফ্রেশ
         this.cdr.markForCheck();
       },
       error: (err) => this.handleError(err)
@@ -70,7 +70,7 @@ export class NotificationComponent implements OnInit {
   }
 
   /**
-   * সমস্ত নোটিফিকেশন একসাথে রিড মার্ক করা
+   * 🧹 এক ক্লিকে ইনবক্সের সমস্ত আনরিড নোটিফিকেশন ক্লিয়ার করা
    */
   clearAllUnread() {
     if (this.unreadCount === 0) return;
@@ -86,6 +86,9 @@ export class NotificationComponent implements OnInit {
     });
   }
 
+  /**
+   * ⚠️ গ্লোবাল এরর হ্যান্ডলিং ম্যাট্রিক্স
+   */
   private handleError(err: any) {
     this.errorMessage = err.error?.message || err.message || "Notification Gateway Connection Timeout.";
     this.cdr.markForCheck();

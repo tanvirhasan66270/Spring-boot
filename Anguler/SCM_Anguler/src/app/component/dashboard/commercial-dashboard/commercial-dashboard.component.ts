@@ -90,6 +90,7 @@ export class CommercialDashboardComponent implements OnInit {
   }
 
   loadDashboardData() {
+    this.documents = [];
     this.lcService.findAll().subscribe({
       next: (data) => {
         const all = data || [];

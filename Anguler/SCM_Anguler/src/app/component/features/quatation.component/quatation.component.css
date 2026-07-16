@@ -1,8 +1,22 @@
+/* ==========================================
+   SCM Layout Basics & Typography
+   ========================================== */
 .container-fluid {
   background-color: #f8fafc;
   min-height: 100vh;
 }
 
+.bg-white { background-color: #ffffff !important; }
+.btn-teal { background-color: #0d9488 !important; border-color: #0d9488 !important; }
+.btn-teal:hover { background-color: #0f766e !important; }
+.text-teal { color: #0d9488 !important; }
+.border-teal { border-color: #0d9488 !important; }
+.btn-outline-teal { color: #0d9488; border-color: #0d9488; }
+.btn-outline-teal:hover { background-color: #0d9488; color: white; }
+
+/* ==========================================
+   Data Registry Table Grid Styles
+   ========================================== */
 .table-responsive {
   border-radius: 8px;
   overflow: hidden;
@@ -25,6 +39,7 @@
   font-size: 13px;
 }
 
+/* Operational Action Buttons */
 .btn-icon {
   width: 32px;
   height: 32px;
@@ -41,22 +56,30 @@
   transform: translateY(-1px);
 }
 
-.custom-drawer {
+/* ==========================================
+   🎯 SLIDE DRAWER CONTAINER (RIGHT SIDE)
+   ========================================== */
+.slide-drawer {
   position: fixed;
   top: 0;
-  right: -460px;
-  width: 450px;
+  right: -560px;       /* 450px থেকে বাড়িয়ে 540px ড্রয়ারের উইডথ + বাফারিং পাথ */
+  width: 540px;        /* ইনপুট ফর্মগুলো সুন্দরভাবে দেখানোর জন্য উইডথ অপ্টিমাইজ করা হয়েছে */
+  max-width: 95vw;     /* রেসপন্সিভ মোবাইল সেফগার্ড */
   height: 100vh;
   background-color: #ffffff;
-  z-index: 1050;
-  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
+  z-index: 1060;       /* বুটস্ট্র্যাপ ন্যাভবারের ওপরে থাকার জন্য */
+  box-shadow: -8px 0 30px rgba(15, 23, 42, 0.15);
   transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
 }
 
-.custom-drawer.open {
+/* HTML-এর [class.show]="isDrawerOpen" এর সাথে সিঙ্কড অ্যাক্টিভেশন ক্লাস */
+.slide-drawer.show {
   right: 0;
 }
 
+/* --- BACKDROP BLUR BLIND --- */
 .drawer-backdrop {
   position: fixed;
   top: 0;
@@ -64,9 +87,14 @@
   width: 100vw;
   height: 100vh;
   background-color: rgba(15, 23, 42, 0.3);
-  backdrop-filter: blur(2px);
-  z-index: 1040;
+  backdrop-filter: blur(4px);
+  z-index: 1050;
 }
 
+/* ==========================================
+   Utility Typography Matrices
+   ========================================== */
+.border-dashed { border-style: dashed !important; }
 .fs-7 { font-size: 13px !important; }
 .fs-8 { font-size: 11px !important; }
+.tracking-wider { letter-spacing: 0.05em; }

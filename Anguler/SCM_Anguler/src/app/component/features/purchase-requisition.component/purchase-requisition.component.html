@@ -70,6 +70,7 @@
                     <button class="btn btn-icon btn-light text-warning" title="Modify Context" (click)="edit(r)" [disabled]="r.approvalStatus !== 'PENDING'">
                       <i class="bi bi-pencil-square"></i>
                     </button>
+                    <!-- 🎯 পিউর নাম্বার আইডি পাসিং (কোলন ছাড়া) -->
                     <button class="btn btn-icon btn-light text-danger" title="Purge Token Index" (click)="delete(r.id)">
                       <i class="bi bi-trash3-fill"></i>
                     </button>
@@ -83,9 +84,9 @@
     </div>
   </div>
 
-  <!-- ──  আপডেটেড ডাইনামিক ইনপুট ড্রয়ার ল্যান্ডস্কেপ ── -->
-<div class="slide-drawer shadow" [class.show]="isDrawerOpen">
-      <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
+  <!-- Slide Input Drawer -->
+  <div class="slide-drawer shadow" [class.show]="isDrawerOpen">
+    <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Document Node' : 'Compile Procurement Slip' }}</h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
     </div>
@@ -97,7 +98,7 @@
           <i class="bi bi-bug-fill me-1"></i> {{ errorMessage }}
         </div>
 
-        <!-- ১. প্রোডাক্ট ড্রপডাউন এবং পাশে ডেডিকেটেড সাইড-বক্স চিপ প্যানেল -->
+        <!-- 1. Products Selection -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Product Specification Vector</label>
           <div class="row g-2">
@@ -110,7 +111,6 @@
               </select>
             </div>
             <div class="col-md-6">
-              <!-- সাইড প্যানেল কন্টেইনার বক্স (চিপ চয়েস ট্র্যাকার) -->
               <div class="p-2 border rounded bg-light d-flex flex-wrap gap-1.5 align-content-start font-monospace fs-8 overflow-auto" style="height: 38px;">
                 @for (pId of requisition.productIds; track pId) {
                   <span class="badge bg-dark text-white d-flex align-items-center gap-1 py-1 px-2 rounded-2">
@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        <!-- ২. সাপ্লায়ার ড্রপডাউন এবং পাশে ডেডিকেটেড সাইড-বক্স চিপ প্যানেল -->
+        <!-- 2. Suppliers Selection -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Preferred Supplier Routing Nodes</label>
           <div class="row g-2">
@@ -139,7 +139,6 @@
               </select>
             </div>
             <div class="col-md-6">
-              <!-- সাইড প্যানেল কন্টেইনার বক্স -->
               <div class="p-2 border rounded bg-light d-flex flex-wrap gap-1.5 align-content-start font-monospace fs-8 overflow-auto" style="height: 38px;">
                 @for (sId of requisition.supplierIds; track sId) {
                   <span class="badge bg-secondary text-white d-flex align-items-center gap-1 py-1 px-2 rounded-2">
@@ -178,13 +177,12 @@
             <div class="invalid-feedback small fw-bold" *ngIf="dateRef.invalid && reqForm.submitted">Timeline configuration is mandatory!</div>
           </div>
           <div class="col-md-6">
-            <!-- ৩. কারেন্সি সেটেলমেন্ট হার্ড-লকড ইউএসডি (Disabled View) -->
             <label class="form-label fw-bold small text-uppercase text-secondary">Currency Settlement</label>
             <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold" [value]="requisition.currency + ' ($) Fixed Gateway Node'" disabled>
           </div>
         </div>
 
-        <!-- ৪. ডাইনামিক অটো-সাইজিং স্পেশাল রিমার্কস বক্স (Auto-growing Textarea) -->
+        <!-- 3. Remarks Box -->
         <div class="mb-4">
           <label class="form-label fw-bold small text-uppercase text-secondary">Special Requisition Directives & Remarks</label>
           <textarea class="form-control fs-7 auto-grow" rows="2" 

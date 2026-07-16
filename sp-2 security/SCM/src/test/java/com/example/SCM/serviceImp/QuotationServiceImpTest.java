@@ -43,7 +43,7 @@ public class QuotationServiceImpTest {
     @Test
     void testSave_WhenSupplierIdIsNull_ThrowsIllegalArgumentException() {
         dto.setSupplierId(null);
-        dto.setProductIds(1L);
+        
         dto.setPurchaseRequisitionId(1L);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -56,7 +56,7 @@ public class QuotationServiceImpTest {
     @Test
     void testSave_WhenProductIdIsNull_ThrowsIllegalArgumentException() {
         dto.setSupplierId(1L);
-        dto.setProductIds(null);
+
         dto.setPurchaseRequisitionId(1L);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -69,7 +69,7 @@ public class QuotationServiceImpTest {
     @Test
     void testSave_WhenPurchaseRequisitionIdIsNull_ThrowsIllegalArgumentException() {
         dto.setSupplierId(1L);
-        dto.setProductIds(1L);
+
         dto.setPurchaseRequisitionId(null);
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {

@@ -48,6 +48,7 @@ export class ManagerDashboardComponent implements OnInit {
   warehouseCount = 0;
 
   approvals: any[] = [];
+  pendingPOs: any[] = [];
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
 
@@ -96,7 +97,8 @@ export class ManagerDashboardComponent implements OnInit {
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
-    const totalCalls = 7;
+    // 🎯 টোটাল কল ৮ করা হলো (নতুন মেথড সহ)
+    const totalCalls = 8;
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -113,7 +115,10 @@ export class ManagerDashboardComponent implements OnInit {
     this.loadDeliveryTrips(checkDone);
     this.loadQcInspections(checkDone);
     this.loadNotifications(checkDone);
-    this.loadActivityLogs();
+    this.loadActivityLogs(checkDone);
+    
+    // 🎯 পাইপলাইনে নতুন মেথডটি সেন্ট্রাললি এক্সিকিউট করা হলো
+    this.loadPendingPurchaseOrders(checkDone);
   }
 
   loadPurchaseRequisitions(done: () => void): void {
@@ -155,6 +160,52 @@ export class ManagerDashboardComponent implements OnInit {
         done();
       },
       error: () => done(),
+    });
+  }
+
+  // 🎯 ড্রাফট ও পেন্ডিং পারচেজ অর্ডার ম্যাট্রিক্স লোডার
+  loadPendingPurchaseOrders(done?: () => void) {
+    this.poService.findAll().subscribe({
+      next: (data) => {
+        const allOrders = data || [];
+        
+        // DRAFT বা PENDING স্ট্যাটাসের অর্ডার ফিল্টারিং
+        const filteredPOs = allOrders.filter(
+          po => po.status === 'DRAFT' || po.status === 'PENDING'
+        );
+
+        // নাল সেফটিসহ ফিল্ড ম্যাপিং আর্কিটেকচার
+        this.pendingPOs = filteredPOs.map((po: any) => ({
+          id: po.id,
+          poNumber: po.poNumber || `PO-#${po.id}`,
+          supplierName: po.supplierName || (po.supplier ? po.supplier.name : 'Apex Logistics Group'),
+          deliveryDue: po.expectedDeliveryDate || po.createdAt || 'N/A',
+          amount: po.totalAmount || po.amount || 0,
+          status: po.status
+        }));
+
+        this.cdr.markForCheck();
+        if (done) done();
+      },
+      error: (err) => {
+        console.error('SCM PO Matrix Stream Error:', err);
+        if (done) done();
+      }
+    });
+  }
+
+  approvePO(id: number) {
+    this.poService.approve(id).subscribe({
+      next: () => {
+        alert('Purchase Order authorized successfully!');
+        // লাইভ ডাটা প্যানেল রিফ্রেশ
+        this.pendingPOs = this.pendingPOs.filter(po => po.id !== id);
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Authorization failed:', err);
+        alert(err.error?.message || 'Failed to authorize Purchase Order.');
+      }
     });
   }
 
@@ -252,30 +303,21 @@ export class ManagerDashboardComponent implements OnInit {
     });
   }
 
-  loadActivityLogs(): void {
+  loadActivityLogs(done: () => void): void {
     this.activityLogService.findAll().subscribe({
       next: (data) => {
         this.activities = (data || []).slice(0, 5);
         this.cdr.markForCheck();
+        done();
       },
-      error: () => {},
+      error: () => done(),
     });
   }
 
   buildChartData(): void {
     const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
     ];
     const now = new Date();
     const months: string[] = [];

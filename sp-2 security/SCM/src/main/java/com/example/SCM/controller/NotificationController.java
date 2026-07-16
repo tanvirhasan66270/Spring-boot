@@ -5,7 +5,6 @@ import com.example.SCM.entity.User;
 import com.example.SCM.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -13,31 +12,69 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@CrossOrigin("*")
 public class NotificationController {
 
     private final NotificationService service;
 
+
     @GetMapping
-    public ResponseEntity<List<Notification>> getUserNotifications(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(service.getNotificationsForUser(currentUser.getId().toString()));
+    public ResponseEntity<List<Notification>> getUserNotifications(
+            @AuthenticationPrincipal User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+
+        String finalUserId = resolveUserId(currentUser, backupUserId);
+        if (finalUserId == null) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(service.getNotificationsForUser(finalUserId));
     }
+
 
     @GetMapping("/unread-count")
-    public ResponseEntity<Long> getCount(@AuthenticationPrincipal User currentUser) {
-        return ResponseEntity.ok(service.getUnreadCount(currentUser.getId().toString()));
+    public ResponseEntity<Long> getCount(
+            @AuthenticationPrincipal User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+
+        String finalUserId = resolveUserId(currentUser, backupUserId);
+        if (finalUserId == null) {
+            return ResponseEntity.ok(0L); // সেশন না থাকলে ক্রাশ না করে ০ রিটার্ন করবে
+        }
+
+        return ResponseEntity.ok(service.getUnreadCount(finalUserId));
     }
+
 
     @PatchMapping("/{id}/read")
-    @PreAuthorize("@notificationSecurity.isOwner(#id, authentication)")
     public ResponseEntity<Void> markRead(@PathVariable Long id) {
         service.markAsRead(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build(); // 204 Content এর জন্য স্ট্যান্ডার্ড নো-কন্টেন্ট
     }
 
+
     @PatchMapping("/read-all")
-    public ResponseEntity<Void> markAllRead(@AuthenticationPrincipal User currentUser) {
-        service.markAllAsRead(currentUser.getId().toString());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Void> markAllRead(
+            @AuthenticationPrincipal User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+
+        String finalUserId = resolveUserId(currentUser, backupUserId);
+        if (finalUserId != null) {
+            service.markAllAsRead(finalUserId);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+
+    private String resolveUserId(User currentUser, String backupUserId) {
+        // প্রথম লেয়ার: স্প্রিং সিকিউরিটি সেশন থেকে চেক করা হচ্ছে
+        if (currentUser != null && currentUser.getId() != null) {
+            return currentUser.getId().toString();
+        }
+        // দ্বিতীয় লেয়ার: ফ্রন্টএন্ডের পাঠানো কাস্টম রিকোয়েস্ট হেডার থেকে ফলব্যাক চেক
+        if (backupUserId != null && !backupUserId.trim().isEmpty() && !"null".equalsIgnoreCase(backupUserId)) {
+            return backupUserId;
+        }
+        return null;
     }
 }

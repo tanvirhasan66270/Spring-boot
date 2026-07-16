@@ -121,7 +121,7 @@ export class ProcurementDashboardComponent implements OnInit {
         const all = data || [];
         prCount = all.length;
         prApproved = all.filter(
-          (r: any) => r.status === 'APPROVED' || r.status === 'FULFILLED',
+          (r: any) => r.approvalStatus === 'APPROVED' || r.approvalStatus === 'FULFILLED',
         ).length;
         this.approvedPRs = prApproved;
         this.kpis[0] = { ...this.kpis[0], value: `${prCount} Requisitions` };

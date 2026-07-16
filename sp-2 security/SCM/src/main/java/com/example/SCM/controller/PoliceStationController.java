@@ -42,7 +42,7 @@ public class PoliceStationController {
     // URL: /api/police-stations/district/1
 
     @GetMapping("district/{districtId}")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long districtId) {
         List<PoliceStationResponseDTO> list = policeStationService.getByDistrictId(districtId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);

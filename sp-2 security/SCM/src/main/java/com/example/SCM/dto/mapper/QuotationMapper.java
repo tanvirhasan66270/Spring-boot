@@ -2,8 +2,7 @@ package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;
-import com.example.SCM.entity.Product;
-import com.example.SCM.entity.PurchaseRequisition;
+import com.example.SCM.entity.PurchaseRequisition; // আপনার সিস্টেমের পিআর এনটিটি
 import com.example.SCM.entity.Quotation;
 import com.example.SCM.entity.Supplier;
 import com.example.SCM.enumClass.QuotationStatus;
@@ -19,11 +18,9 @@ public class QuotationMapper {
     private final EntityManager entityManager;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    // Constructor Injection
     public QuotationMapper(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
-
 
     public Quotation toEntity(QuotationRequestDTO dto) {
         if (dto == null) {
@@ -32,27 +29,23 @@ public class QuotationMapper {
 
         Quotation quotation = new Quotation();
 
-        // String থেকে LocalDate-এ কনভার্সন (Null চেক সহ)
-
-        if (dto.getReceivedAt() != null) {
+        // String থেকে LocalDate কনভার্সন
+        if (dto.getReceivedAt() != null && !dto.getReceivedAt().isBlank()) {
             quotation.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), DATE_FORMATTER));
         }
-        if (dto.getDeliveryTime() != null) {
+        if (dto.getDeliveryTime() != null && !dto.getDeliveryTime().isBlank()) {
             quotation.setDeliveryTime(LocalDate.parse(dto.getDeliveryTime(), DATE_FORMATTER));
         }
 
+        // Lazy Proxy references resolution
         if (dto.getSupplierId() != null) {
             quotation.setSupplier(entityManager.getReference(Supplier.class, dto.getSupplierId()));
-        }
-        if (dto.getProductIds() != null) {
-            quotation.setProduct(entityManager.getReference(Product.class, dto.getProductIds()));
         }
         if (dto.getPurchaseRequisitionId() != null) {
             quotation.setPurchaseRequisition(entityManager.getReference(PurchaseRequisition.class, dto.getPurchaseRequisitionId()));
         }
 
-        // সাধারণ ফিল্ড ম্যাপিং
-        quotation.setProductName(dto.getProductName());
+        // কোর ফিল্ড ম্যাপিং
         quotation.setLeadTimeDays(dto.getLeadTimeDays());
         quotation.setSelected(dto.isSelected());
         quotation.setProductDescription(dto.getProductDescription());
@@ -62,14 +55,12 @@ public class QuotationMapper {
         quotation.setNotes(dto.getNotes());
         quotation.setAttachmentUrl(dto.getAttachmentUrl());
 
-        // Enum হ্যান্ডলিং
         if (dto.getStatus() != null) {
             quotation.setStatus(QuotationStatus.valueOf(dto.getStatus().toUpperCase()));
         }
 
         return quotation;
     }
-
 
     public QuotationResponseDTO toResponseDTO(Quotation quotation) {
         if (quotation == null) {
@@ -78,7 +69,6 @@ public class QuotationMapper {
 
         QuotationResponseDTO dto = new QuotationResponseDTO();
 
-        // বেসিক ইনফরমেশন ম্যাপিং
         dto.setId(quotation.getId());
         dto.setQuotationNumber(quotation.getQuotationNumber());
         dto.setValidUntil(quotation.getValidUntil());
@@ -89,28 +79,22 @@ public class QuotationMapper {
         dto.setProductDescription(quotation.getProductDescription());
         dto.setUnitPrice(quotation.getUnitPrice());
         dto.setQuantity(quotation.getQuantity());
-        dto.setTotalPrice(quotation.getTotalPrice()); // এন্টিটির @PrePersist/@PreUpdate থেকে ক্যালকুলেটেড ভ্যালু
+        dto.setTotalPrice(quotation.getTotalPrice());
         dto.setDeliveryTime(quotation.getDeliveryTime());
         dto.setWarranty(quotation.getWarranty());
         dto.setNotes(quotation.getNotes());
         dto.setAttachmentUrl(quotation.getAttachmentUrl());
         dto.setCreatedAt(quotation.getCreatedAt());
 
-        // Supplier Details Flattening
+        // Supplier Flattening
         if (quotation.getSupplier() != null) {
             dto.setSupplierId(quotation.getSupplier().getId());
-            dto.setSupplierName(quotation.getSupplier().getName()); // ধরে নেওয়া হয়েছে Supplier এন্টিটিতে 'name' ফিল্ড আছে
+            dto.setSupplierName(quotation.getSupplier().getName());
         }
 
-        // Product Details Flattening
-        if (quotation.getProduct() != null) {
-            dto.setProductIds(quotation.getProduct().getId());
-            dto.setProductName(quotation.getProductName()); // কোটেশন এন্টিটির ওয়ান-টাইম স্ন্যাপশট নেম
-        }
-
-        // Purchase Requisition Flattening
         if (quotation.getPurchaseRequisition() != null) {
             dto.setPurchaseRequisitionId(quotation.getPurchaseRequisition().getId());
+            dto.setProductName(quotation.getProductName()); // ডাটাবেজে স্টোর হওয়া নামের স্ন্যাপশট
         }
 
         return dto;
@@ -121,25 +105,20 @@ public class QuotationMapper {
             return;
         }
 
-
-        if (dto.getReceivedAt() != null) {
+        if (dto.getReceivedAt() != null && !dto.getReceivedAt().isBlank()) {
             quotation.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), DATE_FORMATTER));
         }
-        if (dto.getDeliveryTime() != null) {
+        if (dto.getDeliveryTime() != null && !dto.getDeliveryTime().isBlank()) {
             quotation.setDeliveryTime(LocalDate.parse(dto.getDeliveryTime(), DATE_FORMATTER));
         }
 
         if (dto.getSupplierId() != null) {
             quotation.setSupplier(entityManager.getReference(Supplier.class, dto.getSupplierId()));
         }
-        if (dto.getProductIds() != null) {
-            quotation.setProduct(entityManager.getReference(Product.class, dto.getProductIds()));
-        }
         if (dto.getPurchaseRequisitionId() != null) {
             quotation.setPurchaseRequisition(entityManager.getReference(PurchaseRequisition.class, dto.getPurchaseRequisitionId()));
         }
 
-        quotation.setProductName(dto.getProductName());
         quotation.setLeadTimeDays(dto.getLeadTimeDays());
         quotation.setSelected(dto.isSelected());
         quotation.setProductDescription(dto.getProductDescription());

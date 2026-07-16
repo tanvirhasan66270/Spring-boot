@@ -56,6 +56,12 @@ public class PurchaseOrderController {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted Successfully");
     }
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<PurchaseOrderResponseDTO> approve(@PathVariable Long id) {
+        // আপনার PurchaseOrderService এর ভেতরের এপ্রুভ লজিকটি কল করুন
+        PurchaseOrderResponseDTO response = purchaseOrderService.approveOrder(id);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/email-issue")
     public ResponseEntity<String> emailIssueOrder(@RequestParam String token) {

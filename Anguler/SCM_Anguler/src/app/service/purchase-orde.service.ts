@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 import { PurchaseOrderRequestModel, PurchaseOrderResponseModel } from '../component/shared/model/purchaseOrderModel';
+import { StorageService } from '../auth/auth_service/storage.service'; 
 
 @Injectable({
   providedIn: 'root',
@@ -10,25 +11,52 @@ import { PurchaseOrderRequestModel, PurchaseOrderResponseModel } from '../compon
 export class PurchaseOrderService {
   private apiUrl = environment.apiUrl + "purchase-orders";
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private storage: StorageService 
+  ) { }
+
+  
+  private getAuthHeaders(): HttpHeaders {
+    const token = this.storage.getToken() ?? '';
+    return new HttpHeaders().set('Authorization', `Bearer ${token}`);
+  }
 
   findAll(): Observable<PurchaseOrderResponseModel[]> {
-    return this.http.get<PurchaseOrderResponseModel[]>(this.apiUrl);
+    return this.http.get<PurchaseOrderResponseModel[]>(this.apiUrl, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   getById(id: number): Observable<PurchaseOrderResponseModel> {
-    return this.http.get<PurchaseOrderResponseModel>(`${this.apiUrl}/${id}`);
+    return this.http.get<PurchaseOrderResponseModel>(`${`${this.apiUrl}/${id}`}`, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   save(order: PurchaseOrderRequestModel): Observable<PurchaseOrderResponseModel> {
-    return this.http.post<PurchaseOrderResponseModel>(this.apiUrl, order);
+    return this.http.post<PurchaseOrderResponseModel>(this.apiUrl, order, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   update(id: number, order: PurchaseOrderRequestModel): Observable<PurchaseOrderResponseModel> {
-    return this.http.put<PurchaseOrderResponseModel>(`${this.apiUrl}/${id}`, order);
+    return this.http.put<PurchaseOrderResponseModel>(`${`${this.apiUrl}/${id}`}`, order, {
+      headers: this.getAuthHeaders()
+    });
+  }
+
+ 
+  approve(id: number): Observable<PurchaseOrderResponseModel> {
+    return this.http.put<PurchaseOrderResponseModel>(`${`${this.apiUrl}/${id}/approve`}`, {}, {
+      headers: this.getAuthHeaders()
+    });
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${`${this.apiUrl}/${id}`}`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'text'
+    });
   }
 }

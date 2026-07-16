@@ -16,6 +16,8 @@ import { ActivityLogService } from '../../../service/activity.log.service';
 import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
+import { purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 
 @Component({
   selector: 'app-supplier-dashboard',
@@ -32,20 +34,8 @@ export class SupplierDashboardComponent implements OnInit {
 
   kpis = [
     { label: 'Purchase Orders', value: '0 POs', trend: 0, icon: 'bi-inboxes', color: 'primary' },
-    {
-      label: 'Pending Delivery',
-      value: '0 Consignments',
-      trend: 0,
-      icon: 'bi-truck-flatbed',
-      color: 'warning',
-    },
-    {
-      label: 'Outstanding Payments',
-      value: '৳0',
-      trend: 0,
-      icon: 'bi-currency-exchange',
-      color: 'success',
-    },
+    { label: 'Pending Delivery', value: '0 Consignments', trend: 0, icon: 'bi-truck-flatbed', color: 'warning' },
+    { label: 'Outstanding Payments', value: '৳0', trend: 0, icon: 'bi-currency-exchange', color: 'success' },
     { label: 'Supply Accuracy', value: '0%', trend: 0, icon: 'bi-patch-check', color: 'success' },
   ];
 
@@ -53,6 +43,9 @@ export class SupplierDashboardComponent implements OnInit {
   rfqs: any[] = [];
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
+  
+  // APPROVED রিকুইজিশন ডাটা হোল্ডার পাইপলাইন
+  requisitions: any[] = [];
 
   showSettings = false;
   loading = true;
@@ -71,6 +64,7 @@ export class SupplierDashboardComponent implements OnInit {
     private notificationService: NotificationService,
     private activityLogService: ActivityLogService,
     private invoiceService: InvoiceService,
+    private prService: PurchaseRequisitionService
   ) {}
 
   ngOnInit(): void {
@@ -89,13 +83,12 @@ export class SupplierDashboardComponent implements OnInit {
   loadDashboardData() {
     this.loading = true;
 
+    // 1. Purchase Orders Mapping Matrix
     this.poService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
         const delivered = all.filter((o: PurchaseOrderResponseModel) => o.status === 'RECEIVED');
-        this.pendingDeliveries = all.filter(
-          (o: PurchaseOrderResponseModel) => o.status === 'ISSUED',
-        ).length;
+        this.pendingDeliveries = all.filter((o: PurchaseOrderResponseModel) => o.status === 'ISSUED').length;
 
         if (all.length > 0) {
           this.supplyAccuracy = Math.round((delivered.length / all.length) * 100);
@@ -114,8 +107,10 @@ export class SupplierDashboardComponent implements OnInit {
         }));
         this.cdr.markForCheck();
       },
+      error: (err) => console.error('PO Load Error:', err)
     });
 
+    // 2. Open Sourcing RFQ Bidding Invitations
     this.quotationService.findAll().subscribe({
       next: (data) => {
         this.rfqs = (data || []).slice(0, 3).map((q: QuotationResponseModel) => ({
@@ -126,8 +121,34 @@ export class SupplierDashboardComponent implements OnInit {
         }));
         this.cdr.markForCheck();
       },
+      error: (err) => console.error('Quotation Load Error:', err)
     });
 
+    // 3. Central Requisition Stream Node (Filters: ONLY APPROVED DATA)
+    this.prService.findAll().subscribe({
+      next: (data) => {
+        const allRequisitions = data || [];
+        
+        // শুধুমাত্র APPROVED রিকুইজিশনগুলো এখানে ফিল্টার হবে
+        const approvedOnly = allRequisitions.filter(
+          (pr: purchaseRequisitionResponseModel) => pr.approvalStatus === 'APPROVED'
+        );
+
+        this.requisitions = approvedOnly.slice(0, 5).map((pr: purchaseRequisitionResponseModel) => ({
+          id: pr.id,
+          productNames: pr.productNames || [],
+          supplierNames: pr.supplierNames || [],
+          quantity: pr.quantityRequired || 0,
+          urgency: pr.urgencyLevel || 'LOW',
+          deadline: pr.requiredByDate || 'N/A',
+          status: pr.approvalStatus || 'APPROVED'
+        }));
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('PR Load Error:', err)
+    });
+
+    // 4. Invoices and Billing Ledger
     this.invoiceService.findAll().subscribe({
       next: (data) => {
         const invoices = data || [];
@@ -139,7 +160,8 @@ export class SupplierDashboardComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Invoice Load Error:', err);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -152,7 +174,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.notifications = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => console.error('Notification Stream Error:', err),
     });
   }
 
@@ -162,7 +184,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.activities = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => console.error('Activity Log Stream Error:', err),
     });
   }
 
@@ -198,6 +220,16 @@ export class SupplierDashboardComponent implements OnInit {
     return map[status] || 'bg-secondary text-white';
   }
 
+  getPrStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      APPROVED: 'bg-success-subtle text-success border border-success',
+      PENDING: 'bg-warning-subtle text-warning border border-warning',
+      REJECTED: 'bg-danger-subtle text-danger border border-danger',
+      CANCELLED: 'bg-dark-subtle text-dark border border-dark',
+    };
+    return map[status] || 'bg-warning-subtle text-warning border border-warning';
+  }
+
   loadSupplier(): void {
     this.supplierService.getSupplierByUserId(this.userId).subscribe({
       next: (res) => {
@@ -205,7 +237,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.storage.saveData(KEYS.SUPPLIER, res);
         this.cdr.markForCheck();
       },
-      error: (err) => console.log(err),
+      error: (err) => console.error('Supplier Initialization Error:', err),
     });
   }
 

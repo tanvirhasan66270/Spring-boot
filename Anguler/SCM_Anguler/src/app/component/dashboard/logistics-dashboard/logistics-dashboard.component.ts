@@ -68,6 +68,7 @@ export class LogisticsDashboardComponent implements OnInit {
 
   shipments: any[] = [];
   warehouses: any[] = [];
+  inventories: any[] = [];
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
 
@@ -148,6 +149,7 @@ export class LogisticsDashboardComponent implements OnInit {
       next: (data) => {
         const all = data || [];
         this.warehouses = all.map((w: any) => ({
+          id: w.id,
           name: w.name || 'Warehouse',
           capacity: w.capacity || 0,
           location: w.location || '',
@@ -161,6 +163,7 @@ export class LogisticsDashboardComponent implements OnInit {
     this.inventoryService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
+        this.inventories = all;
         this.inventoryMovements = all.length;
         this.kpis[3] = {
           ...this.kpis[3],
@@ -176,70 +179,40 @@ export class LogisticsDashboardComponent implements OnInit {
 
   private computeWarehouseCapacity(): void {
     if (this.warehouses.length === 0) return;
-    const totalCapacity = this.warehouses.reduce((sum, w) => sum + w.capacity, 0);
-    if (totalCapacity === 0) {
-      this.warehouseCapacityPercent = 0;
-      this.kpis[2] = { ...this.kpis[2], value: '0%', trend: 0 };
-      return;
-    }
-    this.warehouseService.getAll().subscribe({
-      next: (warehouses) => {
-        this.inventoryService.findAll().subscribe({
-          next: (inventories) => {
-            const warehouseCapacityMap: Record<number, number> = {};
-            warehouses.forEach((w: any) => {
-              warehouseCapacityMap[w.id] = w.capacity || 0;
-            });
 
-            const usedByWarehouse: Record<number, number> = {};
-            inventories.forEach((inv: any) => {
-              const whId = inv.warehouseId;
-              if (!usedByWarehouse[whId]) usedByWarehouse[whId] = 0;
-              usedByWarehouse[whId] += inv.quantityOnHand || 0;
-            });
-
-            let totalUsed = 0;
-            let totalCap = 0;
-            for (const wh of warehouses) {
-              totalCap += wh.capacity || 0;
-              totalUsed += usedByWarehouse[wh.id] || 0;
-            }
-
-            this.warehouseCapacityPercent =
-              totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 0;
-            const capacityDiff = this.warehouseCapacityPercent - 80;
-
-            this.kpis[2] = {
-              ...this.kpis[2],
-              value: `${this.warehouseCapacityPercent}%`,
-              trend: capacityDiff,
-            };
-
-            this.warehouses = this.warehouses.map((w) => ({
-              ...w,
-              usedPercent:
-                w.capacity > 0
-                  ? Math.min(
-                      100,
-                      Math.round(
-                        ((usedByWarehouse[this.getWarehouseId(w)] || 0) / w.capacity) * 100,
-                      ),
-                    )
-                  : 0,
-            }));
-
-            this.cdr.markForCheck();
-          },
-          error: () => {},
-        });
-      },
-      error: () => {},
+    const usedByWarehouse: Record<number, number> = {};
+    this.inventories.forEach((inv: any) => {
+      const whId = inv.warehouseId;
+      if (!usedByWarehouse[whId]) usedByWarehouse[whId] = 0;
+      usedByWarehouse[whId] += inv.quantityOnHand || 0;
     });
-  }
 
-  private getWarehouseId(warehouse: any): number {
-    const match = this.warehouses.find((w) => w.name === warehouse.name);
-    return match ? match.id : 0;
+    let totalUsed = 0;
+    let totalCap = 0;
+    for (const wh of this.warehouses) {
+      totalCap += wh.capacity || 0;
+      totalUsed += usedByWarehouse[wh.id] || 0;
+    }
+
+    this.warehouseCapacityPercent =
+      totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 0;
+    const capacityDiff = this.warehouseCapacityPercent - 80;
+
+    this.kpis[2] = {
+      ...this.kpis[2],
+      value: `${this.warehouseCapacityPercent}%`,
+      trend: capacityDiff,
+    };
+
+    this.warehouses = this.warehouses.map((w) => ({
+      ...w,
+      usedPercent:
+        w.capacity > 0
+          ? Math.min(100, Math.round(((usedByWarehouse[w.id] || 0) / w.capacity) * 100))
+          : 0,
+    }));
+
+    this.cdr.markForCheck();
   }
 
   loadNotifications(): void {
