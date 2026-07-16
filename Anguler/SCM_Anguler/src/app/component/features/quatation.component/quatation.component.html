@@ -1,5 +1,8 @@
 <div class="container-fluid py-4 px-4">
 
+  <!-- ==========================================
+       Upper Navigation & Header Matrix
+       ========================================== -->
   <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="text-dark fw-bold mb-1">Supplier Quotation Matrix</h4>
@@ -10,12 +13,16 @@
     </button>
   </div>
 
+  <!-- Global Exception/Error Logger Alerts -->
   @if (errorMessage) {
     <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
       <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
     </div>
   }
 
+  <!-- ==========================================
+       Data Grid Registry Table
+       ========================================== -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -23,7 +30,7 @@
           <thead class="table-light text-uppercase fs-8">
             <tr>
               <th class="ps-4">Quotation No</th>
-                <th>Image</th>
+              <th>Enclosed File</th>
               <th>Supplier / Product</th>
               <th>Unit Bid Price</th>
               <th>Qty Required</th>
@@ -37,23 +44,19 @@
               <tr [class.table-info]="q.isSelected">
                 <td class="ps-4">
                   <span class="badge bg-dark font-monospace tracking-wide">{{ q.quotationNumber }}</span>
-                  <small class="d-block text-muted font-monospace mt-1"><i class="bi bi-link-45deg"></i>PR Node: #{{ q.purchaseRequisitionId }}</small>
+                  <small class="d-block text-muted font-monospace mt-1">
+                    <i class="bi bi-link-45deg"></i>PR Node: #{{ q.purchaseRequisitionId }}
+                  </small>
                 </td>
                 <td>
-             <img
-                [src]="getImageUrl(q.attachmentUrl)"
-                alt="Quotation Image"
-                class="rounded border"
-                width="60"
-                height="60"
-                    />
-                <span *ngIf="!q.attachmentUrl" class="text-muted">
-                   No Image
-                   </span>
-                  </td>
+                  <img *ngIf="q.attachmentUrl" [src]="getImageUrl(q.attachmentUrl)" alt="Quotation Image" class="rounded border shadow-sm" width="50" height="50" style="object-fit: cover;" />
+                  <span *ngIf="!q.attachmentUrl" class="text-muted small italic">No Enclosed Image</span>
+                </td>
                 <td>
-                  <div class="fw-bold text-dark">{{ q.productName }}</div>
-                  <div class="text-secondary small font-sans"><i class="bi bi-building me-1"></i>{{ q.supplierName }}</div>
+                  <div class="fw-bold text-dark">{{ q.productName || 'No Linked Products' }}</div>
+                  <div class="text-secondary small">
+                    <i class="bi bi-building me-1"></i>{{ q.supplierName }}
+                  </div>
                 </td>
                 <td class="font-monospace fw-bold text-secondary">${{ q.unitPrice | number:'1.2-2' }}</td>
                 <td class="font-monospace text-dark">{{ q.quantity }} Pcs</td>
@@ -82,7 +85,7 @@
             }
             @empty {
               <tr>
-                <td colspan="7" class="text-center py-5 text-muted font-monospace fs-8">
+                <td colspan="8" class="text-center py-5 text-muted font-monospace fs-8">
                   <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>No bidding envelopes registered in node directory.
                 </td>
               </tr>
@@ -93,7 +96,10 @@
     </div>
   </div>
 
-  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+  <!-- ==========================================
+       Sliding Input Form Drawer Framework
+       ========================================== -->
+  <div class="slide-drawer shadow" [class.show]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Quotation Properties' : 'Register Supplier Quotation' }}</h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
@@ -102,6 +108,7 @@
     <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
       <form #qForm="ngForm" (ngSubmit)="qForm.valid && save()">
         
+        <!-- 1. Linked Purchase Requisition Vector -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Linked Purchase Requisition Vector</label>
           <select class="form-select fs-7" [(ngModel)]="quotation.purchaseRequisitionId" name="purchaseRequisitionId" #prRef="ngModel" required [disabled]="isEdit" [class.is-invalid]="prRef.value === 0 && qForm.submitted">
@@ -110,28 +117,22 @@
               <option [value]="pr.id">PR #{{ pr.id }} (Required Date: {{ pr.requiredByDate }})</option>
             }
           </select>
+          <div class="invalid-feedback small fw-bold" *ngIf="prRef.value === 0 && qForm.submitted">Purchase Requisition reference link is mandatory!</div>
         </div>
 
+        <!-- 2. Target Supplier Node -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Vendor Node</label>
           <select class="form-select fs-7" [(ngModel)]="quotation.supplierId" name="supplierId" #supRef="ngModel" required [disabled]="isEdit" [class.is-invalid]="supRef.value === 0 && qForm.submitted">
             <option [value]="0">-- Select Supplier --</option>
             @for (s of suppliers; track s.id) {
-              <option [value]="s.id">{{ s.name }} (Company: {{ s.companyName }})</option>
+              <option [value]="s.id">{{ s.name }} ({{ s.companyName || 'Corporate Entity' }})</option>
             }
           </select>
+          <div class="invalid-feedback small fw-bold" *ngIf="supRef.value === 0 && qForm.submitted">Supplier selection node is mandatory!</div>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Inventory Product Specifications</label>
-          <select class="form-select fs-7" [(ngModel)]="quotation.productIds" name="productIds" #prodRef="ngModel" (change)="onProductChange($event)" required [disabled]="isEdit" [class.is-invalid]="prodRef.value === 0 && qForm.submitted">
-            <option [value]="0">-- Select Target Product Module --</option>
-            @for (p of products; track p.id) {
-              <option [value]="p.id">{{ p.name }} (Code: {{ p.productCode }})</option>
-            }
-          </select>
-        </div>
-
+        <!-- 3. Financial Costing & Volumetric Input Strategy -->
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Unit Bid Cost ($)</label>
@@ -143,6 +144,7 @@
           </div>
         </div>
 
+        <!-- 4. Delivery Deadlines & Workflow Status -->
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Lead Time (Days)</label>
@@ -160,43 +162,46 @@
           </div>
         </div>
 
+        <!-- 5. Operation Timestamps -->
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Quotation Received Date</label>
             <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.receivedAt" name="receivedAt" required>
           </div>
-          
-        </div>
-
-        <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Date</label>
             <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.deliveryTime" name="deliveryTime" required>
           </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Warranty Coverage Matrix</label>
-            <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 2 Years Corporate Warranty">
-          </div>
         </div>
 
+        <!-- 6. Warranty Coverage Matrix -->
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Warranty Coverage Matrix</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 3 Years Global Replacement Grid Pack">
+        </div>
+
+        <!-- 7. Document Envelope Stream (Only visible in Creation mode) -->
         <div class="mb-3" *ngIf="!isEdit">
           <label class="form-label fw-bold small text-uppercase text-secondary">Supplier Attachment Document Envelope</label>
           <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
         </div>
 
+        <!-- 8. Nomenclature Specifications (Product Descriptions) -->
         <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Nomenclature Specifications</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription" placeholder="Detailed product material specs details..."></textarea>
+          <label class="form-label fw-bold small text-uppercase text-secondary">Product Nomenclature Specifications</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription" placeholder="Input physical/material properties configuration matrix..."></textarea>
         </div>
 
+        <!-- 9. Sourcing Directive Notes -->
         <div class="mb-4">
           <label class="form-label fw-bold small text-uppercase text-secondary">Sourcing Operations Notes</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.notes" name="notes" placeholder="Internal remarks context..."></textarea>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.notes" name="notes" placeholder="Internal logistics directives remarks..."></textarea>
         </div>
 
+        <!-- Drawer Footer Action Triggers -->
         <div class="drawer-footer d-flex gap-2 pt-2 border-top">
           <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Bid Modifications' : 'Publish Quotation Envelope' }}
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Bid Mutations' : 'Publish Quotation Envelope' }}
           </button>
           <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
         </div>
@@ -204,6 +209,7 @@
     </div>
   </div>
 
+  <!-- Backdrop Node Blur Effect Trigger -->
   @if (isDrawerOpen) {
     <div class="drawer-backdrop" (click)="closeDrawer()"></div>
   }

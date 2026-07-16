@@ -35,10 +35,10 @@ public class PurchaseOrderController {
 
     @GetMapping("/supplier/{supplierId}")
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getOrdersBySupplier(@PathVariable Long supplierId) {
-        // সার্ভিস লেয়ার থেকে সমস্ত PO নিয়ে আসা
+        // সার্ভিস লেয়ার থেকে সমস্ত PO নিয়ে আসা
         List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
 
-        // জাভা ৮ স্ট্রিম ব্যবহার করে শুধুমাত্র লগইন করা সাপ্লায়ারের PO গুলো ফিল্টার করা
+        // জাভা ৮ স্ট্রিম ব্যবহার করে শুধুমাত্র লগইন করা সাপ্লায়ারের PO গুলো ফিল্টার করা
         List<PurchaseOrderResponseDTO> supplierOrders = allOrders.stream()
                 .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(supplierId))
                 .collect(Collectors.toList());
@@ -73,13 +73,28 @@ public class PurchaseOrderController {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted Successfully");
     }
+
+    /**
+     * 🚀 এন্ডপয়েন্ট ১: সরাসরি স্ট্যাটাস পরিবর্তন করার জন্য (RECEIVED/CANCELLED)
+     * যা ফ্রন্টএন্ড এঙ্গুলার সার্ভিসের changeStatus() থেকে কল হচ্ছে।
+     */
     @PutMapping("/{id}/status")
     public ResponseEntity<PurchaseOrderResponseDTO> updateStatus(
             @PathVariable Long id,
             @RequestParam com.example.SCM.enumClass.PurchaseOrderStatus status) {
 
-        // আমাদের কাস্টম সার্ভিস মেথড কল করা হলো যা DRAFT লক বাইপাস করবে
+        // আমাদের কাস্টম সার্ভিস মেথড যা DRAFT লক বাইপাস করবে
         PurchaseOrderResponseDTO response = purchaseOrderService.updateStatus(id, status);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * ✅ এন্ডপয়েন্ট ২: পারচেজ অর্ডার ম্যানেজার লেভেল থেকে সরাসরি অ্যাপ্রুভ করার জন্য
+     */
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<PurchaseOrderResponseDTO> approve(@PathVariable Long id) {
+        // আপনার PurchaseOrderService এর ভেতরের এপ্রুভ লজিকটি কল করুন
+        PurchaseOrderResponseDTO response = purchaseOrderService.approveOrder(id);
         return ResponseEntity.ok(response);
     }
 

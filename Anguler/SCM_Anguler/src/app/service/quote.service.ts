@@ -8,7 +8,7 @@ import { environment } from '../../environment/environment';
   providedIn: 'root',
 })
 export class QuoteService {
-  private apiUrl = environment.apiUrl + 'public/quotes/submit';
+  private apiUrl = environment.apiUrl + 'quotes/submit';
 
   constructor(private http: HttpClient) {}
 

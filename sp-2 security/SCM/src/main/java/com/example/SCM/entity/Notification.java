@@ -1,5 +1,6 @@
 package com.example.SCM.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -26,8 +27,22 @@ public class Notification {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
+    @JsonProperty("isRead")
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     @Column(nullable = false)
     private boolean isRead;
+
+    @JsonProperty("isRead")
+    @Column(name = "is_read", nullable = false)
+    public boolean isRead() {
+        return isRead;
+    }
+
+    @JsonProperty("isRead")
+    public void setRead(boolean isRead) {
+        this.isRead = isRead;
+    }
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

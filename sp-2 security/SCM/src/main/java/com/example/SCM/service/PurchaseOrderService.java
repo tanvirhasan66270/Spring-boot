@@ -21,6 +21,7 @@ public interface PurchaseOrderService {
     PurchaseOrderResponseDTO managerIssuedOrderByToken(String token);
 
     PurchaseOrderResponseDTO supplierReceivedOrder(String token);
+    PurchaseOrderResponseDTO approveOrder(Long id);
 
     PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity);
 

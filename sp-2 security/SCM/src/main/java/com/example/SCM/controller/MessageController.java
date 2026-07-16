@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+//@PreAuthorize("isAuthenticated()")
 public class MessageController {
 
     private final MessageServiceImp service;
@@ -33,7 +33,7 @@ public class MessageController {
     }
 
     @PatchMapping("/{id}/read")
-    @PreAuthorize("@messageSecurity.isRecipient(#id, authentication)")
+//    @PreAuthorize("@messageSecurity.isRecipient(#id, authentication)")
     public ResponseEntity<Void> toggleReadStatus(@PathVariable Long id) {
         service.markAsRead(id);
         return ResponseEntity.ok().build();

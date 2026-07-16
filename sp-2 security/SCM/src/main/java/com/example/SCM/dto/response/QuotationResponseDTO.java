@@ -17,7 +17,7 @@ public class QuotationResponseDTO {
     private String productDescription;
     private double unitPrice;
     private int quantity;
-    private double totalPrice;              // (unitPrice * quantity) আউটপুট
+    private double totalPrice;              // (unitPrice * quantity)
     private LocalDate deliveryTime;
     private String warranty;
     private String notes;
@@ -28,11 +28,10 @@ public class QuotationResponseDTO {
     private Long supplierId;
     private String supplierName;
 
-    // Flattened Product Details
-    private Long productIds;                // ফ্রন্টএন্ড ইন্টারফেসের 'productIds' এর সাথে সিঙ্কড আইডি
+    // Auto-loaded via Purchase Requisition Framework
+    private Long productIds;
     private String productName;
 
     // Flattened Purchase Requisition Details
     private Long purchaseRequisitionId;
-          // রেফারেন্স হিসেবে স্ক্রিনে দেখানোর জন্য
 }

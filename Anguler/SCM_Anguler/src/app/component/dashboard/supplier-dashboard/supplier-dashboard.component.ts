@@ -16,6 +16,8 @@ import { ActivityLogService } from '../../../service/activity.log.service';
 import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
+import { purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 
 @Component({
   selector: 'app-supplier-dashboard',
@@ -47,6 +49,7 @@ export class SupplierDashboardComponent implements OnInit {
   lettersOfCredit: any[] = [];
   poRegistryOpen = false;
   allSupplierPOs: any[] = [];
+  requisitions: any[] = []; // APPROVED রিকুইজিশন ডাটা হোল্ডার পাইপলাইন
 
   showSettings = false;
   loading = true;
@@ -65,6 +68,7 @@ export class SupplierDashboardComponent implements OnInit {
     private notificationService: NotificationService,
     private activityLogService: ActivityLogService,
     private invoiceService: InvoiceService,
+    private prService: PurchaseRequisitionService
   ) {}
 
   ngOnInit(): void {
@@ -83,11 +87,13 @@ export class SupplierDashboardComponent implements OnInit {
   loadSupplier(): void {
     this.supplierService.getSupplierByUserId(this.userId).subscribe({
       next: (res) => {
-        this.supplier = res;
-        this.storage.saveData(KEYS.SUPPLIER, res);
-        
-        // প্রোফাইল নিশ্চিত হওয়ার পরেই কেবল তার নিজস্ব ডেটাবেজ ট্র্যাকিং ওপেন হবে
-        this.loadDashboardData(res.id);
+        if (res) {
+          this.supplier = res;
+          this.storage.saveData(KEYS.SUPPLIER, res);
+          
+          // প্রোফাইল নিশ্চিত হওয়ার পরেই কেবল তার নিজস্ব ডেটাবেজ ট্র্যাকিং ওপেন হবে
+          this.loadDashboardData(res.id);
+        }
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -162,7 +168,7 @@ export class SupplierDashboardComponent implements OnInit {
       error: (err) => console.error('PO Stream Load Error:', err),
     });
 
-    // 🎯 ২. নির্দিষ্ট ভেন্ডারের আন্ডারে থাকা RFQInvitations ফিল্টারিং
+    // 🎯 ২. ওপেন সোর্সিং RFQ ইনভিটেশনস ম্যাপিং
     this.quotationService.findAll().subscribe({
       next: (data) => {
         const allRfqs = data || [];
@@ -179,9 +185,32 @@ export class SupplierDashboardComponent implements OnInit {
         }));
         this.cdr.markForCheck();
       },
+      error: (err) => console.error('Quotation Load Error:', err)
     });
 
-    // 🎯 ৩. ইনভয়েস / কমার্শিয়াল আউটস্ট্যান্ডিং ফিল্টারিং
+    // 🎯 ৩. সেন্ট্রাল রিকুইজিশন স্ট্রিম (Filters: ONLY APPROVED DATA)
+    this.prService.findAll().subscribe({
+      next: (data) => {
+        const allRequisitions = data || [];
+        const approvedOnly = allRequisitions.filter(
+          (pr: purchaseRequisitionResponseModel) => pr.approvalStatus === 'APPROVED'
+        );
+
+        this.requisitions = approvedOnly.slice(0, 5).map((pr: purchaseRequisitionResponseModel) => ({
+          id: pr.id,
+          productNames: pr.productNames || [],
+          supplierNames: pr.supplierNames || [],
+          quantity: pr.quantityRequired || 0,
+          urgency: pr.urgencyLevel || 'LOW',
+          deadline: pr.requiredByDate || 'N/A',
+          status: pr.approvalStatus || 'APPROVED'
+        }));
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('PR Load Error:', err)
+    });
+
+    // 🎯 ৪. ইনভয়েস এবং কমার্শিয়াল আউটস্ট্যান্ডিং ফিল্টারিং
     this.invoiceService.findAll().subscribe({
       next: (data) => {
         const invoices = data || [];
@@ -198,7 +227,8 @@ export class SupplierDashboardComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Invoice Load Error:', err);
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -232,7 +262,6 @@ export class SupplierDashboardComponent implements OnInit {
 
     if (this.poRegistryOpen && this.supplier) {
       this.loading = true; 
-      // সরাসরি ডেডিকেটেড সিকিউরড ব্যাকএন্ড মেথড কল
       this.poService.getOrdersBySupplierId(this.supplier.id).subscribe({
         next: (data) => {
           this.allSupplierPOs = (data || []).map((o: any) => ({
@@ -260,7 +289,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.notifications = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => console.error('Notification Stream Error:', err),
     });
   }
 
@@ -270,7 +299,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.activities = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
-      error: () => {},
+      error: (err) => console.error('Activity Log Stream Error:', err),
     });
   }
 
@@ -304,6 +333,16 @@ export class SupplierDashboardComponent implements OnInit {
       EXPIRED: 'bg-secondary text-white',
     };
     return map[status] || 'bg-secondary text-white';
+  }
+
+  getPrStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      APPROVED: 'bg-success-subtle text-success border border-success',
+      PENDING: 'bg-warning-subtle text-warning border border-warning',
+      REJECTED: 'bg-danger-subtle text-danger border border-danger',
+      CANCELLED: 'bg-dark-subtle text-dark border border-dark',
+    };
+    return map[status] || 'bg-warning-subtle text-warning border border-warning';
   }
 
   logout(): void {

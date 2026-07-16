@@ -13,20 +13,24 @@ export class MessageService {
 
   constructor(
     private http: HttpClient,
-    private storage: StorageService
-  ) { }
+    private storage: StorageService,
+  ) {}
 
   private getHeaders(): HttpHeaders {
-    const userId = this.storage.getUser()?.userId?.toString() ?? '16';
+    const userId = this.storage.getUser()?.userId?.toString() ?? '';
     return new HttpHeaders().set('X-User-Id', userId);
   }
 
   getInbox(): Observable<MessageResponseModel[]> {
-    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, { headers: this.getHeaders() });
+    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, {
+      headers: this.getHeaders(),
+    });
   }
 
   send(message: MessageRequestModel): Observable<MessageResponseModel[]> {
-    return this.http.post<MessageResponseModel[]>(this.apiUrl, message, { headers: this.getHeaders() });
+    return this.http.post<MessageResponseModel[]>(this.apiUrl, message, {
+      headers: this.getHeaders(),
+    });
   }
 
   markAsRead(id: number): Observable<void> {

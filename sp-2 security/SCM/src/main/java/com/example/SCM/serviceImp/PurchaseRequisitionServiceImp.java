@@ -9,10 +9,13 @@ import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.PurchaseRequisitionStatus;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.ActivityLogService;
+import com.example.SCM.role.Role;
+import com.example.SCM.service.NotificationService;
 import com.example.SCM.service.PurchaseRequisitionService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder; // 🌟 ইনপোর্ট করা হলো
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,111 +38,106 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
     private final PurchaseRequisitionTokenRepository tokenRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO save(PurchaseRequisitionRequestDTO dto) {
-
         if (dto == null) {
             throw new IllegalArgumentException("Requisition data cannot be null");
         }
 
         List<Product> products = null;
-
         if (dto.getProductIds() != null && !dto.getProductIds().isEmpty()) {
-
             products = productRepository.findAllById(dto.getProductIds());
-
             if (products.size() != dto.getProductIds().size()) {
                 throw new RuntimeException("One or more Product IDs are invalid!");
             }
         }
 
         List<Supplier> suppliers = null;
-
         if (dto.getSupplierIds() != null && !dto.getSupplierIds().isEmpty()) {
-
             suppliers = supplierRepository.findAllById(dto.getSupplierIds());
-
             if (suppliers.size() != dto.getSupplierIds().size()) {
                 throw new RuntimeException("One or more Supplier IDs are invalid!");
             }
         }
 
         PurchaseRequisition pr = requisitionMapper.toEntity(dto, products, suppliers);
-
         pr.setApprovalStatus(PurchaseRequisitionStatus.PENDING);
 
         PurchaseRequisition savedPr = requisitionRepository.save(pr);
 
-        // ===========================
-        // Create Purchase Requisition Token
-        // ===========================
-
+        // ==========================================
+        //  Token Generation Log Matrix
+        // ==========================================
         PurchaseRequisitionToken token = new PurchaseRequisitionToken();
-
         token.setToken(UUID.randomUUID().toString());
-
         token.setActive(true);
-
-
         token.setPurchaseRequisitionId(savedPr.getId());
-
         token.setRequestedBy(savedPr.getRequestedBy());
-
         token.setCurrency(savedPr.getCurrency());
-
         token.setQuantityRequired(savedPr.getQuantityRequired());
-
         token.setUrgencyLevel(savedPr.getUrgencyLevel());
-
         token.setRequiredByDate(savedPr.getRequiredByDate());
-
         token.setApprovalStatus(savedPr.getApprovalStatus());
-
         token.setApprovedBy(savedPr.getApprovedBy());
-
         token.setRemarks(savedPr.getRemarks());
-
         token.setPurchaseCreatedAt(savedPr.getCreatedAt());
-
         token.setPurchaseUpdatedAt(savedPr.getUpdatedAt());
-
-        token.setTotalProducts(
-                savedPr.getProducts() == null ? 0 : savedPr.getProducts().size()
-        );
-
-        if (savedPr.getProducts() != null && !savedPr.getProducts().isEmpty()) {
-
-            token.setProductNames(
-                    savedPr.getProducts()
-                            .stream()
-                            .map(Product::getName)
-                            .collect(Collectors.joining(", "))
-            );
-        }
+        token.setTotalProducts(savedPr.getProducts() == null ? 0 : savedPr.getProducts().size());
+        token.setProductNames(savedPr.getProductNames());
 
         if (savedPr.getSuppliers() != null && !savedPr.getSuppliers().isEmpty()) {
-
-            token.setSupplierNames(
-                    savedPr.getSuppliers()
-                            .stream()
-                            .map(Supplier::getName)
-                            .collect(Collectors.joining(", "))
-            );
+            token.setSupplierNames(savedPr.getSuppliers().stream()
+                    .map(Supplier::getName)
+                    .collect(Collectors.joining(", ")));
         }
 
         tokenRepository.save(token);
 
+        // =================================================================
+        //  EXCLUSIVE NOTIFICATION PIPELINE: ONLY MANAGERS & SUPPLIERS
+        // =================================================================
+        try {
+            // 1️শুধুমাত্র সিস্টেমের ম্যানেজারদের (MANAGER) এপ্রুভালের জন্য অ্যালার্ট পাঠানো
+            List<User> managers = userRepository.findByRole(Role.MANAGER);
+            for (User manager : managers) {
+                notificationService.send(
+                        manager.getId().toString(),
+                        "SHIPMENT",
+                        "New Purchase Requisition #PRQ-" + savedPr.getId(),
+                        "A new purchase requisition has been submitted and is pending approval."
+                );
+            }
+
+            // 2️⃣ শুধুমাত্র রিকুইজিশনে অ্যাসাইন করা সাপ্লায়ারদের (SUPPLIER) ইনবক্সে নোটিফিকেশন পাঠানো
+            if (savedPr.getSuppliers() != null && !savedPr.getSuppliers().isEmpty()) {
+                for (Supplier supplier : savedPr.getSuppliers()) {
+                    if (supplier.getUser() != null && supplier.getUser().getId() != null) {
+                        notificationService.send(
+                                supplier.getUser().getId().toString(),
+                                "SHIPMENT",
+                                "New RFQ Invitation #PRQ-" + savedPr.getId(),
+                                "You have been selected as a target vendor for a new procurement requirement. Please check your bidding board."
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("SCM Error: Failed to route isolated notifications: " + e.getMessage());
+        }
+
         return requisitionMapper.convertTOResponseDTO(savedPr);
     }
-    // Manager Approval Node (Auto-Tracks Manager Context & Returns DTO)
+
     @Transactional
     @Override
     public PurchaseRequisitionResponseDTO approveRequisition(Long id) {
         PurchaseRequisition requisition = requisitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Requisition missing for ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition missing for ID: " + id));
 
+        // ── STEP 1: সিকিউরিটি কনটেক্সট থেকে প্রিন্সিপাল রিড ──────────────────
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long managerId = null;
         String managerEmail = "system@scm.com";
@@ -148,31 +146,42 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             User currentManager = (User) principal;
             managerId = currentManager.getId();
             managerEmail = currentManager.getEmail();
-        } else {
+        }
+
+        else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+
+            // ইমেইলের মাধ্যমে ডাটাবেজ থেকে আসল ইউজার অবজেক্ট রিড করা
+            User currentManager = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Active corporate session missing in database index!"));
+
+            managerId = currentManager.getId();
+            managerEmail = currentManager.getEmail();
+        }
+
+        else {
             throw new RuntimeException("Unauthorized transaction: Active corporate session not found!");
         }
 
-        // স্ট্যাটাস এবং অনুমোদনকারীর আইডি সেট করা হচ্ছে
+        // ── STEP 2: এপ্রুভাল স্টেট এবং ডাটাবেজ আপডেট ────────────────────────
         requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
         requisition.setApprovedBy(managerId);
 
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-        // অ্যাক্টিভিটি লগ সিস্টেমে ম্যানেজারের ডেটা ট্র্যাক করা হচ্ছে
         activityLogService.log(
                 managerId.toString(),
                 managerEmail,
                 "APPROVE",
                 "PURCHASE_REQUISITION",
                 savedRequisition.getId().toString(),
-                "Manager approved requisition for " + savedRequisition.getSuppliers().size() + " suppliers.",
+                "Manager approved requisition for " + (savedRequisition.getSuppliers() != null ? savedRequisition.getSuppliers().size() : 0) + " suppliers.",
                 "PENDING",
                 "APPROVED",
                 ActionStatus.SUCCESS,
                 request.getRemoteAddr()
         );
 
-        // সাপ্লায়ারদের কাছে নোটিশ ডিসপ্যাচ
         if (savedRequisition.getSuppliers() != null && !savedRequisition.getSuppliers().isEmpty()) {
             sendRequisitionEmailToSuppliers(savedRequisition);
         }
@@ -180,12 +189,11 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         return requisitionMapper.convertTOResponseDTO(savedRequisition);
     }
 
-    // Manager Disapproval Matrix Node (Auto-Tracks Manager Context & Returns DTO)
     @Transactional
     @Override
     public PurchaseRequisitionResponseDTO rejectOrCancelRequisition(Long id, String actionType) {
         PurchaseRequisition requisition = requisitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Requisition missing for ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition missing for ID: " + id));
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long managerId = null;
@@ -193,7 +201,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             managerId = ((User) principal).getId();
         }
 
-        String oldStatus = requisition.getApprovalStatus().name();
         if ("REJECT".equalsIgnoreCase(actionType)) {
             requisition.setApprovalStatus(PurchaseRequisitionStatus.REJECTED);
         } else if ("CANCEL".equalsIgnoreCase(actionType)) {
@@ -202,11 +209,10 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             throw new IllegalArgumentException("Invalid routing parameters for action status");
         }
 
-        requisition.setApprovedBy(managerId); // কে ডিসিশন নিয়েছে তার আইডি ট্র্যাক করা হলো
+        requisition.setApprovedBy(managerId);
 
         PurchaseRequisition savedRequisition = requisitionRepository.save(requisition);
 
-        // ক্রিয়েটর প্রকিউরমেন্ট অফিসারের কাছে অ্যালার্ট মেইল পাঠানো
         if (savedRequisition.getRequestedBy() != null) {
             userRepository.findById(savedRequisition.getRequestedBy())
                     .ifPresent(officer -> sendAlertEmailToProcurement(savedRequisition, officer));
@@ -218,105 +224,52 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     @Override
     @Transactional
     public PurchaseRequisitionResponseDTO update(Long id, PurchaseRequisitionRequestDTO dto) {
-
         PurchaseRequisition pr = requisitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Purchase Requisition not found with ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition not found with ID: " + id));
 
-        // Locked Status Check
-        if (pr.getApprovalStatus() == PurchaseRequisitionStatus.PENDING ||
-                pr.getApprovalStatus() == PurchaseRequisitionStatus.APPROVED ||
-                pr.getApprovalStatus() == PurchaseRequisitionStatus.REJECTED ||
-                pr.getApprovalStatus() == PurchaseRequisitionStatus.CANCELLED) {
-
-            throw new RuntimeException(
-                    "Locked! Requisitions in " + pr.getApprovalStatus() + " state cannot be modified."
-            );
+        if (pr.getApprovalStatus() != PurchaseRequisitionStatus.PENDING) {
+            throw new RuntimeException("Locked! Requisitions in " + pr.getApprovalStatus() + " state cannot be modified.");
         }
 
-        // Product List
         List<Product> products = null;
-
         if (dto.getProductIds() != null && !dto.getProductIds().isEmpty()) {
-
             products = productRepository.findAllById(dto.getProductIds());
-
             if (products.size() != dto.getProductIds().size()) {
                 throw new RuntimeException("One or more Product IDs are invalid!");
             }
         }
 
-        // Supplier List
         List<Supplier> suppliers = null;
-
         if (dto.getSupplierIds() != null && !dto.getSupplierIds().isEmpty()) {
-
             suppliers = supplierRepository.findAllById(dto.getSupplierIds());
-
             if (suppliers.size() != dto.getSupplierIds().size()) {
                 throw new RuntimeException("One or more Supplier IDs are invalid!");
             }
         }
 
-        // Update Entity
         requisitionMapper.updateEntity(dto, pr, products, suppliers);
-
         PurchaseRequisition updated = requisitionRepository.save(pr);
 
-        // ===========================
-        // Update Token
-        // ===========================
-
-        PurchaseRequisitionToken token =
-                tokenRepository.findByPurchaseRequisitionId(updated.getId())
-                        .orElse(null);
-
-        if (token != null) {
-
-                  token.setRequestedBy(updated.getRequestedBy());
-                  token.setRequestedBy(updated.getRequestedBy());
-
+        tokenRepository.findByPurchaseRequisitionId(updated.getId()).ifPresent(token -> {
+            token.setRequestedBy(updated.getRequestedBy());
             token.setCurrency(updated.getCurrency());
-
             token.setQuantityRequired(updated.getQuantityRequired());
-
             token.setUrgencyLevel(updated.getUrgencyLevel());
-
             token.setRequiredByDate(updated.getRequiredByDate());
-
             token.setApprovalStatus(updated.getApprovalStatus());
-
             token.setApprovedBy(updated.getApprovedBy());
-
             token.setRemarks(updated.getRemarks());
-
             token.setPurchaseUpdatedAt(updated.getUpdatedAt());
-
-            token.setTotalProducts(
-                    updated.getProducts() == null ? 0 : updated.getProducts().size()
-            );
-
-            if (updated.getProducts() != null && !updated.getProducts().isEmpty()) {
-
-                token.setProductNames(
-                        updated.getProducts()
-                                .stream()
-                                .map(Product::getName)
-                                .collect(Collectors.joining(", "))
-                );
-            }
+            token.setTotalProducts(updated.getProducts() == null ? 0 : updated.getProducts().size());
+            token.setProductNames(updated.getProductNames());
 
             if (updated.getSuppliers() != null && !updated.getSuppliers().isEmpty()) {
-
-                token.setSupplierNames(
-                        updated.getSuppliers()
-                                .stream()
-                                .map(Supplier::getName)
-                                .collect(Collectors.joining(", "))
-                );
+                token.setSupplierNames(updated.getSuppliers().stream()
+                        .map(Supplier::getName)
+                        .collect(Collectors.joining(", ")));
             }
-
             tokenRepository.save(token);
-        }
+        });
 
         return requisitionMapper.convertTOResponseDTO(updated);
     }
@@ -413,11 +366,27 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         <body><div class='container'><div class='header-alert'><h2 style='margin:0;'>Requisition Tracking Node</h2></div><div class='content'><p>Dear SCM Procurement Node (<b>%s</b>),</p><p>Your generated purchase requisition profile has been locked with the following parameter matrix:</p><div class='alert-box'>Requisition ID: #%d<br>Evaluation State: %s</div><p>Please check your warehouse catalog guidelines before initiating any new pipeline requests.</p></div><div class='footer'>&copy; 2026 SCM Sourcing Engine.</div></div></body></html>
         """.formatted(procurementOfficer.getName(), requisition.getId(), currentStatus);
 
-        try { mailService.senderGeneralMail(officerEmail, subject, mailContent); } catch (Exception e) { System.err.println("Back routing alert mail failed."); }
+        try {
+            mailService.senderGeneralMail(officerEmail, subject, mailContent);
+        } catch (Exception e) {
+            System.err.println("Back routing alert mail failed.");
+        }
     }
 
-    @Override @Transactional(readOnly = true) public List<PurchaseRequisitionResponseDTO> findAll() { return requisitionRepository.findAll().stream().map(requisitionMapper::convertTOResponseDTO).collect(Collectors.toList()); }
-    @Override @Transactional(readOnly = true) public Optional<PurchaseRequisitionResponseDTO> getById(Long id) { return requisitionRepository.findById(id).map(requisitionMapper::convertTOResponseDTO); }
+    @Override
+    @Transactional(readOnly = true)
+    public List<PurchaseRequisitionResponseDTO> findAll() {
+        return requisitionRepository.findAllWithDetails().stream()
+                .map(requisitionMapper::convertTOResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<PurchaseRequisitionResponseDTO> getById(Long id) {
+        return requisitionRepository.findByIdWithDetails(id)
+                .map(requisitionMapper::convertTOResponseDTO);
+    }
 
     @Override
     @Transactional

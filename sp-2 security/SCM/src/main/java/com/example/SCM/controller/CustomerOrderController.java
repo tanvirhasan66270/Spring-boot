@@ -57,7 +57,7 @@ public class CustomerOrderController {
 
     //  5. Delete Order Record
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {
         orderService.delete(id);
         return ResponseEntity.ok("Customer order instance purged successfully from cluster cache mapping.");
@@ -65,7 +65,7 @@ public class CustomerOrderController {
 
     // 6. Live Track Package via Order Number
     @GetMapping("/track")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CustomerOrderResponseDTO> trackOrderByNumber(@RequestParam String orderNumber) {
         return orderService.trackOrder(orderNumber)
                 .map(ResponseEntity::ok)

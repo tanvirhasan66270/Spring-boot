@@ -2,15 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, Observable, throwError } from 'rxjs';
 import { environment } from '../../environment/environment';
-import { PoliceStationRequestModel, PoliceStationResponseModel } from '../component/shared/model/policeStationModel';
+import {
+  PoliceStationRequestModel,
+  PoliceStationResponseModel,
+} from '../component/shared/model/policeStationModel';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PoliceStationService {
-  private apiUrl = environment.apiUrl + "policestation/"; 
+  private apiUrl = environment.apiUrl + 'policestation';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getAll(): Observable<PoliceStationResponseModel[]> {
     return this.http.get<PoliceStationResponseModel[]>(this.apiUrl);
@@ -33,23 +36,23 @@ export class PoliceStationService {
   }
   getByDistrictId(id: number): Observable<any[]> {
     const normalizedId = Number(id);
-    const primaryUrl = `${this.apiUrl}district/${normalizedId}`;
-    const fallbackUrl = `${this.apiUrl}by-district/${normalizedId}`;
-    const legacyUrl = `${this.apiUrl}${normalizedId}`;
+    const primaryUrl = `${this.apiUrl}/district/${normalizedId}`;
+    const fallbackUrl = `${this.apiUrl}/by-district/${normalizedId}`;
+    const legacyUrl = `${this.apiUrl}/${normalizedId}`;
 
     return this.http.get<any[]>(primaryUrl).pipe(
       catchError((error) => {
         if (error.status === 404) {
-          return this.http.get<any[]>(fallbackUrl).pipe(
-            catchError(() => this.http.get<any[]>(legacyUrl))
-          );
+          return this.http
+            .get<any[]>(fallbackUrl)
+            .pipe(catchError(() => this.http.get<any[]>(legacyUrl)));
         }
         return throwError(() => error);
-      })
+      }),
     );
   }
 
   search(keyword: string): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/search?keyword=${keyword}`);
-}
+    return this.http.get<any[]>(`${this.apiUrl}/search?keyword=${keyword}`);
+  }
 }

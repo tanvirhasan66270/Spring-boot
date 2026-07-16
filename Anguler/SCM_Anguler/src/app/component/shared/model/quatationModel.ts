@@ -1,20 +1,17 @@
-
 export interface QuotationRequestModel {
   supplierId: number;
-  productIds: number;
-  productName: string;
   purchaseRequisitionId: number;
   leadTimeDays: number;
   isSelected: boolean;
   receivedAt: string;        // YYYY-MM-DD
-  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | string;
+  status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
   productDescription: string;
   unitPrice: number;
   quantity: number;
   deliveryTime: string;      // YYYY-MM-DD
   warranty: string;
   notes: string;
-  attachmentUrl: string;
+  attachmentUrl?: string;
 }
 
 export interface QuotationResponseModel {

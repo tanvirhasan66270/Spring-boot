@@ -2,7 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
-import { StockMovementRequestModel, StockMovementResponseModel } from '../component/shared/model/stock-movement';
+import {
+  StockMovementRequestModel,
+  StockMovementResponseModel,
+} from '../component/shared/model/stock-movement';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +13,7 @@ import { StockMovementRequestModel, StockMovementResponseModel } from '../compon
 export class StockMovementService {
   private apiUrl = environment.apiUrl + 'stock-movements';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   findAll(): Observable<StockMovementResponseModel[]> {
     return this.http.get<StockMovementResponseModel[]>(this.apiUrl);
@@ -22,6 +25,10 @@ export class StockMovementService {
 
   logMovement(movement: StockMovementRequestModel): Observable<StockMovementResponseModel> {
     return this.http.post<StockMovementResponseModel>(this.apiUrl, movement);
+  }
+
+  update(id: number, movement: StockMovementRequestModel): Observable<StockMovementResponseModel> {
+    return this.http.put<StockMovementResponseModel>(`${this.apiUrl}/${id}`, movement);
   }
 
   delete(id: number): Observable<void> {

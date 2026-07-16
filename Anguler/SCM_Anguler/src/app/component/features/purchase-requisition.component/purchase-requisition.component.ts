@@ -65,7 +65,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (id && !this.requisition.productIds.includes(id)) {
       this.requisition.productIds.push(id);
     }
-    this.selectedProductInput = null; // ড্রপডাউন রিসেট
+    this.selectedProductInput = null; 
     this.cdr.markForCheck();
   }
 
@@ -83,7 +83,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (id && !this.requisition.supplierIds.includes(id)) {
       this.requisition.supplierIds.push(id);
     }
-    this.selectedSupplierInput = null; // ড্রপডাউন রিসেট
+    this.selectedSupplierInput = null; 
     this.cdr.markForCheck();
   }
 
@@ -96,10 +96,13 @@ export class PurchaseRequisitionComponent implements OnInit {
     return this.suppliers.find(s => s.id === id);
   }
 
+  /**
+   * 🎯 ফিক্সড টেক্সট-এরিয়া ডাইনামিক হাইট ক্যালকুলেশন
+   */
   autoGrowTextarea(event: any) {
     const element = event.target;
     element.style.height = 'auto';
-    element.style.height = element.scrollHeight + '2px' + 'px';
+    element.style.height = (element.scrollHeight + 2) + 'px';
   }
 
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
@@ -155,7 +158,7 @@ export class PurchaseRequisitionComponent implements OnInit {
       requestedBy: o.requestedBy,
       productIds: [...o.productIds],
       supplierIds: [...o.supplierIds],
-      currency: 'USD', // ফিক্সড ইউএসডি
+      currency: 'USD', 
       quantityRequired: o.quantityRequired,
       urgencyLevel: o.urgencyLevel,
       requiredByDate: o.requiredByDate,
@@ -165,11 +168,16 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  /**
+   * 🎯 ডিলিট সেফগার্ড প্রম্পট সহ স্ট্যান্ডার্ড ইন্টিগ্রেশন
+   */
   delete(id: number) {
-    this.service.delete(id).subscribe({
-      next: () => { alert("Purged successfully."); this.loadRequisitions(); },
-      error: (err) => alert(err.error?.message || err.message)
-    });
+    if (confirm("Are you sure you want to permanently delete this procurement requisition record?")) {
+      this.service.delete(id).subscribe({
+        next: () => { alert("Purged successfully."); this.loadRequisitions(); },
+        error: (err) => alert(err.error?.message || err.message)
+      });
+    }
   }
 
   reset() {
@@ -190,10 +198,10 @@ export class PurchaseRequisitionComponent implements OnInit {
   }
 
   isProductSelected(productId: number): boolean {
-  return this.requisition.productIds.includes(productId);
-}
+    return this.requisition.productIds.includes(productId);
+  }
 
-isSupplierSelected(supplierId: number): boolean {
-  return this.requisition.supplierIds.includes(supplierId);
-}
+  isSupplierSelected(supplierId: number): boolean {
+    return this.requisition.supplierIds.includes(supplierId);
+  }
 }

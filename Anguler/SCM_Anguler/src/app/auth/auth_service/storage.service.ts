@@ -9,7 +9,7 @@ export const KEYS = {
   ADMIN: 'cm_admin',
   MANAGER: 'cm_manager',
   DRIVER: 'cm_driver',
-  PROCUREMENT: 'cm_procourment',
+  PROCUREMENT: 'cm_procurement',
   QC_INSPECTOR: 'cm_qcInspector',
   LOGISTICS_OFFICER: 'cm_logisticsOfficer',
   COMMERCIAL_OFFICER: 'cm_commercialOfficer',

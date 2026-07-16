@@ -20,15 +20,17 @@ export class QuotationService {
     return this.http.get<QuotationResponseModel>(`${this.apiUrl}/${id}`);
   }
 
-  // নতুন কোটেশন তৈরি গেটওয়ে (Multipart/Form-Data হ্যান্ডলিং)
+  /**
+   * 🎯 আপনার নতুন কন্ট্রোলারের @RequestPart("quotation") String-এর সাথে ১০০% সিঙ্কড মেথড
+   */
   save(quotation: QuotationRequestModel, file: File | null): Observable<QuotationResponseModel> {
     const formData = new FormData();
     
-    // ব্যাকএন্ড ObjectMapper এর সাথে সিঙ্ক রেখে জেসন স্ট্রিং কনভার্সন
+    // কন্ট্রোলারের String টাইপের সাথে মিল রেখে সরাসরি জেসন স্ট্রিং অ্যাপেন্ড করা হলো
     formData.append('quotation', JSON.stringify(quotation));
     
     if (file) {
-      formData.append('image', file); // কন্ট্রোলারের @RequestPart("image") এর সাথে সিঙ্কড
+      formData.append('image', file); // @RequestPart("image") এর সাথে সিঙ্কড
     }
 
     return this.http.post<QuotationResponseModel>(this.apiUrl, formData);
@@ -38,7 +40,7 @@ export class QuotationService {
     return this.http.put<QuotationResponseModel>(`${this.apiUrl}/${id}`, quotation);
   }
 
-  delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "purchase_requisitions")
@@ -16,8 +18,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PurchaseRequisition {
-    
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,6 @@ public class PurchaseRequisition {
     @Column(nullable = false)
     private Long requestedBy;
 
-    // Multi-product selection mapping
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -34,19 +33,18 @@ public class PurchaseRequisition {
             joinColumns = @JoinColumn(name = "requisition_id"),
             inverseJoinColumns = @JoinColumn(name = "product_id")
     )
-    private List<Product> products;
+    private Set<Product> products = new LinkedHashSet<>();
 
-    // Multi-supplier selection mapping
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "requisition_suppliers",
             joinColumns = @JoinColumn(name = "requisition_id"),
             inverseJoinColumns = @JoinColumn(name = "supplier_id")
     )
-    private List<Supplier> suppliers;
+    private Set<Supplier> suppliers = new LinkedHashSet<>();
 
     @Column(nullable = false)
-    private String currency ;
+    private String currency;
 
     private int quantityRequired;
 
@@ -64,6 +62,9 @@ public class PurchaseRequisition {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
+    @Column(columnDefinition = "TEXT")
+    private String productNames;
+
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -76,10 +77,23 @@ public class PurchaseRequisition {
         if (this.approvalStatus == null) {
             this.approvalStatus = PurchaseRequisitionStatus.PENDING;
         }
+        this.compileProductNames();
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        this.compileProductNames();
+    }
+
+    /**
+     * 🎯 Set কালেকশনের উপর ভিত্তি করে প্রোডাক্টের নাম কমা দিয়ে যুক্ত করার মেথড
+     */
+    private void compileProductNames() {
+        if (this.products != null && !this.products.isEmpty()) {
+            this.productNames = this.products.stream()
+                    .map(Product::getName)
+                    .collect(Collectors.joining(", "));
+        }
     }
 }

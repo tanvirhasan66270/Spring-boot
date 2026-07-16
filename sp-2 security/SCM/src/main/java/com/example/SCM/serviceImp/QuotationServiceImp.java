@@ -2,9 +2,11 @@ package com.example.SCM.serviceImp;
 
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;
+import com.example.SCM.entity.PurchaseRequisition;
 import com.example.SCM.entity.Quotation;
 import com.example.SCM.dto.mapper.QuotationMapper;
 import com.example.SCM.repository.QuotationRepository;
+import com.example.SCM.repository.PurchaseRequisitionRepository; // পিআর রিপোজিটরি ইমপোর্ট করুন
 import com.example.SCM.service.QuotationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,55 +27,79 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class QuotationServiceImp implements QuotationService {
 
     private final QuotationRepository quotationRepository;
+    private final PurchaseRequisitionRepository requisitionRepository;
     private final QuotationMapper quotationMapper;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
 
-
     @Override
     @Transactional
     public QuotationResponseDTO save(QuotationRequestDTO dto, MultipartFile image) {
-        //  DTO থেকে Entity-তে কনভার্ট করা
         Quotation quotation = quotationMapper.toEntity(dto);
 
-        //  ইমেজ বা ফাইল হ্যান্ডলিং
-        if (image != null && !image.isEmpty()) {
-            String fileUrl = saveImageFile(image,dto.getProductName());
-            quotation.setAttachmentUrl(fileUrl); // attachmentUrl ফিল্ডে ফাইলের পাথ সেট করা হচ্ছে
+        if (dto.getPurchaseRequisitionId() != null) {
+            PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
+                    .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition record missing at ID: " + dto.getPurchaseRequisitionId()));
+
+            if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
+                String combinedProductNames = pr.getProducts().stream()
+                        .map(product -> product.getName()) // ধরে নেওয়া হয়েছে Product এনটিটিতে name ফিল্ড আছে
+                        .collect(Collectors.joining(", "));
+
+                quotation.setProductName(combinedProductNames);
+            } else {
+                quotation.setProductName("No Linked Products");
+            }
         }
 
-        //  ডেটাবেসে সেভ করা
-        Quotation savedQuotation = quotationRepository.save(quotation);
+        // ফাইল স্টোরেজ ইঞ্জিন এক্সেকিউশন
+        if (image != null && !image.isEmpty()) {
+            String fallBackName = (quotation.getProductName() != null) ? quotation.getProductName() : "quotation_sheet";
+            String fileUrl = saveImageFile(image, fallBackName);
+            quotation.setAttachmentUrl(fileUrl);
+        }
 
-        //  Response DTO-তে কনভার্ট করে রিটার্ন করা
+        if (quotation.getQuotationNumber() == null) {
+            quotation.setQuotationNumber("QTN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+
+        Quotation savedQuotation = quotationRepository.save(quotation);
         return quotationMapper.toResponseDTO(savedQuotation);
     }
 
     @Override
     @Transactional
     public QuotationResponseDTO update(Long id, QuotationRequestDTO dto) {
-        //  আইডি দিয়ে এক্সিসটিং কোটেশন খুঁজে বের করা
         Quotation existingQuotation = quotationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Quotation not found with id: " + id));
 
-        //  ম্যাপার ব্যবহার করে পুরাতন ডাটার উপর নতুন ডাটা আপডেট করা
         quotationMapper.updateEntityFromDTO(dto, existingQuotation);
 
-        // আপডেট হওয়া ডাটা সেভ করা
-        Quotation updatedQuotation = quotationRepository.save(existingQuotation);
+        if (dto.getPurchaseRequisitionId() != null) {
+            PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
+                    .orElseThrow(() -> new EntityNotFoundException("Requisition node failed to resolve."));
 
+            if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
+                String combinedProductNames = pr.getProducts().stream()
+                        .map(product -> product.getName())
+                        .collect(Collectors.joining(", "));
+
+                existingQuotation.setProductName(combinedProductNames);
+            }
+        }
+
+        Quotation updatedQuotation = quotationRepository.save(existingQuotation);
         return quotationMapper.toResponseDTO(updatedQuotation);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<QuotationResponseDTO> findAll() {
-        return quotationRepository.findAll()
+        return quotationRepository.findAllWithDetails()
                 .stream()
                 .map(quotationMapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -82,7 +108,7 @@ public class QuotationServiceImp implements QuotationService {
     @Override
     @Transactional(readOnly = true)
     public Optional<QuotationResponseDTO> getById(Long id) {
-        return quotationRepository.findById(id)
+        return quotationRepository.findByIdWithDetails(id)
                 .map(quotationMapper::toResponseDTO);
     }
 
@@ -95,34 +121,29 @@ public class QuotationServiceImp implements QuotationService {
         quotationRepository.deleteById(id);
     }
 
-
-    private String saveImageFile(MultipartFile file,String productName) {
+    private String saveImageFile(MultipartFile file, String productName) {
         try {
-            // ডিরেক্টরি না থাকলে তৈরি করবে
-            Path uploadPath = Paths.get(uploadDir , "quotation");
+            Path uploadPath = Paths.get(uploadDir, "quotation");
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            // ফাইলের এক্সটেনশন (.png, .jpg ইত্যাদি) এক্সট্রাক্ট করা
             String ext = "";
             String original = file.getOriginalFilename();
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            // ফাইলের নাম স্যানিটাইজ করা এবং UUID টোকেন যুক্ত করা (ফাইলনেম কনফ্লিক্ট এড়াতে)
-            String cleanedName = productName.trim().replaceAll("\\s+", "_");
+            String cleanedName = productName.trim()
+                    .replaceAll("[\\\\/:*?\"<>|]", "_")
+                    .replaceAll("\\s+", "_");
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            // ফাইলটি নির্দিষ্ট লোকাল ডিরেক্টরিতে সেভ করা
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName));
-
-            // ডাটাবেজে রাখার জন্য ফাইলের ইউনিক নাম বা রিলেটিভ পাথ রিটার্ন করা হলো
+            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
             return fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+            throw new RuntimeException("Could not store the quotation document. Error: " + e.getMessage());
         }
     }
 }

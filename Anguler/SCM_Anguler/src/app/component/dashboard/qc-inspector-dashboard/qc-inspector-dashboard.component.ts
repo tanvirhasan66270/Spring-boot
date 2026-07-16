@@ -104,8 +104,8 @@ export class QCInspectorDashboardComponent implements OnInit {
         const all = data || [];
         this.totalInspections = all.length;
         const pending = all.filter((i: any) => i.result === 'PENDING' || i.status === 'PENDING');
-        const passed = all.filter((i: any) => i.result === 'GOOD' || i.result === 'PASS');
-        const failed = all.filter((i: any) => i.result === 'BAD' || i.result === 'FAIL');
+        const passed = all.filter((i: any) => i.result === 'GOOD' || i.result === 'VERY_GOOD');
+        const failed = all.filter((i: any) => i.result === 'BAD');
         const totalDefects = all.reduce((sum: number, i: any) => sum + (i.defectsFound || 0), 0);
         const totalSamples = all.reduce((sum: number, i: any) => sum + (i.sampleSize || 1), 0);
 
@@ -217,7 +217,7 @@ export class QCInspectorDashboardComponent implements OnInit {
   pass(batchId: string): void {
     const batch = this.queue.find((b) => b.batchId === batchId);
     if (batch) {
-      batch.status = 'PASS';
+      batch.status = 'GOOD';
       batch.defectsFound = 0;
       this.passedCount++;
       this.recomputeRates();
@@ -228,7 +228,7 @@ export class QCInspectorDashboardComponent implements OnInit {
   fail(batchId: string): void {
     const batch = this.queue.find((b) => b.batchId === batchId);
     if (batch) {
-      batch.status = 'FAIL';
+      batch.status = 'BAD';
       batch.defectsFound = 4;
       this.failedCount++;
       this.recomputeRates();

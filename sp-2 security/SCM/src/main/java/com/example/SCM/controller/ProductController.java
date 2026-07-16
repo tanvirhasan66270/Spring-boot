@@ -21,7 +21,7 @@ public class ProductController {
     private final ProductService productService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<ProductResponseDTO> create(
             @RequestPart("productJson") String productJson,
             @RequestPart(value = "image", required = false) MultipartFile image) throws Exception {
@@ -34,7 +34,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<ProductResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("productJson") String productJson,
@@ -48,7 +48,7 @@ public class ProductController {
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         List<ProductResponseDTO> list = productService.findAll();
         if (list.isEmpty()) {
@@ -58,7 +58,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
         return productService.getById(id)
                 .map(ResponseEntity::ok)
@@ -66,7 +66,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         productService.delete(id);
         return ResponseEntity.ok("Product deleted successfully!");

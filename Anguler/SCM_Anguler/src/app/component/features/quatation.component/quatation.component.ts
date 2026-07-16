@@ -1,13 +1,7 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-
-import {
-  QuotationRequestModel,
-  QuotationResponseModel
-} from '../../shared/model/quatationModel';
-
+import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
 import { QuotationService } from '../../../service/quatation.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { SupplierService } from '../../../service/supplier.service';
@@ -15,18 +9,17 @@ import { PurchaseRequisitionService } from '../../../service/purchase-requisitio
 import { environment } from '../../../../environment/environment';
 
 @Component({
-  selector: 'app-quatation.component',
+  selector: 'app-quatation',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './quatation.component.html',
   styleUrl: './quatation.component.css',
 })
-export class QuatationComponent {
+export class QuatationComponent implements OnInit {
 
-  // ==========================
-  // Image Base URL
-  // ==========================
-
+  // ==========================================
+  // Image Storage Base Endpoints
+  // ==========================================
   readonly imageBaseUrl = environment.imgUrl + "quotation/";
 
   quotations: QuotationResponseModel[] = [];
@@ -35,17 +28,14 @@ export class QuatationComponent {
   requisitions: any[] = [];
 
   errorMessage: string | null = null;
-
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
-
   selectedFile: File | null = null;
 
+  // 🎯 আপনার আপডেট করা ফ্রন্টএন্ড মডেল স্ট্রাকচারের সাথে পুরোপুরি সিঙ্কড অবজেক্ট
   quotation: QuotationRequestModel = {
     supplierId: 0,
-    productIds: 0,
-    productName: '',
     purchaseRequisitionId: 0,
     leadTimeDays: 1,
     isSelected: false,
@@ -75,64 +65,61 @@ export class QuatationComponent {
     this.loadRequisitions();
   }
 
-  // ==========================
-  // Image URL
-  // ==========================
-
+  // ==========================================
+  // Image Render Resolution
+  // ==========================================
   getImageUrl(fileName: string | null | undefined): string {
-
     if (!fileName) {
       return 'assets/no-image.png';
     }
-
     return this.imageBaseUrl + fileName;
   }
 
-  // ==========================
-  // Load Data
-  // ==========================
-
+  // ==========================================
+  // Core SCM Sourcing Fetch Operations
+  // ==========================================
   loadQuotations(): void {
     this.service.findAll().subscribe({
       next: (data) => {
         this.quotations = data || [];
         this.cdr.markForCheck();
-      }
+      },
+      error: (err) => this.handleError(err)
     });
   }
 
   loadProducts(): void {
     this.productService.findAll().subscribe({
-      next: data => this.products = data || []
+      next: (data) => {
+        this.products = data || [];
+        this.cdr.markForCheck();
+      }
     });
   }
 
   loadSuppliers(): void {
     this.supplierService.findAll().subscribe({
-      next: data => this.suppliers = data || []
+      next: (data) => {
+        this.suppliers = data || [];
+        this.cdr.markForCheck();
+      }
     });
   }
 
   loadRequisitions(): void {
     this.requisitionService.findAll().subscribe({
-      next: data => this.requisitions = data || []
+      next: (data) => {
+        this.requisitions = data || [];
+        this.cdr.markForCheck();
+      }
     });
   }
 
-  onProductChange(event: any): void {
-
-    const id = +event.target.value;
-
-    const target = this.products.find(p => p.id === id);
-
-    if (target) {
-      this.quotation.productName = target.name;
-    }
-  }
-
+  // ==========================================
+  // Event & Form Stream Emitters
+  // ==========================================
   onFileChange(event: any): void {
-
-    if (event.target.files.length > 0) {
+    if (event.target.files && event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
     }
   }
@@ -150,78 +137,65 @@ export class QuatationComponent {
     this.cdr.markForCheck();
   }
 
+  // ==========================================
+  // Persistence Dispatch Logic (CRUD Operations)
+  // ==========================================
   save(): void {
-
     this.errorMessage = null;
 
+    // 🎯 রিকোয়েস্ট মডেলের আইডি ভ্যালিডেশন গার্ডস
     if (
       this.quotation.supplierId === 0 ||
-      this.quotation.productIds === 0 ||
       this.quotation.purchaseRequisitionId === 0
     ) {
-      this.errorMessage =
-        "Supplier, Product and Purchase Requisition are required.";
+      this.errorMessage = "Validation Fault: Target Supplier and Purchase Requisition node mapping are mandatory.";
+      this.cdr.markForCheck();
       return;
     }
 
     if (this.isEdit && this.currentEditId != null) {
-
-      this.service.update(this.currentEditId, this.quotation).subscribe({
-
-        next: () => {
-          alert("Quotation Updated Successfully");
-          this.closeDrawer();
-          this.loadQuotations();
-        },
-
-        error: err =>
-          this.errorMessage =
-            err.error?.message || "Update Failed"
-
-      });
-
+      // 🎯 আপডেট প্রসেস (কন্ট্রোলারের স্ট্যান্ডার্ড @RequestBody JSON চেইনের সাথে সিঙ্কড)
+     this.service.save(this.quotation, this.selectedFile).subscribe({
+  next: () => {
+    alert("Quotation document node registered into logistics gateway.");
+    this.closeDrawer();
+    this.loadQuotations();
+  },
+  error: (err) => this.handleError(err) // 👈 এখানেও '=>' হবে
+});
     } else {
-
+      // 🎯 ক্রিয়েট প্রসেস (কন্ট্রোলারের @RequestPart String quotationJson + MultipartFile এর সাথে সিঙ্কড)
       this.service.save(this.quotation, this.selectedFile).subscribe({
-
         next: () => {
-          alert("Quotation Saved Successfully");
+          alert("Quotation document node registered into logistics gateway.");
           this.closeDrawer();
           this.loadQuotations();
         },
-
-        error: err =>
-          this.errorMessage =
-            err.error?.message || "Save Failed"
-
+        error: (err) =>  this.handleError(err)
       });
-
     }
   }
 
   edit(o: QuotationResponseModel): void {
-
+    this.errorMessage = null;
     this.currentEditId = o.id;
     this.isEdit = true;
 
+    // 🎯 রেসপন্স মডেল থেকে রিকোয়েস্ট মডেলে প্রপার্টি রি-ম্যাপিং
     this.quotation = {
-
       supplierId: o.supplierId,
-      productIds: o.productIds,
-      productName: o.productName,
       purchaseRequisitionId: o.purchaseRequisitionId,
       leadTimeDays: o.leadTimeDays,
       isSelected: o.isSelected,
       receivedAt: o.receivedAt,
       status: o.status,
-      productDescription: o.productDescription,
+      productDescription: o.productDescription || '',
       unitPrice: o.unitPrice,
       quantity: o.quantity,
       deliveryTime: o.deliveryTime,
-      warranty: o.warranty,
+      warranty: o.warranty || '',
       notes: o.notes || '',
       attachmentUrl: o.attachmentUrl || ''
-
     };
 
     this.isDrawerOpen = true;
@@ -229,31 +203,22 @@ export class QuatationComponent {
   }
 
   delete(id: number): void {
-
-    if (!confirm("Delete this quotation?")) {
+    if (!confirm("Are you sure you want to permanently delete this quotation bid profile? This action is locked into security matrices!")) {
       return;
     }
 
     this.service.delete(id).subscribe({
-
       next: () => {
-        alert("Deleted Successfully");
+        alert("Quotation envelope successfully purged from directories.");
         this.loadQuotations();
       },
-
-      error: err =>
-        alert(err.error?.message || err.message)
-
+      error: (err) => alert(err.error?.message || err.message || "Deletion transaction runtime failure.")
     });
   }
 
   reset(): void {
-
     this.quotation = {
-
       supplierId: 0,
-      productIds: 0,
-      productName: '',
       purchaseRequisitionId: 0,
       leadTimeDays: 1,
       isSelected: false,
@@ -266,13 +231,15 @@ export class QuatationComponent {
       warranty: '',
       notes: '',
       attachmentUrl: ''
-
     };
-
     this.selectedFile = null;
     this.currentEditId = null;
     this.isEdit = false;
     this.errorMessage = null;
   }
 
+  private handleError(err: any): void {
+    this.errorMessage = err.error?.message || err.message || "Quotation Sourcing Pipeline Timeout.";
+    this.cdr.markForCheck();
+  }
 }
