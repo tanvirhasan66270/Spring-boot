@@ -59,6 +59,7 @@ import { PublicAboutComponent } from './component/public/public-about/public-abo
 import { PublicServicesComponent } from './component/public/public-services/public-services.component';
 import { PublicNetworkComponent } from './component/public/public-network/public-network.component';
 import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
+import { SupplierProfileComponent } from './component/profile/supplier-profile.component/supplier-profile.component';
 
 const ALL_ROLES = [
   'ADMIN',
@@ -154,7 +155,13 @@ export const routes: Routes = [
       { path: 'dashboard/commercial', component: CommercialDashboardComponent },
       { path: 'dashboard/sales', component: SalesDashboardComponent },
       { path: 'dashboard/driver', component: DriverDashboardComponent },
-      { path: 'dashboard/supplier', component: SupplierDashboardComponent },
+     {
+    path: 'dashboard/supplier', 
+    component: SupplierDashboardComponent, 
+    children: [
+      { path: 'supplier_profile', component: SupplierProfileComponent }
+    ]
+  },
       { path: 'product', component: AddProductComponent },
       { path: 'category', component: CategoryComponent },
       { path: 'order', component: CustomerOrderComponent },
@@ -183,6 +190,7 @@ export const routes: Routes = [
       { path: 'notifications', component: NotificationComponent },
       { path: 'messages', component: MassageComponent },
       { path: 'activity-log', component: ActivityLogComponent },
+
     ],
   },
 ];

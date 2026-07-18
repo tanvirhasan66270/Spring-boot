@@ -71,48 +71,30 @@
               </div>
             </div>
 
-            @if (!editMode) {
-              <div class="detail-list">
-                <div class="detail-item">
-                  <span class="detail-label">Full Name</span>
-                  <span class="detail-value">{{ user?.name }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Email</span>
-                  <span class="detail-value">{{ user?.email }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Phone</span>
-                  <span class="detail-value">{{ user?.phone || 'Not set' }}</span>
-                </div>
-                <div class="detail-item">
-                  <span class="detail-label">Role</span>
-                  <span class="detail-value badge-role">{{
-                    getRoleDisplayName(user?.role || '')
-                  }}</span>
-                </div>
+            <!-- 🎯 সম্পূর্ণ রিড-অনলি লেআউট, কোনো এডিটেবল কন্ডিশন ও ইনপুট ফিল্ড এখানে নেই -->
+            <div class="detail-list">
+              <div class="detail-item">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{{ user?.name }}</span>
               </div>
-              <button class="settings-btn primary" (click)="editMode = true">
-                <i class="bi bi-pencil-square"></i> Edit Profile
-              </button>
-            } @else {
-              <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" class="form-control" [(ngModel)]="editName" />
+              <div class="detail-item">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ user?.email }}</span>
               </div>
-              <div class="form-group">
-                <label>Email</label>
-                <input type="email" class="form-control" [(ngModel)]="editEmail" />
+              <div class="detail-item">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value">{{ user?.phone || 'Not set' }}</span>
               </div>
-              <div class="form-group">
-                <label>Phone</label>
-                <input type="text" class="form-control" [(ngModel)]="editPhone" />
+              <div class="detail-item">
+                <span class="detail-label">Role</span>
+                <span class="detail-value badge-role">{{ getRoleDisplayName(user?.role || '') }}</span>
               </div>
-              <div class="d-flex gap-2">
-                <button class="settings-btn primary" (click)="saveProfile()">Save Changes</button>
-                <button class="settings-btn secondary" (click)="editMode = false">Cancel</button>
-              </div>
-            }
+            </div>
+            
+            <!-- 🚀 এডিট প্রোফাইল বাটন যা ডাইনামিক রাউটিং ইভেন্ট এমিট করবে -->
+            <button class="settings-btn primary w-100" (click)="triggerEditProfileRouting()">
+              <i class="bi bi-pencil-square"></i> Edit Profile
+            </button>
           </div>
         }
 

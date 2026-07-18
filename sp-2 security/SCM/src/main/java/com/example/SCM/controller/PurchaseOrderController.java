@@ -2,11 +2,12 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.PurchaseOrderRequestDTO;
 import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
+import com.example.SCM.entity.User;
 import com.example.SCM.service.PurchaseOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,13 +21,11 @@ public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
 
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(purchaseOrderService.save(dto));
     }
 
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
             @RequestBody PurchaseOrderRequestDTO dto) {
@@ -35,10 +34,8 @@ public class PurchaseOrderController {
 
     @GetMapping("/supplier/{supplierId}")
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getOrdersBySupplier(@PathVariable Long supplierId) {
-        // সার্ভিস লেয়ার থেকে সমস্ত PO নিয়ে আসা
         List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
 
-        // জাভা ৮ স্ট্রিম ব্যবহার করে শুধুমাত্র লগইন করা সাপ্লায়ারের PO গুলো ফিল্টার করা
         List<PurchaseOrderResponseDTO> supplierOrders = allOrders.stream()
                 .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(supplierId))
                 .collect(Collectors.toList());
@@ -50,17 +47,51 @@ public class PurchaseOrderController {
     }
 
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
-        List<PurchaseOrderResponseDTO> list = purchaseOrderService.findAll();
-        if (list.isEmpty()) {
+        // ১. ডাটাবেজ থেকে সমস্ত PO তুলে আনা
+        List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
+
+        // ২. স্প্রিং সিকিউরিটি কন্টেক্সট থেকে কারেন্ট সেশন অবজেক্ট রিড করা
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof User currentUser) {
+            // ৩. রোল যদি SUPPLIER হয়, তবে ডাটাবেজ লেভেলে ফিল্টার লক সক্রিয় হবে
+            if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
+                List<PurchaseOrderResponseDTO> filteredOrders = allOrders.stream()
+                        .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(currentUser.getId()))
+                        .collect(Collectors.toList());
+
+                return ResponseEntity.ok(filteredOrders);
+            }
+            // 🎯 রোল ADMIN, MANAGER বা PROCUREMENT হলে সরাসরি সব ডাটা রিটার্ন করবে
+            return ResponseEntity.ok(allOrders);
+        }
+
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
+            // সিকিউরিটি ফিল্টার চেইন ব্যাকআপ (যদি প্রিন্সিপাল UserDetails রিটার্ন করে)
+            String role = userDetails.getAuthorities().stream()
+                    .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                    .findFirst().orElse("");
+
+            if (role.contains("SUPPLIER")) {
+                String email = userDetails.getUsername();
+                List<PurchaseOrderResponseDTO> filteredOrders = allOrders.stream()
+                        .filter(po -> po.getSupplierEmail() != null && po.getSupplierEmail().equalsIgnoreCase(email))
+                        .collect(Collectors.toList());
+
+                return ResponseEntity.ok(filteredOrders);
+            }
+            return ResponseEntity.ok(allOrders);
+        }
+
+        // ডিফল্ট সেফটি রেসপন্স
+        if (allOrders.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(allOrders);
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
                 .map(ResponseEntity::ok)
@@ -68,32 +99,21 @@ public class PurchaseOrderController {
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted Successfully");
     }
 
-    /**
-     * 🚀 এন্ডপয়েন্ট ১: সরাসরি স্ট্যাটাস পরিবর্তন করার জন্য (RECEIVED/CANCELLED)
-     * যা ফ্রন্টএন্ড এঙ্গুলার সার্ভিসের changeStatus() থেকে কল হচ্ছে।
-     */
     @PutMapping("/{id}/status")
     public ResponseEntity<PurchaseOrderResponseDTO> updateStatus(
             @PathVariable Long id,
             @RequestParam com.example.SCM.enumClass.PurchaseOrderStatus status) {
-
-        // আমাদের কাস্টম সার্ভিস মেথড যা DRAFT লক বাইপাস করবে
         PurchaseOrderResponseDTO response = purchaseOrderService.updateStatus(id, status);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * ✅ এন্ডপয়েন্ট ২: পারচেজ অর্ডার ম্যানেজার লেভেল থেকে সরাসরি অ্যাপ্রুভ করার জন্য
-     */
     @PutMapping("/{id}/approve")
     public ResponseEntity<PurchaseOrderResponseDTO> approve(@PathVariable Long id) {
-        // আপনার PurchaseOrderService এর ভেতরের এপ্রুভ লজিকটি কল করুন
         PurchaseOrderResponseDTO response = purchaseOrderService.approveOrder(id);
         return ResponseEntity.ok(response);
     }

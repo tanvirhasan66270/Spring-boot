@@ -2,7 +2,6 @@ export interface QuotationRequestModel {
   supplierId: number;
   purchaseRequisitionId: number;
   leadTimeDays: number;
-  isSelected: boolean;
   receivedAt: string;        // YYYY-MM-DD
   status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
   productDescription: string;
@@ -19,7 +18,6 @@ export interface QuotationResponseModel {
   quotationNumber: string;
   validUntil: string;
   leadTimeDays: number;
-  isSelected: boolean;
   receivedAt: string;
   status: 'PENDING' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
   productDescription: string;
@@ -33,6 +31,8 @@ export interface QuotationResponseModel {
   createdAt: string;
   supplierId: number;
   supplierName: string;
+   supplierEmail: string;
+  
   productIds: number;
   productName: string;
   purchaseRequisitionId: number;

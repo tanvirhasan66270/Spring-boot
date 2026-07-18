@@ -75,13 +75,16 @@
       </a>
     </div>
 
-    <!-- Procurement -->
+    <!-- ─── 🎯 Procurement Section (Updated Condition for Supplier Requisition Access) ─── -->
     <div class="nav-section" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'SUPPLIER'])">
       <div class="nav-section-label">Procurement</div>
-      <a routerLink="/purchase-requisition" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER'])">
+      
+      <!-- 🔒 এখানে SUPPLIER রোলটিকে অন্তর্ভুক্ত করা হয়েছে যাতে তারা তাদের নির্দিষ্ট রিকুইজিশন দেখতে পারে -->
+      <a routerLink="/purchase-requisition" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'SUPPLIER'])">
         <i class="bi bi-file-earmark-text"></i>
         <span>Purchase Requisition</span>
       </a>
+      
       <a routerLink="/purchase-order" routerLinkActive="active" class="nav-item">
         <i class="bi bi-cart3"></i>
         <span>Purchase Order</span>
@@ -154,7 +157,7 @@
     </div>
 
     <!-- Logistics -->
-    <div class="nav-section" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'DRIVER', 'MANAGER', 'SUPPLIER'])">
+    <div class="nav-section" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'DRIVER', 'MANAGER', 'SUPPLIER','PROCUREMENT'])">
       <div class="nav-section-label">Logistics</div>
       
       <ng-container *ngIf="activeRole !== 'SUPPLIER'">
@@ -175,7 +178,7 @@
         </a>
       </ng-container>
       
-      <a routerLink="/poline-item" routerLinkActive="active" class="nav-item d-flex align-items-center justify-content-between" *ngIf="showPoLineItemMenu()">
+      <a routerLink="/poline-item" routerLinkActive="active" class="nav-item d-flex align-items-center justify-content-between" *ngIf="showPoLineItemMenu()" >
         <span class="d-flex align-items-center gap-2">
           <i class="bi bi-text-indent-left text-teal"></i>
           <span>PO Line Item</span>

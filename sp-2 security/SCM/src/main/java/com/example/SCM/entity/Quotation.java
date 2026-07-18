@@ -48,8 +48,6 @@ public class Quotation {
     private int leadTimeDays;
 
 
-    private boolean isSelected = false;
-
     @Column(nullable = false)
     private LocalDate receivedAt;
 

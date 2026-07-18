@@ -18,6 +18,8 @@ export interface POLineItemResponseDTO {
   productId: number;
   productName: string;
   productCode: string;
+  supplierId:string;
+  supplierName:string;
   quantity: number;
   unitPrice: number;
   lineTotal: number;

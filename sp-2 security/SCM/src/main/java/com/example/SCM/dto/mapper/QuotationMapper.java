@@ -47,7 +47,7 @@ public class QuotationMapper {
 
         // কোর ফিল্ড ম্যাপিং
         quotation.setLeadTimeDays(dto.getLeadTimeDays());
-        quotation.setSelected(dto.isSelected());
+
         quotation.setProductDescription(dto.getProductDescription());
         quotation.setUnitPrice(dto.getUnitPrice());
         quotation.setQuantity(dto.getQuantity());
@@ -73,7 +73,6 @@ public class QuotationMapper {
         dto.setQuotationNumber(quotation.getQuotationNumber());
         dto.setValidUntil(quotation.getValidUntil());
         dto.setLeadTimeDays(quotation.getLeadTimeDays());
-        dto.setSelected(quotation.isSelected());
         dto.setReceivedAt(quotation.getReceivedAt());
         dto.setStatus(quotation.getStatus());
         dto.setProductDescription(quotation.getProductDescription());
@@ -90,6 +89,7 @@ public class QuotationMapper {
         if (quotation.getSupplier() != null) {
             dto.setSupplierId(quotation.getSupplier().getId());
             dto.setSupplierName(quotation.getSupplier().getName());
+            dto.setEmail(quotation.getSupplier().getEmail());
         }
 
         if (quotation.getPurchaseRequisition() != null) {
@@ -120,7 +120,7 @@ public class QuotationMapper {
         }
 
         quotation.setLeadTimeDays(dto.getLeadTimeDays());
-        quotation.setSelected(dto.isSelected());
+
         quotation.setProductDescription(dto.getProductDescription());
         quotation.setUnitPrice(dto.getUnitPrice());
         quotation.setQuantity(dto.getQuantity());

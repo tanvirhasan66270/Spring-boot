@@ -1,5 +1,7 @@
 <div class="container-fluid py-4 px-4">
 
+
+
   <!-- ───────────────── TOP BAR & ACTIONS ───────────────── -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
@@ -11,9 +13,11 @@
         <input type="text" class="form-control fs-7" placeholder="Enter Tracking Code..." [(ngModel)]="trackingSearchQuery">
         <button class="btn btn-dark fs-7" type="button" (click)="trackShipment()"><i class="bi bi-geo-alt-fill"></i></button>
       </div>
-      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm fs-7" (click)="openDrawer()">
-        <i class="bi bi-plus-circle-fill me-2"></i>Add Line Item
-      </button>
+     <button class="btn btn-primary" 
+        *ngIf="['ADMIN', 'SUPPLIER'].includes(activeRole)" 
+        (click)="openDrawer()">
+  <i class="bi bi-plus-circle"></i> Add Line Item
+</button>
     </div>
   </div>
 
@@ -23,6 +27,28 @@
       <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Operational Fault:</strong> {{ errorMessage }}
     </div>
   }
+  <div class="card border-0 shadow-sm p-3 mb-4 rounded-3" *ngIf="activeRole === 'PROCUREMENT'">
+  <div class="row g-3">
+    <!-- Supplier Name Search -->
+    <div class="col-md-4">
+      <input type="text" class="form-control" [(ngModel)]="searchSupplier" (input)="applyFilters()" placeholder="Search by Supplier Name...">
+    </div>
+    <!-- Product Name Search -->
+    <div class="col-md-4">
+      <input type="text" class="form-control" [(ngModel)]="searchProduct" (input)="applyFilters()" placeholder="Search by Product Name...">
+    </div>
+    <!-- Status Search -->
+    <div class="col-md-4">
+      <select class="form-select" [(ngModel)]="searchStatus" (change)="applyFilters()">
+        <option value="">All Statuses</option>
+        <option value="PENDING">PENDING</option>
+        <option value="APPROVED">APPROVED</option>
+        <option value="SHIPPED">SHIPPED</option>
+        <option value="DELIVERED">DELIVERED</option>
+      </select>
+    </div>
+  </div>
+</div>
 
   <!-- ───────────────── DATA TABLE GRID ───────────────── -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">

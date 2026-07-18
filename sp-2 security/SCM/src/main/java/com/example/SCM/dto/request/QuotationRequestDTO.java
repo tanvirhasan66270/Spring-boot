@@ -7,7 +7,6 @@ public class QuotationRequestDTO {
     private Long supplierId;
     private Long purchaseRequisitionId;
     private int leadTimeDays;
-    private boolean isSelected;
     private String receivedAt;              // "YYYY-MM-DD"
     private String status;                  // "PENDING", "UNDER_REVIEW" ইত্যাদি
     private String productDescription;

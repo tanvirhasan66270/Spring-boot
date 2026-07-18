@@ -1,6 +1,6 @@
 <div class="supplier-dashboard px-3 py-4">
   <!-- ───────────────── LOADING SKELETON ───────────────── -->
-  <ng-container *ngIf="loading">
+  <div *ngIf="loading">
     <div class="skeleton skeleton-card h-100 mb-4" style="height: 100px"></div>
     <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
       <div class="col" *ngFor="let s of [1, 2, 3, 4]">
@@ -18,12 +18,13 @@
       <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 200px"></div></div>
       <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 200px"></div></div>
     </div>
-  </ng-container>
+  </div>
 
-  <!-- ───────────────── DASHBOARD CONTENT ───────────────── -->
-  <ng-container *ngIf="!loading">
-    <!-- ───────────────── TOP BAR ───────────────── -->
-    <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <!-- ───────────────── DASHBOARD MAIN WRAPPER ───────────────── -->
+  <div *ngIf="!loading">
+    
+    <!-- ─── TOP BAR (উভয় মোডেই টপবার ফিক্সড থাকবে) ─── -->
+    <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center bg-white">
       <div>
         <h3 class="fw-bold mb-1 text-dark">Supplier Fulfillment Portal</h3>
         <p class="text-secondary small mb-0">
@@ -40,426 +41,442 @@
       </div>
     </div>
 
-    <!-- ───────────────── KPI GRID ───────────────── -->
-    <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
-      <div class="col" *ngFor="let kpi of kpis">
-        <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
-          <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
-          <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
-          <div class="small font-monospace">
-            <span class="text-muted small">Real-time status</span>
+    <!-- =========================================================================
+         CONDITION 1: চাইল্ড রুট একটিভ না থাকলে মূল ড্যাশবোর্ড কন্টেন্ট দেখাবে
+         ========================================================================= -->
+    <div *ngIf="!isChildRouteActive()" class="animate-fade">
+      
+      <!-- KPI GRID -->
+      <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+        <div class="col" *ngFor="let kpi of kpis">
+          <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
+            <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
+            <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
+            <div class="small font-monospace">
+              <span class="text-muted small">Real-time status</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ───────────────── QUICK ACTIONS ───────────────── -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <!-- 🎯 মডিফাইড কার্ড: রাউটার লিংক রিমুভ করে সাপ্লায়ার অল-টাইম PO লেজার টগল ইভেন্ট দেওয়া হলো -->
-        <a href="javascript:void(0)" 
-           (click)="togglePurchaseOrderRegistry($event)" 
-           class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
-           [class.border-primary]="poRegistryOpen"
-           [class.border-2]="poRegistryOpen"
-           style="cursor: pointer;">
-          <i class="bi bi-inboxes fs-2 text-primary mb-1 d-block"></i>
-          <strong class="text-dark d-block">Purchase Orders</strong>
-          <small class="text-muted">View all your historical purchase requests</small>
-        </a>
-      </div>
-      <div class="col-md-4">
-        <a routerLink="/quotation" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
-          <i class="bi bi-file-earmark-arrow-up fs-2 text-success mb-1 d-block"></i>
-          <strong class="text-dark d-block">Submit Quotations</strong>
-          <small class="text-muted">Propose pricing bids on active RFQs</small>
-        </a>
-      </div>
-      <div class="col-md-4">
-        <a href="javascript:void(0)" 
-           (click)="toggleBillingLCSection($event)" 
-           class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
-           [class.border-warning]="lcOpen"
-           [class.border-2]="lcOpen"
-           style="cursor: pointer;">
-          <i class="bi bi-receipt fs-2 text-warning mb-1 d-block"></i>
-          <strong class="text-dark d-block">Billing Ledger</strong>
-          <small class="text-muted">Manage corporate Letters of Credit (LC)</small>
-        </a>
-      </div>
-    </div>
-
-    <!-- ───────────────── 🎯 NEW: SUPPLIER ALL HISTORICAL PO LEDGER ARCHIVE ───────────────── -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4" *ngIf="poRegistryOpen">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-bold text-dark text-uppercase">
-          <i class="bi bi-journal-check text-primary me-2"></i> Vendor Full Purchase Order Ledger Archive
-        </h6>
-        <span class="badge bg-primary text-white fw-bold">Supplier Secured Node</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">PO Reference</th>
-                <th>Creation Date</th>
-                <th>Fulfillment Due</th>
-                <th>Aggregate Value</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let spo of allSupplierPOs">
-                <td class="ps-4 font-monospace fw-bold text-primary">{{ spo.poNumber }}</td>
-                <td class="text-muted">{{ spo.date | date: 'mediumDate' }}</td>
-                <td class="font-monospace text-secondary fw-semibold">{{ spo.deliveryDue | date: 'mediumDate' }}</td>
-                <td class="font-monospace fw-bold text-success">৳{{ spo.amount | number: '1.2-2' }}</td>
-                <td>
-                  <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getStatusClass(spo.status)">
-                    {{ spo.status }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="allSupplierPOs.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted font-monospace">
-                  <i class="bi bi-inboxes d-block fs-4 mb-1 opacity-50"></i> No purchase orders allocated to your supplier profile yet.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- QUICK ACTIONS -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <a href="javascript:void(0)" 
+             (click)="togglePurchaseOrderRegistry($event)" 
+             class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
+             [class.border-primary]="poRegistryOpen"
+             [class.border-2]="poRegistryOpen"
+             style="cursor: pointer;">
+            <i class="bi bi-inboxes fs-2 text-primary mb-1 d-block"></i>
+            <strong class="text-dark d-block">Purchase Orders</strong>
+            <small class="text-muted">View all your historical purchase requests</small>
+          </a>
+        </div>
+        <div class="col-md-4">
+          <a routerLink="quotation" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
+            <i class="bi bi-file-earmark-arrow-up fs-2 text-success mb-1 d-block"></i>
+            <strong class="text-dark d-block">Submit Quotations</strong>
+            <small class="text-muted">Propose pricing bids on active RFQs</small>
+          </a>
+        </div>
+        <div class="col-md-4">
+          <a href="javascript:void(0)" 
+             (click)="toggleBillingLCSection($event)" 
+             class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
+             [class.border-warning]="lcOpen"
+             [class.border-2]="lcOpen"
+             style="cursor: pointer;">
+            <i class="bi bi-receipt fs-2 text-warning mb-1 d-block"></i>
+            <strong class="text-dark d-block">Billing Ledger</strong>
+            <small class="text-muted">Manage corporate Letters of Credit (LC)</small>
+          </a>
         </div>
       </div>
-    </div>
 
-    <!-- ───────────────── 🎯 DYNAMIC LETTER OF CREDIT (LC) PANEL ───────────────── -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-warning border-4" *ngIf="lcOpen">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-bold text-dark text-uppercase">
-          <i class="bi bi-bank text-warning me-2"></i> Associated Letters of Credit (LC Status)
-        </h6>
-        <span class="badge bg-warning text-dark fw-bold">Commercial Node</span>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">LC Reference ID</th>
-                <th>PO Reference</th>
-                <th>Maturity / Expiry</th>
-                <th>LC Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let lc of lettersOfCredit">
-                <td class="ps-4 font-monospace fw-bold text-warning">{{ lc.lcNumber }}</td>
-                <td class="font-monospace fw-bold text-secondary">{{ lc.poReference }}</td>
-                <td class="text-muted">{{ lc.expiryDate | date: 'mediumDate' }}</td>
-                <td class="font-monospace fw-bold text-success">৳{{ lc.amount | number: '1.2-2' }}</td>
-                <td><span class="badge bg-warning-subtle text-warning border border-warning px-2.5 py-1 text-uppercase">{{ lc.status }}</span></td>
-              </tr>
-              <tr *ngIf="lettersOfCredit.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted font-monospace">
-                  <i class="bi bi-bank2 d-block fs-4 mb-1 opacity-50"></i> No Letters of Credit issued or available against received orders.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- SUPPLIER HISTORICAL PO LEDGER -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4" *ngIf="poRegistryOpen">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-journal-check text-primary me-2"></i> Vendor Full Purchase Order Ledger Archive
+          </h6>
+          <span class="badge bg-primary text-white fw-bold">Supplier Secured Node</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">PO Reference</th>
+                  <th>Creation Date</th>
+                  <th>Fulfillment Due</th>
+                  <th>Aggregate Value</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let spo of allSupplierPOs">
+                  <td class="ps-4 font-monospace fw-bold text-primary">{{ spo.poNumber }}</td>
+                  <td class="text-muted">{{ spo.date | date: 'mediumDate' }}</td>
+                  <td class="font-monospace text-secondary fw-semibold">{{ spo.deliveryDue | date: 'mediumDate' }}</td>
+                  <td class="font-monospace fw-bold text-success">৳{{ spo.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getStatusClass(spo.status)">
+                      {{ spo.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="allSupplierPOs.length === 0">
+                  <td colspan="5" class="text-center py-4 text-muted font-monospace">
+                    <i class="bi bi-inboxes d-block fs-4 mb-1 opacity-50"></i> No purchase orders allocated to your supplier profile yet.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- ───────────────── 1. PO REGISTRY GRID (ACTIVE ISSUED POs) ───────────────── -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-bold text-dark text-uppercase">
-          <i class="bi bi-bell-fill text-primary me-2"></i> Open Sourcing / Issued Purchase Orders
-        </h6>
-        <a routerLink="/purchase-order" class="btn btn-sm btn-outline-primary fw-semibold">View All</a>
+      <!-- DYNAMIC LETTER OF CREDIT (LC) PANEL -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-warning border-4" *ngIf="lcOpen">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-bank text-warning me-2"></i> Associated Letters of Credit (LC Status)
+          </h6>
+          <span class="badge bg-warning text-dark fw-bold">Commercial Node</span>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">LC Reference ID</th>
+                  <th>PO Reference</th>
+                  <th>Maturity / Expiry</th>
+                  <th>LC Amount</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let lc of lettersOfCredit">
+                  <td class="ps-4 font-monospace fw-bold text-warning">{{ lc.lcNumber }}</td>
+                  <td class="font-monospace fw-bold text-secondary">{{ lc.poReference }}</td>
+                  <td class="text-muted">{{ lc.expiryDate | date: 'mediumDate' }}</td>
+                  <td class="font-monospace fw-bold text-success">৳{{ lc.amount | number: '1.2-2' }}</td>
+                  <td><span class="badge bg-warning-subtle text-warning border border-warning px-2.5 py-1 text-uppercase">{{ lc.status }}</span></td>
+                </tr>
+                <tr *ngIf="lettersOfCredit.length === 0">
+                  <td colspan="5" class="text-center py-4 text-muted font-monospace">
+                    <i class="bi bi-bank2 d-block fs-4 mb-1 opacity-50"></i> No Letters of Credit issued or available against received orders.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">PO Reference</th>
-                <th>Date Received</th>
-                <th>Fulfillment Due</th>
-                <th>Contract Value</th>
-                <th>Status</th>
-                <th class="text-end pe-4">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let po of pos">
-                <td class="ps-4 font-monospace fw-bold text-primary">{{ po.poNumber }}</td>
-                <td class="text-muted">{{ po.date | date: 'mediumDate' }}</td>
-                <td class="font-monospace text-secondary fw-semibold">{{ po.deliveryDue | date: 'mediumDate' }}</td>
-                <td class="font-monospace fw-bold text-success">৳{{ po.amount | number: '1.2-2' }}</td>
-                <td>
-                  <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getStatusClass(po.status)">
-                    {{ po.status }}
-                  </span>
-                </td>
-                <td class="text-end pe-4">
-                  <div class="dropdown">
-                    <button class="btn btn-sm btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                      Manage
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                      <li>
-                        <button class="dropdown-item text-success fw-semibold" type="button" (click)="updatePoStatus(po.id, 'RECEIVED')">
-                          <i class="bi bi-check-circle me-2"></i> RECEIVED
-                        </button>
-                      </li>
-                      <li>
-                        <button class="dropdown-item text-danger fw-semibold" type="button" (click)="updatePoStatus(po.id, 'CANCELLED')">
-                          <i class="bi bi-x-circle me-2"></i> CANCELLED
-                        </button>
-                      </li>
-                    </ul>
+
+      <!-- ACTIVE ISSUED POs GRID -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-bell-fill text-primary me-2"></i> Open Sourcing / Issued Purchase Orders
+          </h6>
+          <a routerLink="purchase-order" class="btn btn-sm btn-outline-primary fw-semibold">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">PO Reference</th>
+                  <th>Date Received</th>
+                  <th>Fulfillment Due</th>
+                  <th>Contract Value</th>
+                  <th>Status</th>
+                  <th class="text-end pe-4">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let po of pos">
+                  <td class="ps-4 font-monospace fw-bold text-primary">{{ po.poNumber }}</td>
+                  <td class="text-muted">{{ po.date | date: 'mediumDate' }}</td>
+                  <td class="font-monospace text-secondary fw-semibold">{{ po.deliveryDue | date: 'mediumDate' }}</td>
+                  <td class="font-monospace fw-bold text-success">৳{{ po.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getStatusClass(po.status)">
+                      {{ po.status }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-4">
+                    <div class="dropdown">
+                      <button class="btn btn-sm btn-light border dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Manage
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li>
+                          <button class="dropdown-item text-success fw-semibold" type="button" (click)="updatePoStatus(po.id, 'RECEIVED')">
+                            <i class="bi bi-check-circle me-2"></i> RECEIVED
+                          </button>
+                        </li>
+                        <li>
+                          <button class="dropdown-item text-danger fw-semibold" type="button" (click)="updatePoStatus(po.id, 'CANCELLED')">
+                            <i class="bi bi-x-circle me-2"></i> CANCELLED
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="pos.length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted font-monospace">
+                    <i class="bi bi-inboxes d-block fs-4 mb-1 opacity-50"></i> No open issued purchase orders available.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECEIVED ORDERS GRID -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4">
+        <div class="card-header bg-white py-3 border-0">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-check-circle-fill text-success me-2"></i> Received Purchase Orders (POs)
+          </h6>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">PO Reference</th>
+                  <th>Date Processed</th>
+                  <th>Delivery Target</th>
+                  <th>Aggregate Value</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rp of receivedPOs">
+                  <td class="ps-4 font-monospace fw-bold text-success">{{ rp.poNumber }}</td>
+                  <td class="text-muted">{{ rp.date | date: 'mediumDate' }}</td>
+                  <td class="font-monospace text-secondary fw-semibold">{{ rp.deliveryDue | date: 'mediumDate' }}</td>
+                  <td class="font-monospace fw-bold text-success">৳{{ rp.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="badge text-uppercase px-2.5 py-1 bg-success text-white">
+                      {{ rp.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="receivedPOs.length === 0">
+                  <td colspan="5" class="text-center py-4 text-muted font-monospace">
+                    <i class="bi bi-folder-x d-block fs-4 mb-1 opacity-50"></i> No processed or received orders found in archive.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFQ BIDDING PORTAL -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-clock-history text-success me-2"></i> Open Sourcing RFQ Bidding Invitations
+          </h6>
+          <a routerLink="quotation" class="btn btn-sm btn-outline-success fw-semibold">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">RFQ Ref ID</th>
+                  <th>Required Component</th>
+                  <th>Closing Date</th>
+                  <th>Bidding Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of rfqs">
+                  <td class="ps-4 font-monospace fw-bold text-secondary">{{ r.id }}</td>
+                  <td class="fw-semibold text-dark">{{ r.item }}</td>
+                  <td class="font-monospace text-danger">{{ r.closingDate | date: 'mediumDate' }}</td>
+                  <td>
+                    <span class="badge text-uppercase" [ngClass]="getRfqStatusClass(r.status)">
+                      {{ r.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="rfqs.length === 0">
+                  <td colspan="4" class="text-center py-4 text-muted">
+                    No active RFQ bidding invitations.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTRAL PR DEMAND MATRIX -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-teal border-4">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase">
+            <i class="bi bi-file-earmark-ruled text-teal me-2"></i> Corporate Demand Slips & Purchase Requisitions
+          </h6>
+          <a routerLink="purchase-requisition" class="btn btn-sm btn-outline-teal fw-semibold">View All Pipeline</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="ps-4">PR Reference</th>
+                  <th>Material Component Specs</th>
+                  <th>Target Sourcing Node</th>
+                  <th>Volume Required</th>
+                  <th>Priority / Deadline</th>
+                  <th>Workflow Stage</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let pr of requisitions">
+                  <td class="ps-4 font-monospace fw-bold text-dark">#PRQ-{{ pr.id }}</td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
+                      <span *ngFor="let pName of pr.productNames" class="badge bg-light text-dark border">{{ pName }}</span>
+                      <span *ngIf="pr.productNames.length === 0" class="text-muted italic small">No Components</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="d-flex flex-wrap gap-1" style="max-width: 200px;">
+                      <span *ngFor="let sName of pr.supplierNames" class="badge bg-secondary-subtle text-secondary fs-9">{{ sName }}</span>
+                      <span *ngIf="pr.supplierNames.length === 0" class="text-muted small">Broadcast Routing</span>
+                    </div>
+                  </td>
+                  <td class="font-monospace fw-bold text-primary">{{ pr.quantity }} Units</td>
+                  <td>
+                    <span class="badge px-2 py-0.5 text-uppercase mb-1 d-inline-block fs-9"
+                      [ngClass]="{
+                        'bg-secondary text-white': pr.urgency === 'LOW',
+                        'bg-success text-white': pr.urgency === 'MEDIUM',
+                        'bg-warning text-dark': pr.urgency === 'HIGH',
+                        'bg-danger text-white': pr.urgency === 'CRITICAL'
+                      }">
+                      {{ pr.urgency }}
+                    </span>
+                    <small class="d-block text-muted font-monospace"><i class="bi bi-clock me-0.5"></i>{{ pr.deadline | date:'mediumDate' }}</small>
+                  </td>
+                  <td>
+                    <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getPrStatusClass(pr.status)">
+                      {{ pr.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr *ngIf="requisitions.length === 0">
+                  <td colspan="6" class="text-center py-4 text-muted font-monospace">
+                    <i class="bi bi-folder-x d-block fs-3 mb-1 opacity-50"></i> No approved corporate purchase requisitions logged.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS + ACTIVITY LOG -->
+      <div class="row g-4 mb-4">
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3">
+              <i class="bi bi-bell text-info me-2"></i> Recent Notifications
+            </h6>
+            <div *ngIf="notifications.length > 0; else emptyNotifications">
+              <div *ngFor="let n of notifications" class="notification-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2" [class.notification-unread]="!n.isRead">
+                <div class="notification-icon flex-shrink-0">
+                  <i class="bi" [ngClass]="{
+                      'bi-bell-fill text-primary': n.type === 'SHIPMENT',
+                      'bi-exclamation-triangle text-warning': n.type === 'TRIP_ALERT',
+                      'bi-check-circle-fill text-success': n.type === 'REPORT_APPROVED',
+                      'bi-info-circle text-secondary': n.type !== 'SHIPMENT' && n.type !== 'TRIP_ALERT' && n.type !== 'REPORT_APPROVED'
+                    }"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-semibold text-dark small text-truncate">{{ n.title }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem">{{ n.message }}</div>
+                  <div class="text-muted mt-1" style="font-size: 0.7rem">
+                    {{ n.createdAt | date: 'short' }}
                   </div>
-                </td>
-              </tr>
-              <tr *ngIf="pos.length === 0">
-                <td colspan="6" class="text-center py-4 text-muted font-monospace">
-                  <i class="bi bi-inboxes d-block fs-4 mb-1 opacity-50"></i> No open issued purchase orders available.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ───────────────── 2. RECEIVED ORDERS ARCHIVE GRID ───────────────── -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4">
-      <div class="card-header bg-white py-3 border-0">
-        <h6 class="mb-0 fw-bold text-dark text-uppercase">
-          <i class="bi bi-check-circle-fill text-success me-2"></i> Received Purchase Orders (POs)
-        </h6>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">PO Reference</th>
-                <th>Date Processed</th>
-                <th>Delivery Target</th>
-                <th>Aggregate Value</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rp of receivedPOs">
-                <td class="ps-4 font-monospace fw-bold text-success">{{ rp.poNumber }}</td>
-                <td class="text-muted">{{ rp.date | date: 'mediumDate' }}</td>
-                <td class="font-monospace text-secondary fw-semibold">{{ rp.deliveryDue | date: 'mediumDate' }}</td>
-                <td class="font-monospace fw-bold text-success">৳{{ rp.amount | number: '1.2-2' }}</td>
-                <td>
-                  <span class="badge text-uppercase px-2.5 py-1 bg-success text-white">
-                    {{ rp.status }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="receivedPOs.length === 0">
-                <td colspan="5" class="text-center py-4 text-muted font-monospace">
-                  <i class="bi bi-folder-x d-block fs-4 mb-1 opacity-50"></i> No processed or received orders found in archive.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ───────────────── RFQ BIDDING PORTAL ───────────────── -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-      <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-        <h6 class="mb-0 fw-bold text-dark text-uppercase">
-          <i class="bi bi-clock-history text-success me-2"></i> Open Sourcing RFQ Bidding Invitations
-        </h6>
-        <a routerLink="/quotation" class="btn btn-sm btn-outline-success fw-semibold">View All</a>
-      </div>
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">RFQ Ref ID</th>
-                <th>Required Component</th>
-                <th>Closing Date</th>
-                <th>Bidding Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let r of rfqs">
-                <td class="ps-4 font-monospace fw-bold text-secondary">{{ r.id }}</td>
-                <td class="fw-semibold text-dark">{{ r.item }}</td>
-                <td class="font-monospace text-danger">{{ r.closingDate | date: 'mediumDate' }}</td>
-                <td>
-                  <span class="badge text-uppercase" [ngClass]="getRfqStatusClass(r.status)">
-                    {{ r.status }}
-                  </span>
-                </td>
-              </tr>
-              <tr *ngIf="rfqs.length === 0">
-                <td colspan="4" class="text-center py-4 text-muted">
-                  No active RFQ bidding invitations.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-
-   <!-- ───────────────── CENTRAL PR DEMAND MATRIX GRID ───────────────── -->
-<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-teal border-4">
-  <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-    <h6 class="mb-0 fw-bold text-dark text-uppercase">
-      <i class="bi bi-file-earmark-ruled text-teal me-2"></i> Corporate Demand Slips & Purchase Requisitions
-    </h6>
-    <a routerLink="/purchase-requisition" class="btn btn-sm btn-outline-teal fw-semibold">View All Pipeline</a>
-  </div>
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0 fs-8">
-        <thead class="table-light text-uppercase">
-          <tr>
-            <th class="ps-4">PR Reference</th>
-            <th>Material Component Specs</th>
-            <th>Target Sourcing Node</th>
-            <th>Volume Required</th>
-            <th>Priority / Deadline</th>
-            <th>Workflow Stage</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- টাইপস্ক্রিপ্ট থেকে ফিল্টার হয়ে আসা শুধুমাত্র APPROVED রিকুইজিশন এখানে রেন্ডার হবে -->
-          <tr *ngFor="let pr of requisitions">
-            <td class="ps-4 font-monospace fw-bold text-dark">#PRQ-{{ pr.id }}</td>
-            <td>
-              <div class="d-flex flex-wrap gap-1" style="max-width: 250px;">
-                <span *ngFor="let pName of pr.productNames" class="badge bg-light text-dark border">{{ pName }}</span>
-                <span *ngIf="pr.productNames.length === 0" class="text-muted italic small">No Components</span>
-              </div>
-            </td>
-            <td>
-              <div class="d-flex flex-wrap gap-1" style="max-width: 200px;">
-                <span *ngFor="let sName of pr.supplierNames" class="badge bg-secondary-subtle text-secondary fs-9">{{ sName }}</span>
-                <span *ngIf="pr.supplierNames.length === 0" class="text-muted small">Broadcast Routing</span>
-              </div>
-            </td>
-            <td class="font-monospace fw-bold text-primary">{{ pr.quantity }} Units</td>
-            <td>
-              <span class="badge px-2 py-0.5 text-uppercase mb-1 d-inline-block fs-9"
-                [ngClass]="{
-                  'bg-secondary text-white': pr.urgency === 'LOW',
-                  'bg-success text-white': pr.urgency === 'MEDIUM',
-                  'bg-warning text-dark': pr.urgency === 'HIGH',
-                  'bg-danger text-white': pr.urgency === 'CRITICAL'
-                }">
-                {{ pr.urgency }}
-              </span>
-              <small class="d-block text-muted font-monospace"><i class="bi bi-clock me-0.5"></i>{{ pr.deadline | date:'mediumDate' }}</small>
-            </td>
-            <td>
-              <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getPrStatusClass(pr.status)">
-                {{ pr.status }}
-              </span>
-            </td>
-          </tr>
-          
-          <!-- যদি কোনো APPROVED রিকুইজিশন না থাকে তবেই এটি শো করবে -->
-          <tr *ngIf="requisitions.length === 0">
-            <td colspan="6" class="text-center py-4 text-muted font-monospace">
-              <i class="bi bi-folder-x d-block fs-3 mb-1 opacity-50"></i> No approved corporate purchase requisitions logged.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-    <!-- ───────────────── NOTIFICATIONS + ACTIVITY LOG ───────────────── -->
-    <div class="row g-4 mb-4">
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-          <h6 class="fw-bold text-dark mb-3">
-            <i class="bi bi-bell text-info me-2"></i> Recent Notifications
-          </h6>
-          <div *ngIf="notifications.length > 0; else emptyNotifications">
-            <div *ngFor="let n of notifications" class="notification-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2" [class.notification-unread]="!n.isRead">
-              <div class="notification-icon flex-shrink-0">
-                <i class="bi" [ngClass]="{
-                    'bi-bell-fill text-primary': n.type === 'SHIPMENT',
-                    'bi-exclamation-triangle text-warning': n.type === 'TRIP_ALERT',
-                    'bi-check-circle-fill text-success': n.type === 'REPORT_APPROVED',
-                    'bi-info-circle text-secondary': n.type !== 'SHIPMENT' && n.type !== 'TRIP_ALERT' && n.type !== 'REPORT_APPROVED'
-                  }"></i>
-              </div>
-              <div class="flex-grow-1 min-width-0">
-                <div class="fw-semibold text-dark small text-truncate">{{ n.title }}</div>
-                <div class="text-muted" style="font-size: 0.75rem">{{ n.message }}</div>
-                <div class="text-muted mt-1" style="font-size: 0.7rem">
-                  {{ n.createdAt | date: 'short' }}
                 </div>
+                <span *ngIf="!n.isRead" class="badge bg-primary rounded-circle p-1 align-self-center"></span>
               </div>
-              <span *ngIf="!n.isRead" class="badge bg-primary rounded-circle p-1 align-self-center"></span>
             </div>
+            <ng-template #emptyNotifications>
+              <div class="text-center text-muted py-3">
+                <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
+                No recent notifications
+              </div>
+            </ng-template>
           </div>
-          <ng-template #emptyNotifications>
-            <div class="text-center text-muted py-3">
-              <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
-              No recent notifications
+        </div>
+
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <h6 class="fw-bold text-dark mb-3">
+              <i class="bi bi-activity text-danger me-2"></i> Recent Activity Log
+            </h6>
+            <div *ngIf="activities.length > 0; else emptyActivities">
+              <div *ngFor="let a of activities" class="activity-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2">
+                <div class="activity-icon flex-shrink-0">
+                  <i class="bi" [ngClass]="getActionIcon(a.action)"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-semibold text-dark small">
+                    {{ a.description || a.action + ' on ' + a.module }}
+                  </div>
+                  <div class="text-muted" style="font-size: 0.75rem">
+                    <span class="badge me-1" [ngClass]="{
+                        'bg-success-subtle text-success': a.actionStatus === 'SUCCESS',
+                        'bg-danger-subtle text-danger': a.actionStatus === 'FAILED'
+                      }">
+                      {{ a.actionStatus }}
+                    </span>
+                    {{ a.performedAt | date: 'short' }}
+                  </div>
+                </div>
+              </div>
             </div>
-          </ng-template>
+            <ng-template #emptyActivities>
+              <div class="text-center text-muted py-3">
+                <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
+                No activity recorded yet
+              </div>
+            </ng-template>
+          </div>
         </div>
       </div>
 
-      <div class="col-md-6">
-        <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-          <h6 class="fw-bold text-dark mb-3">
-            <i class="bi bi-activity text-danger me-2"></i> Recent Activity Log
-          </h6>
-          <div *ngIf="activities.length > 0; else emptyActivities">
-            <div *ngFor="let a of activities" class="activity-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2">
-              <div class="activity-icon flex-shrink-0">
-                <i class="bi" [ngClass]="getActionIcon(a.action)"></i>
-              </div>
-              <div class="flex-grow-1 min-width-0">
-                <div class="fw-semibold text-dark small">
-                  {{ a.description || a.action + ' on ' + a.module }}
-                </div>
-                <div class="text-muted" style="font-size: 0.75rem">
-                  <span class="badge me-1" [ngClass]="{
-                      'bg-success-subtle text-success': a.actionStatus === 'SUCCESS',
-                      'bg-danger-subtle text-danger': a.actionStatus === 'FAILED'
-                    }">
-                    {{ a.actionStatus }}
-                  </span>
-                  {{ a.performedAt | date: 'short' }}
-                </div>
-              </div>
-            </div>
-          </div>
-          <ng-template #emptyActivities>
-            <div class="text-center text-muted py-3">
-              <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
-              No activity recorded yet
-            </div>
-          </ng-template>
-        </div>
+    </div>
+
+    <!-- =========================================================================
+         CONDITION 2: 🎯 চাইল্ড রুট একটিভ হলে প্রোফাইল কম্পোনেন্ট ড্যাশবোর্ডের ভেতরেই লোড হবে
+         ========================================================================= -->
+    <div *ngIf="isChildRouteActive()" class="animate-fade mt-2">
+      <div class="card border-0 shadow-sm p-2 rounded-4 bg-white">
+        <router-outlet></router-outlet>
       </div>
     </div>
-  </ng-container>
 
-  <!-- ───────────────── SETTINGS PANEL ───────────────── -->
-  <app-dashboard-settings [isOpen]="showSettings" (close)="showSettings = false"></app-dashboard-settings>
+  </div>
+
+  <!-- ─── SETTINGS DRAW BAR OVERLAY ─── -->
+  <app-dashboard-settings 
+    [isOpen]="showSettings" 
+    (close)="showSettings = false"
+    (onEditProfile)="onEditProfileTriggered()">
+  </app-dashboard-settings>
 </div>

@@ -376,6 +376,28 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
     @Override
     @Transactional(readOnly = true)
     public List<PurchaseRequisitionResponseDTO> findAll() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof User currentUser) {
+            if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
+                return requisitionRepository.findAllApprovedBySupplierUserId(currentUser.getId()).stream()
+                        .map(requisitionMapper::convertTOResponseDTO)
+                        .collect(Collectors.toList());
+            }
+        }
+
+        else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
+            String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
+            Optional<User> userOpt = userRepository.findByEmail(email);
+
+            if (userOpt.isPresent() && "SUPPLIER".equalsIgnoreCase(userOpt.get().getRole().name())) {
+                return requisitionRepository.findAllApprovedBySupplierUserId(userOpt.get().getId()).stream()
+                        .map(requisitionMapper::convertTOResponseDTO)
+                        .collect(Collectors.toList());
+            }
+        }
+
+        // ইউজার যদি ADMIN, MANAGER বা PROCUREMENT অফিসার হয়, তবে গ্লোবাল সব রিকুইজিশন রিটার্ন করবে
         return requisitionRepository.findAllWithDetails().stream()
                 .map(requisitionMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());

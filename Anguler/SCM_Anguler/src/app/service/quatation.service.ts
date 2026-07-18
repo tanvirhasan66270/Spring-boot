@@ -20,9 +20,7 @@ export class QuotationService {
     return this.http.get<QuotationResponseModel>(`${this.apiUrl}/${id}`);
   }
 
-  /**
-   * 🎯 আপনার নতুন কন্ট্রোলারের @RequestPart("quotation") String-এর সাথে ১০০% সিঙ্কড মেথড
-   */
+  
   save(quotation: QuotationRequestModel, file: File | null): Observable<QuotationResponseModel> {
     const formData = new FormData();
     

@@ -2,16 +2,19 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.ShipmentRequestDTO;
 import com.example.SCM.dto.response.ShipmentResponseDTO;
+import com.example.SCM.entity.User;
 import com.example.SCM.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -43,8 +46,23 @@ public class ShipmentController {
 
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<ShipmentResponseDTO> list = shipmentService.findAll();
-        return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
+
+        if (principal instanceof User currentUser) {
+            // ইউজার রোল SUPPLIER হলে শুধুমাত্র তার নিজস্ব শিপমেন্ট ম্যাট্রিক্স ফিল্টার হবে
+            if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
+                List<ShipmentResponseDTO> supplierFiltered = list.stream()
+                        .filter(s -> s.getSupplierId() != null && s.getSupplierId().equals(currentUser.getId()))
+                        .collect(Collectors.toList());
+                return ResponseEntity.ok(supplierFiltered);
+            }
+        }
+
+        if (list.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")

@@ -1,21 +1,48 @@
-<div class="container-fluid py-4 px-4">
+<div class="container-fluid py-4 px-4 text-dark">
 
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+  <!-- ─── হেডার এবং ডুয়াল সার্চ বার প্যানেল ─── -->
+  <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="text-dark fw-bold mb-1">Cargo Shipment Registry</h4>
       <p class="text-muted mb-0 small">Formulate freight dispatch tracks, map fleet captains, and audit proof of delivery (POD) envelopes.</p>
     </div>
-    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
-      <i class="bi bi-truck me-2"></i>Initialize Shipment Freight
-    </button>
+    
+    <!-- অ্যাকশন এরিয়া: ২টা সার্চ বার এবং বাটন গ্রুপ -->
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      
+      <!-- 🔍 সার্চ বার ১: Shipment No -->
+      <div class="input-group" style="width: 220px;">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-secondary"></i></span>
+        <input type="text" class="form-control bg-light border-start-0 fs-7" 
+               placeholder="Search Shipment No..." 
+               [(ngModel)]="searchNo" 
+               (input)="applyDoubleSearch()">
+      </div>
+
+      <!-- 🔍 সার্চ বার ২: Vehicle Fleet No -->
+      <div class="input-group" style="width: 200px;">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-truck text-secondary"></i></span>
+        <input type="text" class="form-control bg-light border-start-0 fs-7" 
+               placeholder="Search Vehicle No..." 
+               [(ngModel)]="searchVehicle" 
+               (input)="applyDoubleSearch()">
+      </div>
+
+      <!-- 🔓 বাটন আনলক: এখন SUPPLIER সহ সব ইউজারই শিপমেন্ট ইনিশিয়ালাইজ বাটনটি পাবেন -->
+      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7" (click)="openDrawer()">
+        <i class="bi bi-truck me-2"></i>Add Shipment 
+      </button>
+    </div>
   </div>
 
+  <!-- Global Exception/Error Logger Alerts -->
   @if (errorMessage) {
     <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
       <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
     </div>
   }
 
+  <!-- ─── শিপমেন্ট ডাটা লেজার টেবিল (filteredShipments) ─── -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -32,7 +59,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (s of shipments; track s.id) {
+            @for (s of filteredShipments; track s.id) {
               <tr>
                 <td class="ps-4">
                   <span class="badge bg-dark font-monospace tracking-wide">{{ s.shipmentNumber }}</span>
@@ -59,7 +86,8 @@
                     <button class="btn btn-icon btn-light text-warning" title="Mutate Track Node" (click)="edit(s)">
                       <i class="bi bi-pencil-square"></i>
                     </button>
-                    <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
+                    <!-- 🔒 ডিলিট বাটন সাপ্লায়ারের জন্য লকড -->
+                    <button *ngIf="userRole !== 'SUPPLIER'" class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
                       <i class="bi bi-trash3-fill"></i>
                     </button>
                   </div>
@@ -69,7 +97,7 @@
             @empty {
               <tr>
                 <td colspan="7" class="text-center py-5 text-muted font-monospace fs-8">
-                  <i class="bi bi-truck-flatbed fs-2 d-block mb-2 text-secondary"></i>No shipment track nodes initialized inside operational cluster.
+                  <i class="bi bi-truck-flatbed fs-2 d-block mb-2 text-secondary"></i>No shipment track nodes found matching query constraints.
                 </td>
               </tr>
             }
@@ -79,6 +107,7 @@
     </div>
   </div>
 
+  <!-- ─── Sliding Form Drawer Framework ─── -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Freight Parameters' : 'Authorize Freight Node' }}</h5>
@@ -100,12 +129,25 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
-          <select class="form-select fs-7" [(ngModel)]="shipment.supplierId" name="supplierId" required [disabled]="isEdit">
-            <option [value]="0">-- Map Dispatch Supplier Node --</option>
-            @for (v of suppliers; track v.id) {
-              <option [value]="v.id">{{ v.name }} (Contact: {{ v.contactPerson }})</option>
-            }
-          </select>
+          
+          <!-- 🎯 ১. ইউজার SUPPLIER হলে সরাসরি অটো-ফিল্ড টেক্সট ইনপুট বক্স দেখাবে (ড্রপডাউনের পরিবর্তে) -->
+          @if (userRole === 'SUPPLIER') {
+            <input type="text" 
+                   class="form-control fs-7 bg-light text-muted font-monospace fw-bold" 
+                   [value]="currentSupplierName" 
+                   readonly 
+                   disabled>
+          } 
+          
+          <!-- 🎯 ২. স্টাফ/ম্যানেজাররা লগইন করলে গ্লোবাল ড্রপডাউন সিলেক্ট মেনু দেখাবে -->
+          @else {
+            <select class="form-select fs-7 text-dark fw-semibold" [(ngModel)]="shipment.supplierId" name="supplierId" required [disabled]="isEdit">
+              <option [value]="0">-- Map Dispatch Supplier Node --</option>
+              @for (v of suppliers; track v.id) {
+                <option [value]="v.id">{{ v.name }} (Contact: {{ v.contactPerson }})</option>
+              }
+            </select>
+          }
         </div>
 
         <div class="row g-2 mb-3">
@@ -126,7 +168,8 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required>
+            <!-- 🔒 ফ্রেট কস্ট সাপ্লায়ার নিজে বদলাতে পারবে না, শুধুমাত্র স্টাফরা পারবে -->
+            <input type="number" class="form-control fs-7 font-monospace fw-bold shadow-none" [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required [disabled]="userRole === 'SUPPLIER'">
           </div>
         </div>
 
@@ -146,7 +189,7 @@
         </div>
 
         <div class="mb-4">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (POD) Envelope Document</label>
+          <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (PDF/Image POD)</label>
           <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
           <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation sheets.</small>
         </div>
@@ -155,7 +198,7 @@
           <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
             <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Freight Changes' : 'Launch Consignment Track' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="closeDrawer()">Clear</button>
         </div>
       </form>
     </div>

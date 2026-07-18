@@ -5,7 +5,7 @@ import { ShipmentRequestModel, ShipmentResponseModel } from '../../shared/model/
 import { ShipmentService } from '../../../service/shipment.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { SupplierService } from '../../../service/supplier.service';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-shipment',
@@ -16,8 +16,13 @@ import { StorageService } from '../../../auth/auth_service/storage.service';
 })
 export class ShipmentComponent implements OnInit {
   shipments: ShipmentResponseModel[] = [];
+  filteredShipments: ShipmentResponseModel[] = [];
   purchaseOrders: any[] = [];
   suppliers: any[] = [];
+
+  // 🔍 ডুয়াল সার্চ বাফার মডেলস
+  searchNo: string = '';
+  searchVehicle: string = '';
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
@@ -25,6 +30,11 @@ export class ShipmentComponent implements OnInit {
   currentEditId: number | null = null;
   selectedFile: File | null = null;
   currentUserEmail: string = '';
+
+  // 🛡️ রোল এবং সাপ্লায়ার ট্র্যাকিং প্রোপার্টি
+  userRole: string = '';
+  currentSupplierId: number | null = null;
+  currentSupplierName: string = ''; // 🎯 লগইন করা সাপ্লায়ারের নাম হোল্ডার
 
   shipment: ShipmentRequestModel = {
     poId: 0,
@@ -48,11 +58,23 @@ export class ShipmentComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
     const user = this.storage.getUser();
     if (user) {
       this.currentUserEmail = user.email;
       this.shipment.assignedByEmail = user.email;
+      if (!this.userRole && user.role) {
+        this.userRole = user.role.toUpperCase();
+      }
     }
+
+    // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম রিড করা
+    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
+    if (cachedSupplier) {
+      this.currentSupplierId = cachedSupplier.id;
+      this.currentSupplierName = cachedSupplier.name || user?.name || 'Your Supplier Account';
+    }
+
     this.loadShipments();
     this.loadPurchaseOrders();
     this.loadSuppliers();
@@ -61,17 +83,49 @@ export class ShipmentComponent implements OnInit {
   loadShipments() {
     this.service.findAll().subscribe({
       next: (data) => {
-        this.shipments = data || [];
+        const allShipments = data || [];
+
+        // 🔒 CLIENT SIDE ISOLATION
+        if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+          this.shipments = allShipments.filter((s: any) => {
+            const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
+            return sId === this.currentSupplierId;
+          });
+        } else {
+          this.shipments = allShipments;
+        }
+
+        this.filteredShipments = [...this.shipments];
+        this.applyDoubleSearch();
         this.cdr.markForCheck();
       },
     });
   }
 
+  // 🎯 ডুয়াল সার্চ ইঞ্জিন প্রসেসর
+  applyDoubleSearch() {
+    const noTerm = this.searchNo.toLowerCase().trim();
+    const vehicleTerm = this.searchVehicle.toLowerCase().trim();
+
+    this.filteredShipments = this.shipments.filter(s => {
+      const shipNo = s.shipmentNumber || '';
+      const vehicleNo = s.vehicleNumber || '';
+
+      const matchesNo = shipNo.toLowerCase().includes(noTerm);
+      const matchesVehicle = vehicleNo.toLowerCase().includes(vehicleTerm);
+
+      return matchesNo && matchesVehicle;
+    });
+    this.cdr.markForCheck();
+  }
+
   loadPurchaseOrders() {
+    if (this.userRole === 'SUPPLIER') return;
     this.poService.findAll().subscribe({ next: (data) => (this.purchaseOrders = data || []) });
   }
 
   loadSuppliers() {
+    if (this.userRole === 'SUPPLIER') return;
     this.supplierService.findAll().subscribe({ next: (data) => (this.suppliers = data || []) });
   }
 
@@ -84,9 +138,13 @@ export class ShipmentComponent implements OnInit {
   openDrawer() {
     this.reset();
     this.isEdit = false;
+    if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+      this.shipment.supplierId = this.currentSupplierId;
+    }
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
+
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
@@ -97,8 +155,7 @@ export class ShipmentComponent implements OnInit {
     this.errorMessage = null;
 
     if (this.shipment.poId === 0 || this.shipment.supplierId === 0) {
-      this.errorMessage =
-        'Validation Error: Cluster reference fields (Purchase Order ID, Vendor Node) are required.';
+      this.errorMessage = 'Validation Error: Cluster reference fields (Purchase Order ID, Vendor Node) are required.';
       return;
     }
 
@@ -109,8 +166,7 @@ export class ShipmentComponent implements OnInit {
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) =>
-          (this.errorMessage = err.error?.message || 'Modification matrix deployment failure.'),
+        error: (err) => (this.errorMessage = err.error?.message || 'Modification matrix deployment failure.'),
       });
     } else {
       this.service.save(this.shipment, this.selectedFile).subscribe({
@@ -119,8 +175,7 @@ export class ShipmentComponent implements OnInit {
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) =>
-          (this.errorMessage = err.error?.message || 'Logistics initialization exception.'),
+        error: (err) => (this.errorMessage = err.error?.message || 'Logistics initialization exception.'),
       });
     }
   }

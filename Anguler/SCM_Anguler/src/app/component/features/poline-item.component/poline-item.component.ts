@@ -23,6 +23,10 @@ export class POLineItemComponent implements OnInit {
 
   currentSupplierId: number | null = null;
   activeRole: string = 'CUSTOMER';
+  searchSupplier: string = '';
+searchProduct: string = '';
+searchStatus: string = ''; 
+filteredLineItems: POLineItemResponseDTO[] = [];
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
@@ -76,6 +80,18 @@ export class POLineItemComponent implements OnInit {
     this.loadLineItems();
     this.loadPurchaseOrders();
   }
+  applyFilters() {
+  const sName = this.searchSupplier.toLowerCase().trim();
+  const pName = this.searchProduct.toLowerCase().trim();
+  const status = this.searchStatus.toLowerCase().trim();
+
+  this.filteredLineItems = this.lineItems.filter(i => {
+    return (i.supplierName?.toLowerCase().includes(sName) || '') &&
+           (i.productName?.toLowerCase().includes(pName) || '') &&
+           (i.status?.toLowerCase().includes(status) || '');
+  });
+  this.cdr.markForCheck();
+}
 
   loadLineItems() {
     this.service.findAll().subscribe({
@@ -150,7 +166,7 @@ export class POLineItemComponent implements OnInit {
       this.item.poNumber = '';
     }
 
-    this.cdr.markForCheck(); // এঙ্গুলার ভিউ রিফ্রেশ ট্রিকার
+    this.cdr.markForCheck(); 
   }
 
  

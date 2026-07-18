@@ -12,6 +12,8 @@ public class POLineItemResponseDTO {
     private Long productId;
     private String productName;
     private String productCode;
+    private Long supplierId;
+    private String supplierName;
     private int quantity;
     private double unitPrice;
     private double lineTotal;      // quantity * unitPrice

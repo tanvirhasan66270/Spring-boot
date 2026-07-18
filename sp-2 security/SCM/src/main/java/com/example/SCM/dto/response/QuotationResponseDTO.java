@@ -11,7 +11,6 @@ public class QuotationResponseDTO {
     private String quotationNumber;
     private LocalDate validUntil;
     private int leadTimeDays;
-    private boolean isSelected;
     private LocalDate receivedAt;
     private QuotationStatus status;
     private String productDescription;
@@ -27,6 +26,7 @@ public class QuotationResponseDTO {
     // Flattened Supplier Details
     private Long supplierId;
     private String supplierName;
+    private String email;
 
     // Auto-loaded via Purchase Requisition Framework
     private Long productIds;

@@ -39,52 +39,76 @@ public class QuotationServiceImp implements QuotationService {
     @Override
     @Transactional
     public QuotationResponseDTO save(QuotationRequestDTO dto, MultipartFile image) {
-        Quotation quotation = quotationMapper.toEntity(dto);
+        try {
+            System.out.println("Processing Quotation for PR ID: " + dto.getPurchaseRequisitionId());
 
-        if (dto.getPurchaseRequisitionId() != null) {
-            PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
-                    .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition record missing at ID: " + dto.getPurchaseRequisitionId()));
+            Quotation quotation = quotationMapper.toEntity(dto);
 
-            if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
-                String combinedProductNames = pr.getProducts().stream()
-                        .map(product -> product.getName()) // ধরে নেওয়া হয়েছে Product এনটিটিতে name ফিল্ড আছে
-                        .collect(Collectors.joining(", "));
+            if (dto.getPurchaseRequisitionId() != null) {
+                PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
+                        .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition record missing at ID: " + dto.getPurchaseRequisitionId()));
 
-                quotation.setProductName(combinedProductNames);
-            } else {
-                quotation.setProductName("No Linked Products");
+                if (dto.getQuantity() > pr.getQuantityRequired()) {
+                    throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + pr.getQuantityRequired() + ".");
+                }
+
+                if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
+                    com.example.SCM.entity.Product firstProduct = pr.getProducts().stream()
+                            .findFirst()
+                            .orElseThrow(() -> new RuntimeException("No product linked to PR"));
+
+                    quotation.setProduct(firstProduct);
+                    String combinedProductNames = pr.getProducts().stream()
+                            .map(product -> product.getName())
+                            .collect(Collectors.joining(", "));
+                    quotation.setProductName(combinedProductNames);
+                }
             }
-        }
 
-        // ফাইল স্টোরেজ ইঞ্জিন এক্সেকিউশন
-        if (image != null && !image.isEmpty()) {
-            String fallBackName = (quotation.getProductName() != null) ? quotation.getProductName() : "quotation_sheet";
-            String fileUrl = saveImageFile(image, fallBackName);
-            quotation.setAttachmentUrl(fileUrl);
-        }
+            if (image != null && !image.isEmpty()) {
+                String fallBackName = (quotation.getProductName() != null) ? quotation.getProductName() : "quotation_sheet";
+                String fileUrl = saveImageFile(image, fallBackName);
+                quotation.setAttachmentUrl(fileUrl);
+            }
 
-        if (quotation.getQuotationNumber() == null) {
-            quotation.setQuotationNumber("QTN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        }
+            if (quotation.getQuotationNumber() == null) {
+                quotation.setQuotationNumber("QTN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+            }
 
-        Quotation savedQuotation = quotationRepository.save(quotation);
-        return quotationMapper.toResponseDTO(savedQuotation);
+            Quotation savedQuotation = quotationRepository.save(quotation);
+            return quotationMapper.toResponseDTO(savedQuotation);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
-
     @Override
     @Transactional
     public QuotationResponseDTO update(Long id, QuotationRequestDTO dto) {
         Quotation existingQuotation = quotationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Quotation not found with id: " + id));
 
+        PurchaseRequisition pr = null;
+        if (dto.getPurchaseRequisitionId() != null) {
+            pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
+                    .orElseThrow(() -> new EntityNotFoundException("Requisition node failed to resolve."));
+        } else if (existingQuotation.getPurchaseRequisition() != null) {
+            pr = existingQuotation.getPurchaseRequisition();
+        }
+
+        if (pr != null && dto.getQuantity() > pr.getQuantityRequired()) {
+            throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + pr.getQuantityRequired() + ".");
+        }
+
         quotationMapper.updateEntityFromDTO(dto, existingQuotation);
 
         if (dto.getPurchaseRequisitionId() != null) {
-            PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
+            PurchaseRequisition pur = requisitionRepository.findById(dto.getPurchaseRequisitionId())
                     .orElseThrow(() -> new EntityNotFoundException("Requisition node failed to resolve."));
 
-            if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
-                String combinedProductNames = pr.getProducts().stream()
+            if (pur.getProducts() != null && !pur.getProducts().isEmpty()) {
+                String combinedProductNames = pur.getProducts().stream()
                         .map(product -> product.getName())
                         .collect(Collectors.joining(", "));
 

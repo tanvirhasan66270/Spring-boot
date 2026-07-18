@@ -5,7 +5,7 @@ import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } fro
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { SupplierService } from '../../../service/supplier.service';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-purchase-requisition',
@@ -17,9 +17,15 @@ import { StorageService } from '../../../auth/auth_service/storage.service';
 export class PurchaseRequisitionComponent implements OnInit {
 
   requisitions: purchaseRequisitionResponseModel[] = [];
+  filteredRequisitions: purchaseRequisitionResponseModel[] = []; // 🎯 ডাইনামিক রিয়েল-টাইম সার্চ বাফার
   products: any[] = [];
   suppliers: any[] = [];
   userRole: string = '';
+  currentSupplierId: number | null = null;
+
+  // 🔍 ডুয়াল সার্চ ইনপুট মডেলস
+  searchId: string = '';
+  searchUrgency: string = '';
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
@@ -49,15 +55,76 @@ export class PurchaseRequisitionComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
     const currentUser = this.storage.getUser();
     if (currentUser) {
       this.requisition.requestedBy = currentUser.userId;
-      this.userRole = currentUser.role ? currentUser.role.toUpperCase() : '';
+      if (!this.userRole && currentUser.role) {
+        this.userRole = currentUser.role.toUpperCase();
+      }
+    }
+
+    // 🔒 সেশন ক্যাশ থেকে সাপ্লায়ার মেটা অবজেক্ট ও আইডি রিড
+    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
+    if (cachedSupplier) {
+      this.currentSupplierId = cachedSupplier.id;
     }
 
     this.loadRequisitions();
     this.loadProducts();
     this.loadSuppliers();
+  }
+
+  loadRequisitions() { 
+    this.service.findAll().subscribe({
+      next: (data) => {
+        const allRequisitions = data || [];
+
+        // 🔒 STRICT DATA ISOLATION LOCK: ইউজার SUPPLIER হলে শুধুমাত্র তার সাথে ম্যাচিং APPROVED ডাটা ম্যাপ হবে
+        if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+          this.requisitions = allRequisitions.filter((pr: any) => {
+            const hasSupplier = pr.supplierIds?.includes(this.currentSupplierId) || 
+                                (pr.suppliers && pr.suppliers.some((s: any) => s.id === this.currentSupplierId));
+            return hasSupplier && pr.approvalStatus === 'APPROVED';
+          });
+        } else {
+          // ADMIN/MANAGER/PROCUREMENT হলে গ্লোবাল ডাটা লোড হবে
+          this.requisitions = allRequisitions;
+        }
+
+        this.filteredRequisitions = [...this.requisitions];
+        this.applyDoubleSearch(); // যদি সার্চ ফিল্ডে অলরেডি কোনো ইনপুট থাকে
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || "Failed to sync cluster directories.";
+        this.cdr.markForCheck();
+      }
+    }); 
+  }
+
+  // 🎯 ডুয়াল সার্চ বার ফিল্টারিং লজিক (PR Reference ID এবং Urgency Level)
+  applyDoubleSearch() {
+    const idTerm = this.searchId.toLowerCase().trim();
+    const urgencyTerm = this.searchUrgency.toLowerCase().trim();
+
+    this.filteredRequisitions = this.requisitions.filter(pr => {
+      const prIdStr = pr.id ? `#PRQ-${pr.id}` : '';
+      const urgency = pr.urgencyLevel || 'LOW';
+
+      const matchesId = prIdStr.toLowerCase().includes(idTerm) || pr.id?.toString().includes(idTerm);
+      const matchesUrgency = urgency.toLowerCase().includes(urgencyTerm);
+
+      return matchesId && matchesUrgency;
+    });
+
+    this.cdr.markForCheck();
+  }
+
+  loadProducts() { this.productService.findAll().subscribe(data => { this.products = data || []; this.cdr.markForCheck(); }); }
+  loadSuppliers() { 
+    if (this.userRole === 'SUPPLIER') return; // সাপ্লায়ার হলে গ্লোবাল ভেন্ডার লিস্ট লোড করার প্রয়োজন নেই
+    this.supplierService.findAll().subscribe(data => { this.suppliers = data || []; this.cdr.markForCheck(); }); 
   }
 
   onProductSelect(event: any) {
@@ -96,9 +163,6 @@ export class PurchaseRequisitionComponent implements OnInit {
     return this.suppliers.find(s => s.id === id);
   }
 
-  /**
-   * 🎯 ফিক্সড টেক্সট-এরিয়া ডাইনামিক হাইট ক্যালকুলেশন
-   */
   autoGrowTextarea(event: any) {
     const element = event.target;
     element.style.height = 'auto';
@@ -107,10 +171,6 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
-  
-  loadRequisitions() { this.service.findAll().subscribe(data => { this.requisitions = data || []; this.cdr.markForCheck(); }); }
-  loadProducts() { this.productService.findAll().subscribe(data => { this.products = data || []; this.cdr.markForCheck(); }); }
-  loadSuppliers() { this.supplierService.findAll().subscribe(data => { this.suppliers = data || []; this.cdr.markForCheck(); }); }
 
   authorizeApproval(id: number) {
     if (confirm("Verify and AUTHORIZE this procurement requisition vector?")) {
@@ -168,9 +228,6 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  /**
-   * 🎯 ডিলিট সেফগার্ড প্রম্পট সহ স্ট্যান্ডার্ড ইন্টিগ্রেশন
-   */
   delete(id: number) {
     if (confirm("Are you sure you want to permanently delete this procurement requisition record?")) {
       this.service.delete(id).subscribe({

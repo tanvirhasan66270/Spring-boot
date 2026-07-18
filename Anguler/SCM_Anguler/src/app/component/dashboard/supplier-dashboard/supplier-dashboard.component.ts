@@ -24,7 +24,7 @@ import { purchaseRequisitionResponseModel } from '../../shared/model/purchase-re
   standalone: true,
   imports: [CommonModule, RouterModule, DashboardSettingsComponent],
   templateUrl: './supplier-dashboard.component.html',
-  styleUrls: ['./supplier-dashboard.component.css'],
+  styleUrls:['./supplier-dashboard.component.css'],
 })
 export class SupplierDashboardComponent implements OnInit {
   userName = '';
@@ -49,7 +49,7 @@ export class SupplierDashboardComponent implements OnInit {
   lettersOfCredit: any[] = [];
   poRegistryOpen = false;
   allSupplierPOs: any[] = [];
-  requisitions: any[] = []; // APPROVED রিকুইজিশন ডাটা হোল্ডার পাইপলাইন
+  requisitions: any[] = []; 
 
   showSettings = false;
   loading = true;
@@ -60,7 +60,7 @@ export class SupplierDashboardComponent implements OnInit {
 
   constructor(
     private storage: StorageService,
-    private router: Router,
+    public router: Router, 
     private cdr: ChangeDetectorRef,
     private supplierService: SupplierService,
     private poService: PurchaseOrderService,
@@ -83,15 +83,26 @@ export class SupplierDashboardComponent implements OnInit {
     this.loadActivities();
   }
 
-  // 🔒 সিকিউরড ডাটা লোড: প্রথমে নিশ্চিত করা হচ্ছে সাপ্লায়ার প্রোফাইল
+  isChildRouteActive(): boolean {
+    return this.router.url.includes('supplier_profile');
+  }
+
+  onEditProfileTriggered(): void {
+    this.showSettings = false; 
+    
+    // আপনার প্যারেন্ট লেআউট রাউটের উপর ভিত্তি করে নেভিগেট করবে
+    // যদি আপনার রুট /supplier/dashboard হয়, তবে এটি হবে: ['/supplier/dashboard/supplier_profile']
+    // এখানে আপনার বর্তমান সেশন ফ্রেমওয়ার্ক অনুযায়ী রিলেটিভ পাথ জেনারেট করা হলো
+    this.router.navigate([this.router.url.split('/supplier_profile')[0] + '/supplier_profile']);
+    this.cdr.markForCheck();
+  }
+
   loadSupplier(): void {
     this.supplierService.getSupplierByUserId(this.userId).subscribe({
       next: (res) => {
         if (res) {
           this.supplier = res;
           this.storage.saveData(KEYS.SUPPLIER, res);
-          
-          // প্রোফাইল নিশ্চিত হওয়ার পরেই কেবল তার নিজস্ব ডেটাবেজ ট্র্যাকিং ওপেন হবে
           this.loadDashboardData(res.id);
         }
         this.cdr.markForCheck();
@@ -107,12 +118,9 @@ export class SupplierDashboardComponent implements OnInit {
   loadDashboardData(supplierId: number) {
     this.loading = true;
 
-    // 🎯 ১. নির্দিষ্ট ভেন্ডারের অল-টাইম ও অ্যাক্টিভ পারচেজ অর্ডার ফিল্টারিং
     this.poService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
-        
-        // Strict Data Isolation: শুধুমাত্র বর্তমান সাপ্লায়ারের সাথে ম্যাচিং ডেটা
         const supplierSpecificOrders = all.filter((o: any) => {
           const sId = o.supplierId || (o.supplier ? o.supplier.id : null);
           return sId === supplierId;
@@ -148,7 +156,6 @@ export class SupplierDashboardComponent implements OnInit {
           status: o.status || 'RECEIVED',
         }));
 
-        // 🎯 ডাইনামিক LC ডাটা ম্যাপিং শুধুমাত্র নিজস্ব RECEIVED অর্ডারের উপর ভিত্তি করে
         this.lettersOfCredit = delivered.map((o: any) => ({
           lcNumber: `LC-${100000 + o.id}`,
           poReference: o.poNumber || `PO-${o.id}`,
@@ -168,7 +175,6 @@ export class SupplierDashboardComponent implements OnInit {
       error: (err) => console.error('PO Stream Load Error:', err),
     });
 
-    // 🎯 ২. ওপেন সোর্সিং RFQ ইনভিটেশনস ম্যাপিং
     this.quotationService.findAll().subscribe({
       next: (data) => {
         const allRfqs = data || [];
@@ -188,7 +194,6 @@ export class SupplierDashboardComponent implements OnInit {
       error: (err) => console.error('Quotation Load Error:', err)
     });
 
-    // 🎯 ৩. সেন্ট্রাল রিকুইজিশন স্ট্রিম (Filters: ONLY APPROVED DATA)
     this.prService.findAll().subscribe({
       next: (data) => {
         const allRequisitions = data || [];
@@ -199,18 +204,18 @@ export class SupplierDashboardComponent implements OnInit {
         this.requisitions = approvedOnly.slice(0, 5).map((pr: purchaseRequisitionResponseModel) => ({
           id: pr.id,
           productNames: pr.productNames || [],
-          supplierNames: pr.supplierNames || [],
+          supplierNames: pr.supplierNames || [], 
           quantity: pr.quantityRequired || 0,
           urgency: pr.urgencyLevel || 'LOW',
           deadline: pr.requiredByDate || 'N/A',
           status: pr.approvalStatus || 'APPROVED'
         }));
-        this.cdr.markForCheck();
+        
+        this.cdr.markForCheck(); 
       },
       error: (err) => console.error('PR Load Error:', err)
     });
 
-    // 🎯 ৪. ইনভয়েস এবং কমার্শিয়াল আউটস্ট্যান্ডিং ফিল্টারিং
     this.invoiceService.findAll().subscribe({
       next: (data) => {
         const invoices = data || [];

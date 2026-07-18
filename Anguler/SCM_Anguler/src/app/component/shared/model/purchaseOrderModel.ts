@@ -3,10 +3,17 @@
 export interface PurchaseOrderRequestModel {
   quotationId: number;
   issuedBy: number;
+  issuedByName?: string;
   totalAmount: number;
+  quantity: number; // এটি যোগ করুন
   currency: string;
-  expectedDeliveryDate: string; // YYYY-MM-DD
-  status: 'DRAFT' | 'ISSUED' | 'PARTIALLY_RECEIVED' | 'RECEIVED' | 'CANCELLED' | string;
+  expectedDeliveryDate: string;
+  status: string;
+  poNumber?: string;
+  supplierName?: string;
+  supplierEmail?: string;
+  purchaseRequisitionId?: number;
+  createdAt?: string;
 }
 
 export interface PurchaseOrderResponseModel {

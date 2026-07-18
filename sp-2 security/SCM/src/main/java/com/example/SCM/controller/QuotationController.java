@@ -2,16 +2,19 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;
+import com.example.SCM.entity.User;
 import com.example.SCM.service.QuotationService;
 import com.fasterxml.jackson.databind.ObjectMapper; // 🎯 স্ট্যান্ডার্ড জ্যাকসন লাইব্রেরি ইম্পোর্ট
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/quotations")
@@ -47,11 +50,25 @@ public class QuotationController {
     // 3. Get All Quotations (GET)
     @GetMapping
     public ResponseEntity<List<QuotationResponseDTO>> getAllQuotations() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<QuotationResponseDTO> list = quotationService.findAll();
+
+        if (principal instanceof User currentUser) {
+            // ইউজার রোল SUPPLIER হলে শুধুমাত্র তার ওনড মেটেরিয়াল কোটেশন ফিল্টার হবে
+            if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
+                List<QuotationResponseDTO> supplierFiltered = list.stream()
+                        .filter(q -> q.getSupplierId() != null && q.getSupplierId().equals(currentUser.getId()))
+                        .collect(Collectors.toList());
+                return ResponseEntity.ok(supplierFiltered);
+            }
+        }
+
+        // ADMIN, MANAGER বা PROCUREMENT হলে গ্লোবাল ডাটা পাবে
         if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(list);
+
     }
 
     // 4. Update Existing Quotation (PUT)

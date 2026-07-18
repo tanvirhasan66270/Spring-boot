@@ -23,4 +23,10 @@ public interface PurchaseRequisitionRepository extends JpaRepository<PurchaseReq
             "LEFT JOIN FETCH pr.suppliers " +
             "WHERE pr.id = :id")
     Optional<PurchaseRequisition> findByIdWithDetails(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT pr FROM PurchaseRequisition pr " +
+            "LEFT JOIN FETCH pr.products " +
+            "JOIN FETCH pr.suppliers s " +
+            "WHERE s.user.id = :userId AND pr.approvalStatus = com.example.SCM.enumClass.PurchaseRequisitionStatus.APPROVED")
+    List<PurchaseRequisition> findAllApprovedBySupplierUserId(@Param("userId") Long userId);
 }

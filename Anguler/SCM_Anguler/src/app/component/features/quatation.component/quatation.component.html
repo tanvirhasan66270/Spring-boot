@@ -1,28 +1,51 @@
-<div class="container-fluid py-4 px-4">
+<div class="container-fluid py-4 px-4 text-dark">
 
-  <!-- ==========================================
-       Upper Navigation & Header Matrix
-       ========================================== -->
-  <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
+  <!-- ─── হেডার এবং ডুয়াল সার্চ বার প্যানেল ─── -->
+  <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="text-dark fw-bold mb-1">Supplier Quotation Matrix</h4>
       <p class="text-muted mb-0 small">Log supplier bids, trace PR reference nodes, and analyze procurement price layouts.</p>
     </div>
-    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
-      <i class="bi bi-file-earmark-arrow-up-fill me-2"></i>Upload Supplier Quotation
-    </button>
+    
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+      <!-- সার্চ ১: QTN Number -->
+      <div class="input-group" style="width: 220px;">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-secondary"></i></span>
+        <input type="text" class="form-control bg-light border-start-0 fs-7" 
+               placeholder="Search QTN No..." 
+               [(ngModel)]="searchQtn" 
+               (input)="applyDoubleSearch()">
+      </div>
+
+      <!-- সার্চ ২: Auditing State -->
+      <div class="input-group" style="width: 200px;">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-funnel text-secondary"></i></span>
+        <select class="form-select bg-light border-start-0 fs-7 text-secondary" 
+                [(ngModel)]="searchState" 
+                (change)="applyDoubleSearch()">
+          <option value="">All Auditing States</option>
+          <option value="PENDING">PENDING</option>
+          <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+          <option value="APPROVED">APPROVED</option>
+          <option value="REJECTED">REJECTED</option>
+          <option value="EXPIRED">EXPIRED</option>
+        </select>
+      </div>
+
+      <!-- 🔓 বাটন রিলিজ: এখন SUPPLIER সহ সব ইউজারই কোটেশন আপলোড বাটনটি দেখতে পাবেন এবং সাবমিট করতে পারবেন -->
+      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center" (click)="openDrawer()">
+        <i class="bi bi-file-earmark-arrow-up-fill me-2"></i>Upload Supplier Quotation
+      </button>
+    </div>
   </div>
 
-  <!-- Global Exception/Error Logger Alerts -->
   @if (errorMessage) {
     <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
       <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
     </div>
   }
 
-  <!-- ==========================================
-       Data Grid Registry Table
-       ========================================== -->
+  <!-- ─── কোটেশন ডাটা লেজার টেবিল ─── -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -36,14 +59,16 @@
               <th>Qty Required</th>
               <th>Aggregate Price</th>
               <th>Auditing State</th>
-              <th class="text-end px-4" width="140">Actions</th>
+              @if (activeRole !== 'SUPPLIER') {
+                <th class="text-end px-4" width="140">Actions</th>
+              }
             </tr>
           </thead>
           <tbody>
-            @for (q of quotations; track q.id) {
-              <tr [class.table-info]="q.isSelected">
+            @for (q of filteredQuotations; track q.id) {
+              <tr>
                 <td class="ps-4">
-                  <span class="badge bg-dark font-monospace tracking-wide">{{ q.quotationNumber }}</span>
+                  <span class="badge bg-dark font-monospace tracking-wide">{{ q.quotationNumber || 'QTN-'+q.id }}</span>
                   <small class="d-block text-muted font-monospace mt-1">
                     <i class="bi bi-link-45deg"></i>PR Node: #{{ q.purchaseRequisitionId }}
                   </small>
@@ -71,22 +96,25 @@
                     {{ q.status }}
                   </span>
                 </td>
-                <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-icon btn-light text-warning" title="Edit Properties" (click)="edit(q)">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(q.id)">
-                      <i class="bi bi-trash3-fill"></i>
-                    </button>
-                  </div>
-                </td>
+                
+                @if (activeRole !== 'SUPPLIER') {
+                  <td class="text-end px-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      <button class="btn btn-icon btn-light text-warning" title="Edit Properties" (click)="edit(q)">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(q.id)">
+                        <i class="bi bi-trash3-fill"></i>
+                      </button>
+                    </div>
+                  </td>
+                }
               </tr>
             }
             @empty {
               <tr>
-                <td colspan="8" class="text-center py-5 text-muted font-monospace fs-8">
-                  <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>No bidding envelopes registered in node directory.
+                <td [attr.colspan]="activeRole === 'SUPPLIER' ? 7 : 8" class="text-center py-5 text-muted font-monospace fs-8">
+                  <i class="bi bi-folder-x fs-2 d-block mb-2 text-secondary"></i>No quotations match the active QTN No and State matrix parameters.
                 </td>
               </tr>
             }
@@ -96,9 +124,8 @@
     </div>
   </div>
 
-  <!-- ==========================================
-       Sliding Input Form Drawer Framework
-       ========================================== -->
+  <!-- ─── Sliding Input Form Drawer Framework ─── -->
+  <!-- 🔓 ড্রয়ারটি সবার জন্য রেন্ডার হবে -->
   <div class="slide-drawer shadow" [class.show]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Quotation Properties' : 'Register Supplier Quotation' }}</h5>
@@ -123,16 +150,26 @@
         <!-- 2. Target Supplier Node -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Vendor Node</label>
-          <select class="form-select fs-7" [(ngModel)]="quotation.supplierId" name="supplierId" #supRef="ngModel" required [disabled]="isEdit" [class.is-invalid]="supRef.value === 0 && qForm.submitted">
+          
+          <!-- 🔒 কন্ডিশনাল চেকিং: ইউজার SUPPLIER রোল হলে সে ড্রপডাউন সিলেক্ট করতে পারবেনা, তার আইডি অটো-লক থাকবে -->
+          <select class="form-select fs-7 bg-light fw-bold" [(ngModel)]="quotation.supplierId" name="supplierId" #supRef="ngModel" required 
+                  [disabled]="isEdit || activeRole === 'SUPPLIER'" [class.is-invalid]="supRef.value === 0 && qForm.submitted">
             <option [value]="0">-- Select Supplier --</option>
-            @for (s of suppliers; track s.id) {
-              <option [value]="s.id">{{ s.name }} ({{ s.companyName || 'Corporate Entity' }})</option>
+            
+            @if (activeRole === 'SUPPLIER') {
+              <!-- সাপ্লায়ার নিজে লগইন করলে শুধু তার কোম্পানির অপশন দেখাবে -->
+              <option [value]="currentSupplierId" selected>{{ currentSupplierName }}</option>
+            } @else {
+              <!-- স্টাফরা লগইন করলে সব সাপ্লায়ারের লিস্ট দেখাবে -->
+              @for (s of suppliers; track s.id) {
+                <option [value]="s.id">{{ s.name }} ({{ s.companyName || 'Corporate Entity' }})</option>
+              }
             }
           </select>
           <div class="invalid-feedback small fw-bold" *ngIf="supRef.value === 0 && qForm.submitted">Supplier selection node is mandatory!</div>
         </div>
 
-        <!-- 3. Financial Costing & Volumetric Input Strategy -->
+        <!-- 3. Financial Costing Input -->
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Unit Bid Cost ($)</label>
@@ -140,11 +177,22 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Supply Volume (Qty)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="quotation.quantity" name="quantity" min="1" required>
+            <input type="number" 
+                   class="form-control fs-7 font-monospace fw-bold" 
+                   [class.is-invalid]="!isQuantityValid()"
+                   [(ngModel)]="quotation.quantity" 
+                   name="quantity" 
+                   min="1" 
+                   required>
+            <div class="invalid-feedback d-block small fw-bold" *ngIf="!isQuantityValid()">
+              Quantity limit exceeded!<br>
+              Your quantity limit is: {{ getLinkedRequisitionQty() }}.<br>
+              Please enter a quantity less than or equal to the requested quantity.
+            </div>
           </div>
         </div>
 
-        <!-- 4. Delivery Deadlines & Workflow Status -->
+        <!-- 4. Delivery Deadlines -->
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Lead Time (Days)</label>
@@ -152,7 +200,8 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Bidding Strategy Stage</label>
-            <select class="form-select fs-7" [(ngModel)]="quotation.status" name="status" required>
+            <!-- 🔒 নিরাপত্তা: সাপ্লায়ার নিজে তার কোটেশনকে APPROVED করতে পারবে না, তার জন্য এটি PENDING এ লক থাকবে -->
+            <select class="form-select fs-7" [(ngModel)]="quotation.status" name="status" required [disabled]="activeRole === 'SUPPLIER'">
               <option value="PENDING">PENDING</option>
               <option value="UNDER_REVIEW">UNDER_REVIEW</option>
               <option value="APPROVED">APPROVED</option>
@@ -174,42 +223,43 @@
           </div>
         </div>
 
-        <!-- 6. Warranty Coverage Matrix -->
+        <!-- 6. Warranty Matrix -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Warranty Coverage Matrix</label>
-          <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 3 Years Global Replacement Grid Pack">
+          <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 3 Years Global Grid Pack">
         </div>
 
-        <!-- 7. Document Envelope Stream (Only visible in Creation mode) -->
+        <!-- 7. Attachment Envelope -->
         <div class="mb-3" *ngIf="!isEdit">
           <label class="form-label fw-bold small text-uppercase text-secondary">Supplier Attachment Document Envelope</label>
           <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
         </div>
 
-        <!-- 8. Nomenclature Specifications (Product Descriptions) -->
+        <!-- 8. Product Descriptions -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Product Nomenclature Specifications</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription" placeholder="Input physical/material properties configuration matrix..."></textarea>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription" placeholder="Input physical/material properties matrix..."></textarea>
         </div>
 
-        <!-- 9. Sourcing Directive Notes -->
+        <!-- 9. Notes -->
         <div class="mb-4">
           <label class="form-label fw-bold small text-uppercase text-secondary">Sourcing Operations Notes</label>
           <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.notes" name="notes" placeholder="Internal logistics directives remarks..."></textarea>
         </div>
 
-        <!-- Drawer Footer Action Triggers -->
+        <!-- Drawer Footer -->
         <div class="drawer-footer d-flex gap-2 pt-2 border-top">
-          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" 
+                  type="submit" 
+                  [disabled]="!isQuantityValid() || qForm.invalid">
             <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Bid Mutations' : 'Publish Quotation Envelope' }}
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click inversion)="reset()">Clear</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Backdrop Node Blur Effect Trigger -->
   @if (isDrawerOpen) {
     <div class="drawer-backdrop" (click)="closeDrawer()"></div>
   }

@@ -82,7 +82,10 @@ public class POLineItemMapper {
             Product prod = item.getProduct();
             dto.setProductId(prod.getId());
             dto.setProductName(prod.getName());      // ফ্রন্টএন্ড ড্যাশবোর্ডে সরাসরি নাম দেখানোর জন্য
-            dto.setProductCode(prod.getProductCode());  // কাস্টম প্রোডাক্ট কোড শো করার জন্য
+            dto.setProductCode(prod.getProductCode());
+            dto.setSupplierId(prod.getId());
+            dto.setSupplierName(prod.getName());
+
         }
 
         return dto;

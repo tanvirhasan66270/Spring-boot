@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PurchaseOrderRequestModel, PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { QuotationService } from '../../../service/quatation.service';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-purchase-order',
@@ -16,20 +16,31 @@ import { StorageService } from '../../../auth/auth_service/storage.service';
 export class PurchaseOrderComponent implements OnInit {
 
   orders: PurchaseOrderResponseModel[] = [];
+  filteredOrders: PurchaseOrderResponseModel[] = [];
   quotations: any[] = [];
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
+  
+  activeRole: string = 'CUSTOMER';
+  currentSupplierId: number | null = null;
+
+  searchQuery: string = '';       // ১ম সার্চ বার: PO Number বা Status
+  searchSupplier: string = '';    // ২য় সার্চ বার: Supplier Name বা ID
+  searchDate: string = '';        // ৩য় সার্চ বার: Expected Delivery/Creation Date
 
   order: PurchaseOrderRequestModel = {
-    quotationId: 0,
-    issuedBy: 0,
-    totalAmount: 0,
-    currency: 'USD',
-    expectedDeliveryDate: '',
-    status: 'DRAFT'
-  };
+  quotationId: 0,
+  issuedBy: 0,
+  issuedByName: '', // এটি যোগ করুন
+  totalAmount: 0,
+  quantity: 1,      // যদি প্রয়োজন হয়
+  currency: 'USD',
+  expectedDeliveryDate: '',
+  status: 'DRAFT',
+  createdAt: ''     // এটি যোগ করুন
+};
 
   constructor(
     private service: PurchaseOrderService,
@@ -39,22 +50,98 @@ export class PurchaseOrderComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
     const currentUser = this.storage.getUser();
     if (currentUser) {
       this.order.issuedBy = currentUser.userId;
     }
+
+    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as { id: number; [key: string]: any };
+    if (cachedSupplier) {
+      this.currentSupplierId = cachedSupplier.id;
+    }
+
     this.loadOrders();
     this.loadQuotations();
   }
 
+  //  রোল এবং প্রিভিলেজ ম্যাচিং হেল্পার (সার্চ কার্ড ও বাটন কন্ট্রোল)
+  isManagementUser(): boolean {
+    return this.activeRole === 'ADMIN' || this.activeRole === 'MANAGER' || this.activeRole === 'PROCUREMENT';
+  }
+
+  //  ড্যাশবোর্ড কার্ডের ভেতরের সাধারণ সার্চ বার হাইড করার কন্ডিশনাল হেল্পার
+  shouldShowCardSearchBar(): boolean {
+    // PROCUREMENT এবং MANAGER ভেতরের সাধারণ সার্চ বার দেখতে পারবেনা
+    if (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER') {
+      return false;
+    }
+    return true; 
+  }
+
   loadOrders() {
     this.service.findAll().subscribe({
-      next: (data) => { this.orders = data || []; this.cdr.markForCheck(); }
+      next: (data) => { 
+        this.orders = data || [];
+        // ডেটা লোড হওয়ার পর সিকিউরিটি আইসোলেশন ও ফিল্টার পাইপলাইন রান করা হবে
+
+       
+        this.applyDataIsolationAndFilters();
+      },
+      error: (err) => console.error('PO Load Error:', err)
     });
   }
 
+  applyDataIsolationAndFilters(): void {
+    let ordersPipe = [...this.orders];
+
+    if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
+      ordersPipe = ordersPipe.filter((po: any) => {
+        const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
+        return sId === this.currentSupplierId;
+      });
+    } 
+    else if (!this.isManagementUser() && this.activeRole !== 'SUPPLIER') {
+      ordersPipe = []; // অন্য কোনো আন-অথরাইজড রোল হলে সেফটি ব্লক
+    }
+
+    if (this.isManagementUser()) {
+      
+      // ক) ১ম সার্চ বার ফিল্টার: PO Number বা Status
+      if (this.searchQuery.trim() !== '') {
+        const query = this.searchQuery.toLowerCase();
+        ordersPipe = ordersPipe.filter((o: any) => 
+          (o.poNumber && o.poNumber.toLowerCase().includes(query)) || 
+          (o.status && o.status.toLowerCase().includes(query))
+        );
+      }
+
+      // খ) ২য় সার্চ বার ফিল্টার: Supplier Name বা Supplier ID
+      if (this.searchSupplier.trim() !== '') {
+        const supplierQuery = this.searchSupplier.toLowerCase();
+        ordersPipe = ordersPipe.filter((o: any) => 
+          (o.supplierName && o.supplierName.toLowerCase().includes(supplierQuery)) || 
+          (o.supplierId && o.supplierId.toString() === supplierQuery) ||
+          (o.supplier?.name && o.supplier.name.toLowerCase().includes(supplierQuery))
+        );
+      }
+
+      // গ) ৩য় সার্চ বার ফিল্টার: Date Specific Query
+      if (this.searchDate !== '') {
+        ordersPipe = ordersPipe.filter((o: any) => 
+          (o.createdAt && o.createdAt.includes(this.searchDate)) ||
+          (o.expectedDeliveryDate && o.expectedDeliveryDate.includes(this.searchDate))
+        );
+      }
+    }
+
+    this.filteredOrders = ordersPipe;
+    this.cdr.markForCheck();
+  }
+  
   loadQuotations() {
-    // শুধুমাত্র APPROVED কোটেশনগুলো ফিল্টার করে আনা যাতে সেগুলোর বিপরীতে PO ইস্যু 
+    if (this.activeRole === 'SUPPLIER') return;
+
     this.quotationService.findAll().subscribe({
       next: (data) => {
         this.quotations = data ? data.filter((q: any) => q.status === 'APPROVED') : [];
@@ -63,13 +150,25 @@ export class PurchaseOrderComponent implements OnInit {
     });
   }
 
-  onQuotationChange(event: any) {
-    const qId = +event.target.value;
-    const selectedQ = this.quotations.find(q => q.id === qId);
-    if (selectedQ) {
-      this.order.totalAmount = selectedQ.totalPrice;
-    }
+ onQuotationChange(event: any) {
+  const qId = +event.target.value;
+  const selectedQ = this.quotations.find(q => q.id === qId);
+  
+  if (selectedQ) {
+    console.log("Selected Quotation Object:", selectedQ); 
+    
+    this.order.totalAmount = selectedQ.totalPrice;
+    this.order.supplierName = selectedQ.supplierName;
+    
+    this.order.supplierEmail = selectedQ.supplierEmail || 
+                               selectedQ.email || 
+                               (selectedQ.supplier ? selectedQ.supplier.email : 'N/A');
+    
+    this.order.purchaseRequisitionId = selectedQ.purchaseRequisitionId;
+
+     console.log(this.order);
   }
+}
 
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
@@ -95,22 +194,30 @@ export class PurchaseOrderComponent implements OnInit {
     }
   }
 
-  edit(o: PurchaseOrderResponseModel) {
-    this.errorMessage = null;
-    this.currentEditId = o.id;
-    this.isEdit = true;
-    this.order = {
-      quotationId: o.quotationId,
-      issuedBy: o.issuedBy,
-      totalAmount: o.totalAmount,
-      currency: o.currency || 'USD',
-      expectedDeliveryDate: o.expectedDeliveryDate,
-      status: o.status
-    };
-    this.isDrawerOpen = true;
-    this.cdr.markForCheck();
-  }
+ edit(o: PurchaseOrderResponseModel) {
+  this.errorMessage = null;
+  this.currentEditId = o.id;
+  this.isEdit = true;
 
+  this.order = {
+    quotationId: o.quotationId,
+    issuedBy: o.issuedBy,
+    issuedByName: (this.storage.getUser()?.name) || 'Unknown', // সরাসরি স্টোরেজ থেকে
+    totalAmount: o.totalAmount,
+    quantity: o.quantity,
+    currency: o.currency,
+    expectedDeliveryDate: o.expectedDeliveryDate,
+    status: o.status,
+    poNumber: o.poNumber,
+    supplierName: o.supplierName,
+    supplierEmail: o.supplierEmail, // ResponseModel এ এই ফিল্ডটি আছে
+    purchaseRequisitionId: o.purchaseRequisitionId,
+    createdAt: o.createdAt
+  };
+
+  this.isDrawerOpen = true;
+  this.cdr.markForCheck();
+}
   delete(id: number) {
     if (confirm("Definitively purge this Purchase Order record from active directories?")) {
       this.service.delete(id).subscribe({
@@ -121,17 +228,27 @@ export class PurchaseOrderComponent implements OnInit {
   }
 
   reset() {
-    const currentUser = this.storage.getUser();
-    this.order = {
-      quotationId: 0,
-      issuedBy: currentUser?.userId || 0,
-      totalAmount: 0,
-      currency: 'USD',
-      expectedDeliveryDate: '',
-      status: 'DRAFT'
-    };
-    this.isEdit = false;
-    this.currentEditId = null;
-    this.errorMessage = null;
-  }
+  const currentUser = this.storage.getUser();
+  const systemDate = new Date().toISOString();
+
+  this.order = {
+    quotationId: 0,
+    issuedBy: currentUser?.userId || 0,
+    issuedByName: currentUser?.name || 'Unknown User',
+    totalAmount: 0,
+    quantity: 1,
+    currency: 'USD',
+    expectedDeliveryDate: '',
+    status: 'DRAFT',
+    createdAt: systemDate,
+    // ঐচ্ছিক ফিল্ডগুলো খালি রাখা
+    supplierName: '',
+    supplierEmail: '',
+    purchaseRequisitionId: 0
+  };
+  
+  this.isEdit = false;
+  this.currentEditId = null;
+  this.errorMessage = null;
+}
 }

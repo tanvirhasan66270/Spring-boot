@@ -26,4 +26,5 @@ public class PurchaseRequisitionResponseDTO {
     private List<String> productNames;
     private List<Long> supplierIds;
     private List<String> supplierNames;
+
 }

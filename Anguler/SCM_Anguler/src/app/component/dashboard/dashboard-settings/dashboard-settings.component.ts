@@ -18,6 +18,7 @@ import { environment } from '../../../../environment/environment';
 export class DashboardSettingsComponent implements OnInit {
   @Input() isOpen = false;
   @Output() close = new EventEmitter<void>();
+  @Output() onEditProfile = new EventEmitter<void>(); // 🎯 প্যারেন্ট ড্যাশবোর্ডকে রাউটিং ট্রিগার পাঠানোর গেটওয়ে
 
   user: LoginResponse | null = null;
   activeTab = 'profile';
@@ -34,10 +35,7 @@ export class DashboardSettingsComponent implements OnInit {
   notifications: NotificationModel[] = [];
   unreadCount = 0;
 
-  editMode = false;
-  editName = '';
-  editEmail = '';
-  editPhone = '';
+  // ❌ লোকাল এডিট মোড ও ফর্মের ভ্যারিয়েবলসমূহ সম্পূর্ণ বাদ দেওয়া হয়েছে
 
   changePasswordMode = false;
   currentPassword = '';
@@ -53,11 +51,6 @@ export class DashboardSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.user = this.storage.getUser();
-    if (this.user) {
-      this.editName = this.user.name || '';
-      this.editEmail = this.user.email || '';
-      this.editPhone = this.user.phone || '';
-    }
     this.isDarkMode = document.body.classList.contains('dark-theme');
     this.loadSettings();
     this.loadNotifications();
@@ -141,9 +134,9 @@ export class DashboardSettingsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  saveProfile(): void {
-    this.editMode = false;
-    this.cdr.markForCheck();
+  // 🎯 "Edit Profile" বাটনে ক্লিক করলে প্যারেন্টকে সিগন্যাল পাঠানোর মেথড
+  triggerEditProfileRouting(): void {
+    this.onEditProfile.emit();
   }
 
   changePassword(): void {
