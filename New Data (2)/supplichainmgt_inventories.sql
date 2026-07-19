@@ -16,32 +16,38 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `inventories`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `inventories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
+CREATE TABLE `inventories` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `last_updated` datetime(6) NOT NULL,
+  `location_status` varchar(255) DEFAULT NULL,
+  `quantity_on_hand` int NOT NULL,
+  `quantity_reserved` int NOT NULL,
+  `stock_status` varchar(255) NOT NULL,
+  `product_id` bigint NOT NULL,
+  `warehouse_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `UK7ot3g6ubjqhhiydseg4cdav1m` (`product_id`,`warehouse_id`),
+  KEY `FKoipfe4s81wodvutx9i0rlmoyi` (`warehouse_id`),
+  CONSTRAINT `FK8drmqyx629j3oo8ct9jnc5y3y` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `FKoipfe4s81wodvutx9i0rlmoyi` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `inventories`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `inventories` WRITE;
+/*!40000 ALTER TABLE `inventories` DISABLE KEYS */;
+INSERT INTO `inventories` VALUES (1,'2026-07-10','2026-07-09 15:40:30.712747','ssdzxvwe sdfsd',230,0,'IN_STOCK',1,1);
+/*!40000 ALTER TABLE `inventories` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 19:07:19
+-- Dump completed on 2026-07-19 19:07:21

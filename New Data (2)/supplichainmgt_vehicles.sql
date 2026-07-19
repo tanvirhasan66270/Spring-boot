@@ -16,32 +16,36 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `vehicles`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `vehicles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
+CREATE TABLE `vehicles` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
+  `capacity` double NOT NULL,
+  `fuel_level` int NOT NULL,
+  `last_service_date` date DEFAULT NULL,
+  `plate_number` varchar(50) NOT NULL,
+  `status` enum('AVAILABLE','MAINTENANCE','ON_TRIP','OUT_OF_SERVICE') DEFAULT NULL,
+  `type` enum('AIR','BIKE','RIVER_ROUTE','TRUCK','VAN') DEFAULT NULL,
+  `driver_id` bigint DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `UKh6kd0awsaislk5n2f3ea1hhuq` (`plate_number`),
+  KEY `FKaashphrwfd4ts511y8vj785ia` (`driver_id`),
+  CONSTRAINT `FKaashphrwfd4ts511y8vj785ia` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `vehicles`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `vehicles` WRITE;
+/*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
+INSERT INTO `vehicles` VALUES (1,1500,85,'2026-05-10','Dhaka Metro-GA-11-2026','AVAILABLE','VAN',1),(2,3000,60,'2026-06-01','Dhaka Metro-THA-55-1024','ON_TRIP','TRUCK',2),(3,5000,45,'2026-04-15','Chotto Metro-TA-99-4321','MAINTENANCE','TRUCK',3),(4,1200,90,'2026-06-20','Dhaka Metro-HA-22-9981','OUT_OF_SERVICE','VAN',4),(5,2000,75,'2026-07-01','Dhaka Metro-MOTO-88-7722','AVAILABLE','VAN',5);
+/*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 19:07:19
+-- Dump completed on 2026-07-19 19:07:22

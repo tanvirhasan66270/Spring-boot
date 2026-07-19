@@ -63,6 +63,8 @@ public class Quotation {
     private Integer quantity;
 
     private double totalPrice;
+    private double isSelected;
+
 
     @Column(nullable = false)
     private LocalDate deliveryTime;

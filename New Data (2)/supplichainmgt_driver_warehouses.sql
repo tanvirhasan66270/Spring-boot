@@ -16,32 +16,29 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `driver_warehouses`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `driver_warehouses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `driver_warehouses` (
+  `driver_id` bigint NOT NULL,
+  `warehouse_id` bigint NOT NULL,
+  PRIMARY KEY (`driver_id`,`warehouse_id`),
+  KEY `FK18eicrl9001m0e9v415duke82` (`warehouse_id`),
+  CONSTRAINT `FK18eicrl9001m0e9v415duke82` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
+  CONSTRAINT `FKrty0v21xtiyqo57ixe4vyo4q4` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `driver_warehouses`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `driver_warehouses` WRITE;
+/*!40000 ALTER TABLE `driver_warehouses` DISABLE KEYS */;
+/*!40000 ALTER TABLE `driver_warehouses` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 19:07:19
+-- Dump completed on 2026-07-19 19:07:22

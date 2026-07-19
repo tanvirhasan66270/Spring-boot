@@ -88,4 +88,16 @@ public class QuotationController {
         // 🎯 ফ্রন্টএন্ডে প্লেইন টেক্সট পার্সিং ক্রাশ এড়াতে স্ট্যান্ডার্ড 204 No Content রেসপন্স
         return ResponseEntity.noContent().build();
     }
+    // 6. Update Quotation Status (PATCH)
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<QuotationResponseDTO> updateStatus(
+            @PathVariable Long id,
+            @RequestBody String status) {
+
+        // স্ট্যাটাসটিকে ক্লিন করা (যদি JSON হিসেবে আসে তবে কোটেশন মার্ক থাকতে পারে)
+        String cleanStatus = status.replaceAll("^\"|\"$", "");
+
+        QuotationResponseDTO response = quotationService.updateStatus(id, cleanStatus);
+        return ResponseEntity.ok(response);
+    }
 }

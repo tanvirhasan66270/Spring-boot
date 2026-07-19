@@ -145,6 +145,30 @@ public class QuotationServiceImp implements QuotationService {
         quotationRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public QuotationResponseDTO updateStatus(Long id, String status) {
+        // ১. ডাটাবেজ থেকে কোটেশনটি খুঁজে বের করুন
+        Quotation existingQuotation = quotationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Quotation not found with id: " + id));
+
+        // ২. স্ট্যাটাসটি আপডেট করুন (Enum-এর সাথে মিলিয়ে)
+        // নিশ্চিত করুন আপনার QuotationStatus Enum-এ এই নামগুলো আছে
+        try {
+            com.example.SCM.enumClass.QuotationStatus newStatus =
+                    com.example.SCM.enumClass.QuotationStatus.valueOf(status.toUpperCase());
+            existingQuotation.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status provided: " + status);
+        }
+
+        // ৩. সেভ করুন
+        Quotation updatedQuotation = quotationRepository.save(existingQuotation);
+
+        // ৪. রেসপন্স রিটার্ন করুন
+        return quotationMapper.toResponseDTO(updatedQuotation);
+    }
+
     private String saveImageFile(MultipartFile file, String productName) {
         try {
             Path uploadPath = Paths.get(uploadDir, "quotation");

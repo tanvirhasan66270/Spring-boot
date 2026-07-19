@@ -16,32 +16,30 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `requisition_products`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `requisition_products`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE `requisition_products` (
+  `requisition_id` bigint NOT NULL,
+  `product_id` bigint NOT NULL,
+  KEY `FKdjhb7u5knt1x4eunlyyqmgbuf` (`product_id`),
+  KEY `FKfcvs0v6p212rb5pd00y4c12yh` (`requisition_id`),
+  CONSTRAINT `FKdjhb7u5knt1x4eunlyyqmgbuf` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `FKfcvs0v6p212rb5pd00y4c12yh` FOREIGN KEY (`requisition_id`) REFERENCES `purchase_requisitions` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `requisition_products`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `requisition_products` WRITE;
+/*!40000 ALTER TABLE `requisition_products` DISABLE KEYS */;
+INSERT INTO `requisition_products` VALUES (1,10),(1,15),(1,22),(4,1),(4,2);
+/*!40000 ALTER TABLE `requisition_products` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

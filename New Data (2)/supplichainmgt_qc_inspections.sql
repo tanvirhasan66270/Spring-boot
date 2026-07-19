@@ -16,32 +16,44 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `qc_inspections`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `qc_inspections`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
+CREATE TABLE `qc_inspections` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
+  `certificate_ref` varchar(255) DEFAULT NULL,
+  `created_at` datetime(6) NOT NULL,
+  `defect_description` text,
+  `defects_found` int NOT NULL,
+  `inspected_at` date NOT NULL,
+  `inspection_type` varchar(255) NOT NULL,
+  `lab_test_report` varchar(255) DEFAULT NULL,
+  `result` enum('AVERAGE','BAD','GOOD','VERY_GOOD') DEFAULT NULL,
+  `sample_size` int NOT NULL,
+  `updated_at` datetime(6) NOT NULL,
+  `grn_id` bigint NOT NULL,
+  `inspected_by` bigint NOT NULL,
+  `product_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `FKafi89xlyrdm5pg6osalqtqxgp` (`grn_id`),
+  KEY `FKqlcsx9i5pyvfu3c6bcculr9bx` (`inspected_by`),
+  KEY `FK3bi2ccsw4pidh4f89qye72uig` (`product_id`),
+  CONSTRAINT `FK3bi2ccsw4pidh4f89qye72uig` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
+  CONSTRAINT `FKafi89xlyrdm5pg6osalqtqxgp` FOREIGN KEY (`grn_id`) REFERENCES `goods_received_notes` (`id`),
+  CONSTRAINT `FKqlcsx9i5pyvfu3c6bcculr9bx` FOREIGN KEY (`inspected_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `qc_inspections`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `qc_inspections` WRITE;
+/*!40000 ALTER TABLE `qc_inspections` DISABLE KEYS */;
+/*!40000 ALTER TABLE `qc_inspections` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 19:07:19
+-- Dump completed on 2026-07-19 19:07:23

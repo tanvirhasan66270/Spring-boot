@@ -16,32 +16,37 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `order_line_items`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `order_line_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
+CREATE TABLE `order_line_items` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
+  `item_weight_total` double NOT NULL,
+  `line_total` double NOT NULL,
+  `quantity` int NOT NULL,
+  `remarks` varchar(255) DEFAULT NULL,
+  `unit_price` double NOT NULL,
+  `order_id` bigint NOT NULL,
+  `product_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
+  KEY `FKk6hajnfcni3fw6vmupsypd7hh` (`order_id`),
+  KEY `FKpogrqnaru5vyemp3e9c997ag3` (`product_id`),
+  CONSTRAINT `FKk6hajnfcni3fw6vmupsypd7hh` FOREIGN KEY (`order_id`) REFERENCES `customer_orders` (`id`),
+  CONSTRAINT `FKpogrqnaru5vyemp3e9c997ag3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `order_line_items`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `order_line_items` WRITE;
+/*!40000 ALTER TABLE `order_line_items` DISABLE KEYS */;
+INSERT INTO `order_line_items` VALUES (1,0.06,1000,2,NULL,500,1,10),(2,120,500,1,NULL,500,1,2),(3,0.06,1000,2,NULL,500,2,10),(4,120,500,1,NULL,500,2,2),(7,91,64000,2,'Please pack with extra protection wrap.',32000,4,1),(8,95,72000,1,'Check the machine gear antes before dispatch.',72000,4,4);
+/*!40000 ALTER TABLE `order_line_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -53,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-19 19:07:19
+-- Dump completed on 2026-07-19 19:07:22

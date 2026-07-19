@@ -16,32 +16,46 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `divisions`
+-- Table structure for table `managers`
 --
 
-DROP TABLE IF EXISTS `divisions`;
+DROP TABLE IF EXISTS `managers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `divisions` (
+CREATE TABLE `managers` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `active` bit(1) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `name_bn` varchar(255) DEFAULT NULL,
-  `country_id` bigint NOT NULL,
+  `address` text,
+  `created_at` datetime(6) DEFAULT NULL,
+  `designation` varchar(255) DEFAULT NULL,
+  `dob` date NOT NULL,
+  `gender` enum('FEMALE','MALE','OTHERS') DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `is_active` bit(1) NOT NULL,
+  `joining_date` date DEFAULT NULL,
+  `language` enum('BANGLA','ENGLISH','OTHERS') DEFAULT NULL,
+  `nid_number` varchar(50) NOT NULL,
+  `passport_number` varchar(50) DEFAULT NULL,
+  `updated_at` datetime(6) DEFAULT NULL,
+  `police_station_id` bigint DEFAULT NULL,
+  `user_id` bigint NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `FK2o4cg3xxx0ea0mapwhjr7racp` (`country_id`),
-  CONSTRAINT `FK2o4cg3xxx0ea0mapwhjr7racp` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`)
+  UNIQUE KEY `UKcd7r3q5kikp4m9v0usn4il5sj` (`nid_number`),
+  UNIQUE KEY `UK6sl3ig444d4qy4c2kq6ju96pf` (`user_id`),
+  UNIQUE KEY `UKp7b7eu0xa932old2h8uht0wyh` (`passport_number`),
+  KEY `FK5xctcstlt90o1rfh05nkbbwq5` (`police_station_id`),
+  CONSTRAINT `FK5xctcstlt90o1rfh05nkbbwq5` FOREIGN KEY (`police_station_id`) REFERENCES `policestations` (`id`),
+  CONSTRAINT `FKsp1db43yf1nqhswrpbwmlnhb9` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `divisions`
+-- Dumping data for table `managers`
 --
 
-LOCK TABLES `divisions` WRITE;
-/*!40000 ALTER TABLE `divisions` DISABLE KEYS */;
-INSERT INTO `divisions` VALUES (1,_binary '','Dhaka','ঢাকা',1),(2,_binary '','Chattogram','চট্টগ্রাম',1),(3,_binary '','Rajshahi','রাজশাহী',1),(4,_binary '','Khulna','খুলনা',1),(5,_binary '','Barishal','বরিশাল',1),(6,_binary '','Sylhet','সিলেট',1),(7,_binary '','Rangpur','রংপুর',1),(8,_binary '','Mymensingh','ময়মনসিংহ',1);
-/*!40000 ALTER TABLE `divisions` ENABLE KEYS */;
+LOCK TABLES `managers` WRITE;
+/*!40000 ALTER TABLE `managers` DISABLE KEYS */;
+INSERT INTO `managers` VALUES (8,'12, Boalia, Rajshahi, Rajshahi, Bangladesh','2026-07-08 16:04:18.194854','manager','2026-06-28','MALE','MD_TANVIR_1d0a9b69-66fe-4804-92e8-fe2f8b261ec8.png',_binary '\0','2026-07-10','BANGLA','201564124','234513245','2026-07-11 16:47:30.864756',72,82);
+/*!40000 ALTER TABLE `managers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

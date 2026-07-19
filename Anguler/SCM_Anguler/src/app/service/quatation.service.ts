@@ -41,4 +41,8 @@ export class QuotationService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+  updateStatus(id: number, status: string): Observable<any> {
+  // আপনার ব্যাকএন্ডের URL অনুযায়ী পাথ ঠিক করবেন
+  return this.http.patch(`${environment.apiUrl}quotations/${id}/status`, status);
+}
 }
