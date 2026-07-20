@@ -23,7 +23,7 @@ export class QuatationComponent implements OnInit {
   quotations: QuotationResponseModel[] = [];
   filteredQuotations: QuotationResponseModel[] = []; 
   
-  // 🔍 ডুয়াল সার্চ বাফার মডেলস
+  //  ডুয়াল সার্চ বাফার মডেলস
   searchQtn: string = '';
   searchSupplierName: string = '';
   searchState: string = '';
@@ -183,57 +183,100 @@ export class QuatationComponent implements OnInit {
     }
   }
 openDrawer(): void {
-    if (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER') {
-      console.warn("Access Denied: Action restricted for this role.");
-      return; 
-    }
-
-    this.reset();
-    this.isEdit = false;
-    
-    if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-      this.quotation.supplierId = this.currentSupplierId;
-    }
-    
-    this.isDrawerOpen = true;
-    this.cdr.markForCheck();
+ 
+  if (this.activeRole !== 'ADMIN' && (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER')) {
+    console.warn("Access Denied: Action restricted for this role.");
+    return; 
   }
+
+  this.reset();
+  this.isEdit = false;
+  
+  if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
+    this.quotation.supplierId = this.currentSupplierId;
+  }
+  
+  this.isDrawerOpen = true;
+  this.cdr.markForCheck();
+}
 
   closeDrawer(): void { 
     this.isDrawerOpen = false; 
     this.reset(); 
     this.cdr.markForCheck(); 
   }
-  save(): void {
-    this.errorMessage = null;
+ isProcurement(): boolean {
+  // StorageService থেকে রোল চেক করা নিরাপদ
+  const role = this.storage.getActiveRole()?.toUpperCase();
+  return role === 'PROCUREMENT' || role === 'MANAGER';
+}
+canUpdateStatus(): boolean {
+  const role = this.storage.getActiveRole()?.toUpperCase();
+  return role === 'ADMIN' || role === 'PROCUREMENT';
+}
 
-    if (this.quotation.supplierId === 0 && this.activeRole !== 'SUPPLIER') {
-      this.errorMessage = "Validation Fault: Target Supplier mapping is mandatory.";
-      return;
-    }
-    if (this.quotation.purchaseRequisitionId === 0) {
-      this.errorMessage = "Validation Fault: Purchase Requisition node mapping is mandatory.";
-      return;
-    }
-
-    if (!this.isQuantityValid()) {
-      this.errorMessage = "Validation Fault: Quantity limit exceeded.";
-      return;
-    }
-
-    if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-      this.quotation.supplierId = this.currentSupplierId;
-    }
-
-    this.service.save(this.quotation, this.selectedFile).subscribe({
-      next: () => {
-        alert("Quotation document node synchronized successfully.");
-        this.closeDrawer();
-        this.loadQuotations();
-      },
-      error: (err) => this.handleError(err)
-    });
+updateStatus(q: QuotationResponseModel): void {
+  // ১. নিরাপত্তা চেক: যদি ইউজার ADMIN বা PROCUREMENT না হয় তবে কাজ করবে না
+  if (!this.canUpdateStatus()) {
+    alert("Access Denied: Only Admin and Procurement can update status.");
+    this.loadQuotations(); // আগের ডাটা রিলোড করা
+    return;
   }
+
+  // ২. সার্ভারে আপডেট রিকোয়েস্ট পাঠানো
+  this.service.updateStatus(q.id, q.status).subscribe({
+    next: () => {
+      alert("Status updated successfully.");
+      this.loadQuotations(); // সফল হলে লিস্ট রিফ্রেশ করা
+    },
+    error: (err) => {
+      console.error("Update failed", err);
+      alert("Failed to update status. Please try again.");
+      this.loadQuotations(); // এরর হলে আগের ডাটা রিলোড করা
+    }
+  });
+}
+get userRole(): string {
+  return this.activeRole;
+}
+
+
+
+
+ save(): void {
+  this.errorMessage = null;
+
+  // ADMIN বা অন্য রোল হলে Supplier mapping বাধ্যতামূলক, কিন্তু ADMIN এর জন্য আপনি চাইলে এটি শিথিল করতে পারেন
+  if (this.quotation.supplierId === 0 && this.activeRole !== 'ADMIN') {
+    this.errorMessage = "Validation Fault: Target Supplier mapping is mandatory.";
+    return;
+  }
+  
+  if (this.quotation.purchaseRequisitionId === 0) {
+    this.errorMessage = "Validation Fault: Purchase Requisition node mapping is mandatory.";
+    return;
+  }
+
+  if (!this.isQuantityValid()) {
+    this.errorMessage = "Validation Fault: Quantity limit exceeded.";
+    return;
+  }
+
+  // যদি সাপ্লায়ার হয় তবেই আইডি ফিক্সড হবে
+  if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
+    this.quotation.supplierId = this.currentSupplierId;
+  }
+
+  // যদি ইডিট মোড হয় তবে আপডেট, নাহলে নতুন সেভ (আপনার সার্ভিস লজিক অনুযায়ী)
+  this.service.save(this.quotation, this.selectedFile).subscribe({
+    next: () => {
+      alert("Quotation document node synchronized successfully.");
+      this.closeDrawer();
+      this.loadQuotations();
+    },
+    error: (err) => this.handleError(err)
+  });
+}
 
   edit(o: QuotationResponseModel): void {
     this.errorMessage = null;
@@ -270,11 +313,11 @@ openDrawer(): void {
       error: (err) => alert(err.error?.message || "Deletion failure.")
     });
   }
-  canUploadQuotation(): boolean {
-    return this.activeRole !== 'PROCUREMENT' && this.activeRole !== 'MANAGER';
-  }
+ canUploadQuotation(): boolean {
+  return !this.isProcurement();
+}
 
-  // 🔍 ট্রিপল সার্চ ফিল্টারিং কোর লজিক
+  //  ট্রিপল সার্চ ফিল্টারিং কোর লজিক
   applyFilters(): void {
     const qtnTerm = this.searchQtn.toLowerCase().trim();
     const supTerm = this.searchSupplierName.toLowerCase().trim();

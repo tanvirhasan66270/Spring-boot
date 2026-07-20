@@ -13,4 +13,5 @@ public interface QuotationService {
     List<QuotationResponseDTO> findAll();
     Optional<QuotationResponseDTO> getById(Long id);
     void delete(Long id);
+    QuotationResponseDTO updateStatus(Long id, String status);
 }
