@@ -15,7 +15,7 @@ constructor(private storage: StorageService, private router: Router) { }
   ngOnInit(): void {
     const role = this.storage.getRole();
     const map: Record<string, string> = {
-      ADMIN:  '/admin',
+      ADMIN:  '/dashboard/admin',
       MANAGER:  '/dashboard/manager',
       DRIVER:  '/dashboard/driver',
       PROCUREMENT: '/dashboard/procurement',

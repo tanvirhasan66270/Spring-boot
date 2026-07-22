@@ -60,6 +60,7 @@ import { PublicServicesComponent } from './component/public/public-services/publ
 import { PublicNetworkComponent } from './component/public/public-network/public-network.component';
 import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
 import { SupplierProfileComponent } from './component/profile/supplier-profile.component/supplier-profile.component';
+import { AdminComponent } from './component/features/admin.component/admin.component';
 
 const ALL_ROLES = [
   'ADMIN',
@@ -139,6 +140,11 @@ export const routes: Routes = [
         component: ProcourmentComponent
        
       },
+      {
+        path: 'admin',
+        component: AdminComponent
+       
+      },
     ],
   },
   {
@@ -147,6 +153,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: RoleDeriectComponent },
+      // { path: 'dashboard/admin', component: AdminDashboardComponent },
       { path: 'dashboard/customer', component: CustomerDashboardComponent },
       { path: 'dashboard/manager', component: ManagerDashboardComponent },
       { path: 'dashboard/procurement', component: ProcurementDashboardComponent },
