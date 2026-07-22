@@ -1,15 +1,63 @@
 <div class="container-fluid px-4 mt-4">
   
+  <!-- হেডার প্যানেল -->
   <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="mb-1 text-dark fw-bold">Warehouse Management System</h4>
       <p class="text-muted mb-0 small">Control enterprise logistics hubs, track footprint capacities, and resolve nested shipping territories.</p>
     </div>
-    <button class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
+    <!-- শুধুমাত্র ADMIN এবং MANAGER দের জন্য ডিপ্লয় বাটন দৃশ্যমান হবে -->
+    <button *ngIf="canModifyWarehouse()" class="btn btn-primary d-flex align-items-center gap-2 px-3 py-2 shadow-sm fw-semibold" (click)="openDrawer()">
       <i class="bi bi-plus-circle-fill"></i> Deploy New Warehouse
     </button>
   </div>
 
+  <!-- আলাদা ৩টি সার্চ অপশন সম্বলিত কার্ড -->
+  <div class="card border-0 shadow-sm rounded-3 mb-4 p-3 bg-light">
+    <div class="row g-3 align-items-center">
+      <div class="col-md-12">
+        <span class="fw-bold text-secondary small text-uppercase"><i class="bi bi-filter me-1"></i> Multi-Criteria Search Filter</span>
+      </div>
+      
+      <!-- অপশন ১: ID দিয়ে সার্চ -->
+      <div class="col-md-4">
+        <div class="input-group shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-hash text-secondary"></i></span>
+          <input type="text" class="form-control bg-white border-start-0 fs-7" 
+                 placeholder="Filter by ID..." 
+                 [(ngModel)]="searchId" 
+                 (input)="applySearch()">
+        </div>
+      </div>
+
+      <!-- অপশন ২: Email দিয়ে সার্চ -->
+      <div class="col-md-4">
+        <div class="input-group shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope text-secondary"></i></span>
+          <input type="text" class="form-control bg-white border-start-0 fs-7" 
+                 placeholder="Filter by Email..." 
+                 [(ngModel)]="searchEmail" 
+                 (input)="applySearch()">
+        </div>
+      </div>
+
+      <!-- অপশন ৩: Status দিয়ে সার্চ -->
+      <div class="col-md-4">
+        <div class="input-group shadow-sm">
+          <span class="input-group-text bg-white border-end-0"><i class="bi bi-toggle-on text-secondary"></i></span>
+          <select class="form-select bg-white border-start-0 fs-7" 
+                  [(ngModel)]="searchStatus" 
+                  (change)="applySearch()">
+            <option value="">All Operational Status</option>
+            <option value="active">Active</option>
+            <option value="locked">Locked</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ওয়ারহাউস টেবিল কার্ড -->
   <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -21,11 +69,11 @@
               <th>Volume Capacity</th>
               <th>Aggregated Address String</th>
               <th>Operational Status</th>
-              <th class="text-end pe-4" width="160">Actions</th>
+              <th *ngIf="canModifyWarehouse()" class="text-end pe-4" width="160">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let w of warehouses" class="transition-all">
+            <tr *ngFor="let w of filteredWarehouses" class="transition-all">
               <td class="ps-4 text-muted fw-medium font-monospace">#{{ w.id }}</td>
               <td>
                 <div class="d-flex align-items-center">
@@ -55,7 +103,7 @@
                   <i class="bi bi-circle-fill me-1 small-dot"></i> {{ w.isActive ? 'Active' : 'Locked' }}
                 </span>
               </td>
-              <td class="text-end pe-4">
+              <td *ngIf="canModifyWarehouse()" class="text-end pe-4">
                 <div class="d-flex justify-content-end gap-2">
                   <button class="btn btn-icon btn-light border-0 text-warning" title="Edit Parameters" (click)="edit(w)">
                     <i class="bi bi-pencil-square"></i>
@@ -66,10 +114,10 @@
                 </div>
               </td>
             </tr>
-            <tr *ngIf="!warehouses || warehouses.length === 0">
-              <td colspan="6" class="text-center py-5 text-muted">
+            <tr *ngIf="!filteredWarehouses || filteredWarehouses.length === 0">
+              <td [attr.colspan]="canModifyWarehouse() ? 6 : 5" class="text-center py-5 text-muted">
                 <i class="bi bi-inboxes fs-1 d-block mb-2 text-secondary"></i>
-                No active warehouses discovered in the server registry.
+                No warehouses found matching the search criteria.
               </td>
             </tr>
           </tbody>
@@ -173,7 +221,8 @@
           </div>
         </div>
 
-        <div class="mb-4 bg-light p-3 rounded-3 d-flex justify-content-between align-items-center border">
+        <!-- স্ট্যাটাস ফিল্ড: LOGISTICS_OFFICER হলে এটি ফর্মে দেখাবে না -->
+        <div *ngIf="activeRole !== 'LOGISTICS_OFFICER'" class="mb-4 bg-light p-3 rounded-3 d-flex justify-content-between align-items-center border">
           <div>
             <label class="form-label fw-semibold text-dark mb-0 d-block">Operational Status Lifecycle</label>
             <span class="text-muted small">Toggle to accept stocks or flag warehouse as locked.</span>

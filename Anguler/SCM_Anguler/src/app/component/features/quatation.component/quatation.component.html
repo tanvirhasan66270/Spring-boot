@@ -158,7 +158,7 @@
   </div>
 
   <!-- ─── Sliding Input Form Drawer Framework ─── -->
-  <!-- 🔓 ড্রয়ারটি সবার জন্য রেন্ডার হবে -->
+  <!--  ড্রয়ারটি সবার জন্য রেন্ডার হবে -->
   <div class="slide-drawer shadow" [class.show]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Quotation Properties' : 'Register Supplier Quotation' }}</h5>
@@ -187,7 +187,7 @@
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Vendor Node</label>
 
-          <!-- 🔒 কন্ডিশনাল চেকিং: ইউজার SUPPLIER রোল হলে সে ড্রপডাউন সিলেক্ট করতে পারবেনা, তার আইডি অটো-লক থাকবে -->
+          <!--  কন্ডিশনাল চেকিং: ইউজার SUPPLIER রোল হলে সে ড্রপডাউন সিলেক্ট করতে পারবেনা, তার আইডি অটো-লক থাকবে -->
           <select class="form-select fs-7 bg-light fw-bold" [(ngModel)]="quotation.supplierId" name="supplierId"
             #supRef="ngModel" required [disabled]="isEdit || activeRole === 'SUPPLIER'"
             [class.is-invalid]="supRef.value === 0 && qForm.submitted">
@@ -235,7 +235,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Bidding Strategy Stage</label>
-            <!-- 🔒 নিরাপত্তা: সাপ্লায়ার নিজে তার কোটেশনকে APPROVED করতে পারবে না, তার জন্য এটি PENDING এ লক থাকবে -->
+            <!--  সাপ্লায়ার নিজে তার কোটেশনকে APPROVED করতে পারবে না, তার জন্য এটি PENDING এ লক থাকবে -->
             <select class="form-select fs-7" [(ngModel)]="quotation.status" name="status" required
               [disabled]="activeRole === 'SUPPLIER'">
               <option value="PENDING">PENDING</option>

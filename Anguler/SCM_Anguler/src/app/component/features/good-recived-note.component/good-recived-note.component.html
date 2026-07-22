@@ -101,7 +101,8 @@
     </div>
   </div>
 
-  <div class="custom-drawer shadow" [class.open]="isDrawerOpen" style="width: 500px; right: -510px;">
+  <!-- ড্রয়ার প্যানেল (ইনলাইন স্টাইল বাদ দেওয়া হয়েছে) -->
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Modify GRN Allocation Metadata' : 'Process Inbound Cargo (GRN)' }}</h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>

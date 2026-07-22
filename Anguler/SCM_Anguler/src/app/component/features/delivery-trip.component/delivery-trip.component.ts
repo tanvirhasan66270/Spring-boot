@@ -69,6 +69,19 @@ export class DeliveryTripComponent implements OnInit {
       error: (err) => this.handleError(err),
     });
   }
+  canViewConsoleActions(): boolean {
+  const role = this.storage.getActiveRole()?.toUpperCase();
+  // শুধুমাত্র ADMIN এবং DRIVER এই কলামটি দেখতে পাবে
+  return role === 'ADMIN' || role === 'DRIVER' || role === 'LOGISTICS_OFFICER';
+}
+canViewStatusActions(): boolean {
+  const role = this.storage.getActiveRole()?.toUpperCase().trim();
+  
+  // কনসোলে চেক করে দেখতে পারেন ব্রাউজারে কি রোল আসছে
+  console.log("Current User Role:", role); 
+
+  return role === 'ADMIN' || role === 'DRIVER';
+}
 
   loadActiveFleetData() {
     this.vehicleService.findAll().subscribe({

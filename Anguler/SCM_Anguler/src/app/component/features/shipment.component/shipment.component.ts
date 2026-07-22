@@ -31,10 +31,9 @@ export class ShipmentComponent implements OnInit {
   selectedFile: File | null = null;
   currentUserEmail: string = '';
 
-  // 🛡️ রোল এবং সাপ্লায়ার ট্র্যাকিং প্রোপার্টি
   userRole: string = '';
   currentSupplierId: number | null = null;
-  currentSupplierName: string = ''; // 🎯 লগইন করা সাপ্লায়ারের নাম হোল্ডার
+  currentSupplierName: string = ''; 
 
   shipment: ShipmentRequestModel = {
     poId: 0,
@@ -56,29 +55,33 @@ export class ShipmentComponent implements OnInit {
     private storage: StorageService,
     private cdr: ChangeDetectorRef,
   ) {}
-
-  ngOnInit() {
-    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
-    const user = this.storage.getUser();
-    if (user) {
-      this.currentUserEmail = user.email;
-      this.shipment.assignedByEmail = user.email;
-      if (!this.userRole && user.role) {
-        this.userRole = user.role.toUpperCase();
-      }
+ngOnInit() {
+  this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
+  const user = this.storage.getUser();
+  if (user) {
+    this.currentUserEmail = user.email;
+    this.shipment.assignedByEmail = user.email;
+    if (!this.userRole && user.role) {
+      this.userRole = user.role.toUpperCase();
     }
-
-    // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম রিড করা
-    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
-    if (cachedSupplier) {
-      this.currentSupplierId = cachedSupplier.id;
-      this.currentSupplierName = cachedSupplier.name || user?.name || 'Your Supplier Account';
-    }
-
-    this.loadShipments();
-    this.loadPurchaseOrders();
-    this.loadSuppliers();
   }
+
+  // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম সঠিকভাবে রিড করা
+  const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
+  if (cachedSupplier) {
+    this.currentSupplierId = cachedSupplier.id;
+    // ক্যাশ অবজেক্টে 'name' বা 'companyName' থাকতে পারে, তাই সেফটি চেক রাখা হলো
+    this.currentSupplierName = cachedSupplier.name || cachedSupplier.companyName || user?.name || 'Your Supplier Account';
+  } else {
+    this.currentSupplierName = user?.name || 'Your Supplier Account';
+  }
+
+  this.loadShipments();
+  this.loadPurchaseOrders();
+  this.loadSuppliers();
+}
+
+
 
   loadShipments() {
     this.service.findAll().subscribe({
@@ -135,16 +138,17 @@ export class ShipmentComponent implements OnInit {
     }
   }
 
-  openDrawer() {
-    this.reset();
-    this.isEdit = false;
-    if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
-      this.shipment.supplierId = this.currentSupplierId;
-    }
-    this.isDrawerOpen = true;
-    this.cdr.markForCheck();
+openDrawer() {
+  this.reset();
+  this.isEdit = false;
+  
+  if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+    this.shipment.supplierId = this.currentSupplierId;
   }
-
+  
+  this.isDrawerOpen = true;
+  this.cdr.markForCheck();
+}
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();

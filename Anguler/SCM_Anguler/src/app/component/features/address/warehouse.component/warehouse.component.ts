@@ -19,6 +19,12 @@ import { StorageService } from '../../../../auth/auth_service/storage.service';
 })
 export class WarehouseComponent implements OnInit {
   warehouses: WarehouseResponseModel[] = [];
+  filteredWarehouses: WarehouseResponseModel[] = []; 
+
+  // আলাদা ৩টি সার্চ অপশনের জন্য ভেরিয়েবল
+  searchId: string = '';
+  searchEmail: string = '';
+  searchStatus: string = '';
 
   countries: any[] = [];
   divisions: any[] = [];
@@ -44,6 +50,7 @@ export class WarehouseComponent implements OnInit {
   currentEditId: number | null = null;
   isDrawerOpen = false;
   currentUserId: number = 0;
+  activeRole: string = '';
 
   constructor(
     private service: WarehouseService,
@@ -56,16 +63,29 @@ export class WarehouseComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || '';
     const user = this.storage.getUser();
     if (user) {
       this.currentUserId = user.userId;
       this.warehouse.managerId = user.userId;
+      if (!this.activeRole && user.role) {
+        this.activeRole = user.role.toUpperCase();
+      }
     }
     this.loadWarehouses();
     this.loadCountries();
   }
 
+  // সিকিউরিটি চেক: LOGISTICS_OFFICER মডিফাই করতে পারবে না
+  canModifyWarehouse(): boolean {
+    return this.activeRole !== 'LOGISTICS_OFFICER';
+  }
+
   openDrawer() {
+    if (!this.canModifyWarehouse()) {
+      alert("Access Denied: Logistics Officers cannot deploy new warehouses.");
+      return;
+    }
     this.reset();
     this.isEdit = false;
     this.isDrawerOpen = true;
@@ -82,9 +102,26 @@ export class WarehouseComponent implements OnInit {
     this.service.getAll().subscribe({
       next: (data) => {
         this.warehouses = data || [];
+        this.filteredWarehouses = [...this.warehouses]; 
         this.cdr.markForCheck();
       },
     });
+  }
+
+  // মাল্টিপল সার্চ ফিল্টার লজিক
+  applySearch() {
+    const idTerm = this.searchId.toLowerCase().trim();
+    const emailTerm = this.searchEmail.toLowerCase().trim();
+    const statusTerm = this.searchStatus.toLowerCase().trim();
+
+    this.filteredWarehouses = this.warehouses.filter(w => {
+      const matchId = idTerm === '' || w.id.toString().includes(idTerm);
+      const matchEmail = emailTerm === '' || w.email.toLowerCase().includes(emailTerm);
+      const matchStatus = statusTerm === '' || (w.isActive ? 'active' : 'locked').includes(statusTerm);
+
+      return matchId && matchEmail && matchStatus;
+    });
+    this.cdr.markForCheck();
   }
 
   loadCountries() {
@@ -96,15 +133,10 @@ export class WarehouseComponent implements OnInit {
     });
   }
 
-  // =====================================================
-  // CASCADING LOCATION LOGICS
-  // =====================================================
-
   onCountryChange() {
     this.divisions = [];
     this.districts = [];
     this.policeStations = [];
-
     this.selectedDivisionId = null;
     this.selectedDistrictId = null;
     this.warehouse.policeStationId = 0;
@@ -114,7 +146,6 @@ export class WarehouseComponent implements OnInit {
     this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
       this.divisions = res || [];
       this.cdr.markForCheck();
-      console.log(this.divisions);
     });
   }
 
@@ -132,11 +163,6 @@ export class WarehouseComponent implements OnInit {
         this.districts = res || [];
         this.cdr.markForCheck();
       },
-      error: (err) => {
-        console.error('Failed to load districts:', err);
-        this.districts = [];
-        this.cdr.markForCheck();
-      },
     });
   }
 
@@ -152,23 +178,14 @@ export class WarehouseComponent implements OnInit {
         this.policeStations = res || [];
         this.cdr.markForCheck();
       },
-      error: (err) => {
-        console.error('Failed to load police stations:', err);
-        this.policeStations = [];
-        this.cdr.markForCheck();
-      },
     });
   }
 
-  // =====================================================
-  // AUTO ADDRESS COMPILER
-  // =====================================================
   generateFullAddress() {
     const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
     const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
     const districtName = this.districts.find((x) => x.id == this.selectedDistrictId)?.name || '';
-    const psName =
-      this.policeStations.find((x) => x.id == this.warehouse.policeStationId)?.name || '';
+    const psName = this.policeStations.find((x) => x.id == this.warehouse.policeStationId)?.name || '';
 
     this.warehouse.address = [
       this.warehouse.location,
@@ -182,6 +199,11 @@ export class WarehouseComponent implements OnInit {
   }
 
   save() {
+    if (!this.canModifyWarehouse()) {
+      alert("Access Denied: Logistics Officers cannot save changes.");
+      return;
+    }
+
     if (!this.warehouse.policeStationId || this.warehouse.policeStationId === 0) {
       alert('Please complete the location hierarchy up to Police Station.');
       return;
@@ -209,6 +231,11 @@ export class WarehouseComponent implements OnInit {
   }
 
   edit(w: WarehouseResponseModel) {
+    if (!this.canModifyWarehouse()) {
+      alert("Access Denied: Logistics Officers cannot edit warehouse data.");
+      return;
+    }
+
     this.currentEditId = w.id;
     this.isEdit = true;
 
@@ -249,6 +276,11 @@ export class WarehouseComponent implements OnInit {
   }
 
   delete(id: number) {
+    if (!this.canModifyWarehouse()) {
+      alert("Access Denied: Logistics Officers cannot delete warehouses.");
+      return;
+    }
+
     if (confirm('Purge this warehouse node?')) {
       this.service.delete(id).subscribe({
         next: () => {
