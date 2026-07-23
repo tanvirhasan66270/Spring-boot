@@ -1,46 +1,13 @@
+/* Driver Dashboard - Orange Theme */
 .welcome-card {
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
   border: 1px solid #fed7aa;
 }
 
-.action-btn {
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-  background-color: #ffffff;
+.kpi-card::before {
+  background: linear-gradient(90deg, #f97316, #fb923c);
 }
 
 .action-btn:hover {
-  transform: translateY(-4px);
   border-color: #f97316;
-  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.06);
-}
-
-.kpi-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notification-item:hover {
-  background-color: #f8f9fa;
-}
-
-.activity-item:hover {
-  background-color: #f8f9fa;
-}
-
-.notification-icon i,
-.activity-icon i {
-  font-size: 1.1rem;
-}
-
-.border-top {
-  border-top-width: 4px !important;
-  border-top-style: solid !important;
-}
-
-.card-header {
-  background-color: #fff;
 }

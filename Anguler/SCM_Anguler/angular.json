@@ -52,6 +52,7 @@
             ],
             "styles": [
               "src/styles.css",
+              "src/app/component/shared/styles/dashboard-shared.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/bootstrap-icons/font/bootstrap-icons.css"
             ],

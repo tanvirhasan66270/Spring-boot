@@ -35,6 +35,7 @@ import { CommercialDashboardComponent } from './component/dashboard/commercial-d
 import { SalesDashboardComponent } from './component/dashboard/sales-dashboard/sales-dashboard.component';
 import { DriverDashboardComponent } from './component/dashboard/driver-dashboard/driver-dashboard.component';
 import { SupplierDashboardComponent } from './component/dashboard/supplier-dashboard/supplier-dashboard.component';
+import { AdminDashboardComponent } from './component/dashboard/admin-dashboard/admin-dashboard.component';
 import { PurchaseRequisitionComponent } from './component/features/purchase-requisition.component/purchase-requisition.component';
 import { QuatationComponent } from './component/features/quatation.component/quatation.component';
 import { PurchaseOrderComponent } from './component/features/purchase-order.component/purchase-order.component';
@@ -153,7 +154,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: RoleDeriectComponent },
-      // { path: 'dashboard/admin', component: AdminDashboardComponent },
+      { path: 'dashboard/admin', component: AdminDashboardComponent },
       { path: 'dashboard/customer', component: CustomerDashboardComponent },
       { path: 'dashboard/manager', component: ManagerDashboardComponent },
       { path: 'dashboard/procurement', component: ProcurementDashboardComponent },
