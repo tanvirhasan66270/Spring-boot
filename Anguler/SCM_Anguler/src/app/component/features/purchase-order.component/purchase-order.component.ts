@@ -27,20 +27,20 @@ export class PurchaseOrderComponent implements OnInit {
   currentSupplierId: number | null = null;
 
   searchQuery: string = '';       // ১ম সার্চ বার: PO Number বা Status
-  searchSupplier: string = '';    // ২য় সার্চ বার: Supplier Name বা ID
-  searchDate: string = '';        // ৩য় সার্চ বার: Expected Delivery/Creation Date
+  searchSupplier: string = '';    // ২য় সার্চ বার: Supplier Name বা ID
+  searchDate: string = '';        // ৩য় সার্চ বার: Expected Delivery/Creation Date
 
   order: PurchaseOrderRequestModel = {
-  quotationId: 0,
-  issuedBy: 0,
-  issuedByName: '', // এটি যোগ করুন
-  totalAmount: 0,
-  quantity: 1,      // যদি প্রয়োজন হয়
-  currency: 'USD',
-  expectedDeliveryDate: '',
-  status: 'DRAFT',
-  createdAt: ''     // এটি যোগ করুন
-};
+    quotationId: 0,
+    issuedBy: 0,
+    issuedByName: '', 
+    totalAmount: 0,
+    quantity: 1,      
+    currency: 'USD',
+    expectedDeliveryDate: '',
+    status: 'DRAFT',
+    createdAt: ''     
+  };
 
   constructor(
     private service: PurchaseOrderService,
@@ -65,15 +65,24 @@ export class PurchaseOrderComponent implements OnInit {
     this.loadQuotations();
   }
 
-  //  রোল এবং প্রিভিলেজ ম্যাচিং হেল্পার (সার্চ কার্ড ও বাটন কন্ট্রোল)
-  isManagementUser(): boolean {
-    return this.activeRole === 'ADMIN' || this.activeRole === 'MANAGER' || this.activeRole === 'PROCUREMENT';
+  // 🌟 LOGISTICS_OFFICER এবং SUPPLIER এই বাটনটি দেখতে পাবে না
+  canAddPurchaseOrder(): boolean {
+    return this.activeRole === 'ADMIN' || 
+           this.activeRole === 'MANAGER' || 
+           this.activeRole === 'PROCUREMENT';
   }
 
-  //  ড্যাশবোর্ড কার্ডের ভেতরের সাধারণ সার্চ বার হাইড করার কন্ডিশনাল হেল্পার
+  // রোল এবং প্রিভিলেজ ম্যাচিং হেল্পার (সার্চ কার্ড কন্ট্রোল)
+  isManagementUser(): boolean {
+    return this.activeRole === 'ADMIN' || 
+           this.activeRole === 'MANAGER' || 
+           this.activeRole === 'PROCUREMENT' || 
+           this.activeRole === 'LOGISTICS_OFFICER';
+  }
+
+  // 🌟 LOGISTICS_OFFICER, PROCUREMENT এবং MANAGER ভেতরের সাধারণ সার্চ বার দেখতে পারবে না
   shouldShowCardSearchBar(): boolean {
-    // PROCUREMENT এবং MANAGER ভেতরের সাধারণ সার্চ বার দেখতে পারবেনা
-    if (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER') {
+    if (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER' || this.activeRole === 'LOGISTICS_OFFICER') {
       return false;
     }
     return true; 
@@ -83,9 +92,6 @@ export class PurchaseOrderComponent implements OnInit {
     this.service.findAll().subscribe({
       next: (data) => { 
         this.orders = data || [];
-        // ডেটা লোড হওয়ার পর সিকিউরিটি আইসোলেশন ও ফিল্টার পাইপলাইন রান করা হবে
-
-       
         this.applyDataIsolationAndFilters();
       },
       error: (err) => console.error('PO Load Error:', err)
@@ -102,12 +108,10 @@ export class PurchaseOrderComponent implements OnInit {
       });
     } 
     else if (!this.isManagementUser() && this.activeRole !== 'SUPPLIER') {
-      ordersPipe = []; // অন্য কোনো আন-অথরাইজড রোল হলে সেফটি ব্লক
+      ordersPipe = []; 
     }
 
     if (this.isManagementUser()) {
-      
-      // ক) ১ম সার্চ বার ফিল্টার: PO Number বা Status
       if (this.searchQuery.trim() !== '') {
         const query = this.searchQuery.toLowerCase();
         ordersPipe = ordersPipe.filter((o: any) => 
@@ -116,7 +120,6 @@ export class PurchaseOrderComponent implements OnInit {
         );
       }
 
-      // খ) ২য় সার্চ বার ফিল্টার: Supplier Name বা Supplier ID
       if (this.searchSupplier.trim() !== '') {
         const supplierQuery = this.searchSupplier.toLowerCase();
         ordersPipe = ordersPipe.filter((o: any) => 
@@ -126,7 +129,6 @@ export class PurchaseOrderComponent implements OnInit {
         );
       }
 
-      // গ) ৩য় সার্চ বার ফিল্টার: Date Specific Query
       if (this.searchDate !== '') {
         ordersPipe = ordersPipe.filter((o: any) => 
           (o.createdAt && o.createdAt.includes(this.searchDate)) ||
@@ -150,25 +152,19 @@ export class PurchaseOrderComponent implements OnInit {
     });
   }
 
- onQuotationChange(event: any) {
-  const qId = +event.target.value;
-  const selectedQ = this.quotations.find(q => q.id === qId);
-  
-  if (selectedQ) {
-    console.log("Selected Quotation Object:", selectedQ); 
+  onQuotationChange(event: any) {
+    const qId = +event.target.value;
+    const selectedQ = this.quotations.find(q => q.id === qId);
     
-    this.order.totalAmount = selectedQ.totalPrice;
-    this.order.supplierName = selectedQ.supplierName;
-    
-    this.order.supplierEmail = selectedQ.supplierEmail || 
-                               selectedQ.email || 
-                               (selectedQ.supplier ? selectedQ.supplier.email : 'N/A');
-    
-    this.order.purchaseRequisitionId = selectedQ.purchaseRequisitionId;
-
-     console.log(this.order);
+    if (selectedQ) {
+      this.order.totalAmount = selectedQ.totalPrice;
+      this.order.supplierName = selectedQ.supplierName;
+      this.order.supplierEmail = selectedQ.supplierEmail || 
+                                 selectedQ.email || 
+                                 (selectedQ.supplier ? selectedQ.supplier.email : 'N/A');
+      this.order.purchaseRequisitionId = selectedQ.purchaseRequisitionId;
+    }
   }
-}
 
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
@@ -194,30 +190,31 @@ export class PurchaseOrderComponent implements OnInit {
     }
   }
 
- edit(o: PurchaseOrderResponseModel) {
-  this.errorMessage = null;
-  this.currentEditId = o.id;
-  this.isEdit = true;
+  edit(o: PurchaseOrderResponseModel) {
+    this.errorMessage = null;
+    this.currentEditId = o.id;
+    this.isEdit = true;
 
-  this.order = {
-    quotationId: o.quotationId,
-    issuedBy: o.issuedBy,
-    issuedByName: (this.storage.getUser()?.name) || 'Unknown', // সরাসরি স্টোরেজ থেকে
-    totalAmount: o.totalAmount,
-    quantity: o.quantity,
-    currency: o.currency,
-    expectedDeliveryDate: o.expectedDeliveryDate,
-    status: o.status,
-    poNumber: o.poNumber,
-    supplierName: o.supplierName,
-    supplierEmail: o.supplierEmail, // ResponseModel এ এই ফিল্ডটি আছে
-    purchaseRequisitionId: o.purchaseRequisitionId,
-    createdAt: o.createdAt
-  };
+    this.order = {
+      quotationId: o.quotationId,
+      issuedBy: o.issuedBy,
+      issuedByName: (this.storage.getUser()?.name) || 'Unknown', 
+      totalAmount: o.totalAmount,
+      quantity: o.quantity,
+      currency: o.currency,
+      expectedDeliveryDate: o.expectedDeliveryDate,
+      status: o.status,
+      poNumber: o.poNumber,
+      supplierName: o.supplierName,
+      supplierEmail: o.supplierEmail, 
+      purchaseRequisitionId: o.purchaseRequisitionId,
+      createdAt: o.createdAt
+    };
 
-  this.isDrawerOpen = true;
-  this.cdr.markForCheck();
-}
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
+  }
+
   delete(id: number) {
     if (confirm("Definitively purge this Purchase Order record from active directories?")) {
       this.service.delete(id).subscribe({
@@ -228,27 +225,26 @@ export class PurchaseOrderComponent implements OnInit {
   }
 
   reset() {
-  const currentUser = this.storage.getUser();
-  const systemDate = new Date().toISOString();
+    const currentUser = this.storage.getUser();
+    const systemDate = new Date().toISOString();
 
-  this.order = {
-    quotationId: 0,
-    issuedBy: currentUser?.userId || 0,
-    issuedByName: currentUser?.name || 'Unknown User',
-    totalAmount: 0,
-    quantity: 1,
-    currency: 'USD',
-    expectedDeliveryDate: '',
-    status: 'DRAFT',
-    createdAt: systemDate,
-    // ঐচ্ছিক ফিল্ডগুলো খালি রাখা
-    supplierName: '',
-    supplierEmail: '',
-    purchaseRequisitionId: 0
-  };
-  
-  this.isEdit = false;
-  this.currentEditId = null;
-  this.errorMessage = null;
-}
+    this.order = {
+      quotationId: 0,
+      issuedBy: currentUser?.userId || 0,
+      issuedByName: currentUser?.name || 'Unknown User',
+      totalAmount: 0,
+      quantity: 1,
+      currency: 'USD',
+      expectedDeliveryDate: '',
+      status: 'DRAFT',
+      createdAt: systemDate,
+      supplierName: '',
+      supplierEmail: '',
+      purchaseRequisitionId: 0
+    };
+    
+    this.isEdit = false;
+    this.currentEditId = null;
+    this.errorMessage = null;
+  }
 }

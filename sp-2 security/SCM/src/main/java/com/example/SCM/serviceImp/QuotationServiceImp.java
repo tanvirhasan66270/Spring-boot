@@ -123,6 +123,8 @@ public class QuotationServiceImp implements QuotationService {
     @Override
     @Transactional(readOnly = true)
     public List<QuotationResponseDTO> findAll() {
+
+
         return quotationRepository.findAllWithDetails()
                 .stream()
                 .map(quotationMapper::toResponseDTO)

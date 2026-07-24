@@ -1,9 +1,6 @@
 <div class="container-fluid py-4 px-4 text-dark">
 
-  <!-- =========================================================================
-       🎯 TOP CARD: ADVANCED THREE-BAR SEARCH CONSOLE
-       শুধুমাত্র PROCUREMENT, MANAGER এবং ADMIN দেখতে পাবে
-       ========================================================================= -->
+  <!-- TOP CARD: ADVANCED THREE-BAR SEARCH CONSOLE -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-start border-5 border-info animate-fade" 
        *ngIf="isManagementUser()">
     <div class="d-flex align-items-center gap-2 mb-3">
@@ -11,9 +8,7 @@
       <h6 class="mb-0 fw-bold text-dark text-uppercase tracking-wide">Advanced Management Search Console</h6>
     </div>
     
-    <!-- ৩টি পৃথক সার্চ ফিল্টারের রেসপন্সিভ গ্রিড লেআউট -->
     <div class="row g-3">
-      <!-- সার্চ ফিল্টার ১: PO Reference / Status -->
       <div class="col-md-4">
         <label class="form-label text-secondary small fw-semibold mb-1">Search PO No / Workflow Stage</label>
         <div class="input-group shadow-sm">
@@ -26,7 +21,6 @@
         </div>
       </div>
 
-      <!-- SEARCH BAR ২: Supplier Name / Unique ID -->
       <div class="col-md-4">
         <label class="form-label text-secondary small fw-semibold mb-1">Search Vendor Node (Name / Unique ID)</label>
         <div class="input-group shadow-sm">
@@ -39,7 +33,6 @@
         </div>
       </div>
 
-      <!-- SEARCH BAR ৩: Date Field -->
       <div class="col-md-4">
         <label class="form-label text-secondary small fw-semibold mb-1">Filter by Expected Delivery / Creation Date</label>
         <div class="input-group shadow-sm">
@@ -53,16 +46,15 @@
     </div>
   </div>
 
-  <!-- ─── হেডার এবং ডিফল্ট কন্ট্রোল প্যানেল ─── -->
+  <!-- হেডার এবং ডিফল্ট কন্ট্রোল প্যানেল -->
   <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="text-dark fw-bold mb-1">Purchase Order Ledger</h4>
       <p class="text-muted mb-0 small">Formulate B2B corporate firm orders, manage delivery timelines, and monitor workflow lifecycles.</p>
     </div>
     
-    <!-- সার্চ ইনপুট এবং অ্যাকশন বাটন গ্রুপ -->
     <div class="d-flex flex-wrap gap-3 align-items-center">
-      <!-- 🔍 কন্ডিশনাল সার্চ বার: PROCUREMENT এবং MANAGER থাকলে এই সাধারণ সার্চ বারটি সম্পূর্ণ হাইড থাকবে -->
+      <!-- সাধারণ সার্চ বার (LOGISTICS_OFFICER, PROCUREMENT এবং MANAGER-এর জন্য হাইড থাকবে) -->
       <div class="input-group" style="min-width: 280px; max-width: 350px;" *ngIf="shouldShowCardSearchBar()">
         <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-secondary"></i></span>
         <input type="text" class="form-control bg-light border-start-0 fs-7" 
@@ -71,21 +63,21 @@
                (input)="applyDataIsolationAndFilters()">
       </div>
 
-      <!-- 🔒 জেনারেট বাটন লক: ইউজার SUPPLIER হলে বাটনটি সম্পূর্ণ হাইড থাকবে -->
+      <!-- Add Purchase Order বাটন (LOGISTICS_OFFICER এবং SUPPLIER দেখতে পাবে না) -->
       <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2" 
-              *ngIf="isManagementUser()" 
+              *ngIf="canAddPurchaseOrder()" 
               (click)="openDrawer()">
         <i class="bi bi-file-earmark-check-fill"></i> Add Purchase Order
       </button>
     </div>
   </div>
 
-  <!-- ─── ভ্যালিডেশন এরর মেসেজ ডিসপ্লে ─── -->
+  <!-- ভ্যালিডেশন এরর মেসেজ ডিসপ্লে -->
   <div *ngIf="errorMessage" class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
     <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Validation Failure:</strong> {{ errorMessage }}
   </div>
 
-  <!-- ─── পারচেজ অর্ডার ডাটা টেবিল লেজার ─── -->
+  <!-- পারচেজ অর্ডার ডাটা টেবিল লেজার -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -98,12 +90,10 @@
               <th>Aggregate Value</th>
               <th>Delivery Timeline</th>
               <th>Workflow Stage</th>
-              <!-- 🔒 সাপ্লায়ারের জন্য ACTIONS হেডার হাইд থাকবে -->
               <th *ngIf="isManagementUser()" class="text-end px-4" width="140">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <!-- 🔄 ফিল্টারড লিস্ট (filteredOrders) দিয়ে লুপ চালানো হয়েছে -->
             <tr *ngFor="let o of filteredOrders">
               <td class="ps-4"><span class="badge bg-dark font-monospace tracking-wide">{{ o.poNumber }}</span></td>
               <td>
@@ -128,7 +118,6 @@
                 </span>
               </td>
               
-              <!-- 🔒 সাপ্লায়ারের জন্য অ্যাকশন বাটনসমূহ সম্পূর্ণ হাইড -->
               <td *ngIf="isManagementUser()" class="text-end px-4">
                 <div class="d-flex justify-content-end gap-2">
                   <button class="btn btn-icon btn-light text-warning" title="Modify Parameters" (click)="edit(o)">
@@ -151,9 +140,8 @@
     </div>
   </div>
 
-  <!-- ─── নতুন অর্ডার জেনারেট/এডিট করার সাইড ড্রয়ার ─── -->
-  <!-- 🔒 সিকিউরিটি চেক: ইউজার SUPPLIER হলে এই ড্রয়ার ডম (DOM) থেকে রেন্ডারই হবে না -->
-  <div *ngIf="isManagementUser()">
+  <!-- নতুন অর্ডার জেনারেট/এডিট করার সাইড ড্রয়ার -->
+  <div *ngIf="canAddPurchaseOrder()">
     <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
       <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
         <h5 class="fw-bold mb-0">{{ isEdit ? 'Modify Purchase Order Metadata' : 'Compile Firm Purchase Order' }}</h5>
@@ -161,81 +149,76 @@
       </div>
 
       <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
-  <form #poForm="ngForm" (ngSubmit)="poForm.valid && save()">
-    
-    <!-- মূল ইনফরমেশন -->
-    <div class="mb-3">
-      <label class="form-label fw-bold small text-uppercase text-secondary">Target Approved Quotation Slip</label>
-      <select class="form-select fs-7" [(ngModel)]="order.quotationId" name="quotationId" (change)="onQuotationChange($event)" required [disabled]="isEdit">
-        <option [value]="0">-- Select Approved Bid Source --</option>
-        <option *ngFor="let q of quotations" [value]="q.id">Quotation #{{ q.quotationNumber }} (Supplier: {{ q.supplierName }} - ${{ q.totalPrice }})</option>
-      </select>
-    </div>
+        <form #poForm="ngForm" (ngSubmit)="poForm.valid && save()">
+          
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Target Approved Quotation Slip</label>
+            <select class="form-select fs-7" [(ngModel)]="order.quotationId" name="quotationId" (change)="onQuotationChange($event)" required [disabled]="isEdit">
+              <option [value]="0">-- Select Approved Bid Source --</option>
+              <option *ngFor="let q of quotations" [value]="q.id">Quotation #{{ q.quotationNumber }} (Supplier: {{ q.supplierName }} - ${{ q.totalPrice }})</option>
+            </select>
+          </div>
 
-    <div class="mb-3">
-      <label class="form-label fw-bold small text-uppercase text-secondary">Financial Settlement Value ($)</label>
-      <input type="number" class="form-control fs-7 font-monospace bg-light text-muted fw-bold" [(ngModel)]="order.totalAmount" name="totalAmount" readonly disabled placeholder="Auto-calculated from selected quotation">
-    </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Financial Settlement Value ($)</label>
+            <input type="number" class="form-control fs-7 font-monospace bg-light text-muted fw-bold" [(ngModel)]="order.totalAmount" name="totalAmount" readonly disabled placeholder="Auto-calculated from selected quotation">
+          </div>
 
-    <div class="row g-2 mb-3">
-      <div class="col-md-6">
-        <label class="form-label fw-bold small text-uppercase text-secondary">Expected Delivery Date</label>
-        <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="order.expectedDeliveryDate" name="expectedDeliveryDate" required>
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-uppercase text-secondary">Expected Delivery Date</label>
+              <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="order.expectedDeliveryDate" name="expectedDeliveryDate" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold small text-uppercase text-secondary">System Base Currency</label>
+              <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold" [value]="order.currency + ' ($) Fixed SCM Clearing'" readonly disabled>
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <h6 class="fw-bold mb-3 text-secondary text-uppercase small">System Metadata</h6>
+          
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Supplier Name</label>
+              <input type="text" class="form-control bg-light" [value]="order.supplierName || 'N/A'" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Supplier Email</label>
+              <input type="email" class="form-control bg-light" [value]="order.supplierEmail || 'N/A'" readonly>
+            </div>
+          </div>
+
+          <div class="row g-2 mb-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Created At</label>
+              <input type="text" class="form-control bg-light" [value]="order.createdAt ? (order.createdAt | date:'medium') : 'N/A'" readonly>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Issued By (User Name)</label>
+              <input type="text" class="form-control bg-light" [value]="order.issuedByName || 'N/A'" readonly>
+            </div>
+          </div>
+
+          <div class="mb-4" *ngIf="isEdit">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Order Lifecycle Stage</label>
+            <select class="form-select fs-7" [(ngModel)]="order.status" name="status" required>
+              <option value="DRAFT">DRAFT</option>
+              <option value="ISSUED">ISSUED</option>
+              <option value="PARTIALLY_RECEIVED">PARTIALLY_RECEIVED</option>
+              <option value="RECEIVED">RECEIVED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </div>
+
+          <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+            <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
+              <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit PO Modifications' : 'Dispatch for Authorization' }}
+            </button>
+            <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+          </div>
+        </form>
       </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold small text-uppercase text-secondary">System Base Currency</label>
-        <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold" [value]="order.currency + ' ($) Fixed SCM Clearing'" readonly disabled>
-      </div>
-    </div>
-
-    <!-- স্ট্যাটিক/অটো-লোডেড ফিল্ডস -->
-    <hr class="my-4">
-    <h6 class="fw-bold mb-3 text-secondary text-uppercase small">System Metadata</h6>
-    
-       <div class="row g-2 mb-3">
-      <div class="col-md-6">
-        <label class="form-label small fw-bold">Supplier Name</label>
-        <input type="text" class="form-control bg-light" [value]="order.supplierName || 'N/A'" readonly>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label small fw-bold">Supplier Email</label>
-        <input type="email" class="form-control bg-light" [value]="order.supplierEmail || 'N/A'" readonly>
-      </div>
-    </div>
-
-    <div class="row g-2 mb-3">
-        <div class="col-md-6">
-      <label class="form-label small fw-bold">Created At</label>
-      <input type="text" class="form-control bg-light" [value]="order.createdAt ? (order.createdAt | date:'medium') : 'N/A'" readonly>
-    </div>
-      <div class="col-md-6">
-        <label class="form-label small fw-bold">Issued By (User Name)</label>
-        <input type="text" class="form-control bg-light" [value]="order.issuedByName || 'N/A'" readonly>
-      </div>
-    </div>
-
-  
-
-    <!-- স্ট্যাটাস চেঞ্জ (শুধুমাত্র এডিট মোডে) -->
-    <div class="mb-4" *ngIf="isEdit">
-      <label class="form-label fw-bold small text-uppercase text-secondary">Order Lifecycle Stage</label>
-      <select class="form-select fs-7" [(ngModel)]="order.status" name="status" required>
-        <option value="DRAFT">DRAFT</option>
-        <option value="ISSUED">ISSUED</option>
-        <option value="PARTIALLY_RECEIVED">PARTIALLY_RECEIVED</option>
-        <option value="RECEIVED">RECEIVED</option>
-        <option value="CANCELLED">CANCELLED</option>
-      </select>
-    </div>
-
-    <div class="drawer-footer d-flex gap-2 pt-2 border-top">
-      <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
-        <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit PO Modifications' : 'Dispatch for Authorization' }}
-      </button>
-      <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
-    </div>
-  </form>
-</div>
     </div>
 
     <div class="drawer-backdrop" *ngIf="isDrawerOpen" (click)="closeDrawer()"></div>
