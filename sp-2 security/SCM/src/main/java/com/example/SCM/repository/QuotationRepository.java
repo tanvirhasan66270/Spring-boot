@@ -12,6 +12,8 @@ import java.util.Optional;
 
 @Repository
 public interface QuotationRepository extends JpaRepository<Quotation, Long> {
+    @Query("SELECT q FROM Quotation q JOIN q.supplier s WHERE s.id = :supplierId")
+    List<Quotation> findBySupplierId(@Param("supplierId") Long supplierId);
 
     @Query("SELECT q FROM Quotation q " +
             "LEFT JOIN FETCH q.supplier " +

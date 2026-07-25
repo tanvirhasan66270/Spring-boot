@@ -23,7 +23,6 @@ export class QuatationComponent implements OnInit {
   quotations: QuotationResponseModel[] = [];
   filteredQuotations: QuotationResponseModel[] = []; 
   
-  //  ডুয়াল সার্চ বাফার মডেলস
   searchQtn: string = '';
   searchSupplierName: string = '';
   searchState: string = '';
@@ -70,7 +69,6 @@ export class QuatationComponent implements OnInit {
     this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
     const user = this.storage.getUser();
     
-    //  সেশন ক্যাশ থেকে সাপ্লায়ার মেটা অবজেক্টের আইডি এবং নাম রিড করা
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
     if (cachedSupplier) {
       this.currentSupplierId = cachedSupplier.id;
@@ -85,7 +83,6 @@ export class QuatationComponent implements OnInit {
     this.loadRequisitions();
   }
 
-  //  আইডি দিয়ে সাপ্লায়ারের নাম খুঁজে বের করার ডাইনামিক হেল্পার মেথড
   getSupplierNameById(supplierId: number): string {
     if (!supplierId || !this.suppliers || this.suppliers.length === 0) {
       return 'Loading...';
@@ -122,44 +119,59 @@ export class QuatationComponent implements OnInit {
     }
     return this.imageBaseUrl + fileName;
   }
-  
 
   loadQuotations(): void {
     this.service.findAll().subscribe({
       next: (data) => {
         const allRfqs = data || [];
         
-        //  CLIENT SIDE DATA ISOLATION GUARD: সাপ্লায়ার হলে ডেটা মাস্কিং হবে
-        if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-          this.quotations = allRfqs.filter((q: any) => {
-            const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
-            return sId === this.currentSupplierId;
-          });
+        if (this.activeRole === 'SUPPLIER') {
+          if (!this.currentSupplierId) {
+            const user = this.storage.getUser();
+            const match = allRfqs.find((q: any) => {
+              const sName = q.supplierName || '';
+              return sName.toLowerCase() === (user?.name || '').toLowerCase();
+            });
+            if (match) {
+              this.currentSupplierId = match.supplierId || (match.supplierId ? match.supplierId : null);
+              this.currentSupplierName = match.supplierName || this.currentSupplierName;
+              this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: this.currentSupplierName });
+            }
+          }
+
+          if (this.currentSupplierId) {
+            this.quotations = allRfqs.filter((q: any) => {
+              const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
+              return Number(sId) === Number(this.currentSupplierId);
+            });
+          } else {
+            this.quotations = allRfqs;
+          }
         } else {
           this.quotations = allRfqs;
         }
 
         this.filteredQuotations = [...this.quotations];
-        this.applyDoubleSearch(); 
+        this.applyFilters(); 
         this.cdr.markForCheck();
       },
       error: (err) => this.handleError(err)
     });
   }
 
-  //  ডুয়াল সার্চ বার ফিল্টারিং কোর লজিক পাইপলাইন
-  applyDoubleSearch(): void {
+  applyFilters(): void {
     const qtnTerm = this.searchQtn.toLowerCase().trim();
+    const supTerm = this.searchSupplierName.toLowerCase().trim();
     const stateTerm = this.searchState.toLowerCase().trim();
 
     this.filteredQuotations = this.quotations.filter(q => {
-      const qtnNo = q.quotationNumber || `QTN-${q.id}`;
-      const auditingState = q.status || 'PENDING';
+      const qtnNo = (q.quotationNumber || `QTN-${q.id}`).toLowerCase();
+      const supName = (q.supplierName || this.getSupplierNameById(q.supplierId)).toLowerCase();
+      const status = (q.status || 'PENDING').toLowerCase();
 
-      const matchesQtn = qtnNo.toLowerCase().includes(qtnTerm);
-      const matchesState = auditingState.toLowerCase().includes(stateTerm);
-
-      return matchesQtn && matchesState;
+      return qtnNo.includes(qtnTerm) && 
+             supName.includes(supTerm) && 
+             status.includes(stateTerm);
     });
     this.cdr.markForCheck();
   }
@@ -182,101 +194,96 @@ export class QuatationComponent implements OnInit {
       this.selectedFile = event.target.files[0];
     }
   }
-openDrawer(): void {
- 
-  if (this.activeRole !== 'ADMIN' && (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER')) {
-    console.warn("Access Denied: Action restricted for this role.");
-    return; 
-  }
 
-  this.reset();
-  this.isEdit = false;
-  
-  if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-    this.quotation.supplierId = this.currentSupplierId;
+  openDrawer(): void {
+    if (this.activeRole !== 'ADMIN' && (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER')) {
+      console.warn("Access Denied: Action restricted for this role.");
+      return; 
+    }
+
+    this.reset();
+    this.isEdit = false;
+    
+    // if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
+    //   this.quotation.supplierId = this.currentSupplierId;
+    //   console.log(this.currentSupplierId)
+    // }
+    
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
   }
-  
-  this.isDrawerOpen = true;
-  this.cdr.markForCheck();
-}
 
   closeDrawer(): void { 
     this.isDrawerOpen = false; 
     this.reset(); 
     this.cdr.markForCheck(); 
   }
- isProcurement(): boolean {
-  // StorageService থেকে রোল চেক করা নিরাপদ
-  const role = this.storage.getActiveRole()?.toUpperCase();
-  return role === 'PROCUREMENT' || role === 'MANAGER';
-}
-canUpdateStatus(): boolean {
-  const role = this.storage.getActiveRole()?.toUpperCase();
-  return role === 'ADMIN' || role === 'PROCUREMENT';
-}
 
-updateStatus(q: QuotationResponseModel): void {
-  // ১. নিরাপত্তা চেক: যদি ইউজার ADMIN বা PROCUREMENT না হয় তবে কাজ করবে না
-  if (!this.canUpdateStatus()) {
-    alert("Access Denied: Only Admin and Procurement can update status.");
-    this.loadQuotations(); // আগের ডাটা রিলোড করা
-    return;
+  isProcurement(): boolean {
+    const role = this.storage.getActiveRole()?.toUpperCase();
+    return role === 'PROCUREMENT' || role === 'MANAGER';
   }
 
-  // ২. সার্ভারে আপডেট রিকোয়েস্ট পাঠানো
-  this.service.updateStatus(q.id, q.status).subscribe({
-    next: () => {
-      alert("Status updated successfully.");
-      this.loadQuotations(); // সফল হলে লিস্ট রিফ্রেশ করা
-    },
-    error: (err) => {
-      console.error("Update failed", err);
-      alert("Failed to update status. Please try again.");
-      this.loadQuotations(); // এরর হলে আগের ডাটা রিলোড করা
-    }
-  });
-}
-get userRole(): string {
-  return this.activeRole;
-}
-
-
-
-
- save(): void {
-  this.errorMessage = null;
-
-  // ADMIN বা অন্য রোল হলে Supplier mapping বাধ্যতামূলক, কিন্তু ADMIN এর জন্য আপনি চাইলে এটি শিথিল করতে পারেন
-  if (this.quotation.supplierId === 0 && this.activeRole !== 'ADMIN') {
-    this.errorMessage = "Validation Fault: Target Supplier mapping is mandatory.";
-    return;
-  }
-  
-  if (this.quotation.purchaseRequisitionId === 0) {
-    this.errorMessage = "Validation Fault: Purchase Requisition node mapping is mandatory.";
-    return;
+  canUpdateStatus(): boolean {
+    const role = this.storage.getActiveRole()?.toUpperCase();
+    return role === 'ADMIN' || role === 'PROCUREMENT';
   }
 
-  if (!this.isQuantityValid()) {
-    this.errorMessage = "Validation Fault: Quantity limit exceeded.";
-    return;
-  }
-
-  // যদি সাপ্লায়ার হয় তবেই আইডি ফিক্সড হবে
-  if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-    this.quotation.supplierId = this.currentSupplierId;
-  }
-
-  // যদি ইডিট মোড হয় তবে আপডেট, নাহলে নতুন সেভ (আপনার সার্ভিস লজিক অনুযায়ী)
-  this.service.save(this.quotation, this.selectedFile).subscribe({
-    next: () => {
-      alert("Quotation document node synchronized successfully.");
-      this.closeDrawer();
+  updateStatus(q: QuotationResponseModel): void {
+    if (!this.canUpdateStatus()) {
+      alert("Access Denied: Only Admin and Procurement can update status.");
       this.loadQuotations();
-    },
-    error: (err) => this.handleError(err)
-  });
-}
+      return;
+    }
+
+    this.service.updateStatus(q.id, q.status).subscribe({
+      next: () => {
+        alert("Status updated successfully.");
+        this.loadQuotations();
+      },
+      error: (err) => {
+        console.error("Update failed", err);
+        alert("Failed to update status. Please try again.");
+        this.loadQuotations();
+      }
+    });
+  }
+
+  get userRole(): string {
+    return this.activeRole;
+  }
+
+  save(): void {
+    this.errorMessage = null;
+
+    if (this.quotation.supplierId === 0 && this.activeRole !== 'ADMIN') {
+      this.errorMessage = "Validation Fault: Target Supplier mapping is mandatory.";
+      return;
+    }
+    
+    if (this.quotation.purchaseRequisitionId === 0) {
+      this.errorMessage = "Validation Fault: Purchase Requisition node mapping is mandatory.";
+      return;
+    }
+
+    if (!this.isQuantityValid()) {
+      this.errorMessage = "Validation Fault: Quantity limit exceeded.";
+      return;
+    }
+
+    if (this.activeRole === 'SUPPLIER' && this.currentSupplierId != null) {
+      this.quotation.supplierId = this.currentSupplierId;
+    }
+
+    this.service.save(this.quotation, this.selectedFile).subscribe({
+      next: () => {
+        alert("Quotation document node synchronized successfully.");
+        this.closeDrawer();
+        this.loadQuotations();
+      },
+      error: (err) => this.handleError(err)
+    });
+  }
 
   edit(o: QuotationResponseModel): void {
     this.errorMessage = null;
@@ -313,36 +320,14 @@ get userRole(): string {
       error: (err) => alert(err.error?.message || "Deletion failure.")
     });
   }
- canUploadQuotation(): boolean {
-  return !this.isProcurement();
-}
 
-  //  ট্রিপল সার্চ ফিল্টারিং কোর লজিক
-  applyFilters(): void {
-    const qtnTerm = this.searchQtn.toLowerCase().trim();
-    const supTerm = this.searchSupplierName.toLowerCase().trim();
-    const stateTerm = this.searchState.toLowerCase().trim();
-
-    this.filteredQuotations = this.quotations.filter(q => {
-      const qtnNo = (q.quotationNumber || `QTN-${q.id}`).toLowerCase();
-      const supName = this.getSupplierNameById(q.supplierId).toLowerCase();
-      const status = (q.status || 'PENDING').toLowerCase();
-
-      return qtnNo.includes(qtnTerm) && 
-             supName.includes(supTerm) && 
-             status.includes(stateTerm);
-    });
-    this.cdr.markForCheck();
+  canUploadQuotation(): boolean {
+    return !this.isProcurement();
   }
-
-  // ... (অন্যান্য মেথড: getSupplierNameById, getImageUrl, loadQuotations ইত্যাদি অপরিবর্তিত)
-  // মনে রাখবেন: loadQuotations এর শেষে this.applyFilters() কল করবেন।
-  
- 
 
   reset(): void {
     this.quotation = {
-      supplierId: 0,
+      supplierId: this.activeRole === 'SUPPLIER' && this.currentSupplierId ? this.currentSupplierId : 0,
       purchaseRequisitionId: 0,
       leadTimeDays: 1,
       receivedAt: '',

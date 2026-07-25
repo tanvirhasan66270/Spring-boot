@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -49,6 +50,8 @@ public class SupplierController {
     }
 
     @GetMapping
+//    @PreAuthorize("hasRole('ADMIN') or @supplierSecurity.isSelfUser(#id, authentication)")
+
     public ResponseEntity<List<SupplierResponseDTO>> getAll() {
         List<SupplierResponseDTO> list = supplierService.findAll();
         if (list.isEmpty()) {

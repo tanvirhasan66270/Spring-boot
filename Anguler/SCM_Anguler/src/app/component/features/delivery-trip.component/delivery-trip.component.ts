@@ -72,7 +72,7 @@ export class DeliveryTripComponent implements OnInit {
   canViewConsoleActions(): boolean {
   const role = this.storage.getActiveRole()?.toUpperCase();
   // শুধুমাত্র ADMIN এবং DRIVER এই কলামটি দেখতে পাবে
-  return role === 'ADMIN' || role === 'DRIVER' || role === 'LOGISTICS_OFFICER';
+  return role === 'ADMIN' ||  role === 'LOGISTICS_OFFICER';
 }
 canViewStatusActions(): boolean {
   const role = this.storage.getActiveRole()?.toUpperCase().trim();
