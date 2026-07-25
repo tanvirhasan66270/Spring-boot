@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -9,6 +9,11 @@ import { DeliveryTripService } from '../../../service/delivery-trip.service';
 import { VehicleService } from '../../../service/vehicle.service';
 import { CustomerService } from '../../../service/customer.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
+
+// 🌟 jsPDF এবং html2canvas ইমপোর্ট
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-delivery-trip',
@@ -33,6 +38,14 @@ export class DeliveryTripComponent implements OnInit {
   statusUpdateValue = 'PENDING';
   currentUserId: number = 0;
 
+  userRole: string = '';
+
+  // 🌟 PDF മോডাল ও প্রিভিউ প্রপার্টিজ
+  isPdfModalOpen = false;
+  selectedTripForPdf: DeliveryTripResponseModel | null = null;
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+  readonly imageBaseUrl = environment.imgUrl + "trips/"; // যদি ছবি বা সিগনেচার ফোল্ডার বেস ইউআরএল থাকে
+
   formModel: DeliveryTripRequestModel = {
     dispatcherId: 0,
     customerId: 0,
@@ -51,10 +64,14 @@ export class DeliveryTripComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
     const user = this.storage.getUser();
     if (user) {
       this.currentUserId = user.userId;
       this.formModel.dispatcherId = user.userId;
+      if (!this.userRole && user.role) {
+        this.userRole = user.role.toUpperCase();
+      }
     }
     this.loadTrips();
     this.loadActiveFleetData();
@@ -69,19 +86,16 @@ export class DeliveryTripComponent implements OnInit {
       error: (err) => this.handleError(err),
     });
   }
-  canViewConsoleActions(): boolean {
-  const role = this.storage.getActiveRole()?.toUpperCase();
-  // শুধুমাত্র ADMIN এবং DRIVER এই কলামটি দেখতে পাবে
-  return role === 'ADMIN' ||  role === 'LOGISTICS_OFFICER';
-}
-canViewStatusActions(): boolean {
-  const role = this.storage.getActiveRole()?.toUpperCase().trim();
-  
-  // কনসোলে চেক করে দেখতে পারেন ব্রাউজারে কি রোল আসছে
-  console.log("Current User Role:", role); 
 
-  return role === 'ADMIN' || role === 'DRIVER';
-}
+  canViewConsoleActions(): boolean {
+    const role = this.storage.getActiveRole()?.toUpperCase();
+    return role === 'ADMIN' || role === 'LOGISTICS_OFFICER';
+  }
+
+  canViewStatusActions(): boolean {
+    const role = this.storage.getActiveRole()?.toUpperCase().trim();
+    return role === 'ADMIN' || role === 'DRIVER';
+  }
 
   loadActiveFleetData() {
     this.vehicleService.findAll().subscribe({
@@ -89,7 +103,7 @@ canViewStatusActions(): boolean {
         this.allVehicles = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: () => {
         this.errorMessage = 'Failed to load vehicle data.';
         this.cdr.markForCheck();
       },
@@ -239,6 +253,48 @@ canViewStatusActions(): boolean {
         error: (err) => alert(err.error?.message || err.message),
       });
     }
+  }
+
+  // 🌟 PDF মোডাল কন্ট্রোল মেথডসমূহ
+  openPdfModal(trip: DeliveryTripResponseModel) {
+    this.selectedTripForPdf = trip;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedTripForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    if (!this.selectedTripForPdf) return;
+
+    const element = this.pdfPreviewContainer.nativeElement;
+    
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Delivery-Trip-TRIP-${this.selectedTripForPdf?.id}.pdf`);
+      this.closePdfModal();
+    });
   }
 
   openDrawer() {

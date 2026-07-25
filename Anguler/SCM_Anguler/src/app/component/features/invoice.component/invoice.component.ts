@@ -1,10 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { InvoiceRequestModel, InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-invoice',
@@ -16,15 +18,17 @@ import { CustomerOrderService } from '../../../service/customer-order.service';
 export class InvoiceComponent implements OnInit {
 
   invoices: InvoiceResponseModel[] = [];
-  orders: any[] = []; // অর্ডার ট্র্যাকিং লিংকের জন্য লিস্ট
+  orders: any[] = []; 
   
   errorMessage: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
-  selectedInvoiceForView: InvoiceResponseModel | null = null;
 
-  // ইনিশিয়াল ব্ল্যাঙ্ক রিকোয়েস্ট ডিটিও অবজেক্ট
+  isPdfModalOpen = false;
+  selectedInvoiceForPdf: InvoiceResponseModel | null = null;
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+
   formModel: InvoiceRequestModel = {
     customerOrderId: null,
     salesOfficerId: null,
@@ -62,7 +66,6 @@ export class InvoiceComponent implements OnInit {
   }
 
   loadCustomerOrders() {
-    // অর্ডার ভেরিফিকেশনের জন্য লিস্ট লোড করা
     this.orderService.findAll().subscribe({ next: (data) => this.orders = data || [] });
   }
 
@@ -140,14 +143,45 @@ export class InvoiceComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  viewInvoiceDetail(inv: InvoiceResponseModel) {
-    this.selectedInvoiceForView = inv;
+  openPdfModal(inv: InvoiceResponseModel) {
+    this.selectedInvoiceForPdf = inv;
+    this.isPdfModalOpen = true;
     this.cdr.markForCheck();
   }
 
-  closeViewModal() {
-    this.selectedInvoiceForView = null;
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedInvoiceForPdf = null;
     this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    if (!this.selectedInvoiceForPdf) return;
+
+    const element = this.pdfPreviewContainer.nativeElement;
+    
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Invoice-${this.selectedInvoiceForPdf?.invoiceNumber || this.selectedInvoiceForPdf?.id}.pdf`);
+      this.closePdfModal();
+    });
   }
 
   deleteInvoice(id: number) {

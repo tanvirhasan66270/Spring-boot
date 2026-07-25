@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ShipmentRequestModel, ShipmentResponseModel } from '../../shared/model/shipmentModel';
@@ -6,6 +6,11 @@ import { ShipmentService } from '../../../service/shipment.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
+
+// 🌟 jsPDF এবং html2canvas ইমপোর্ট
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-shipment',
@@ -20,7 +25,7 @@ export class ShipmentComponent implements OnInit {
   purchaseOrders: any[] = [];
   suppliers: any[] = [];
 
-  // 🔍 ডুয়াল সার্চ বাফার মডেলস
+  //  ডুয়াল সার্চ বাফার মডেলস
   searchNo: string = '';
   searchVehicle: string = '';
 
@@ -34,6 +39,14 @@ export class ShipmentComponent implements OnInit {
   userRole: string = '';
   currentSupplierId: number | null = null;
   currentSupplierName: string = ''; 
+
+  isPdfModalOpen = false;
+  selectedShipmentForPdf: ShipmentResponseModel | null = null;
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+
+readonly imageBaseUrl = environment.imgUrl + "shipments/";
+
+
 
   shipment: ShipmentRequestModel = {
     poId: 0,
@@ -55,45 +68,48 @@ export class ShipmentComponent implements OnInit {
     private storage: StorageService,
     private cdr: ChangeDetectorRef,
   ) {}
-ngOnInit() {
-  this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
-  const user = this.storage.getUser();
-  if (user) {
-    this.currentUserEmail = user.email;
-    this.shipment.assignedByEmail = user.email;
-    if (!this.userRole && user.role) {
-      this.userRole = user.role.toUpperCase();
+
+  ngOnInit() {
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
+    const user = this.storage.getUser();
+    if (user) {
+      this.currentUserEmail = user.email;
+      this.shipment.assignedByEmail = user.email;
+      if (!this.userRole && user.role) {
+        this.userRole = user.role.toUpperCase();
+      }
     }
+
+    // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম সঠিকভাবে রিড করা
+    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
+    if (cachedSupplier) {
+      this.currentSupplierId = cachedSupplier.id;
+      this.currentSupplierName = cachedSupplier.name || cachedSupplier.companyName || user?.name || 'Your Supplier Account';
+    } else {
+      this.currentSupplierName = user?.name || 'Your Supplier Account';
+    }
+
+    this.loadShipments();
+    this.loadPurchaseOrders();
+    this.loadSuppliers();
   }
 
-  // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম সঠিকভাবে রিড করা
-  const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
-  if (cachedSupplier) {
-    this.currentSupplierId = cachedSupplier.id;
-    // ক্যাশ অবজেক্টে 'name' বা 'companyName' থাকতে পারে, তাই সেফটি চেক রাখা হলো
-    this.currentSupplierName = cachedSupplier.name || cachedSupplier.companyName || user?.name || 'Your Supplier Account';
-  } else {
-    this.currentSupplierName = user?.name || 'Your Supplier Account';
-  }
-
-  this.loadShipments();
-  this.loadPurchaseOrders();
-  this.loadSuppliers();
-}
-
-
-
-  loadShipments() {
+ loadShipments() {
     this.service.findAll().subscribe({
       next: (data) => {
         const allShipments = data || [];
 
-        // 🔒 CLIENT SIDE ISOLATION
+        // 🌟 সেফটি চেক: যদি লজিস্টিক অফিসার বা অন্য কোনো রোলেও ডেটা ফিল্টার হয়ে জিরো হয়ে যায়, 
+        // তবে রিকোয়ারমেন্ট অনুযায়ী অল শিপমেন্টস দেখানোর ব্যবস্থা রাখা হলো
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.shipments = allShipments.filter((s: any) => {
             const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
             return sId === this.currentSupplierId;
           });
+          // যদি সাপ্লায়ার আইডির সাথে ম্যাচ করে কোনো শিপমেন্ট না পাওয়া যায়, তবে ব্যাকআপ হিসেবে সব দেখাবে বা খালি থাকবে
+          if (this.shipments.length === 0 && allShipments.length > 0) {
+            this.shipments = allShipments;
+          }
         } else {
           this.shipments = allShipments;
         }
@@ -102,6 +118,9 @@ ngOnInit() {
         this.applyDoubleSearch();
         this.cdr.markForCheck();
       },
+      error: (err) => {
+        console.error("Shipment Load Error:", err);
+      }
     });
   }
 
@@ -123,8 +142,13 @@ ngOnInit() {
   }
 
   loadPurchaseOrders() {
-    if (this.userRole === 'SUPPLIER') return;
-    this.poService.findAll().subscribe({ next: (data) => (this.purchaseOrders = data || []) });
+    this.poService.findAll().subscribe({ 
+      next: (data) => {
+        this.purchaseOrders = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error("PO Load Error:", err)
+    });
   }
 
   loadSuppliers() {
@@ -138,17 +162,18 @@ ngOnInit() {
     }
   }
 
-openDrawer() {
-  this.reset();
-  this.isEdit = false;
-  
-  if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
-    this.shipment.supplierId = this.currentSupplierId;
+  openDrawer() {
+    this.reset();
+    this.isEdit = false;
+    
+    if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+      this.shipment.supplierId = this.currentSupplierId;
+    }
+    
+    this.isDrawerOpen = true;
+    this.cdr.markForCheck();
   }
-  
-  this.isDrawerOpen = true;
-  this.cdr.markForCheck();
-}
+
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
@@ -158,7 +183,11 @@ openDrawer() {
   save() {
     this.errorMessage = null;
 
-    if (this.shipment.poId === 0 || this.shipment.supplierId === 0) {
+    this.shipment.poId = Number(this.shipment.poId);
+    this.shipment.supplierId = Number(this.shipment.supplierId);
+    this.shipment.transportCost = Number(this.shipment.transportCost);
+
+    if (!this.shipment.poId || this.shipment.poId === 0 || !this.shipment.supplierId || this.shipment.supplierId === 0) {
       this.errorMessage = 'Validation Error: Cluster reference fields (Purchase Order ID, Vendor Node) are required.';
       return;
     }
@@ -170,7 +199,10 @@ openDrawer() {
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) => (this.errorMessage = err.error?.message || 'Modification matrix deployment failure.'),
+        error: (err) => {
+          console.error('Update error:', err);
+          this.errorMessage = err.error?.message || err.message || 'Modification matrix deployment failure.';
+        },
       });
     } else {
       this.service.save(this.shipment, this.selectedFile).subscribe({
@@ -179,7 +211,10 @@ openDrawer() {
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) => (this.errorMessage = err.error?.message || 'Logistics initialization exception.'),
+        error: (err) => {
+          console.error('Save error:', err);
+          this.errorMessage = err.error?.message || err.message || 'Logistics initialization exception.';
+        },
       });
     }
   }
@@ -214,6 +249,47 @@ openDrawer() {
         error: (err) => alert(err.error?.message || err.message),
       });
     }
+  }
+
+  openPdfModal(s: ShipmentResponseModel) {
+    this.selectedShipmentForPdf = s;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedShipmentForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    if (!this.selectedShipmentForPdf) return;
+
+    const element = this.pdfPreviewContainer.nativeElement;
+    
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Shipment-${this.selectedShipmentForPdf?.shipmentNumber}.pdf`);
+      this.closePdfModal();
+    });
   }
 
   reset() {

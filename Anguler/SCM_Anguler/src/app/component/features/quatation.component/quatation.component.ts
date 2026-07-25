@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
@@ -8,6 +8,10 @@ import { SupplierService } from '../../../service/supplier.service';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 import { environment } from '../../../../environment/environment';
+
+// jsPDF এবং html2canvas ইমপোর্ট
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-quatation',
@@ -40,6 +44,11 @@ export class QuatationComponent implements OnInit {
   activeRole: string = 'CUSTOMER';
   currentSupplierId: number | null = null;
   currentSupplierName: string = ''; 
+
+  // PDF প্রিভিউ মডালের জন্য ভেরিয়েবল
+  isPdfModalOpen = false;
+  selectedQuotationForPdf: QuotationResponseModel | null = null;
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
 
   quotation: QuotationRequestModel = {
     supplierId: 0,
@@ -203,12 +212,6 @@ export class QuatationComponent implements OnInit {
 
     this.reset();
     this.isEdit = false;
-    
-    // if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-    //   this.quotation.supplierId = this.currentSupplierId;
-    //   console.log(this.currentSupplierId)
-    // }
-    
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
@@ -323,6 +326,52 @@ export class QuatationComponent implements OnInit {
 
   canUploadQuotation(): boolean {
     return !this.isProcurement();
+  }
+
+  // PDF প্রিভিউ মডাল ওপেন করার ফাংশন
+  openPdfModal(q: QuotationResponseModel) {
+    this.selectedQuotationForPdf = q;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  // PDF প্রিভিউ মডাল বন্ধ করার ফাংশন
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedQuotationForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  // প্রিভিউ মডাল থেকে ওয়ার্ড পেজ আকারে পিডিএফ ডাউনলোড করার ফাংশন
+  downloadPdfFromModal() {
+    if (!this.selectedQuotationForPdf) return;
+
+    const element = this.pdfPreviewContainer.nativeElement;
+    
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const qtnNumber = this.selectedQuotationForPdf?.quotationNumber || `QTN-${this.selectedQuotationForPdf?.id}`;
+      pdf.save(`Quotation-${qtnNumber}.pdf`);
+      
+      this.closePdfModal();
+    });
   }
 
   reset(): void {

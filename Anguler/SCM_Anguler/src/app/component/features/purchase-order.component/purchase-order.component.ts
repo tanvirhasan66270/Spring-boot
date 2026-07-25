@@ -1,10 +1,14 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PurchaseOrderRequestModel, PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { QuotationService } from '../../../service/quatation.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
+
+// jsPDF এবং html2canvas ইমপোর্ট
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-purchase-order',
@@ -26,9 +30,14 @@ export class PurchaseOrderComponent implements OnInit {
   activeRole: string = 'CUSTOMER';
   currentSupplierId: number | null = null;
 
-  searchQuery: string = '';       // ১ম সার্চ বার: PO Number বা Status
-  searchSupplier: string = '';    // ২য় সার্চ বার: Supplier Name বা ID
-  searchDate: string = '';        // ৩য় সার্চ বার: Expected Delivery/Creation Date
+  searchQuery: string = '';        
+  searchSupplier: string = '';    
+  searchDate: string = '';        
+
+  // PDF প্রিভিউ মডালের জন্য ভেরিয়েবল
+  isPdfModalOpen = false;
+  selectedOrderForPdf: PurchaseOrderResponseModel | null = null;
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
 
   order: PurchaseOrderRequestModel = {
     quotationId: 0,
@@ -39,7 +48,7 @@ export class PurchaseOrderComponent implements OnInit {
     currency: 'USD',
     expectedDeliveryDate: '',
     status: 'DRAFT',
-    createdAt: ''     
+    createdAt: ''    
   };
 
   constructor(
@@ -65,22 +74,18 @@ export class PurchaseOrderComponent implements OnInit {
     this.loadQuotations();
   }
 
-  // 🌟 LOGISTICS_OFFICER এবং SUPPLIER এই বাটনটি দেখতে পাবে না
   canAddPurchaseOrder(): boolean {
     return this.activeRole === 'ADMIN' || 
            this.activeRole === 'MANAGER' || 
            this.activeRole === 'PROCUREMENT';
   }
 
-  // রোল এবং প্রিভিলেজ ম্যাচিং হেল্পার (সার্চ কার্ড কন্ট্রোল)
   isManagementUser(): boolean {
     return this.activeRole === 'ADMIN' || 
            this.activeRole === 'MANAGER' || 
-           this.activeRole === 'PROCUREMENT' || 
-           this.activeRole === 'LOGISTICS_OFFICER';
+           this.activeRole === 'PROCUREMENT';
   }
 
-  // 🌟 LOGISTICS_OFFICER, PROCUREMENT এবং MANAGER ভেতরের সাধারণ সার্চ বার দেখতে পারবে না
   shouldShowCardSearchBar(): boolean {
     if (this.activeRole === 'PROCUREMENT' || this.activeRole === 'MANAGER' || this.activeRole === 'LOGISTICS_OFFICER') {
       return false;
@@ -107,6 +112,9 @@ export class PurchaseOrderComponent implements OnInit {
         return sId === this.currentSupplierId;
       });
     } 
+    else if (this.activeRole === 'LOGISTICS_OFFICER') {
+      // লজিস্টিক অফিসার সব দেখতে পাবে
+    }
     else if (!this.isManagementUser() && this.activeRole !== 'SUPPLIER') {
       ordersPipe = []; 
     }
@@ -159,9 +167,7 @@ export class PurchaseOrderComponent implements OnInit {
     if (selectedQ) {
       this.order.totalAmount = selectedQ.totalPrice;
       this.order.supplierName = selectedQ.supplierName;
-      this.order.supplierEmail = selectedQ.supplierEmail || 
-                                 selectedQ.email || 
-                                 (selectedQ.supplier ? selectedQ.supplier.email : 'N/A');
+      this.order.supplierEmail = selectedQ.supplierEmail || selectedQ.email || (selectedQ.supplier ? selectedQ.supplier.email : 'N/A');
       this.order.purchaseRequisitionId = selectedQ.purchaseRequisitionId;
     }
   }
@@ -222,6 +228,50 @@ export class PurchaseOrderComponent implements OnInit {
         error: (err) => alert(err.error?.message || err.message)
       });
     }
+  }
+
+  // PDF প্রিভিউ মডাল ওপেন করার ফাংশন
+  openPdfModal(o: PurchaseOrderResponseModel) {
+    this.selectedOrderForPdf = o;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  // PDF প্রিভিউ মডাল বন্ধ করার ফাংশন
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedOrderForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  // প্রিভিউ মডাল থেকে ওয়ার্ড পেজ আকারে পিডিএফ ডাউনলোড করার ফাংশন
+  downloadPdfFromModal() {
+    if (!this.selectedOrderForPdf) return;
+
+    const element = this.pdfPreviewContainer.nativeElement;
+    
+    html2canvas(element, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295; 
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`PO-${this.selectedOrderForPdf?.poNumber}.pdf`);
+      this.closePdfModal();
+    });
   }
 
   reset() {

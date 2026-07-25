@@ -29,6 +29,7 @@ export class GoodRecivedNoteComponent implements OnInit {
   users: any[] = [];
 
   errorMessage: string | null = null;
+  receivedQuantityError: string | null = null; // 🌟 ফিল্ডের নিচের এরর ভেরিয়েবল
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
@@ -159,6 +160,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
+
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
@@ -167,11 +169,24 @@ export class GoodRecivedNoteComponent implements OnInit {
 
   save() {
     this.errorMessage = null;
+    this.receivedQuantityError = null;
 
     if (!this.grn.poId || !this.grn.warehouseId || !this.grn.receivedBy) {
       this.errorMessage =
         'Validation Fault: Linked PO Node, Destination Warehouse, and Receiver Context are mandatory.';
+      this.cdr.markForCheck();
       return;
+    }
+
+    // 🌟 PO কোটা বা ভলিউম ভ্যালিডেশন চেক
+    const selectedPo = this.purchaseOrders.find((po: any) => Number(po.id) === Number(this.grn.poId));
+    if (selectedPo) {
+      const maxAllowed = Number(selectedPo.quantity || selectedPo.totalQuantity || selectedPo.orderedQuantity || 0);
+      if (maxAllowed > 0 && Number(this.grn.receivedQuantity) > maxAllowed) {
+        this.receivedQuantityError = `Received volume (${this.grn.receivedQuantity}) cannot exceed PO ordered quantity (${maxAllowed} Units).`;
+        this.cdr.markForCheck();
+        return;
+      }
     }
 
     const payload: GoodsReceivedNoteRequestModel = {
@@ -181,6 +196,7 @@ export class GoodRecivedNoteComponent implements OnInit {
       productId: this.grn.productId ? +this.grn.productId : 0,
       receivedBy: +this.grn.receivedBy,
       inspectedBy: this.grn.inspectedBy ? +this.grn.inspectedBy : null,
+      status: this.grn.status || 'PENDING',
       lineItems: this.grn.lineItems.map((item) => ({
         ...item,
         productId: +item.productId,
@@ -194,8 +210,10 @@ export class GoodRecivedNoteComponent implements OnInit {
           this.closeDrawer();
           this.loadGRNs();
         },
-        error: (err) =>
-          (this.errorMessage = err.error?.message || 'Operational layout modification failure.'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Operational layout modification failure.';
+          this.cdr.markForCheck();
+        },
       });
     } else {
       this.service.save(payload).subscribe({
@@ -204,14 +222,17 @@ export class GoodRecivedNoteComponent implements OnInit {
           this.closeDrawer();
           this.loadGRNs();
         },
-        error: (err) =>
-          (this.errorMessage = err.error?.message || 'Inventory integration exception.'),
+        error: (err) => {
+          this.errorMessage = err.error?.message || 'Inventory integration exception.';
+          this.cdr.markForCheck();
+        },
       });
     }
   }
 
   edit(o: GoodsReceivedNoteResponseModel) {
     this.errorMessage = null;
+    this.receivedQuantityError = null;
     this.currentEditId = o.id;
     this.isEdit = true;
     this.grn = {
@@ -261,6 +282,7 @@ export class GoodRecivedNoteComponent implements OnInit {
       inspectionDate: null,
       lineItems: [],
     };
+    this.receivedQuantityError = null;
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;

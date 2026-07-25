@@ -22,7 +22,7 @@ import java.util.List;
 public class SupplierController {
 
     private final SupplierService supplierService;
-    private final ObjectMapper objectMapper; // 🌟 কনস্ট্রাক্টর ইনজেকশনের মাধ্যমে মেমরিতে থাকা বিন ব্যবহার করা হলো (নিচে বারবার নতুন নিউ করতে হবে না)
+    private final ObjectMapper objectMapper;
 
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> save(

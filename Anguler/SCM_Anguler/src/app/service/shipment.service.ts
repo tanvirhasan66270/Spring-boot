@@ -22,8 +22,14 @@ export class ShipmentService {
 
   save(shipment: ShipmentRequestModel, file: File | null): Observable<ShipmentResponseModel> {
     const formData = new FormData();
+    
+    // ব্যাকএন্ড যদি String JSON হিসেবে রিসিভ করে
     formData.append('shipment', JSON.stringify(shipment));
+    
     if (file) {
+      // ব্যাকএন্ডে যদি @RequestParam("file") অথবা @RequestPart("file") থাকে
+      formData.append('file', file);
+      // ব্যাকএন্ডের সুবিধার জন্য 'podFile' নামেও অ্যাপেন্ড করে দেওয়া হলো
       formData.append('podFile', file);
     }
     return this.http.post<ShipmentResponseModel>(this.apiUrl, formData);
@@ -32,7 +38,9 @@ export class ShipmentService {
   update(id: number, shipment: ShipmentRequestModel, file: File | null): Observable<ShipmentResponseModel> {
     const formData = new FormData();
     formData.append('shipment', JSON.stringify(shipment));
+    
     if (file) {
+      formData.append('file', file);
       formData.append('podFile', file);
     }
     return this.http.put<ShipmentResponseModel>(`${this.apiUrl}/${id}`, formData);

@@ -1,16 +1,13 @@
 <div class="container-fluid py-4 px-4 text-dark">
 
-  <!-- ─── হেডার এবং ডুয়াল সার্চ বার প্যানেল ─── -->
+  <!-- হেডার এবং ডুয়াল সার্চ বার প্যানেল -->
   <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
       <h4 class="text-dark fw-bold mb-1">Cargo Shipment Registry</h4>
       <p class="text-muted mb-0 small">Formulate freight dispatch tracks, map fleet captains, and audit proof of delivery (POD) envelopes.</p>
     </div>
     
-    <!-- অ্যাকশন এরিয়া: ২টা সার্চ বার এবং বাটন গ্রুপ -->
     <div class="d-flex flex-wrap gap-2 align-items-center">
-      
-      <!-- 🔍 সার্চ বার ১: Shipment No -->
       <div class="input-group" style="width: 220px;">
         <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-secondary"></i></span>
         <input type="text" class="form-control bg-light border-start-0 fs-7" 
@@ -19,7 +16,6 @@
                (input)="applyDoubleSearch()">
       </div>
 
-      <!-- 🔍 সার্চ বার ২: Vehicle Fleet No -->
       <div class="input-group" style="width: 200px;">
         <span class="input-group-text bg-light border-end-0"><i class="bi bi-truck text-secondary"></i></span>
         <input type="text" class="form-control bg-light border-start-0 fs-7" 
@@ -28,23 +24,21 @@
                (input)="applyDoubleSearch()">
       </div>
 
-      <!-- 🔓 বাটন আনলক: এখন SUPPLIER সহ সব ইউজারই শিপমেন্ট ইনিশিয়ালাইজ বাটনটি পাবেন -->
-  <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7" 
-        (click)="openDrawer()" 
-        *ngIf="userRole !== 'LOGISTICS_OFFICER'">
-  <i class="bi bi-truck me-2"></i>Add Shipment 
-</button>
+      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7" 
+              (click)="openDrawer()" 
+              *ngIf="userRole !== 'LOGISTICS_OFFICER'">
+        <i class="bi bi-truck me-2"></i>Add Shipment 
+      </button>
     </div>
   </div>
 
-  <!-- Global Exception/Error Logger Alerts -->
   @if (errorMessage) {
     <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
       <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
     </div>
   }
 
-  <!-- ─── শিপমেন্ট ডাটা লেজার টেবিল (filteredShipments) ─── -->
+  <!-- শিপমেন্ট ডাটা লেজার টেবিল -->
   <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -57,7 +51,7 @@
               <th>Fleet Vehicle & Captain</th>
               <th>Logistics Cost</th>
               <th>Est Delivery</th>
-              <th class="text-end px-4" width="140">Actions</th>
+              <th class="text-end px-4" width="180">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -85,11 +79,15 @@
                 <td class="font-monospace text-danger fw-semibold"><i class="bi bi-calendar-check me-1"></i>{{ s.estimatedDelivery | date:'mediumDate' }}</td>
                 <td class="text-end px-4">
                   <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-icon btn-light text-warning" title="Mutate Track Node" (click)="edit(s)">
+                    <button class="btn btn-icon btn-light text-primary" title="Preview Shipment PDF" (click)="openPdfModal(s)">
+                      <i class="bi bi-file-earmark-pdf-fill"></i>
+                    </button>
+
+                    <button *ngIf="userRole !== 'LOGISTICS_OFFICER'" class="btn btn-icon btn-light text-warning" title="Mutate Track Node" (click)="edit(s)">
                       <i class="bi bi-pencil-square"></i>
                     </button>
-                    <!-- 🔒 ডিলিট বাটন সাপ্লায়ারের জন্য লকড -->
-                    <button *ngIf="userRole !== 'SUPPLIER'" class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
+                    
+                    <button *ngIf="userRole !== 'SUPPLIER' && userRole !== 'LOGISTICS_OFFICER'" class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
                       <i class="bi bi-trash3-fill"></i>
                     </button>
                   </div>
@@ -109,7 +107,7 @@
     </div>
   </div>
 
-  <!-- ─── Sliding Form Drawer Framework ─── -->
+  <!-- Sliding Form Drawer Framework -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Freight Parameters' : 'Authorize Freight Node' }}</h5>
@@ -131,18 +129,9 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
-          
-          <!-- 🎯 ১. ইউজার SUPPLIER হলে সরাসরি অটো-ফিল্ড টেক্সট ইনপুট বক্স দেখাবে (ড্রপডাউনের পরিবর্তে) -->
           @if (userRole === 'SUPPLIER') {
-            <input type="text" 
-                   class="form-control fs-7 bg-light text-muted font-monospace fw-bold" 
-                   [value]="currentSupplierName" 
-                   readonly 
-                   disabled>
-          } 
-          
-          <!-- 🎯 ২. স্টাফ/ম্যানেজাররা লগইন করলে গ্লোবাল ড্রপডাউন সিলেক্ট মেনু দেখাবে -->
-          @else {
+            <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold" [value]="currentSupplierName" readonly disabled>
+          } @else {
             <select class="form-select fs-7 text-dark fw-semibold" [(ngModel)]="shipment.supplierId" name="supplierId" required [disabled]="isEdit">
               <option [value]="0">-- Map Dispatch Supplier Node --</option>
               @for (v of suppliers; track v.id) {
@@ -170,7 +159,6 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
-            <!-- 🔒 ফ্রেট কস্ট সাপ্লায়ার নিজে বদলাতে পারবে না, শুধুমাত্র স্টাফরা পারবে -->
             <input type="number" class="form-control fs-7 font-monospace fw-bold shadow-none" [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required [disabled]="userRole === 'SUPPLIER'">
           </div>
         </div>
@@ -196,6 +184,14 @@
           <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation sheets.</small>
         </div>
 
+        @if (errorMessage) {
+          <div class="alert alert-danger shadow-sm border-2 mb-3 fs-7" role="alert">
+            <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
+          </div>
+        }
+
+    
+
         <div class="drawer-footer d-flex gap-2 pt-2 border-top">
           <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" type="submit">
             <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Freight Changes' : 'Launch Consignment Track' }}
@@ -209,5 +205,167 @@
   @if (isDrawerOpen) {
     <div class="drawer-backdrop" (click)="closeDrawer()"></div>
   }
+<!--  PDF Preview Modal (ওয়ার্ড পেজের মতো সামনে শো করবে) -->
+<div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isPdfModalOpen">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content shadow-lg border-0 rounded-4">
+      
+      <div class="modal-header bg-dark text-white px-4 py-3">
+        <h5 class="modal-title fw-bold">
+          <i class="bi bi-file-earmark-text-fill me-2 text-info"></i> Cargo Shipment Document Preview
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closePdfModal()"></button>
+      </div>
+
+      <div class="modal-body bg-light p-4 d-flex justify-content-center">
+        <!-- ওয়ার্ড পেজ স্টাইল প্রিভিউ কন্টেইনার -->
+        <div #pdfPreviewContainer class="bg-white p-5 shadow-sm rounded-3 border" style="width: 100%; max-width: 700px; font-family: Arial, sans-serif; color: #000;">
+          
+          <!--  SCM Enterprise Exact Logo Header with Supplier Name -->
+          <div class="text-center mb-4 pb-3 border-bottom">
+            <h1 class="fw-bold mb-0" style="letter-spacing: 3px; font-size: 38px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+              <span style="color: #0b2545;">S</span><span style="color: #0b2545;">C</span><span style="color: #38b000;">M</span>
+            </h1>
+            <h5 class="fw-bold text-dark mt-1 mb-2" style="letter-spacing: 4px; font-size: 14px;">
+              ENTERPRISE
+            </h5>
+            
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-2 text-uppercase" style="font-size: 11px; font-weight: 700; color: #0b2545;">
+              <span>
+                <i class="bi bi-link-45deg text-primary fs-6 me-1 align-middle"></i> CONNECT
+              </span>
+              <span class="text-muted">|</span>
+              <span>
+                <i class="bi bi-gear-fill text-success fs-6 me-1 align-middle"></i> OPTIMIZE
+              </span>
+              <span class="text-muted">|</span>
+              <span>
+                <i class="bi bi-truck text-primary fs-6 me-1 align-middle"></i> DELIVER
+              </span>
+            </div>
+
+            <!--  Supplier Name Display Bar -->
+            <div class="mt-3 pt-2">
+              <span class="badge bg-light text-dark border px-3 py-2 fw-bold fs-7 font-monospace">
+                <i class="bi bi-building me-1 text-secondary"></i> Supplier: {{ selectedShipmentForPdf?.supplierName || 'N/A' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="text-center mb-4">
+            <h3 class="fw-bold text-dark mb-1">CARGO SHIPMENT MANIFEST</h3>
+            <p class="text-muted small"><b>Shipment No:</b> {{ selectedShipmentForPdf?.shipmentNumber }}</p>
+          </div>
+          <hr class="mb-4">
+          
+          <table class="table table-bordered align-middle fs-7 mb-4">
+            <tbody>
+              <tr>
+                <td class="fw-bold bg-light" style="width: 35%;">Shipment Number</td>
+                <td><span class="badge bg-dark font-monospace">{{ selectedShipmentForPdf?.shipmentNumber }}</span></td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Linked Master Order ID</td>
+                <td>#{{ selectedShipmentForPdf?.poId }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">PO Quantity & Amount</td>
+                <td>{{ selectedShipmentForPdf?.poQuantity }} Units | Total: ${{ selectedShipmentForPdf?.poTotalAmount | number:'1.2-2' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Supplier Name</td>
+                <td>{{ selectedShipmentForPdf?.supplierName || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Supplier Contact Person</td>
+                <td>{{ selectedShipmentForPdf?.supplierContactPerson || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Supplier Email & Phone</td>
+                <td>{{ selectedShipmentForPdf?.supplierEmail || 'N/A' }} | {{ selectedShipmentForPdf?.supplierPhone || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Supplier Address</td>
+                <td>{{ selectedShipmentForPdf?.supplierAddress || 'N/A' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Vehicle Fleet Plate No</td>
+                <td>{{ selectedShipmentForPdf?.vehicleNumber }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Captain License Reg No</td>
+                <td>{{ selectedShipmentForPdf?.captainRegistrationNumber }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Freight Sourcing Origin</td>
+                <td>{{ selectedShipmentForPdf?.origin }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Destination Address</td>
+                <td>{{ selectedShipmentForPdf?.sendByAddress }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Logistics Transport Cost</td>
+                <td class="text-primary fw-bold">${{ selectedShipmentForPdf?.transportCost | number:'1.2-2' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Estimated Delivery Date</td>
+                <td>{{ selectedShipmentForPdf?.estimatedDelivery | date:'mediumDate' }}</td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Assigned Controller Email</td>
+                <td>{{ selectedShipmentForPdf?.assignedByEmail || 'N/A' }}</td>
+              </tr>
+             <tr>
+                <td class="fw-bold bg-light">Proof of Delivery (POD)</td>
+                <td>
+                  @if (selectedShipmentForPdf?.podFileUrl) {
+                    <a [href]="imageBaseUrl + selectedShipmentForPdf!.podFileUrl" target="_blank" class="text-decoration-none fw-bold text-primary d-flex align-items-center gap-1">
+                          <i class="bi bi-file-earmark-arrow-down-fill fs-6"></i> Download POD File
+                       </a>
+                  } @else {
+                    <span class="text-muted">Not Attached</span>
+                  }
+                </td>
+              </tr>
+              <tr>
+                <td class="fw-bold bg-light">Created At</td>
+                <td>{{ selectedShipmentForPdf?.createdAt | date:'medium' }}</td>
+              </tr>
+             
+            </tbody>
+          </table>
+          <!-- 🌟 Employee & Authorized Signature Section (আটু নিচে নামানো হলো) -->
+          <div class="row pt-5 border-top text-center" style="display: flex; justify-content: space-between; margin-top: 90px !important; padding-top: 30px !important;">
+            <div style="width: 40%; display: inline-block;">
+              <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+              <p class="fw-bold mb-0" style="font-size: 12px;">Employee Signature</p>
+              <p class="text-muted small mb-0" style="font-size: 10px;">(Verified & Processed)</p>
+            </div>
+            <div style="width: 40%; display: inline-block;">
+              <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 80%; margin-left: auto; margin-right: auto;"></div>
+              <p class="fw-bold mb-0" style="font-size: 12px;">Authorized Signature</p>
+              <p class="text-muted small mb-0" style="font-size: 10px;">(Management / Admin)</p>
+            </div>
+          </div>
+
+          <div class="text-center mt-4 pt-3 text-muted" style="font-size: 11px;">
+            <p class="mb-0">This is a system-generated secure Cargo Shipment dispatch document.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer bg-white px-4 py-3 border-top">
+        <button type="button" class="btn btn-outline-secondary px-4 fw-bold" (click)="closePdfModal()">Close</button>
+        <button type="button" class="btn btn-success px-4 fw-bold d-flex align-items-center gap-2" (click)="downloadPdfFromModal()">
+          <i class="bi bi-download"></i> Download PDF
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
 
 </div>
