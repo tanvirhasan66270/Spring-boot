@@ -19,7 +19,7 @@
     </div>
 
     <!-- User Management -->
-    <div class="nav-section" *ngIf="hasAccess(['MANAGER'])">
+    <div class="nav-section" *ngIf="hasAccess(['ADMIN'])">
       <div class="nav-section-label">User Management</div>
       <button type="button" class="nav-item nav-toggle" (click)="toggleUsersMenu()">
         <i class="bi bi-people-fill"></i>
@@ -28,6 +28,9 @@
       </button>
 
       <div class="nav-submenu" *ngIf="usersOpen">
+        <a routerLink="/admin" routerLinkActive="active" class="nav-subitem">
+          <i class="bi bi-person"></i> Add Admin
+        </a>
         <a routerLink="/customer" routerLinkActive="active" class="nav-subitem">
           <i class="bi bi-person"></i> Add Customer
         </a>

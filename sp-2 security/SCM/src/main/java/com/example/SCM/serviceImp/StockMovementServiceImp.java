@@ -3,14 +3,16 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.dto.mapper.StockMovementMapper;
 import com.example.SCM.dto.request.StockMovementRequestDTO;
 import com.example.SCM.dto.response.StockMovementResponseDTO;
+import com.example.SCM.entity.Inventory;
 import com.example.SCM.entity.Product;
 import com.example.SCM.entity.StockMovement;
 import com.example.SCM.entity.User;
 import com.example.SCM.entity.Warehouse;
+import com.example.SCM.repository.InventoryRepository; 
 import com.example.SCM.repository.StockMovementRepository;
 import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.WarehouseRepository;
-import com.example.SCM.repository.UserRepository; // 🎯 ইউজার এনটিটি লোড করার জন্য ইমপোর্ট করা হয়েছে
+import com.example.SCM.repository.UserRepository;
 import com.example.SCM.service.StockMovementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,7 @@ public class StockMovementServiceImp implements StockMovementService {
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final UserRepository userRepository;
+    private final InventoryRepository inventoryRepository;
     private final StockMovementMapper mapper;
 
     @Override
@@ -52,9 +55,56 @@ public class StockMovementServiceImp implements StockMovementService {
         User performer = userRepository.findById(dto.getPerformedBy())
                 .orElseThrow(() -> new RuntimeException("User personnel not found with ID: " + dto.getPerformedBy()));
 
+        // ১. স্টক মুভমেন্ট লগ সেভ করা
         StockMovement entity = mapper.toEntity(dto, product, warehouse, sourceWarehouse, performer);
-
         StockMovement savedEntity = repository.saveAndFlush(entity);
+
+        // ২. 🎯 ইনভেন্টরি আপডেট বা মাইনাস করার বিজনেস লজিক
+        String movementType = savedEntity.getMovementType().name();
+
+        if (movementType.equals("OUTWARD") || movementType.equals("ADJUSTMENT")) {
+            // টার্গেট গুদাম থেকে স্টক পরিমাণ মাইনাস করা
+            Inventory inventory = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
+                    .orElseThrow(() -> new RuntimeException("Inventory record not found for this product in the target warehouse!"));
+
+            int updatedQty = inventory.getQuantityOnHand() - dto.getQuantity();
+            inventory.setQuantityOnHand(Math.max(updatedQty, 0)); // নেগেটিভ হওয়া রোধ করতে
+            inventoryRepository.save(inventory);
+
+        } else if (movementType.equals("TRANSFER")) {
+            // সোর্স গুদাম থেকে স্টক মাইনাস হবে
+            Inventory sourceInv = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getSourceWarehouseId())
+                    .orElseThrow(() -> new RuntimeException("Source inventory record not found!"));
+            sourceInv.setQuantityOnHand(Math.max(sourceInv.getQuantityOnHand() - dto.getQuantity(), 0));
+            inventoryRepository.save(sourceInv);
+
+            // ডেস্টিনেশন বা টার্গেট গুদামে স্টক প্লাস হবে
+            Inventory targetInv = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
+                    .orElseGet(() -> {
+                        Inventory newInv = new Inventory();
+                        newInv.setProduct(product);
+                        newInv.setWarehouse(warehouse);
+                        newInv.setQuantityOnHand(0);
+                        newInv.setQuantityReserved(0);
+                        return newInv;
+                    });
+            targetInv.setQuantityOnHand(targetInv.getQuantityOnHand() + dto.getQuantity());
+            inventoryRepository.save(targetInv);
+
+        } else if (movementType.equals("INWARD")) {
+            // ইনওয়ার্ড হলে টার্গেট গুদামে স্টক যোগ হবে
+            Inventory inventory = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
+                    .orElseGet(() -> {
+                        Inventory newInv = new Inventory();
+                        newInv.setProduct(product);
+                        newInv.setWarehouse(warehouse);
+                        newInv.setQuantityOnHand(0);
+                        newInv.setQuantityReserved(0);
+                        return newInv;
+                    });
+            inventory.setQuantityOnHand(inventory.getQuantityOnHand() + dto.getQuantity());
+            inventoryRepository.save(inventory);
+        }
 
         // সরাসরি অবজেক্ট গ্রাফ থেকে রিলেশনাল নামসহ ফ্ল্যাটেনড ডিটিও রিটার্ন
         return mapper.convertTOResponseDTO(savedEntity);
@@ -63,7 +113,6 @@ public class StockMovementServiceImp implements StockMovementService {
     @Override
     @Transactional(readOnly = true)
     public List<StockMovementResponseDTO> findAll() {
-        // নতুন ম্যাপার অবজেক্ট ট্রাভার্সাল করতে পারায় স্ট্রিমের ভেতর আলাদা ম্যানুয়াল কুয়েরি করার দরকার নেই
         return repository.findAll().stream()
                 .map(mapper::convertTOResponseDTO)
                 .collect(Collectors.toList());

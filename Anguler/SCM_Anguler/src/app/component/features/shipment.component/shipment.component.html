@@ -29,9 +29,11 @@
       </div>
 
       <!-- 🔓 বাটন আনলক: এখন SUPPLIER সহ সব ইউজারই শিপমেন্ট ইনিশিয়ালাইজ বাটনটি পাবেন -->
-      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7" (click)="openDrawer()">
-        <i class="bi bi-truck me-2"></i>Add Shipment 
-      </button>
+  <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7" 
+        (click)="openDrawer()" 
+        *ngIf="userRole !== 'LOGISTICS_OFFICER'">
+  <i class="bi bi-truck me-2"></i>Add Shipment 
+</button>
     </div>
   </div>
 

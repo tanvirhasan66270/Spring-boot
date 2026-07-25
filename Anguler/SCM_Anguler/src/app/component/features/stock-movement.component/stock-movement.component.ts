@@ -9,6 +9,8 @@ import { StockMovementService } from '../../../service/stock-movement.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { WarehouseService } from '../../../service/warehouse.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
+import { InventoryService } from '../../../service/inventory.service';
+ 
 
 @Component({
   selector: 'app-stock-movement',
@@ -21,6 +23,7 @@ export class StockMovementComponent implements OnInit {
   movements: StockMovementResponseModel[] = [];
   products: any[] = [];
   warehouses: any[] = [];
+  stocks: any[] = []; // ইনভেন্টরি স্টক ডাটা রাখার জন্য
   currentUserId: number = 0;
 
   errorMessage: string | null = null;
@@ -41,6 +44,7 @@ export class StockMovementComponent implements OnInit {
     private service: StockMovementService,
     private productService: AddProductService,
     private warehouseService: WarehouseService,
+    private stockService: InventoryService,
     private storage: StorageService,
     private cdr: ChangeDetectorRef,
   ) {}
@@ -54,6 +58,7 @@ export class StockMovementComponent implements OnInit {
     this.loadMovements();
     this.loadProducts();
     this.loadWarehouses();
+    this.loadStocks(); // স্টক ডেটা লোড করুন
   }
 
   loadMovements() {
@@ -74,6 +79,27 @@ export class StockMovementComponent implements OnInit {
     this.warehouseService.getAll().subscribe({ next: (data) => (this.warehouses = data || []) });
   }
 
+  // স্টক ডেটা লোড করার মেথড
+  loadStocks() {
+    this.stockService.findAll().subscribe({ 
+      next: (data) => {
+        this.stocks = data || [];
+        this.cdr.markForCheck();
+      } 
+    });
+  }
+
+  // 🔍 ফিল্টার লজিক: শুধুমাত্র স্টক বা ইনভেন্টরি পরিমাণ কমপক্ষে ১ আছে এমন প্রোডাক্ট ফিল্টার করা
+  get availableProductsForMovement(): any[] {
+    return this.products.filter(product => {
+      // স্টক লিস্ট থেকে বর্তমান প্রোডাক্টের স্টক পরিমাণ বের করা (quantityOnHand বা availableSellable)
+      const stockItem = this.stocks.find(s => s.productId === product.id || (s.product && s.product.id === product.id));
+      const qty = stockItem ? (stockItem.quantityOnHand || stockItem.availableSellable || 0) : 0;
+      
+      return qty >= 1;
+    });
+  }
+
   onMovementTypeChange() {
     if (this.formModel.movementType !== 'TRANSFER') {
       this.formModel.sourceWarehouseId = null;
@@ -82,9 +108,11 @@ export class StockMovementComponent implements OnInit {
 
   openDrawer() {
     this.resetForm();
+    this.loadStocks(); // ড্রয়ার ওপেন করার সময় লেটেস্ট স্টক রিফ্রেশ করা
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
+
   closeDrawer() {
     this.isDrawerOpen = false;
     this.resetForm();
@@ -92,6 +120,7 @@ export class StockMovementComponent implements OnInit {
   }
 
   submitMovement() {
+    // আপনার সাবমিট লজিক অপরিবর্তিত থাকবে
     this.errorMessage = null;
 
     if (
