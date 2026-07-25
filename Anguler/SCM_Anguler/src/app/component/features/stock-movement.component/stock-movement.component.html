@@ -109,15 +109,16 @@
           </select>
         </div>
 
-       <div class="mb-3">
-  <label class="form-label fw-bold text-secondary text-uppercase fs-8">Select Product Material</label>
-  <select class="form-select fs-7" [(ngModel)]="formModel.productId" name="productId" required>
-    <option [value]="0">-- Choose SCM Catalog Product --</option>
-    @for (p of availableProductsForMovement; track p.id) {
-      <option [value]="p.id">{{ p.name }} (Code: {{ p.productCode }})</option>
-    }
-  </select>
-</div>
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary text-uppercase fs-8">Select Product Material</label>
+          <select class="form-select fs-7" [(ngModel)]="formModel.productId" name="productId" (change)="onProductChange()" required>
+            <option [value]="0">-- Choose SCM Catalog Product --</option>
+            @for (p of availableProductsForMovement; track p.id) {
+              <option [value]="p.id">{{ p.name }} (Code: {{ p.productCode }})</option>
+            }
+          </select>
+        </div>
+
         @if (formModel.movementType === 'TRANSFER') {
           <div class="mb-3 bg-info-subtle p-3 rounded border border-info-subtle">
             <label class="form-label fw-bold text-info-emphasis text-uppercase fs-8">Source Warehouse Node (From)</label>
@@ -134,12 +135,19 @@
           <label class="form-label fw-bold text-secondary text-uppercase fs-8">
             {{ formModel.movementType === 'TRANSFER' ? 'Destination Warehouse Node (To)' : 'Target Warehouse Node' }}
           </label>
-          <select class="form-select fs-7" [(ngModel)]="formModel.warehouseId" name="warehouseId" required>
-            <option [value]="0">-- Choose Destination Facility --</option>
-            @for (w of warehouses; track w.id) {
-              <option [value]="w.id">{{ w.name }}</option>
-            }
-          </select>
+          
+          <!-- TRANSFER এর ক্ষেত্রে ড্রপডাউন থাকবে, অন্যথায় ইনভেন্টরি থেকে অটো-ফিল হওয়া নাম রিড-অনলি আকারে দেখাবে -->
+          @if (formModel.movementType === 'TRANSFER') {
+            <select class="form-select fs-7" [(ngModel)]="formModel.warehouseId" name="warehouseId" required>
+              <option [value]="0">-- Choose Destination Facility --</option>
+              @for (w of warehouses; track w.id) {
+                <option [value]="w.id">{{ w.name }}</option>
+              }
+            </select>
+          } @else {
+            <input type="text" class="form-control fs-7 bg-light fw-bold text-dark" [value]="getTargetWarehouseName()" readonly placeholder="Auto-filled from inventory stock...">
+            <input type="hidden" [(ngModel)]="formModel.warehouseId" name="warehouseId" required>
+          }
         </div>
 
         <div class="row g-2 mb-3">
