@@ -17,7 +17,7 @@ export interface OrderLineItemResponseModel {
 }
 
 export interface CustomerOrderRequestModel {
-  customerId: number;
+  customerId: number; // Auto fillup login user
   deliveryAddress: string;
   deliveryPhone: string;
   estimatedDelivery: string; // ব্যাকএন্ড অটোক্যালকুলেট করবে, তবুও ইন্টারফেসে সিঙ্ক রাখা হলো

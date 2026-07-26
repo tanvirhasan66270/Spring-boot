@@ -118,10 +118,9 @@ public class CustomerOrder {
         // ৪. গ্র্যান্ড টোটাল: সাবটোটাল + ডেলিভারি চার্জ
         this.totalAmount = this.itemSubtotal + this.deliveryCharge;
 
-        // ৫. ইউটিলিটি মেথড ব্যবহার করে paidAmount স্ট্রিং সেট করা
-        this.paidAmount = ExecuteCalculations.calculatePaidAmount(this.totalAmount, this.codAmount);
+        //  ৫. পরিশোধিত টাকা (Paid Amount) হিসেবে codAmount কে সেট করা হলো
+        this.paidAmount = String.valueOf(this.codAmount);
 
-        // পেমেন্ট কন্ডিশন ও বিজনেস রুলস মেকানিজম
         double paid = 0.0;
         try {
             paid = Double.parseDouble(this.paidAmount);
@@ -129,22 +128,18 @@ public class CustomerOrder {
             paid = 0.0;
         }
 
-        this.dueAmount = String.valueOf(this.totalAmount - paid);
+        //  ৬. সঠিক ডিউ (Due Amount): মোট টাকা থেকে পরিশোধিত টাকা বিয়োগ করা
+        double due = this.totalAmount - paid;
+        this.dueAmount = String.valueOf(due < 0 ? 0.0 : due);
 
-        // রুল ১: যদি পেমেন্ট মেথড CASH (ক্যাশ অন ডেলিভারি) হয়, তবে স্ট্যাটাস সবসময় UNPAID থাকবে
+        // পেমেন্ট কন্ডিশন ও বিজনেস রুলস মেকানিজম
         if (this.paymentMethod == PaymentMethod.CASH) {
             this.paymentStatus = PaymentStatus.UNPAID;
-        }
-        // রুল ২: যদি paidAmount গ্র্যান্ড টোটালের সমান বা বেশি হয় (paid == totalAmount)
-        else if (paid >= this.totalAmount && this.totalAmount > 0) {
+        } else if (paid >= this.totalAmount && this.totalAmount > 0) {
             this.paymentStatus = PaymentStatus.PAID;
-        }
-        // রুল ৩: যদি paidAmount মোট টাকার থেকে কম অথচ ০ এর থেকে বেশি হয় (আংশিক পরিশোধ)
-        else if (paid > 0 && paid < this.totalAmount) {
+        } else if (paid > 0 && paid < this.totalAmount) {
             this.paymentStatus = PaymentStatus.PARTIALLY_PAID;
-        }
-        // ডিফল্ট ব্যাকআপ রুট
-        else {
+        } else {
             this.paymentStatus = PaymentStatus.UNPAID;
         }
     }

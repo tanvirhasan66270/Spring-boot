@@ -1,10 +1,10 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; // 🌟 FormsModule ইমপোর্ট করা জরুরি
+import { FormsModule } from '@angular/forms';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
-import { CustomerOrderResponseModel } from '../../shared/model/customerOrder';
+import { CustomerOrderResponseModel, CustomerOrderRequestModel, OrderLineItemRequestModel } from '../../shared/model/customerOrder';
 import { LoginResponse } from '../../../auth/Model/authModel';
 import { CustomerService } from '../../../service/customer.service';
 import { CustomerResponseModel } from '../../shared/model/customerModel';
@@ -19,7 +19,7 @@ import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule], // 🌟 FormsModule যোগ করা হয়েছে
+  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule],
   templateUrl: './customer-dashboard.component.html',
   styleUrls: ['./customer-dashboard.component.css'],
 })
@@ -44,11 +44,33 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   showSettings = false;
   loading = true;
 
-  // 🌟 Track Product Modal States
+  // Track Product Modal States
   isTrackModalOpen = false;
   searchTrackingCode = '';
   trackedResult: CustomerOrderResponseModel | null = null;
   trackSearched = false;
+
+  // 🌟 Place New Order Inline Form States
+  showOrderFormOnly = false;
+  products: any[] = [];
+  currentProduct: any = null;
+  currentQuantity: number = 1;
+  currentRemarks: string = '';
+
+  order: CustomerOrderRequestModel = {
+    customerId: 0,
+    deliveryAddress: '',
+    deliveryPhone: '',      
+    estimatedDelivery: '',
+    serviceType: 'STANDARD',
+    priority: 'NORMAL',      
+    currency: 'BDT',            
+    codAmount: 0,
+    paymentMethod: 'CASH',    
+    status: 'PENDING',
+    remarks: '',                
+    items: []
+  };
 
   deliveredPercent = 0;
   processingPercent = 0;
@@ -63,6 +85,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   chartPath = '';
   chartDots: { x: number; y: number }[] = [];
   chartMaxY = 1;
+
+  statusHierarchy: string[] = [
+    'PENDING', 
+    'CONFIRMED', 
+    'PROCESSING', 
+    'SHIPPED', 
+    'OUT_FOR_DELIVERY', 
+    'DELIVERED'
+  ];
 
   constructor(
     private storage: StorageService,
@@ -89,7 +120,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadActivities();
   }
 
-  // 🌟 Track Product Modal Methods
+  // Track Product Modal Methods
   openTrackModal(): void {
     this.isTrackModalOpen = true;
     this.searchTrackingCode = '';
@@ -123,6 +154,187 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
     });
+  }
+
+  // 🌟 Place New Order Inline View Methods
+  openOrderFormView(): void {
+    this.resetOrderForm();
+    if (this.customer && this.customer.id) {
+      this.order.customerId = this.customer.id;
+    } else {
+      this.loadCustomerForOrder();
+    }
+    this.loadProductsForForm();
+    this.showOrderFormOnly = true;
+    this.cdr.markForCheck();
+  }
+
+  closeOrderFormView(): void {
+    this.showOrderFormOnly = false;
+    this.resetOrderForm();
+    this.cdr.markForCheck();
+  }
+
+  resetOrderForm(): void {
+    this.order = {
+      customerId: this.customer?.id || 0,
+      deliveryAddress: '',
+      deliveryPhone: '',
+      estimatedDelivery: '',
+      serviceType: 'STANDARD',
+      priority: 'NORMAL',
+      currency: 'BDT',
+      codAmount: 0,
+      paymentMethod: 'CASH',
+      status: 'PENDING',
+      remarks: '',
+      items: []
+    };
+    this.currentProduct = null;
+    this.currentQuantity = 1;
+    this.currentRemarks = '';
+  }
+
+  loadCustomerForOrder(): void {
+    this.cutomerService.getCustomerByUserId(this.userId).subscribe({
+      next: (cust) => {
+        if (cust && cust.id) {
+          this.customer = cust;
+          this.order.customerId = cust.id;
+          this.cdr.markForCheck();
+        }
+      }
+    });
+  }
+
+  loadProductsForForm(): void {
+    this.productService.findAll().subscribe({
+      next: (data) => {
+        this.products = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  addItemToForm(): void {
+    if (!this.currentProduct) {
+      alert("Please select a product!");
+      return;
+    }
+    if (this.currentQuantity <= 0) {
+      alert("Quantity must be positive!");
+      return;
+    }
+
+    let selectedProd = this.currentProduct;
+    if (typeof this.currentProduct === 'string') {
+      selectedProd = this.products.find(p => `${p.name} (৳${p.sellingPrice})` === this.currentProduct);
+    }
+
+    if (!selectedProd || !selectedProd.id) {
+      alert("Please select a valid product from the list!");
+      return;
+    }
+
+    const existingItem = this.order.items.find(x => x.productId == selectedProd.id);
+    if (existingItem) {
+      existingItem.quantity += +this.currentQuantity;
+    } else {
+      const newItem: OrderLineItemRequestModel = {
+        productId: selectedProd.id,
+        quantity: +this.currentQuantity,
+        remarks: this.currentRemarks
+      };
+      this.order.items.push(newItem);
+    }
+
+    this.currentProduct = null;
+    this.currentQuantity = 1;
+    this.currentRemarks = '';
+    this.cdr.markForCheck();
+  }
+
+  removeItemFromForm(index: number): void {
+    this.order.items.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  getProductName(productId: number): string {
+    return this.products.find(p => p.id == productId)?.name || 'Unknown Item';
+  }
+
+  // Financial Calculators
+  calculateItemSubtotal(): number {
+    let subtotal = 0;
+    for (let item of this.order.items) {
+      const p = this.products.find(prod => prod.id == item.productId);
+      if (p && p.sellingPrice) subtotal += p.sellingPrice * item.quantity;
+    }
+    return subtotal;
+  }
+
+  calculateTotalWeight(): number {
+    let weight = 0;
+    for (let item of this.order.items) {
+      const p = this.products.find(prod => prod.id == item.productId);
+      if (p && p.weight) weight += p.weight * item.quantity;
+    }
+    return weight;
+  }
+
+  calculateDeliveryCharge(): number {
+    const w = this.calculateTotalWeight();
+    let charge = 60 + (w * 15);
+    if (this.order.serviceType === 'EXPRESS') charge *= 1.5;
+    if (this.order.serviceType === 'OVERNIGHT') charge *= 2.0;
+    if (this.order.serviceType === 'SAME_DAY') charge *= 2.5;
+    return Math.round(charge);
+  }
+
+  calculateTotalAmount(): number {
+    return this.calculateItemSubtotal() + this.calculateDeliveryCharge();
+  }
+
+  calculateDueAmount(): number {
+    const total = this.calculateTotalAmount();
+    const paid = Number(this.order.codAmount) || 0;
+    const due = total - paid;
+    return due < 0 ? 0 : due;
+  }
+
+  saveFormOrder(): void {
+    if (!this.order.deliveryPhone || this.order.deliveryPhone.trim() === '') {
+      alert("Delivery phone number is required!");
+      return;
+    }
+    if (this.order.items.length === 0) {
+      alert("Please add at least one product!");
+      return;
+    }
+
+    this.orderService.save(this.order).subscribe({
+      next: () => {
+        alert("🚀 New customer purchase order dispatched and authorized!");
+        this.closeOrderFormView();
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        alert(err.error?.message || "Failed to dispatch order.");
+      }
+    });
+  }
+
+  isStepCompleted(step: string): boolean {
+    if (!this.trackedResult || !this.trackedResult.status) return false;
+    
+    if (this.trackedResult.status === 'CANCELLED' || this.trackedResult.status === 'RETURNED') {
+      return step === 'PENDING';
+    }
+
+    const currentIndex = this.statusHierarchy.indexOf(this.trackedResult.status.toUpperCase());
+    const stepIndex = this.statusHierarchy.indexOf(step.toUpperCase());
+
+    return currentIndex !== -1 && stepIndex !== -1 && stepIndex <= currentIndex;
   }
 
   loadCustomer(): void {

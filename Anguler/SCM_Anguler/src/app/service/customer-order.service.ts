@@ -28,6 +28,12 @@ export class CustomerOrderService {
     return this.http.put<CustomerOrderResponseModel>(`${this.apiUrl}/${id}`, order);
   }
 
+  updateStatus(id: number, status: string): Observable<CustomerOrderResponseModel> {
+    return this.http.patch<CustomerOrderResponseModel>(`${this.apiUrl}/${id}/status`, null, {
+      params: { status: status }
+    });
+  }
+
   delete(id: number): Observable<string> {
     return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }

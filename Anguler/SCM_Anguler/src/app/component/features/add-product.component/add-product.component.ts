@@ -92,7 +92,8 @@ export class AddProductComponent implements OnInit {
       next: (data) => {
         this.products = data || [];
         this.cdr.markForCheck();
-      }
+      },
+      error: (err) => this.handleBackendError(err)
     });
   }
 
@@ -101,7 +102,8 @@ export class AddProductComponent implements OnInit {
       next: (data) => {
         this.categories = data || [];
         this.cdr.markForCheck();
-      }
+      },
+      error: (err) => this.handleBackendError(err)
     });
   }
 

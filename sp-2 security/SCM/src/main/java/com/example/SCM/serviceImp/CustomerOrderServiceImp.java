@@ -6,7 +6,7 @@ import com.example.SCM.dto.mapper.OrderLineItemMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
-import com.example.SCM.enumClass.ActionStatus;
+import com.example.SCM.enumClass.CustomerOrderStatus;
 import com.example.SCM.enumClass.PaymentMethod;
 import com.example.SCM.enumClass.ServiceType;
 import com.example.SCM.repository.*;
@@ -33,7 +33,6 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
     private final CustomerRepository customerRepository;
-
 
     @Transactional
     @Override
@@ -108,10 +107,62 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         return orderMapper.convertTOResponseDTO(orderRepository.save(order));
     }
 
-    @Transactional(readOnly = true) public List<CustomerOrderResponseDTO> findAll() { return orderRepository.findAllOrdersWithDetails().stream().map(orderMapper::convertTOResponseDTO).collect(Collectors.toList()); }
-    @Transactional(readOnly = true) public Optional<CustomerOrderResponseDTO> getById(Long id) { return orderRepository.findByIdWithDetails(id).map(orderMapper::convertTOResponseDTO); }
-    @Transactional public void delete(Long id) { orderRepository.deleteById(id); }
-    @Transactional(readOnly = true) public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) { return orderRepository.findByOrderNumberWithDetails(orderNumber).map(orderMapper::convertTOResponseDTO); }
+    @Transactional
+    @Override
+    public CustomerOrderResponseDTO updateOrderStatus(Long id, String status) {
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
+
+        try {
+            CustomerOrderStatus newStatus = CustomerOrderStatus.valueOf(status.toUpperCase());
+            order.setStatus(newStatus);
+
+            //  লজিস্টিক অটো-সিঙ্ক বিজনেস রুলস:
+            if (newStatus == CustomerOrderStatus.DELIVERED) {
+                // প্রোডাক্ট সফলভাবে ডেলিভারি হয়ে গেলে পুরো টাকা পরিশোধ ধরে নিয়ে Paid Amount আপডেট করা
+                double total = order.getTotalAmount();
+                order.setPaidAmount(String.valueOf(total));
+                // executeCalculations() কল করলে এটি অটোমেটিক Paid, Due = 0 এবং PaymentStatus = PAID করে দেবে
+                order.executeCalculations();
+            }
+            else if (newStatus == CustomerOrderStatus.CANCELLED) {
+                // অর্ডার বাতিল হলে রিমার্ক বা স্ট্যাটাস সিঙ্ক
+                if (order.getRemarks() == null || order.getRemarks().isEmpty()) {
+                    order.setRemarks("Order lifecycle cancelled by management node.");
+                }
+            }
+            else if (newStatus == CustomerOrderStatus.RETURNED) {
+                // রিটার্ন আসলে
+                order.setRemarks("Consignment returned back to logistics hub.");
+            }
+
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid lifecycle status value: " + status);
+        }
+
+        CustomerOrder updatedOrder = orderRepository.save(order);
+        return orderMapper.convertTOResponseDTO(updatedOrder);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CustomerOrderResponseDTO> findAll() {
+        return orderRepository.findAllOrdersWithDetails().stream().map(orderMapper::convertTOResponseDTO).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CustomerOrderResponseDTO> getById(Long id) {
+        return orderRepository.findByIdWithDetails(id).map(orderMapper::convertTOResponseDTO);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        orderRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber) {
+        return orderRepository.findByOrderNumberWithDetails(orderNumber).map(orderMapper::convertTOResponseDTO);
+    }
 
     private void sendInitPaymentVerificationEmail(CustomerOrder order, double amountPaid) {
         if (order.getCustomerEmail() == null || order.getCustomerEmail().contains("no-email")) return;
@@ -180,20 +231,14 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             .header { background-color: #2E7D32; color: white; padding: 30px; text-align: center; }
             .header h2 { margin: 0; font-size: 26px; font-weight: 600; }
             .content { padding: 30px; }
-            
-            /* নতুন ট্র্যাকিং বক্স স্টাইল মডিউল */
             .tracking-box { background-color: #E8F5E9; border-left: 5px solid #2E7D32; padding: 15px; margin: 20px 0; border-radius: 4px; }
             .tracking-code { font-family: 'Courier New', Courier, monospace; font-size: 18px; font-weight: bold; color: #1B5E20; letter-spacing: 1px; }
-            
             .invoice-table { width: 100%%; border-collapse: collapse; margin: 20px 0; }
             .invoice-table th { background-color: #f8fafc; padding: 10px; border-bottom: 2px solid #e2e8f0; text-align: left; font-size: 13px; color: #64748b; }
             .invoice-table td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
             .total-row { font-weight: bold; color: #2E7D32; font-size: 16px; background-color: #f8fafc; }
-            
-            /* নতুন ট্র্যাকিং বাটন স্টাইল */
             .btn-container { text-align: center; margin: 30px 0; }
             .btn { background-color: #2E7D32; color: white !important; padding: 12px 35px; text-decoration: none; font-weight: bold; border-radius: 6px; display: inline-block; }
-            
             .footer { font-size: 12px; color: #64748b; background-color: #f8fafc; padding: 15px; text-align: center; border-top: 1px solid #e2e8f0; }
         </style>
     </head>

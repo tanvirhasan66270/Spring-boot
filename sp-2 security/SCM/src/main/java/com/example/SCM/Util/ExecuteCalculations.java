@@ -69,7 +69,7 @@ public class ExecuteCalculations {
     }
 
     /**
-     * 🆕 টোটাল অ্যামাউন্ট থেকে সিওডি অ্যামাউন্ট বাদ দিয়ে পেইড অ্যামাউন্ট স্ট্রিং বের করার মেথড
+     *  টোটাল অ্যামাউন্ট থেকে সিওডি অ্যামাউন্ট বাদ দিয়ে পেইড অ্যামাউন্ট স্ট্রিং বের করার মেথড
      * paidAmount = totalAmount - codAmount
      */
     public static String calculatePaidAmount(double totalAmount, double codAmount) {

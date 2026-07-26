@@ -71,6 +71,15 @@ public class CustomerOrderController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+    // 8. Dedicated Status Lifecycle Update Endpoint
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<CustomerOrderResponseDTO> updateOrderStatus(
+            @PathVariable Long id,
+            @RequestParam String status
+    ) {
+        CustomerOrderResponseDTO response = orderService.updateOrderStatus(id, status);
+        return ResponseEntity.ok(response);
+    }
 
     // 7. Two-Step Email Link Verification Webhook (Synchronized Route)
     @GetMapping("/verify-link")

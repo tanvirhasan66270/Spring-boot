@@ -5,9 +5,11 @@
       <h4 class="text-dark fw-bold mb-1">Customer Purchase Ledger</h4>
       <p class="text-muted mb-0 small">Enforce transactional price tracking rules and sync delivery workflows.</p>
     </div>
-    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
-      <i class="bi bi-plus-circle me-2"></i>Create New Order
-    </button>
+    @if (userRole !== 'CUSTOMER' && userRole !== 'SALES_OFFICER') {
+      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm" (click)="openDrawer()">
+        <i class="bi bi-plus-circle me-2"></i>Create New Order
+      </button>
+    }
   </div>
 
   @if (errorMessage) {
@@ -29,7 +31,7 @@
               <th>Payment Engine</th>
               <th>Settlement State</th>
               <th>Order Lifecycle</th>
-              <th class="text-end px-4" width="180">Actions</th>
+              <th class="text-end px-4" width="200">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -61,7 +63,7 @@
                     {{ o.paymentStatus || 'UNPAID' }}
                   </span>
                   @if (o.dueAmount && +o.dueAmount > 0) {
-                    <small class="d-block text-danger font-monospace mt-1">Due: ৳{{ o.dueAmount }}</small>
+                    <small class="d-block text-danger font-monospace mt-1">Due: ৳{{ o.dueAmount | number:'1.2-2' }}</small>
                   }
                 </td>
                 <td>
@@ -70,13 +72,16 @@
                 </td>
                 <td class="text-end px-4">
                   <div class="d-flex justify-content-end gap-1">
-                    <!-- PDF View Button সবার জন্য দৃশ্যমান থাকবে -->
                     <button class="btn btn-icon btn-light text-danger border-0" title="View Order PDF" (click)="openPdfModal(o)">
                       <i class="bi bi-file-earmark-pdf-fill"></i>
                     </button>
 
-                    <!-- 🌟 এডিট ও ডিলিট বাটন দুটি শুধু CUSTOMER ছাড়া অন্য রোলগুলোর জন্য দেখাবে -->
                     @if (userRole !== 'CUSTOMER') {
+                      <!-- Status Update Icon Button -->
+                      <button class="btn btn-icon btn-light text-primary border-0" title="Update Lifecycle Status" (click)="openStatusModal(o)">
+                        <i class="bi bi-arrow-repeat fs-6"></i>
+                      </button>
+
                       <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
                         <i class="bi bi-pencil-square"></i>
                       </button>
@@ -101,7 +106,7 @@
     </div>
   </div>
 
-  <!-- PDF Preview Modal Window (Invoice স্টাইলে আপডেট করা) -->
+  <!-- PDF Preview Modal Window -->
   <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isPdfModalOpen">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
       <div class="modal-content shadow-lg border-0 rounded-4">
@@ -116,7 +121,6 @@
         <div class="modal-body bg-light p-4 d-flex justify-content-center">
           <div #orderPdfContainer class="bg-white p-5 shadow-sm rounded-3 border" style="width: 794px; font-family: Arial, sans-serif; color: #000; line-height: 1.6;">
             
-            <!-- প্রফেশনাল এন্টারপ্রাইজ লোগো ও হেডার -->
             <div class="text-center mb-4 pb-3 border-bottom">
               <h1 class="fw-bold mb-0" style="letter-spacing: 3px; font-size: 36px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                 <span style="color: #0b2545;">S</span><span style="color: #0b2545;">C</span><span style="color: #38b000;">M</span>
@@ -133,13 +137,11 @@
               </div>
             </div>
 
-            <!-- অর্ডার টাইটেল ও কোড -->
             <div class="text-center mb-4">
               <h3 class="fw-bold text-dark mb-1" style="letter-spacing: 1px;">CUSTOMER PURCHASE ORDER</h3>
               <p class="text-muted small mb-0"><b>Order Number:</b> {{ selectedOrderForPdf?.orderNumber }} | <b>Order ID Node:</b> #{{ selectedOrderForPdf?.id }}</p>
             </div>
 
-            <!-- ক্লায়েন্ট ও অডিট টাইমলাইন বক্স -->
             <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded border border-secondary-subtle">
               <div class="col-7">
                 <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">Issued To Recipient</span>
@@ -156,7 +158,6 @@
               </div>
             </div>
 
-            <!-- লাইন আইটেম টেবিল -->
             <h6 class="fw-bold text-dark mt-4 mb-3 uppercase fs-8 border-bottom pb-2">Product Specification Allocations (Line Items)</h6>
             <table class="table table-bordered align-middle fs-8 mb-4">
               <thead class="table-light text-uppercase">
@@ -193,6 +194,20 @@
                 <p class="mb-2">Priority: <b class="text-uppercase text-danger">{{ selectedOrderForPdf?.priority }}</b></p>
                 <p class="mb-2">Service Strategy: <b class="text-uppercase text-info">{{ selectedOrderForPdf?.serviceType }}</b></p>
                 <p class="mb-2">Payment Method: <b class="text-uppercase">{{ selectedOrderForPdf?.paymentMethod }}</b></p>
+                
+                @if (selectedOrderForPdf?.paymentMethod === 'BANK') {
+                  <div class="p-2 mb-2 bg-light border rounded font-monospace" style="font-size: 10px;">
+                    <b class="text-primary d-block mb-1">Company Bank Details:</b>
+                    <div>Bank: City Bank PLC</div>
+                    <div>A/C: 120-3341-98234101</div>
+                  </div>
+                } @else if (['BKASH', 'NAGAD', 'ROCKET'].includes(selectedOrderForPdf?.paymentMethod || '')) {
+                  <div class="p-2 mb-2 bg-light border rounded font-monospace" style="font-size: 10px;">
+                    <b class="text-danger d-block mb-1">Company {{ selectedOrderForPdf?.paymentMethod }} Merchant:</b>
+                    <div>A/C: 01712-345678 (Personal/Merchant)</div>
+                  </div>
+                }
+
                 <p class="mb-2">Payment Status: <b class="text-uppercase text-success">{{ selectedOrderForPdf?.paymentStatus }}</b></p>
                 <p class="mb-2">Currency: <b>{{ selectedOrderForPdf?.currency }}</b></p>
                 @if (selectedOrderForPdf?.remarks) {
@@ -214,11 +229,7 @@
                     <td class="py-1.5">৳{{ selectedOrderForPdf?.deliveryCharge | number:'1.2-2' }}</td>
                   </tr>
                   <tr>
-                    <td class="text-muted py-1.5">COD Amount:</td>
-                    <td class="py-1.5">৳{{ selectedOrderForPdf?.codAmount | number:'1.2-2' }}</td>
-                  </tr>
-                  <tr>
-                    <td class="text-muted py-1.5">Paid Amount:</td>
+                    <td class="text-muted py-1.5">Paid Amount (COD):</td>
                     <td class="text-success py-1.5">৳{{ selectedOrderForPdf?.paidAmount | number:'1.2-2' }}</td>
                   </tr>
                   @if (selectedOrderForPdf?.dueAmount && +selectedOrderForPdf!.dueAmount > 0) {
@@ -235,7 +246,6 @@
               </div>
             </div>
 
-            <!-- ৩টি প্রফেশনাল সিগনেচার সেকশন -->
             <div class="row pt-5 border-top text-center" style="display: flex; justify-content: space-between; margin-top: 50px !important; padding-top: 25px !important;">
               <div style="width: 30%; display: inline-block;">
                 <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;"></div>
@@ -272,6 +282,48 @@
     </div>
   </div>
   <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
+
+  <!-- Status Update Modal Window -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isStatusModalOpen">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0 rounded-4">
+        
+        <div class="modal-header bg-dark text-white px-4 py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-gear-wide-connected me-2 text-primary"></i> Update Order Lifecycle Status
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeStatusModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-light">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Target Order Reference</label>
+            <div class="font-monospace fw-bold text-dark fs-6">{{ selectedOrderForStatus?.orderNumber }}</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Select New Lifecycle State</label>
+            <select class="form-select fw-bold text-primary" [(ngModel)]="newOrderStatus">
+              @for (st of availableStatuses; track st) {
+                <option [value]="st">{{ st }}</option>
+              }
+            </select>
+            <small class="text-muted d-block mt-1">This will instantly modify the pipeline tracking stage for logistics.</small>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-white px-4 py-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 fw-bold rounded-pill" (click)="closeStatusModal()">Cancel</button>
+          <button type="button" class="btn btn-primary px-4 fw-bold rounded-pill d-flex align-items-center gap-2" (click)="updateOrderStatus()">
+            <i class="bi bi-check2-circle"></i> Save Status
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show" *ngIf="isStatusModalOpen"></div>
+
   <!-- Drawer Form -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-dark text-white">
@@ -284,18 +336,24 @@
     <div class="drawer-body px-4 py-3" style="overflow-y: auto; height: calc(100vh - 110px);">
       <form #orderForm="ngForm" (ngSubmit)="orderForm.valid && save()">
         
+        <!-- Target Customer Profile -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Customer Profile</label>
-          <select class="form-select fs-7" [class.is-invalid]="custRef.value === '0' && orderForm.submitted" [(ngModel)]="order.customerId" name="customerId" #custRef="ngModel" required [disabled]="isEdit">
-            <option value="0">-- Select Customer Context --</option>
-            @for (c of customers; track c.id) {
-              <option [value]="c.id">{{ c.name }} ({{ c.email }})</option>
+          
+          @if (userRole === 'CUSTOMER') {
+            <input type="text" class="form-control fs-7 bg-light fw-bold text-dark" [value]="loggedInCustomerName || 'Loading profile...'" disabled>
+          } @else {
+            <select class="form-select fs-7" [class.is-invalid]="custRef.value === '0' && orderForm.submitted" [(ngModel)]="order.customerId" name="customerId" #custRef="ngModel" required [disabled]="isEdit">
+              <option value="0">-- Select Customer Context --</option>
+              @for (c of customers; track c.id) {
+                <option [value]="c.id">{{ c.name }} ({{ c.email }})</option>
+              }
+            </select>
+            @if (custRef.value === '0' && orderForm.submitted) {
+              <div class="invalid-feedback small fw-bold">
+                Binding an active customer ledger account is required!
+              </div>
             }
-          </select>
-          @if (custRef.value === '0' && orderForm.submitted) {
-            <div class="invalid-feedback small fw-bold">
-              Binding an active customer ledger account is required!
-            </div>
           }
         </div>
 
@@ -375,8 +433,15 @@
         @if (order.paymentMethod === 'BANK') {
           <div class="alert alert-info border border-primary bg-white shadow-sm py-2.5 mb-3">
             <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
+            
+            <div class="mb-2 p-2 bg-light rounded border border-info-subtle fs-8 font-monospace text-dark">
+              <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Pay using this company account:</div>
+              <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
+              <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
+            </div>
+
             <div class="form-group">
-              <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index</label>
+              <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index (Customer Bank account)</label>
               <input type="text" class="form-control form-control-sm font-monospace fs-7" placeholder="e.g. 10214300982341" name="bankNodeAcc">
             </div>
           </div>
@@ -385,8 +450,14 @@
         @if (['BKASH', 'NAGAD', 'ROCKET'].includes(order.paymentMethod)) {
           <div class="alert alert-danger border border-danger bg-white shadow-sm py-2.5 mb-3">
             <h6 class="fw-bold text-danger mb-2 small text-uppercase"><i class="bi bi-phone-vibrate me-2"></i>MFS Wallet Engine Verification</h6>
-            <div class="form-group">
-              <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number</label>
+            
+            <div class="mb-2 p-2 bg-light rounded border border-danger-subtle fs-8 font-monospace text-dark">
+              <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-danger me-1"></i> Send money to this company number:</div>
+              <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span class="text-danger fw-bold">01712-345678</span> (Send Money / Cash In)</div>
+            </div>
+
+            <div class="form-group mb-2">
+              <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number (Customer Account)</label>
               <input type="text" class="form-control form-control-sm font-monospace fs-7" [(ngModel)]="order.deliveryPhone" name="mfsNodePhone" placeholder="01XXXXXXXXX">
             </div>
           </div>
@@ -470,6 +541,37 @@
               </li>
             }
           </ul>
+        </div>
+
+        <!-- Live Financial Calculation Summary Card -->
+        <div class="card bg-light border p-3 mb-4 rounded-3 font-monospace">
+          <h6 class="fw-bold text-dark small text-uppercase mb-2 pb-1 border-bottom">
+            <i class="bi bi-calculator me-1 text-primary"></i> Order Financial Summary
+          </h6>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Item Subtotal:</span>
+            <span class="fw-bold">৳{{ calculateItemSubtotal() | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Total Weight:</span>
+            <span>{{ calculateTotalWeight() | number:'1.1-1' }} KG</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Delivery Charge:</span>
+            <span class="fw-bold text-info">৳{{ calculateDeliveryCharge() | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Paid Amount (COD):</span>
+            <span class="fw-bold text-success">৳{{ (order.codAmount || 0) | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between small mb-2 text-danger">
+            <span>Due Amount:</span>
+            <span class="fw-bold">৳{{ calculateDueAmount() | number:'1.2-2' }}</span>
+          </div>
+          <div class="d-flex justify-content-between fs-7 pt-2 border-top text-dark fw-bold">
+            <span>Total Amount:</span>
+            <span class="text-success fs-6">৳{{ calculateTotalAmount() | number:'1.2-2' }}</span>
+          </div>
         </div>
 
         <div class="drawer-footer d-flex gap-2 pt-2">

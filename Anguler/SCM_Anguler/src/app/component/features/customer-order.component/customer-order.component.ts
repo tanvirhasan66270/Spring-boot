@@ -8,7 +8,7 @@ import { CustomerService } from '../../../service/customer.service';
 import { CustomerOrderRequestModel, CustomerOrderResponseModel, OrderLineItemRequestModel } from '../../shared/model/customerOrder';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { AddProductService } from '../../../service/add-product.service';
-import { StorageService } from '../../../auth/auth_service/storage.service'; // 🌟 স্টোরেজ সার্ভিস ইমপোর্ট
+import { StorageService } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-customer-order',
@@ -27,11 +27,28 @@ export class CustomerOrderComponent implements OnInit {
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
-  userRole: string = ''; // 🌟 ইউজার রোল ভেরিয়েবল
+  userRole: string = ''; 
+  loggedInCustomerName: string = '';
 
   @ViewChild('orderPdfContainer') orderPdfContainer!: ElementRef;
   isPdfModalOpen = false;
   selectedOrderForPdf: CustomerOrderResponseModel | null = null;
+
+  // Status Update Modal States
+  isStatusModalOpen = false;
+  selectedOrderForStatus: CustomerOrderResponseModel | null = null;
+  newOrderStatus: string = 'PENDING';
+  availableStatuses: string[] = [
+    'PENDING',
+    'CONFIRMED',
+    'PROCESSING',
+    'SHIPPED',
+    'OUT_FOR_DELIVERY',
+    'DELIVERED',
+    'CANCELLED',
+    'RETURNED',
+    'REFUNDED'
+  ];
 
   currentProduct: any = null;
   currentQuantity: number = 1;
@@ -56,15 +73,18 @@ export class CustomerOrderComponent implements OnInit {
     private service: CustomerOrderService,
     private customerService: CustomerService,
     private productService: AddProductService,
-    private storage: StorageService, // 🌟 ইনজেক্ট করা হলো
+    private storage: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    // 🌟 ইউজারের রোল রিট্রিভ করা
     const user = this.storage.getUser();
     if (user) {
       this.userRole = user.role;
+      if (this.userRole === 'CUSTOMER') {
+        this.loggedInCustomerName = user.name;
+        this.loadCustomerByUserId(user.userId);
+      }
     }
 
     this.loadOrders();
@@ -92,6 +112,93 @@ export class CustomerOrderComponent implements OnInit {
         }
       }
     }, 500);
+  }
+
+  loadCustomerByUserId(userId: number) {
+    this.customerService.getCustomerByUserId(userId).subscribe({
+      next: (cust) => {
+        if (cust && cust.id) {
+          this.order.customerId = cust.id;
+          this.loggedInCustomerName = `${cust.name} (${cust.email || ''})`;
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        this.order.customerId = userId;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  // Live Calculation Helpers
+  calculateItemSubtotal(): number {
+    let subtotal = 0;
+    for (let item of this.order.items) {
+      const p = this.products.find(prod => prod.id == item.productId);
+      if (p && p.sellingPrice) {
+        subtotal += p.sellingPrice * item.quantity;
+      }
+    }
+    return subtotal;
+  }
+
+  calculateTotalWeight(): number {
+    let totalWeight = 0;
+    for (let item of this.order.items) {
+      const p = this.products.find(prod => prod.id == item.productId);
+      if (p && p.weight) {
+        totalWeight += p.weight * item.quantity;
+      }
+    }
+    return totalWeight;
+  }
+
+  calculateDeliveryCharge(): number {
+    const weight = this.calculateTotalWeight();
+    let baseCharge = 60 + (weight * 15);
+    if (this.order.serviceType === 'EXPRESS') baseCharge *= 1.5;
+    if (this.order.serviceType === 'OVERNIGHT') baseCharge *= 2.0;
+    if (this.order.serviceType === 'SAME_DAY') baseCharge *= 2.5;
+    return Math.round(baseCharge);
+  }
+
+  calculateTotalAmount(): number {
+    return this.calculateItemSubtotal() + this.calculateDeliveryCharge();
+  }
+
+  calculateDueAmount(): number {
+    const total = this.calculateTotalAmount();
+    const paid = Number(this.order.codAmount) || 0;
+    const due = total - paid;
+    return due < 0 ? 0 : due;
+  }
+
+  openStatusModal(o: CustomerOrderResponseModel) {
+    this.selectedOrderForStatus = o;
+    this.newOrderStatus = o.status || 'PENDING';
+    this.isStatusModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeStatusModal() {
+    this.isStatusModalOpen = false;
+    this.selectedOrderForStatus = null;
+    this.cdr.markForCheck();
+  }
+
+  updateOrderStatus() {
+    if (!this.selectedOrderForStatus) return;
+
+    this.service.updateStatus(this.selectedOrderForStatus.id, this.newOrderStatus).subscribe({
+      next: () => {
+        alert("🚀 Order lifecycle status updated successfully!");
+        this.closeStatusModal();
+        this.loadOrders();
+      },
+      error: (err) => {
+        alert(err.error?.message || "Failed to update status.");
+      }
+    });
   }
 
   openPdfModal(o: CustomerOrderResponseModel) {
@@ -139,6 +246,14 @@ export class CustomerOrderComponent implements OnInit {
     this.reset();
     this.isEdit = false;
     this.isDrawerOpen = true;
+    
+    if (this.userRole === 'CUSTOMER') {
+      const user = this.storage.getUser();
+      if (user) {
+        this.loadCustomerByUserId(user.userId);
+      }
+    }
+
     this.cdr.markForCheck();
   }
 
@@ -279,7 +394,7 @@ export class CustomerOrderComponent implements OnInit {
       serviceType: o.serviceType,
       priority: o.priority || 'NORMAL',   
       currency: o.currency || 'BDT',                
-      codAmount: o.codAmount,
+      codAmount: Number(o.codAmount) || 0,
       paymentMethod: o.paymentMethod || 'CASH',    
       status: o.status,
       remarks: o.remarks || '',                    
@@ -321,6 +436,14 @@ export class CustomerOrderComponent implements OnInit {
       remarks: '',
       items: []
     };
+    
+    if (this.userRole === 'CUSTOMER') {
+      const user = this.storage.getUser();
+      if (user) {
+        this.loadCustomerByUserId(user.userId);
+      }
+    }
+
     this.currentProduct = null;
     this.currentQuantity = 1;
     this.currentRemarks = '';
