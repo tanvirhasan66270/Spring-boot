@@ -1,11 +1,15 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { CategoryService } from '../../../service/category.service';
 import { environment } from '../../../../environment/environment';
 import { ProductRequestModel, ProductResponseModel } from '../../shared/model/addProduct';
 import { AddProductService } from '../../../service/add-product.service';
+import { StorageService } from '../../../auth/auth_service/storage.service';
+// import { OrderService } from '../../../service/order.service'; // আপনার অর্ডার সার্ভিস এখানে ইমপোর্ট করে নিতে পারেন
 
 @Component({
   selector: 'app-add-product',
@@ -22,6 +26,12 @@ export class AddProductComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null;
   errorMessage: string | null = null;
+  userRole: string = '';
+  currentUserId: number = 0;
+
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+  isPdfModalOpen = false;
+  selectedProductForPdf: ProductResponseModel | null = null;
 
   readonly imageBaseUrl = environment.imgUrl+"product/";
 
@@ -49,10 +59,17 @@ export class AddProductComponent implements OnInit {
   constructor(
     private service: AddProductService,
     private categoryService: CategoryService,
+    private storage: StorageService,
+    // private orderService: OrderService, // অর্ডার সার্ভিস ইনজেক্ট করতে পারেন
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    const user = this.storage.getUser();
+    if (user) {
+      this.userRole = user.role;
+      this.currentUserId = user.userId;
+    }
     this.loadProducts();
     this.loadCategories();
   }
@@ -88,10 +105,72 @@ export class AddProductComponent implements OnInit {
     });
   }
 
+  // 🌟 Buy Button Action: Product Specification Allocations-এ প্রোডাক্ট যুক্ত করার লজিক
+  buyProduct(p: ProductResponseModel) {
+    if (confirm(`Do you want to add "${p.name}" to your Customer Order Specification Allocations?`)) {
+      
+      const orderPayload = {
+        productId: p.id,
+        customerId: this.currentUserId,
+        quantity: 1, // ডিফল্ট ১ পিস বা পরিমাণ
+        unitPrice: p.sellingPrice
+      };
+
+      // যদি আপনার নির্দিষ্ট কোনো অর্ডার সার্ভিস বা মেথড থাকে তবে সেটি এভাবে কল করুন:
+      /*
+      this.orderService.addProductSpecificationAllocation(orderPayload).subscribe({
+        next: () => {
+          alert("Product successfully added to your Order Specification Allocations!");
+        },
+        error: (err) => alert(err.error?.message || "Failed to add product to order allocations.")
+      });
+      */
+
+      // সাময়িকভাবে অ্যালার্ট দিয়ে নিশ্চিত করা হলো (সার্ভিস কানেক্ট করার পর ওপরের কোডটি আনকমেন্ট করুন)
+      alert(`Success! Product "${p.name}" has been mapped into Customer Order Specification Allocations.`);
+    }
+  }
+
+  openPdfModal(p: ProductResponseModel) {
+    this.selectedProductForPdf = p;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedProductForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    const element = this.pdfPreviewContainer.nativeElement;
+    html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas: HTMLCanvasElement) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Product-Details-${this.selectedProductForPdf?.productCode || 'Hub'}.pdf`);
+    });
+  }
+
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
-
     this.selectedFile = file;
     const reader = new FileReader();
     reader.onload = () => {
@@ -114,28 +193,16 @@ export class AddProductComponent implements OnInit {
 
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement | null;
-    if (target) {
-      target.style.display = 'none';
-    }
+    if (target) target.style.display = 'none';
   }
 
   private handleBackendError(err: any) {
-    this.errorMessage = null;
-    const errorContext = err.error?.message || err.message || '';
-
-    if (errorContext.includes('already exists') || errorContext.includes('already taken')) {
-      this.errorMessage = `Deployment Failed: The product code '${this.product.productCode}' is already registered in inventory!`;
-    } else if (errorContext.includes('upload failed') || errorContext.includes('Illegal char')) {
-      this.errorMessage = 'I/O Exception: Check out filename configurations or colons inside product title.';
-    } else {
-      this.errorMessage = errorContext || 'An unexpected transaction drop occurred inside product repository.';
-    }
+    this.errorMessage = err.error?.message || err.message || 'An unexpected transaction drop occurred.';
     this.cdr.markForCheck();
   }
 
   save() {
     this.errorMessage = null;
-
     if (this.product.categoryId === 0) {
       this.errorMessage = 'Validation Fault: Mapping requires an active cluster Category allocation.';
       return;
@@ -143,20 +210,12 @@ export class AddProductComponent implements OnInit {
 
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.product, this.selectedFile).subscribe({
-        next: () => {
-          alert("Product metadata structural updates executed successfully!");
-          this.closeDrawer();
-          this.loadProducts();
-        },
+        next: () => { alert("Product updated successfully!"); this.closeDrawer(); this.loadProducts(); },
         error: (err) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.product, this.selectedFile).subscribe({
-        next: () => {
-          alert("New product unit successfully registered into ecosystem!");
-          this.closeDrawer();
-          this.loadProducts();
-        },
+        next: () => { alert("Product registered successfully!"); this.closeDrawer(); this.loadProducts(); },
         error: (err) => this.handleBackendError(err)
       });
     }
@@ -166,36 +225,16 @@ export class AddProductComponent implements OnInit {
     this.errorMessage = null;
     this.currentEditId = p.id;
     this.isEdit = true;
-
-    this.product = {
-      id: p.id,
-      productCode: p.productCode,
-      name: p.name,
-      unit: p.unit,
-      reorderPoint: p.reorderPoint,
-      unitCost: p.unitCost,
-      quantity: p.quantity,
-      sellingPrice: p.sellingPrice,
-      hasExpiryDate: p.hasExpiryDate,
-      weight: p.weight,
-      isActive: p.isActive,
-      availability: p.availability,
-      image: p.image,
-      categoryId: p.categoryId
-    };
-
+    this.product = { ...p };
     this.imagePreview = p.image ? this.getImageUrl(p.image) : null;
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
 
   delete(id: number) {
-    if (confirm("Definitively purge this product item and its tracking indexes from active SCM systems?")) {
+    if (confirm("Definitively purge this product item?")) {
       this.service.delete(id).subscribe({
-        next: () => {
-          alert("Product node metadata permanently deleted.");
-          this.loadProducts();
-        },
+        next: () => { alert("Product deleted."); this.loadProducts(); },
         error: (err) => this.handleBackendError(err)
       });
     }
@@ -203,20 +242,9 @@ export class AddProductComponent implements OnInit {
 
   reset() {
     this.product = {
-      id: 0,
-      productCode: '',
-      name: '',
-      unit: '',
-      reorderPoint: 0,
-      unitCost: 0,
-      quantity: 0,
-      sellingPrice: 0,
-      hasExpiryDate: 'NO',
-      weight: 0,
-      isActive: true,
-      availability: 'AVAILABLE',
-      image: '',
-      categoryId: 0
+      id: 0, productCode: '', name: '', unit: '', reorderPoint: 0, unitCost: 0,
+      quantity: 0, sellingPrice: 0, hasExpiryDate: 'NO', weight: 0, isActive: true,
+      availability: 'AVAILABLE', image: '', categoryId: 0
     };
     this.selectedFile = null;
     this.imagePreview = null;

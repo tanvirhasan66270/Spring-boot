@@ -1,12 +1,14 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import { CustomerService } from '../../../service/customer.service';
 import { CustomerOrderRequestModel, CustomerOrderResponseModel, OrderLineItemRequestModel } from '../../shared/model/customerOrder';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { AddProductService } from '../../../service/add-product.service';
-import { environment } from '../../../../environment/environment';
+import { StorageService } from '../../../auth/auth_service/storage.service'; // 🌟 স্টোরেজ সার্ভিস ইমপোর্ট
 
 @Component({
   selector: 'app-customer-order',
@@ -17,8 +19,6 @@ import { environment } from '../../../../environment/environment';
 })
 export class CustomerOrderComponent implements OnInit {
 
-
-
   orders: CustomerOrderResponseModel[] = [];
   customers: any[] = [];
   products: any[] = [];
@@ -27,6 +27,11 @@ export class CustomerOrderComponent implements OnInit {
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
+  userRole: string = ''; // 🌟 ইউজার রোল ভেরিয়েবল
+
+  @ViewChild('orderPdfContainer') orderPdfContainer!: ElementRef;
+  isPdfModalOpen = false;
+  selectedOrderForPdf: CustomerOrderResponseModel | null = null;
 
   currentProduct: any = null;
   currentQuantity: number = 1;
@@ -39,11 +44,11 @@ export class CustomerOrderComponent implements OnInit {
     estimatedDelivery: '',
     serviceType: 'STANDARD',
     priority: 'NORMAL',      
-    currency: 'BDT',          
+    currency: 'BDT',            
     codAmount: 0,
     paymentMethod: 'CASH',    
     status: 'PENDING',
-    remarks: '',              
+    remarks: '',                
     items: []
   };
 
@@ -51,13 +56,83 @@ export class CustomerOrderComponent implements OnInit {
     private service: CustomerOrderService,
     private customerService: CustomerService,
     private productService: AddProductService,
+    private storage: StorageService, // 🌟 ইনজেক্ট করা হলো
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    // 🌟 ইউজারের রোল রিট্রিভ করা
+    const user = this.storage.getUser();
+    if (user) {
+      this.userRole = user.role;
+    }
+
     this.loadOrders();
     this.loadCustomers();
     this.loadProducts();
+
+    setTimeout(() => {
+      const savedItem = localStorage.getItem('pending_order_item');
+      if (savedItem) {
+        try {
+          const itemData = JSON.parse(savedItem);
+          const exists = this.order.items.find(x => x.productId === itemData.productId);
+          if (!exists) {
+            this.order.items.push({
+              productId: itemData.productId,
+              quantity: itemData.quantity,
+              remarks: itemData.remarks
+            });
+          }
+          this.isDrawerOpen = true;
+          this.cdr.markForCheck();
+          localStorage.removeItem('pending_order_item');
+        } catch (e) {
+          console.error("Error parsing pending order item", e);
+        }
+      }
+    }, 500);
+  }
+
+  openPdfModal(o: CustomerOrderResponseModel) {
+    this.selectedOrderForPdf = o;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedOrderForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadOrderPdf() {
+    const element = this.orderPdfContainer.nativeElement;
+    html2canvas(element, { 
+      scale: 2, 
+      useCORS: true,
+      windowHeight: element.scrollHeight 
+    }).then((canvas: HTMLCanvasElement) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Customer-Order-${this.selectedOrderForPdf?.orderNumber || 'Invoice'}.pdf`);
+    });
   }
 
   openDrawer() {
@@ -110,13 +185,23 @@ export class CustomerOrderComponent implements OnInit {
       return;
     }
 
-    const existingItem = this.order.items.find(x => x.productId == this.currentProduct.id);
+    let selectedProd = this.currentProduct;
+    if (typeof this.currentProduct === 'string') {
+      selectedProd = this.products.find(p => `${p.name} (৳${p.sellingPrice})` === this.currentProduct);
+    }
+
+    if (!selectedProd || !selectedProd.id) {
+      alert("Please select a valid product from the list!");
+      return;
+    }
+
+    const existingItem = this.order.items.find(x => x.productId == selectedProd.id);
     if (existingItem) {
-      existingItem.quantity += this.currentQuantity;
+      existingItem.quantity += +this.currentQuantity;
     } else {
       const newItem: OrderLineItemRequestModel = {
-        productId: this.currentProduct.id,
-        quantity: this.currentQuantity,
+        productId: selectedProd.id,
+        quantity: +this.currentQuantity,
         remarks: this.currentRemarks
       };
       this.order.items.push(newItem);

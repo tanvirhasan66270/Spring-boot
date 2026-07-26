@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { InvoiceRequestModel, InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
+import { StorageService } from '../../../auth/auth_service/storage.service'; // 🌟 স্টোরেজ সার্ভিস ইমপোর্ট
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -24,6 +25,7 @@ export class InvoiceComponent implements OnInit {
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
+  userRole: string = ''; // 🌟 ইউজার রোল ভেরিয়েবল
 
   isPdfModalOpen = false;
   selectedInvoiceForPdf: InvoiceResponseModel | null = null;
@@ -50,10 +52,17 @@ export class InvoiceComponent implements OnInit {
   constructor(
     private service: InvoiceService,
     private orderService: CustomerOrderService,
+    private storage: StorageService, // 🌟 ইনজেক্ট করা হলো
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    // 🌟 ইউজারের রোল রিট্রিভ করা
+    const user = this.storage.getUser();
+    if (user) {
+      this.userRole = user.role;
+    }
+
     this.loadInvoices();
     this.loadCustomerOrders();
   }
@@ -160,7 +169,7 @@ export class InvoiceComponent implements OnInit {
 
     const element = this.pdfPreviewContainer.nativeElement;
     
-    html2canvas(element, { scale: 2 }).then((canvas) => {
+    html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210; 

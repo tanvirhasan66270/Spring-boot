@@ -29,7 +29,7 @@
               <th>Payment Engine</th>
               <th>Settlement State</th>
               <th>Order Lifecycle</th>
-              <th class="text-end px-4" width="140">Actions</th>
+              <th class="text-end px-4" width="180">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -69,13 +69,21 @@
                   <small class="d-block text-muted font-monospace fs-8 mt-1" *ngIf="o.estimatedDelivery"><i class="bi bi-calendar3 me-1"></i>{{ o.estimatedDelivery | date:'mediumDate' }}</small>
                 </td>
                 <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
-                      <i class="bi bi-pencil-square"></i>
+                  <div class="d-flex justify-content-end gap-1">
+                    <!-- PDF View Button সবার জন্য দৃশ্যমান থাকবে -->
+                    <button class="btn btn-icon btn-light text-danger border-0" title="View Order PDF" (click)="openPdfModal(o)">
+                      <i class="bi bi-file-earmark-pdf-fill"></i>
                     </button>
-                    <button class="btn btn-icon btn-light text-danger border-0" title="Purge Record" (click)="delete(o.id)">
-                      <i class="bi bi-trash-fill"></i>
-                    </button>
+
+                    <!-- 🌟 এডিট ও ডিলিট বাটন দুটি শুধু CUSTOMER ছাড়া অন্য রোলগুলোর জন্য দেখাবে -->
+                    @if (userRole !== 'CUSTOMER') {
+                      <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-danger border-0" title="Purge Record" (click)="delete(o.id)">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>
@@ -93,6 +101,178 @@
     </div>
   </div>
 
+  <!-- PDF Preview Modal Window (Invoice স্টাইলে আপডেট করা) -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isPdfModalOpen">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content shadow-lg border-0 rounded-4">
+        
+        <div class="modal-header bg-dark text-white px-4 py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-file-earmark-text-fill me-2 text-info"></i> Customer Purchase Order Document Preview
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closePdfModal()"></button>
+        </div>
+
+        <div class="modal-body bg-light p-4 d-flex justify-content-center">
+          <div #orderPdfContainer class="bg-white p-5 shadow-sm rounded-3 border" style="width: 794px; font-family: Arial, sans-serif; color: #000; line-height: 1.6;">
+            
+            <!-- প্রফেশনাল এন্টারপ্রাইজ লোগো ও হেডার -->
+            <div class="text-center mb-4 pb-3 border-bottom">
+              <h1 class="fw-bold mb-0" style="letter-spacing: 3px; font-size: 36px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <span style="color: #0b2545;">S</span><span style="color: #0b2545;">C</span><span style="color: #38b000;">M</span>
+              </h1>
+              <h5 class="fw-bold text-dark mt-1 mb-2" style="letter-spacing: 4px; font-size: 13px;">
+                ENTERPRISE LOGISTICS NODE
+              </h5>
+              <div class="d-flex justify-content-center align-items-center gap-3 mt-2 text-uppercase" style="font-size: 11px; font-weight: 700; color: #0b2545;">
+                <span><i class="bi bi-link-45deg text-primary fs-6 me-1 align-middle"></i> CONNECT</span>
+                <span class="text-muted">|</span>
+                <span><i class="bi bi-gear-fill text-success fs-6 me-1 align-middle"></i> OPTIMIZE</span>
+                <span class="text-muted">|</span>
+                <span><i class="bi bi-truck text-primary fs-6 me-1 align-middle"></i> DELIVER</span>
+              </div>
+            </div>
+
+            <!-- অর্ডার টাইটেল ও কোড -->
+            <div class="text-center mb-4">
+              <h3 class="fw-bold text-dark mb-1" style="letter-spacing: 1px;">CUSTOMER PURCHASE ORDER</h3>
+              <p class="text-muted small mb-0"><b>Order Number:</b> {{ selectedOrderForPdf?.orderNumber }} | <b>Order ID Node:</b> #{{ selectedOrderForPdf?.id }}</p>
+            </div>
+
+            <!-- ক্লায়েন্ট ও অডিট টাইমলাইন বক্স -->
+            <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded border border-secondary-subtle">
+              <div class="col-7">
+                <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">Issued To Recipient</span>
+                <strong class="text-dark fs-6">{{ selectedOrderForPdf?.customerName }}</strong>
+                <div class="text-muted text-truncate">{{ selectedOrderForPdf?.customerEmail }}</div>
+                <div class="text-muted mt-1 small"><i class="bi bi-telephone text-primary"></i> {{ selectedOrderForPdf?.deliveryPhone }}</div>
+                <div class="text-muted mt-1 small"><i class="bi bi-geo-alt text-danger"></i> {{ selectedOrderForPdf?.deliveryAddress }}</div>
+              </div>
+              <div class="col-5 text-end border-start">
+                <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">System Audit Matrix</span>
+                <div class="small text-muted">Created: {{ selectedOrderForPdf?.createdAt | date:'yyyy-MM-dd HH:mm' }}</div>
+                <div class="small text-muted mt-1">Est. Delivery: <b class="text-primary">{{ selectedOrderForPdf?.estimatedDelivery || 'N/A' }}</b></div>
+                <div class="mt-2">Lifecycle: <span class="badge bg-primary text-uppercase px-2 py-1">{{ selectedOrderForPdf?.status }}</span></div>
+              </div>
+            </div>
+
+            <!-- লাইন আইটেম টেবিল -->
+            <h6 class="fw-bold text-dark mt-4 mb-3 uppercase fs-8 border-bottom pb-2">Product Specification Allocations (Line Items)</h6>
+            <table class="table table-bordered align-middle fs-8 mb-4">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="py-2.5">#</th>
+                  <th class="py-2.5">Product Details</th>
+                  <th class="text-center py-2.5">Qty</th>
+                  <th class="text-end py-2.5">Unit Price</th>
+                  <th class="text-end py-2.5">Line Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of selectedOrderForPdf?.lineItems; track item.id; let idx = $index) {
+                  <tr>
+                    <td class="font-monospace py-2.5">{{ idx + 1 }}</td>
+                    <td class="py-2.5">
+                      <div class="fw-bold text-dark">{{ item.productName }}</div>
+                      <small class="text-muted font-monospace">Code: {{ item.productCode }} | Wt: {{ item.itemWeightTotal }}kg</small>
+                      @if (item.remarks) {
+                        <div class="text-info small fst-italic mt-1">Note: {{ item.remarks }}</div>
+                      }
+                    </td>
+                    <td class="text-center font-monospace fw-bold py-2.5">{{ item.quantity }}</td>
+                    <td class="text-end font-monospace py-2.5">৳{{ item.unitPrice | number:'1.2-2' }}</td>
+                    <td class="text-end font-monospace fw-bold text-success py-2.5">৳{{ item.lineTotal | number:'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+
+            <!-- পেমেন্ট ও সামারি সেকশন -->
+            <div class="row fs-8 mb-4 pt-2">
+              <div class="col-6">
+                <p class="mb-2">Priority: <b class="text-uppercase text-danger">{{ selectedOrderForPdf?.priority }}</b></p>
+                <p class="mb-2">Service Strategy: <b class="text-uppercase text-info">{{ selectedOrderForPdf?.serviceType }}</b></p>
+                <p class="mb-2">Payment Method: <b class="text-uppercase">{{ selectedOrderForPdf?.paymentMethod }}</b></p>
+                <p class="mb-2">Payment Status: <b class="text-uppercase text-success">{{ selectedOrderForPdf?.paymentStatus }}</b></p>
+                <p class="mb-2">Currency: <b>{{ selectedOrderForPdf?.currency }}</b></p>
+                @if (selectedOrderForPdf?.remarks) {
+                  <p class="mb-2">Remarks: <i>{{ selectedOrderForPdf?.remarks }}</i></p>
+                }
+              </div>
+              <div class="col-6">
+                <table class="table table-sm table-borderless mb-0 text-end font-monospace">
+                  <tr>
+                    <td class="text-muted py-1.5">Item Subtotal:</td>
+                    <td class="fw-bold py-1.5">৳{{ selectedOrderForPdf?.itemSubtotal | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Total Weight:</td>
+                    <td class="py-1.5">{{ selectedOrderForPdf?.weight || 0 }} KG</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Delivery Charge:</td>
+                    <td class="py-1.5">৳{{ selectedOrderForPdf?.deliveryCharge | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">COD Amount:</td>
+                    <td class="py-1.5">৳{{ selectedOrderForPdf?.codAmount | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Paid Amount:</td>
+                    <td class="text-success py-1.5">৳{{ selectedOrderForPdf?.paidAmount | number:'1.2-2' }}</td>
+                  </tr>
+                  @if (selectedOrderForPdf?.dueAmount && +selectedOrderForPdf!.dueAmount > 0) {
+                    <tr>
+                      <td class="text-danger fw-bold py-1.5">Due Amount:</td>
+                      <td class="text-danger fw-bold py-1.5">৳{{ selectedOrderForPdf?.dueAmount | number:'1.2-2' }}</td>
+                    </tr>
+                  }
+                  <tr class="border-top">
+                    <td class="fw-bold text-dark fs-7 pt-2">Total Amount:</td>
+                    <td class="fw-bold text-success fs-7 pt-2">৳{{ selectedOrderForPdf?.totalAmount | number:'1.2-2' }}</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <!-- ৩টি প্রফেশনাল সিগনেচার সেকশন -->
+            <div class="row pt-5 border-top text-center" style="display: flex; justify-content: space-between; margin-top: 50px !important; padding-top: 25px !important;">
+              <div style="width: 30%; display: inline-block;">
+                <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;"></div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Customer Signature</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Received & Acknowledged)</p>
+              </div>
+              <div style="width: 30%; display: inline-block;">
+                <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;"></div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Logistics Officer</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Prepared & Verified)</p>
+              </div>
+              <div style="width: 30%; display: inline-block;">
+                <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;"></div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Manager Signature</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Authorized & Approved)</p>
+              </div>
+            </div>
+
+            <div class="text-center mt-5 pt-3 border-top text-muted" style="font-size: 10px;">
+              <p class="mb-0">This is a system-generated secure electronic order confirmation and invoice manifest from SCMPro Ecosystem.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer bg-white px-4 py-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 fw-bold" (click)="closePdfModal()">Close</button>
+          <button type="button" class="btn btn-danger px-4 fw-bold d-flex align-items-center gap-2" (click)="downloadOrderPdf()">
+            <i class="bi bi-download"></i> Download PDF
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
+  <!-- Drawer Form -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-dark text-white">
       <h5 class="fw-bold mb-0">
@@ -224,17 +404,28 @@
 
         <hr class="my-3 text-muted" />
 
-        <h6 class="fw-bold text-dark mb-2 small text-uppercase"><i class="bi bi-box-seam me-2 text-primary"></i>Product Specification Allocations</h6>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold text-dark mb-0 small text-uppercase">
+            <i class="bi bi-box-seam me-2 text-primary"></i>Product Specification Allocations
+          </h6>
+          <a routerLink="/product" class="btn btn-sm btn-outline-primary py-0 px-2 fs-8 fw-semibold text-decoration-none">
+            <i class="bi bi-search me-1"></i> Browse Marketplace
+          </a>
+        </div>
+
         <div class="bg-light p-2.5 rounded mb-3 border border-secondary-subtle">
           <div class="row g-2 align-items-end">
             <div class="col-md-5">
-              <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Inventory Product</label>
-              <select class="form-select form-select-sm fs-7.5" [(ngModel)]="currentProduct" name="locItemSelect">
-                <option [ngValue]="null">-- Select Item --</option>
+              <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Inventory Product (Searchable)</label>
+              
+              <input class="form-control form-control-sm fs-7.5" list="orderProductList" [(ngModel)]="currentProduct" placeholder="Type to search product..." name="productSearchInput">
+              
+              <datalist id="orderProductList">
                 @for (p of products; track p.id) {
-                  <option [ngValue]="p">{{ p.name }} (৳{{ p.sellingPrice }})</option>
+                  <option [value]="p.name + ' (৳' + p.sellingPrice + ')'"></option>
                 }
-              </select>
+              </datalist>
+
             </div>
             <div class="col-md-2">
               <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Qty</label>
@@ -250,20 +441,25 @@
           </div>
         </div>
 
-        <div class="card bg-white mb-4 shadow-inner">
+        <div class="card bg-white mb-4 shadow-inner border">
+          <div class="card-header bg-light py-2 px-3 fw-bold fs-8 text-secondary uppercase">
+            Attached Products List ({{ order.items.length }})
+          </div>
           <ul class="list-group list-group-flush fs-7.5">
             @for (item of order.items; track $index; let idx = $index) {
               <li class="list-group-item d-flex justify-content-between align-items-center py-2.5 border-bottom">
                 <div>
-                  <span class="fw-bold text-dark d-block mb-0.5">{{ getProductName(item.productId) }}</span>
+                  <span class="fw-bold text-dark d-block mb-0.5">
+                    <i class="bi bi-box-seam text-primary me-1"></i> {{ getProductName(item.productId) }}
+                  </span>
                   <div class="small text-muted font-monospace">
-                    Quantity Order Vector: <b class="text-primary fs-7">{{ item.quantity }} units</b>
+                    Quantity: <b class="text-primary fs-7">{{ item.quantity }} units</b>
                     @if (item.remarks) {
                       <span class="ms-2 text-info bg-info-subtle px-1 rounded border border-info-subtle">💬 {{ item.remarks }}</span>
                     }
                   </div>
                 </div>
-                <button type="button" class="btn btn-sm text-danger border-0 p-1" (click)="removeItem(idx)">
+                <button type="button" class="btn btn-sm text-danger border-0 p-1" title="Remove Item" (click)="removeItem(idx)">
                   <i class="bi bi-x-circle-fill fs-5"></i>
                 </button>
               </li>

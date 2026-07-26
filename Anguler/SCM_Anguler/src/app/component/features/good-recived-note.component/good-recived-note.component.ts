@@ -1,10 +1,13 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   GoodsReceivedNoteRequestModel,
   GoodsReceivedNoteResponseModel,
   GRNLineItemRequestModel,
+  GRNLineItemResponseModel,
 } from '../../shared/model/goodRecivedNoteModel';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { GoodRecivedNoteService } from '../../../service/good-recived-note.service';
@@ -29,11 +32,16 @@ export class GoodRecivedNoteComponent implements OnInit {
   users: any[] = [];
 
   errorMessage: string | null = null;
-  receivedQuantityError: string | null = null; // 🌟 ফিল্ডের নিচের এরর ভেরিয়েবল
+  receivedQuantityError: string | null = null; 
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
   currentUserId: number = 0;
+
+  // PDF Preview States
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+  isPdfModalOpen = false;
+  selectedGrnForPdf: GoodsReceivedNoteResponseModel | null = null;
 
   grn: GoodsReceivedNoteRequestModel = {
     poId: 0,
@@ -56,7 +64,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     private productService: AddProductService,
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
-    private storage: StorageService,
+    public storage: StorageService, // 🌟 private থেকে public করা হয়েছে যাতে HTML থেকে এক্সেস করা যায়
     private cdr: ChangeDetectorRef,
   ) {}
 
@@ -167,6 +175,43 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  openPdfModal(grn: GoodsReceivedNoteResponseModel) {
+    this.selectedGrnForPdf = grn;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedGrnForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    const element = this.pdfPreviewContainer.nativeElement;
+    html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas: HTMLCanvasElement) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`GRN-Manifest-${this.selectedGrnForPdf?.grnNumber || 'Node'}.pdf`);
+    });
+  }
+
   save() {
     this.errorMessage = null;
     this.receivedQuantityError = null;
@@ -178,7 +223,6 @@ export class GoodRecivedNoteComponent implements OnInit {
       return;
     }
 
-    // 🌟 PO কোটা বা ভলিউম ভ্যালিডেশন চেক
     const selectedPo = this.purchaseOrders.find((po: any) => Number(po.id) === Number(this.grn.poId));
     if (selectedPo) {
       const maxAllowed = Number(selectedPo.quantity || selectedPo.totalQuantity || selectedPo.orderedQuantity || 0);

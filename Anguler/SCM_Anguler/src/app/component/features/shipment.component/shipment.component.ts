@@ -268,7 +268,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
 
     const element = this.pdfPreviewContainer.nativeElement;
     
-    html2canvas(element, { scale: 2 }).then((canvas) => {
+    html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210; 

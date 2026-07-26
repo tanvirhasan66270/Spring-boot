@@ -54,4 +54,5 @@ export interface GoodsReceivedNoteResponseModel {
   receivedByName: string;
   inspectedBy: number | null;
   inspectedByName: string | null;
+  lineItems?: GRNLineItemResponseModel[];
 }

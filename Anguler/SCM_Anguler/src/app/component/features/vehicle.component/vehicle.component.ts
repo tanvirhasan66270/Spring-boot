@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { VehicleRequestModel, VehicleResponseModel } from '../../shared/model/vehicleModel';
 import { VehicleService } from '../../../service/vehicle.service';
 import { DriverService } from '../../../service/driver.service';
+import { StorageService } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-vehicle',
@@ -25,6 +26,9 @@ export class VehicleComponent implements OnInit {
   isStatusModalOpen = false;
   statusUpdateValue = 'AVAILABLE';
 
+  userRole: string = '';
+  currentUserId: number = 0;
+
   formModel: VehicleRequestModel = {
     plateNumber: '',
     type: 'VAN',
@@ -38,17 +42,36 @@ export class VehicleComponent implements OnInit {
   constructor(
     private service: VehicleService,
     private driverService: DriverService,
+    private storage: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    const user = this.storage.getUser();
+    if (user) {
+      this.currentUserId = user.userId ;
+      this.userRole = user.role;
+    }
     this.loadVehicles();
     this.loadDrivers();
   }
 
   loadVehicles() {
     this.service.findAll().subscribe({
-      next: (data) => { this.vehicles = data || []; this.cdr.markForCheck(); },
+      next: (data) => { 
+        const allVehicles = data || [];
+        
+        // 🌟 ড্রাইভার হলে শুধুমাত্র তার নিজের অ্যাসাইন করা ভেহিকেল ফিল্টার হবে
+        if (this.userRole === 'DRIVER') {
+          this.vehicles = allVehicles.filter((v: any) => 
+            v.driverId === this.currentUserId || v.driver?.id === this.currentUserId
+          );
+        } else {
+          this.vehicles = allVehicles;
+        }
+
+        this.cdr.markForCheck(); 
+      },
       error: (err) => this.handleError(err)
     });
   }
@@ -70,7 +93,7 @@ export class VehicleComponent implements OnInit {
       plateNumber: this.formModel.plateNumber.trim(),
       type: this.formModel.type,
       capacity: +this.formModel.capacity,
-      status: this.formModel.status, // ফর্মের কারেন্ট ফিক্সড স্টেট নিয়ে সাবমিট হবে
+      status: this.formModel.status,
       lastServiceDate: this.formModel.lastServiceDate || null,
       fuelLevel: +this.formModel.fuelLevel,
       driverId: this.formModel.driverId ? +this.formModel.driverId : null

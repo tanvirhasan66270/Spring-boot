@@ -193,7 +193,7 @@ export const routes: Routes = [
       { path: 'stock-movement', component: StockMovementComponent },
       { path: 'invoice', component: InvoiceComponent },
       { path: 'delivery-trip', component: DeliveryTripComponent },
-      { path: 'vehicle', component: VehicleComponent },
+      { path: 'vehicles', component: VehicleComponent },
       { path: 'daily-report', component: DailyReportComponent },
       { path: 'notifications', component: NotificationComponent },
       { path: 'messages', component: MassageComponent },

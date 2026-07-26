@@ -71,28 +71,31 @@
     </div>
   </div>
 
-  <!-- QUICK ACTIONS -->
+<!-- QUICK ACTIONS -->
   <div class="row g-3 mb-4">
+    <!-- 🌟 Start/Resume Route এর পরিবর্তে Message বাটন -->
     <div class="col-md-4">
       <a
-        routerLink="/delivery-trip"
+        routerLink="/messages"
         class="action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
       >
-        <i class="bi bi-play-circle fs-2 text-warning mb-1 d-block"></i>
-        <strong class="text-dark d-block">Start/Resume Route</strong>
-        <small class="text-muted">Commence next sequential dispatch</small>
+        <i class="bi bi-chat-dots fs-2 text-warning mb-1 d-block"></i>
+        <strong class="text-dark d-block">Messages</strong>
+        <small class="text-muted">Communicate with dispatch and operations</small>
       </a>
     </div>
+
     <div class="col-md-4">
       <a
-        routerLink="/delivery-trip"
+        routerLink="/vehicles"
         class="action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
       >
-        <i class="bi bi-geo-alt fs-2 text-primary mb-1 d-block"></i>
-        <strong class="text-dark d-block">Log Current Location</strong>
-        <small class="text-muted">Update SCM system coordinates</small>
+        <i class="bi bi-truck-front-fill fs-2 text-primary mb-1 d-block"></i>
+        <strong class="text-dark d-block">Vehicles</strong>
+        <small class="text-muted">View assigned fleet and vehicle matrix</small>
       </a>
     </div>
+
     <div class="col-md-4">
       <a
         routerLink="/delivery-trip"

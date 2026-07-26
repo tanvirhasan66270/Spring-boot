@@ -115,9 +115,10 @@ public class Invoice {
     }
 
     private void calculateFinancials() {
-        if (this.discountPercentage > 0 && this.discountAmount == 0) {
-            this.discountAmount = this.subtotal * (this.discountPercentage / 100);
+       if (this.discountPercentage > 0) {
+            this.discountAmount = this.subtotal * (this.discountPercentage / 100.0);
         }
+
         this.taxAmount = this.subtotal * this.taxRate;
         this.totalAmount = this.subtotal + this.taxAmount + this.shippingFees - this.discountAmount;
         this.dueAmount = this.totalAmount - this.paidAmount;
