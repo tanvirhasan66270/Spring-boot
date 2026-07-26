@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // 🌟 FormsModule ইমপোর্ট করা জরুরি
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { CustomerOrderResponseModel } from '../../shared/model/customerOrder';
@@ -18,7 +19,7 @@ import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent],
+  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule], // 🌟 FormsModule যোগ করা হয়েছে
   templateUrl: './customer-dashboard.component.html',
   styleUrls: ['./customer-dashboard.component.css'],
 })
@@ -42,6 +43,12 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   showSettings = false;
   loading = true;
+
+  // 🌟 Track Product Modal States
+  isTrackModalOpen = false;
+  searchTrackingCode = '';
+  trackedResult: CustomerOrderResponseModel | null = null;
+  trackSearched = false;
 
   deliveredPercent = 0;
   processingPercent = 0;
@@ -80,6 +87,42 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadRecommendations();
     this.loadNotifications();
     this.loadActivities();
+  }
+
+  // 🌟 Track Product Modal Methods
+  openTrackModal(): void {
+    this.isTrackModalOpen = true;
+    this.searchTrackingCode = '';
+    this.trackedResult = null;
+    this.trackSearched = false;
+    this.cdr.markForCheck();
+  }
+
+  closeTrackModal(): void {
+    this.isTrackModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  trackOrder(): void {
+    this.trackSearched = true;
+    if (!this.searchTrackingCode || this.searchTrackingCode.trim() === '') {
+      this.trackedResult = null;
+      return;
+    }
+
+    this.orderService.findAll().subscribe({
+      next: (orders) => {
+        const found = (orders || []).find(
+          (o) => o.orderNumber?.toLowerCase() === this.searchTrackingCode.trim().toLowerCase()
+        );
+        this.trackedResult = found || null;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.trackedResult = null;
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   loadCustomer(): void {
@@ -145,18 +188,8 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
         const now = new Date();
         const shortMonths = [
-          'Jan',
-          'Feb',
-          'Mar',
-          'Apr',
-          'May',
-          'Jun',
-          'Jul',
-          'Aug',
-          'Sep',
-          'Oct',
-          'Nov',
-          'Dec',
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
         ];
         this.monthlyExpenses = [];
         this.monthLabels = [];
