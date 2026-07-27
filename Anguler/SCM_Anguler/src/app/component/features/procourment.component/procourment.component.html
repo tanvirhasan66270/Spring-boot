@@ -30,15 +30,16 @@
             @for (o of procurements; track o.id) {
               <tr>
                 <td class="ps-4">
-                  @if (o.image) {
-                    <div class="avatar-wrapper shadow-xs border rounded-circle" style="width: 42px; height: 42px; overflow: hidden;">
-              <img [src]="imageBaseUrl+o?.image" (error)="onImageError($event)" alt="Profile" class="w-100 h-100 object-fit-cover">                   </div>
-                  } @else {
-                    <div class="avatar-placeholder bg-secondary-subtle text-secondary font-monospace fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
-                      {{ o.name.substring(0, 2).toUpperCase() }}
-                    </div>
-                  }
-                </td>
+  @if (o.image && o.image.trim() !== '') {
+    <div class="avatar-wrapper shadow-xs border rounded-circle" style="width: 42px; height: 42px; overflow: hidden;">
+      <img [src]="getImageUrl(o.image)" (error)="onImageError($event)" alt="Profile" class="w-100 h-100 object-fit-cover">
+    </div>
+  } @else {
+    <div class="avatar-placeholder bg-secondary-subtle text-secondary font-monospace fw-bold rounded-circle d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+      {{ o.name.substring(0, 2).toUpperCase() }}
+    </div>
+  }
+</td>
                 <td>
                   <div class="fw-bold text-dark">{{ o.name }}</div>
                   <span class="badge bg-primary-subtle text-primary font-monospace fs-9">ID: #{{ o.id }}</span>

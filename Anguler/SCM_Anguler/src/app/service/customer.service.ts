@@ -1,5 +1,5 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environment/environment';
 import { CustomerResponseModel } from '../component/shared/model/customerModel';
@@ -8,7 +8,7 @@ import { CustomerResponseModel } from '../component/shared/model/customerModel';
   providedIn: 'root',
 })
 export class CustomerService {
-  private apiUrl = environment.apiUrl + "customer/";
+  private apiUrl = environment.apiUrl + 'customer';
 
   constructor(private http: HttpClient) {}
 
@@ -17,26 +17,22 @@ export class CustomerService {
   }
 
   getById(id: number): Observable<CustomerResponseModel> {
-    return this.http.get<CustomerResponseModel>(`${this.apiUrl}${id}`);
+    return this.http.get<CustomerResponseModel>(`${this.apiUrl}/${id}`);
   }
 
-  
-
-  // Multi-part FormData হ্যান্ডলিং
   save(formData: FormData): Observable<CustomerResponseModel> {
     return this.http.post<CustomerResponseModel>(this.apiUrl, formData);
   }
 
   update(id: number, formData: FormData): Observable<CustomerResponseModel> {
-    return this.http.put<CustomerResponseModel>(`${this.apiUrl}${id}`, formData);
+    return this.http.put<CustomerResponseModel>(`${this.apiUrl}/${id}`, formData);
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
   }
 
-   getCustomerByUserId(userId: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}user/${userId}`);
+  getCustomerByUserId(userId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`);
   }
-
 }

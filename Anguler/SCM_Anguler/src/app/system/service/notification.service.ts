@@ -21,11 +21,7 @@ export class NotificationService {
    */
   private getHeaders(): HttpHeaders {
     const userId = this.storage.getUser()?.userId?.toString() ?? '';
-    const token = this.storage.getToken() ?? '';
-    
-    return new HttpHeaders()
-      .set('X-User-Id', userId)
-      .set('Authorization', `Bearer ${token}`); // JWT এবং User ID দুটিই একসাথে সিঙ্ক করা হলো
+    return new HttpHeaders().set('X-User-Id', userId);
   }
 
 

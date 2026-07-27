@@ -35,6 +35,6 @@ export class DivisionService {
   }
 
   getByCountryId(id: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/country/${id}`);
+    return this.http.get<any[]>(`${this.apiUrl}country/${id}`);
   }
 }

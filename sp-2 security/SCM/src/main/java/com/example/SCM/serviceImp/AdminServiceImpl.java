@@ -28,6 +28,7 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @Override
     public AdminResponse create(AdminRequest request) {
+        // ১. প্রথমে User টেবিলে ইউজার এবং রোল ADMIN সেভ করা হচ্ছে
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
@@ -40,6 +41,7 @@ public class AdminServiceImpl implements AdminService {
         }
         User savedUser = userRepository.save(user);
 
+        // ২. এরপর Admin টেবিলে ইউজার রিলেশনসহ সেভ করা হচ্ছে
         Admin admin = new Admin();
         admin.setName(request.getName());
         admin.setEmail(request.getEmail());
@@ -92,18 +94,16 @@ public class AdminServiceImpl implements AdminService {
         return adminMapper.toResponse(admin);
     }
 
-    /*
-    @Transactional
-    @Override
-    public void delete(Long id) {
-        Admin admin = adminRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Target admin node index missing"));
-
-        adminRepository.delete(admin);
-
-        if (admin.getUser() != null) {
-            userRepository.delete(admin.getUser());
-        }
-    }
-    */
+//    @Transactional
+//    @Override
+//    public void delete(Long id) {
+//        Admin admin = adminRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Target admin node index missing"));
+//
+//        adminRepository.delete(admin);
+//
+//        if (admin.getUser() != null) {
+//            userRepository.delete(admin.getUser());
+//        }
+//    }
 }

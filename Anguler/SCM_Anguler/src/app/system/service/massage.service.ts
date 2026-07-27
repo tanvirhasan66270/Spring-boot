@@ -21,19 +21,30 @@ export class MessageService {
     return new HttpHeaders().set('X-User-Id', userId);
   }
 
+  private validateHeaders(): HttpHeaders | null {
+    const headers = this.getHeaders();
+    if (!headers.get('X-User-Id')) {
+      console.warn('SCM Warning: User context missing. Aborting message request.');
+      return null;
+    }
+    return headers;
+  }
+
   getInbox(): Observable<MessageResponseModel[]> {
-    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, {
-      headers: this.getHeaders(),
-    });
+    const headers = this.validateHeaders();
+    if (!headers) return new Observable<MessageResponseModel[]>(obs => obs.next([]));
+    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, { headers });
   }
 
   send(message: MessageRequestModel): Observable<MessageResponseModel[]> {
-    return this.http.post<MessageResponseModel[]>(this.apiUrl, message, {
-      headers: this.getHeaders(),
-    });
+    const headers = this.validateHeaders();
+    if (!headers) return new Observable<MessageResponseModel[]>(obs => obs.next([]));
+    return this.http.post<MessageResponseModel[]>(this.apiUrl, message, { headers });
   }
 
   markAsRead(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/read`, {}, { headers: this.getHeaders() });
+    const headers = this.validateHeaders();
+    if (!headers) return new Observable<void>(obs => obs.next());
+    return this.http.patch<void>(`${this.apiUrl}/${id}/read`, {}, { headers });
   }
 }

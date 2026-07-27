@@ -20,7 +20,7 @@ export class DistrictService {
   }
 
   getById(id: number): Observable<DistrictResponseModel> {
-    return this.http.get<DistrictResponseModel>(`${this.apiUrl}/${id}`);
+    return this.http.get<DistrictResponseModel>(`${this.apiUrl}${id}`);
   }
 
   save(district: DistrictRequestModel): Observable<DistrictResponseModel> {
@@ -28,16 +28,16 @@ export class DistrictService {
   }
 
   update(id: number, district: DistrictRequestModel): Observable<DistrictResponseModel> {
-    return this.http.put<DistrictResponseModel>(`${this.apiUrl}/${id}`, district);
+    return this.http.put<DistrictResponseModel>(`${this.apiUrl}${id}`, district);
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
 
   getByDivisionId(id: number): Observable<any[]> {
     const normalizedId = Number(id);
-    const primaryUrl = `${this.apiUrl}/division/${normalizedId}`;
+    const primaryUrl = `${this.apiUrl}division/${normalizedId}`;
     const fallbackUrl = `${this.apiUrl}/by-division/${normalizedId}`;
     const legacyUrl = `${this.apiUrl}/${normalizedId}`;
 

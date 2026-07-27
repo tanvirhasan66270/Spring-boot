@@ -35,8 +35,7 @@ export class ProcourmentComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  readonly imageBaseUrl = environment.imgUrl + "procourment/";
-
+readonly imageBaseUrl = environment.imgUrl + "procurement/";
   procurement: ProcurementRequestModel = {
     id: 0,
     address: '',

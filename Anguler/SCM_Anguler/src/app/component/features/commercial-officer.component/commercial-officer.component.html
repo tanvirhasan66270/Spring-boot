@@ -179,16 +179,21 @@
               <td class="ps-4 text-muted fw-medium font-monospace">#{{ o.id }}</td>
               <td>
                 <div class="d-flex align-items-center">
-                  <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 42px; height: 42px;">
-                    <img *ngIf="o.image" [src]="imageBaseUrl +o?.image" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" />
-                    <i *ngIf="!o.image" class="bi bi-person-workspace fs-5 text-secondary"></i>
-                  </div>
-                  <div>
-                    <span class="fw-semibold text-dark d-block mb-0.5">{{ o.name }}</span>
-                    <span class="text-secondary small d-block"><i class="bi bi-telephone-outbound me-1"></i>{{ o.phone }}</span>
-                    <span class="text-muted fs-8 d-block">{{ o.email }}</span>
-                  </div>
-                </div>
+      <div class="avatar-sm bg-light border text-primary rounded-circle me-3 d-flex align-items-center justify-content-center overflow-hidden" style="width: 42px; height: 42px;">
+        
+        @if (o.image && o.image.trim() !== '') {
+          <img [src]="getImageUrl(o.image)" class="w-100 h-100 object-fit-cover" (error)="onImageError($event)" alt="Officer Avatar" />
+        } @else {
+          <i class="bi bi-person-workspace fs-5 text-secondary"></i>
+        }
+
+      </div>
+      <div>
+        <span class="fw-semibold text-dark d-block mb-0.5">{{ o.name }}</span>
+        <span class="text-secondary small d-block"><i class="bi bi-telephone-outbound me-1"></i>{{ o.phone }}</span>
+        <span class="text-muted fs-8 d-block">{{ o.email }}</span>
+      </div>
+    </div>
               </td>
               <td>
                 <span class="badge bg-primary text-uppercase d-inline-block mb-1 fs-8">{{ o.designation || 'Officer' }}</span>

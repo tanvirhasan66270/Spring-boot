@@ -116,9 +116,7 @@ export class CustomerComponent implements OnInit {
     });
   }
 
-  // =====================================================
   // CASCADING LOCATION LOGICS
-  // =====================================================
   onCountryChange() {
     this.divisions = [];
     this.districts = [];
@@ -186,15 +184,12 @@ export class CustomerComponent implements OnInit {
     });
   }
 
-  // =====================================================
   // AUTO ADDRESS COMPILER
-  // =====================================================
   generateFullAddress() {
     const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
     const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
     const districtName = this.districts.find((x) => x.id == this.selectedDistrictId)?.name || '';
-    const psName =
-      this.policeStations.find((x) => x.id == this.customer.policeStationId)?.name || '';
+    const psName = this.policeStations.find((x) => x.id == this.customer.policeStationId)?.name || '';
 
     this.customer.address = [
       this.streetAddress.trim(),
@@ -207,9 +202,7 @@ export class CustomerComponent implements OnInit {
       .join(', ');
   }
 
-  // =====================================================
   // FILE CAPTURE HANDLER
-  // =====================================================
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
@@ -235,7 +228,9 @@ export class CustomerComponent implements OnInit {
   }
 
   getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+    if (!imageName) return '';
+    const cleanName = imageName.includes('/') ? imageName.substring(imageName.lastIndexOf('/') + 1) : imageName;
+    return `${this.imageBaseUrl}${cleanName}`;
   }
 
   onImageError(event: Event): void {
@@ -255,8 +250,7 @@ export class CustomerComponent implements OnInit {
       } else if (errorContext.includes('phone_number') || errorContext.includes('phone')) {
         this.errorMessage = 'Deployment Failed: This Phone Number is already in use!';
       } else {
-        this.errorMessage =
-          'Deployment Failed: This NID number identity constraint is already assigned!';
+        this.errorMessage = 'Deployment Failed: This NID number identity constraint is already assigned!';
       }
     } else {
       this.errorMessage = errorContext || 'An unexpected database transactional error occurred.';
@@ -264,9 +258,7 @@ export class CustomerComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // =====================================================
-  // CRUD CORE METHODS (FIXED FOR MULTIPART @REQUESTPART)
-  // =====================================================
+  // CRUD CORE METHODS
   save() {
     this.errorMessage = null;
 
@@ -276,8 +268,7 @@ export class CustomerComponent implements OnInit {
     }
 
     if (this.customer.policeStationId === 0) {
-      this.errorMessage =
-        'Validation Fault: Please complete the region distribution up to Police Station.';
+      this.errorMessage = 'Validation Fault: Please complete the region distribution up to Police Station.';
       return;
     }
 

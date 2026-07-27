@@ -20,7 +20,7 @@ export class PoliceStationService {
   }
 
   getById(id: number): Observable<PoliceStationResponseModel> {
-    return this.http.get<PoliceStationResponseModel>(`${this.apiUrl}/${id}`);
+    return this.http.get<PoliceStationResponseModel>(`${this.apiUrl}${id}`);
   }
 
   save(station: PoliceStationRequestModel): Observable<PoliceStationResponseModel> {
@@ -28,15 +28,15 @@ export class PoliceStationService {
   }
 
   update(id: number, station: PoliceStationRequestModel): Observable<PoliceStationResponseModel> {
-    return this.http.put<PoliceStationResponseModel>(`${this.apiUrl}/${id}`, station);
+    return this.http.put<PoliceStationResponseModel>(`${this.apiUrl}${id}`, station);
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
   getByDistrictId(id: number): Observable<any[]> {
     const normalizedId = Number(id);
-    const primaryUrl = `${this.apiUrl}/district/${normalizedId}`;
+    const primaryUrl = `${this.apiUrl}district/${normalizedId}`;
     const fallbackUrl = `${this.apiUrl}/by-district/${normalizedId}`;
     const legacyUrl = `${this.apiUrl}/${normalizedId}`;
 

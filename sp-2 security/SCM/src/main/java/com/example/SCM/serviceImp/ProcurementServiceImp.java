@@ -3,7 +3,6 @@ package com.example.SCM.serviceImp;
 import com.example.SCM.auth.AuthService;
 import com.example.SCM.dto.mapper.ProcurementMapper;
 import com.example.SCM.dto.request.ProcurementRequestDTO;
-import com.example.SCM.dto.response.CustomerResponseDTO;
 import com.example.SCM.dto.response.ProcurementResponseDTO;
 import com.example.SCM.entity.Procurement;
 import com.example.SCM.entity.PoliceStation;
@@ -43,8 +42,6 @@ public class ProcurementServiceImp implements ProcurementService {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-
-
     @Value("${image.upload.dir}")
     private String uploadDir;
 
@@ -55,7 +52,7 @@ public class ProcurementServiceImp implements ProcurementService {
             throw new RuntimeException("Credential password mandatory for procurement node recruitment!");
         }
 
-        if (dto.getPassportNumber() != null && procurementRepository.existsByPassportNumber(dto.getPassportNumber())) {
+        if (dto.getPassportNumber() != null && !dto.getPassportNumber().isBlank() && procurementRepository.existsByPassportNumber(dto.getPassportNumber())) {
             throw new RuntimeException("This Passport number is already registered under another officer!");
         }
         if (procurementRepository.existsByNidNumber(dto.getNidNumber())) {
@@ -75,23 +72,21 @@ public class ProcurementServiceImp implements ProcurementService {
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.PROCUREMENT);
         user.setActive(false);
-
-        User savedUser = userRepository.save(user);
         user.setPoliceStation(policeStation);
 
-        if (file != null && !file.isEmpty()) {
-            String imagePath = uploadImage(file, dto.getName());
+        User savedUser = userRepository.save(user);
 
-            dto.setAddress(imagePath);
+        String imagePath = null;
+        if (file != null && !file.isEmpty()) {
+            imagePath = uploadImage(file, dto.getName());
         }
 
         Procurement procurement = procurementMapper.toProcurementEntity(dto, savedUser, policeStation);
-        if (file != null && !file.isEmpty()) {
-            procurement.setImage(dto.getAddress());
+        if (imagePath != null) {
+            procurement.setImage(imagePath);
         }
 
         Procurement savedProcurement = procurementRepository.save(procurement);
-
 
         authService.sendVerificationEmail(savedProcurement.getUser().getEmail());
 
@@ -135,16 +130,16 @@ public class ProcurementServiceImp implements ProcurementService {
         if (dto.getJoiningDate() != null && !dto.getJoiningDate().isBlank()) {
             procurement.setJoiningDate(LocalDate.parse(dto.getJoiningDate()));
         }
-        if (dto.getGender() != null) {
+        if (dto.getGender() != null && !dto.getGender().isBlank()) {
             procurement.setGender(GenderStatus.valueOf(dto.getGender().toUpperCase()));
         }
-        if (dto.getLanguage() != null) {
+        if (dto.getLanguage() != null && !dto.getLanguage().isBlank()) {
             procurement.setLanguage(LanguageStatus.valueOf(dto.getLanguage().toUpperCase()));
         }
 
         if (file != null && !file.isEmpty()) {
             String newImagePath = uploadImage(file, dto.getName());
-            procurement.setImage( newImagePath);
+            procurement.setImage(newImagePath);
         }
 
         return procurementMapper.convertTOResponseDTO(procurementRepository.save(procurement));
@@ -207,7 +202,4 @@ public class ProcurementServiceImp implements ProcurementService {
             throw new RuntimeException("Procurement storage node allocation failure: " + e.getMessage());
         }
     }
-
-
-
 }
