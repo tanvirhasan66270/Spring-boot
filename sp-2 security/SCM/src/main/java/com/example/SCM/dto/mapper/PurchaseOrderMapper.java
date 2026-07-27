@@ -63,8 +63,7 @@ public class PurchaseOrderMapper {
             po.setExpectedDeliveryDate(LocalDate.parse(dto.getExpectedDeliveryDate(), dateFormatter));
         }
 
-        // ⚠️ নতুন PO সবসময় DRAFT-এ তৈরি হবে — dto.getStatus() থেকে কখনোই সেট হবে না।
-        // অন্যথায় কেউ চাইলে creation-এই status="ISSUED" পাঠিয়ে পুরো অ্যাপ্রুভাল ফ্লো বাইপাস করতে পারত।
+
         po.setStatus(PurchaseOrderStatus.DRAFT);
 
         po.setQuotation(quotation);
@@ -99,8 +98,7 @@ public class PurchaseOrderMapper {
         //   - managerIssuedOrderByToken(token)  -> DRAFT to ISSUED
         //   - supplierReceivedOrder(token)      -> ISSUED to RECEIVED
         //   - updateShipmentQuantityCheck(id,q) -> PARTIALLY_RECEIVED / RECEIVED
-        // এই জেনারেল updateEntity() মেথড দিয়ে status বদলানো একটা নিরাপত্তা/ওয়ার্কফ্লো-বাইপাস
-        // দুর্বলতা তৈরি করত, তাই এই ব্লকটা বাদ দেওয়া হলো।
+
 
         if (quotation != null) po.setQuotation(quotation);
         if (supplier != null) po.setSupplier(supplier);

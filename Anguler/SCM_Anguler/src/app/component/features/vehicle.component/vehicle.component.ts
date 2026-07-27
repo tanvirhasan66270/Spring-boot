@@ -61,7 +61,6 @@ export class VehicleComponent implements OnInit {
       next: (data) => { 
         const allVehicles = data || [];
         
-        // 🌟 ড্রাইভার হলে শুধুমাত্র তার নিজের অ্যাসাইন করা ভেহিকেল ফিল্টার হবে
         if (this.userRole === 'DRIVER') {
           this.vehicles = allVehicles.filter((v: any) => 
             v.driverId === this.currentUserId || v.driver?.id === this.currentUserId

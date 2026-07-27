@@ -24,7 +24,6 @@ public class InventoryMapper {
         inventory.setQuantityReserved(dto.getQuantityReserved());
         inventory.setLocationStatus(dto.getLocationStatus());
 
-        // 🎯 ফিক্স: String থেকে safe Enum-এ রূপান্তর
         if (dto.getStockStatus() != null && !dto.getStockStatus().trim().isEmpty()) {
             inventory.setStockStatus(StockStatus.valueOf(dto.getStockStatus().toUpperCase()));
         } else {
@@ -83,7 +82,6 @@ public class InventoryMapper {
             inventory.setLocationStatus(dto.getLocationStatus());
         }
 
-        // 🎯 ফিক্স: আপডেট মেথডের জন্যও এনাম স্যানিটাইজেশন
         if (dto.getStockStatus() != null && !dto.getStockStatus().trim().isEmpty()) {
             inventory.setStockStatus(StockStatus.valueOf(dto.getStockStatus().toUpperCase()));
         }

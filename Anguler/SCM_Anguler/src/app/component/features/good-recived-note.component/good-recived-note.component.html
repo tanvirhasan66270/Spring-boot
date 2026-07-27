@@ -106,7 +106,6 @@
     </div>
   </div>
 
-  <!-- ড্রয়ার প্যানেল -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Modify GRN Allocation Metadata' : 'Process Inbound Cargo (GRN)' }}</h5>
@@ -274,7 +273,6 @@
               </div>
             </div>
             
-            <!-- মূল সামারি টেবিল -->
             <table class="table table-bordered align-middle fs-7 mb-4">
               <tbody>
                 <tr>
@@ -298,7 +296,6 @@
               </tbody>
             </table>
 
-            <!-- লাইন আইটেম টেবিল (যদি থাকে) -->
             @if (selectedGrnForPdf?.lineItems && selectedGrnForPdf?.lineItems?.length! > 0) {
               <div class="mb-4">
                 <h6 class="fw-bold text-dark mb-2 text-uppercase fs-8"><i class="bi bi-list-check me-1"></i> Consignment Line Items Breakdown</h6>

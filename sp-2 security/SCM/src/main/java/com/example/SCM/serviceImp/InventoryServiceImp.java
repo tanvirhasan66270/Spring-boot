@@ -6,12 +6,17 @@ import com.example.SCM.dto.response.InventoryResponseDTO;
 import com.example.SCM.entity.Inventory;
 import com.example.SCM.entity.Product;
 import com.example.SCM.entity.Warehouse;
-import com.example.SCM.enumClass.StockStatus; // 🎯 এনাম প্যাকেজ ইমপোর্ট
+import com.example.SCM.enumClass.ActionStatus;
+import com.example.SCM.enumClass.StockStatus;
 import com.example.SCM.repository.InventoryRepository;
 import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.WarehouseRepository;
+import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.InventoryService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +32,25 @@ public class InventoryServiceImp implements InventoryService {
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final InventoryMapper inventoryMapper;
+
+    // Activity Log & Request Context Dependencies
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
+
+    // Dynamically resolves current active user or system actor
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+        return "SYSTEM_AUTOMATION";
+    }
 
     @Override
     @Transactional
@@ -51,6 +75,21 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory savedInventory = inventoryRepository.saveAndFlush(inventory);
+
+        //  ACTIVITY LOG: CREATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "INVENTORY",
+                savedInventory.getId().toString(),
+                "Initial inventory stock allocation performed for Product ID: " + product.getId() + " at Warehouse: " + warehouse.getName(),
+                null,
+                "{\"quantityOnHand\":" + savedInventory.getQuantityOnHand() + ", \"stockStatus\":\"" + savedInventory.getStockStatus().name() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return inventoryMapper.convertTOResponseDTO(savedInventory);
     }
 
@@ -63,6 +102,10 @@ public class InventoryServiceImp implements InventoryService {
 
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventory record not found with ID: " + id));
+
+        int oldQuantityOnHand = inventory.getQuantityOnHand();
+        int oldQuantityReserved = inventory.getQuantityReserved();
+        StockStatus oldStatus = inventory.getStockStatus();
 
         Product product = inventory.getProduct();
         if (dto.getProductId() != null && !dto.getProductId().equals(product.getId())) {
@@ -81,6 +124,21 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);
+
+        //  ACTIVITY LOG: UPDATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "INVENTORY",
+                updatedInventory.getId().toString(),
+                "Stock levels updated for Inventory ID: " + updatedInventory.getId() + " at Warehouse: " + warehouse.getName(),
+                "{\"quantityOnHand\":" + oldQuantityOnHand + ", \"quantityReserved\":" + oldQuantityReserved + ", \"stockStatus\":\"" + oldStatus + "\"}",
+                "{\"quantityOnHand\":" + updatedInventory.getQuantityOnHand() + ", \"quantityReserved\":" + updatedInventory.getQuantityReserved() + ", \"stockStatus\":\"" + updatedInventory.getStockStatus() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return inventoryMapper.convertTOResponseDTO(updatedInventory);
     }
 
@@ -105,7 +163,24 @@ public class InventoryServiceImp implements InventoryService {
         Inventory inventory = inventoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inventory record not found with ID: " + id));
 
+        int quantity = inventory.getQuantityOnHand();
+        Long productId = inventory.getProduct() != null ? inventory.getProduct().getId() : null;
+
         inventoryRepository.delete(inventory);
+
+        // ACTIVITY LOG: DELETE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "INVENTORY",
+                id.toString(),
+                "Inventory record purged permanently for Product ID: " + productId,
+                "{\"quantityOnHand\":" + quantity + "}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     private void calculateAndSetStockStatus(Inventory inventory, Product product) {

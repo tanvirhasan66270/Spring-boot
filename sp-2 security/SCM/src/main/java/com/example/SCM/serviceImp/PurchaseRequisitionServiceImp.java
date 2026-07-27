@@ -100,7 +100,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         //  EXCLUSIVE NOTIFICATION PIPELINE: ONLY MANAGERS & SUPPLIERS
         // =================================================================
         try {
-            // 1️শুধুমাত্র সিস্টেমের ম্যানেজারদের (MANAGER) এপ্রুভালের জন্য অ্যালার্ট পাঠানো
+            // 1️ just system manager APPROVAL alert
             List<User> managers = userRepository.findByRole(Role.MANAGER);
             for (User manager : managers) {
                 notificationService.send(
@@ -111,7 +111,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
                 );
             }
 
-            // 2️⃣ শুধুমাত্র রিকুইজিশনে অ্যাসাইন করা সাপ্লায়ারদের (SUPPLIER) ইনবক্সে নোটিফিকেশন পাঠানো
+            // 2 just requisition assain supplier inbox notification
             if (savedPr.getSuppliers() != null && !savedPr.getSuppliers().isEmpty()) {
                 for (Supplier supplier : savedPr.getSuppliers()) {
                     if (supplier.getUser() != null && supplier.getUser().getId() != null) {
@@ -137,7 +137,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         PurchaseRequisition requisition = requisitionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition missing for ID: " + id));
 
-        // ── STEP 1: সিকিউরিটি কনটেক্সট থেকে প্রিন্সিপাল রিড ──────────────────
+        //  STEP 1: security content hote principal read
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long managerId = null;
         String managerEmail = "system@scm.com";
@@ -163,7 +163,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             throw new RuntimeException("Unauthorized transaction: Active corporate session not found!");
         }
 
-        // ── STEP 2: এপ্রুভাল স্টেট এবং ডাটাবেজ আপডেট ────────────────────────
+        //  STEP 2: APPROVAL Step and database update
         requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
         requisition.setApprovedBy(managerId);
 
@@ -397,7 +397,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             }
         }
 
-        // ইউজার যদি ADMIN, MANAGER বা PROCUREMENT অফিসার হয়, তবে গ্লোবাল সব রিকুইজিশন রিটার্ন করবে
+        // if user ADMIN, MANAGER or PROCUREMENT is officer, global return all requisition
         return requisitionRepository.findAllWithDetails().stream()
                 .map(requisitionMapper::convertTOResponseDTO)
                 .collect(Collectors.toList());

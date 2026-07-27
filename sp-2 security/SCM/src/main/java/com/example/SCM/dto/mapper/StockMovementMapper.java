@@ -17,13 +17,11 @@ public class StockMovementMapper {
 
         StockMovement entity = new StockMovement();
 
-        //  ফিক্স: আইডি সেটারের বদলে ওআরএম রিলেশন অবজেক্ট বাইন্ডিং (যা এরর দূর করবে)
         entity.setProduct(product);
         entity.setWarehouse(warehouse);
         entity.setSourceWarehouse(sourceWarehouse);
         entity.setPerformedBy(performer);
 
-        // কোর ডাটা ফিল্ড ম্যাপিং
         entity.setQuantity(dto.getQuantity());
         entity.setReferenceId(dto.getReferenceId());
         entity.setRemarks(dto.getRemarks());

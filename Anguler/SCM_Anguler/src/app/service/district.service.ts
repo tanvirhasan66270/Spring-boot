@@ -11,7 +11,7 @@ import {
   providedIn: 'root',
 })
 export class DistrictService {
-  private apiUrl = environment.apiUrl + 'district';
+  private apiUrl = environment.apiUrl + 'district/';
 
   constructor(private http: HttpClient) {}
 

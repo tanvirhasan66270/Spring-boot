@@ -29,7 +29,6 @@ public class QuotationMapper {
 
         Quotation quotation = new Quotation();
 
-        // String থেকে LocalDate কনভার্সন
         if (dto.getReceivedAt() != null && !dto.getReceivedAt().isBlank()) {
             quotation.setReceivedAt(LocalDate.parse(dto.getReceivedAt(), DATE_FORMATTER));
         }
@@ -45,7 +44,6 @@ public class QuotationMapper {
             quotation.setPurchaseRequisition(entityManager.getReference(PurchaseRequisition.class, dto.getPurchaseRequisitionId()));
         }
 
-        // কোর ফিল্ড ম্যাপিং
         quotation.setLeadTimeDays(dto.getLeadTimeDays());
 
         quotation.setProductDescription(dto.getProductDescription());

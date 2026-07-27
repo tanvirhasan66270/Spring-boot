@@ -9,7 +9,7 @@ import { environment } from '../../../../environment/environment';
 import { ProductRequestModel, ProductResponseModel } from '../../shared/model/addProduct';
 import { AddProductService } from '../../../service/add-product.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
-// import { OrderService } from '../../../service/order.service'; // আপনার অর্ডার সার্ভিস এখানে ইমপোর্ট করে নিতে পারেন
+// import { OrderService } from '../../../service/order.service'; 
 
 @Component({
   selector: 'app-add-product',
@@ -60,7 +60,7 @@ export class AddProductComponent implements OnInit {
     private service: AddProductService,
     private categoryService: CategoryService,
     private storage: StorageService,
-    // private orderService: OrderService, // অর্ডার সার্ভিস ইনজেক্ট করতে পারেন
+    // private orderService: OrderService, 
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -107,18 +107,16 @@ export class AddProductComponent implements OnInit {
     });
   }
 
-  // 🌟 Buy Button Action: Product Specification Allocations-এ প্রোডাক্ট যুক্ত করার লজিক
   buyProduct(p: ProductResponseModel) {
     if (confirm(`Do you want to add "${p.name}" to your Customer Order Specification Allocations?`)) {
       
       const orderPayload = {
         productId: p.id,
         customerId: this.currentUserId,
-        quantity: 1, // ডিফল্ট ১ পিস বা পরিমাণ
+        quantity: 1, 
         unitPrice: p.sellingPrice
       };
 
-      // যদি আপনার নির্দিষ্ট কোনো অর্ডার সার্ভিস বা মেথড থাকে তবে সেটি এভাবে কল করুন:
       /*
       this.orderService.addProductSpecificationAllocation(orderPayload).subscribe({
         next: () => {
@@ -128,7 +126,6 @@ export class AddProductComponent implements OnInit {
       });
       */
 
-      // সাময়িকভাবে অ্যালার্ট দিয়ে নিশ্চিত করা হলো (সার্ভিস কানেক্ট করার পর ওপরের কোডটি আনকমেন্ট করুন)
       alert(`Success! Product "${p.name}" has been mapped into Customer Order Specification Allocations.`);
     }
   }

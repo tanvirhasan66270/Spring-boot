@@ -95,7 +95,6 @@ public class ShipmentServiceImp implements ShipmentService {
 
     private String uploadPodFile(MultipartFile file) {
         try {
-            // "shipments" ফোল্ডার বাদ দিয়ে সরাসরি uploadDir-এ পাথ সেট করা হলো
             Path path = Paths.get(uploadDir, "shipments");
             if (!Files.exists(path)) Files.createDirectories(path);
 

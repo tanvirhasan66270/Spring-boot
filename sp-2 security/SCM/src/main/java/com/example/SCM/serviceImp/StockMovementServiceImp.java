@@ -55,15 +55,12 @@ public class StockMovementServiceImp implements StockMovementService {
         User performer = userRepository.findById(dto.getPerformedBy())
                 .orElseThrow(() -> new RuntimeException("User personnel not found with ID: " + dto.getPerformedBy()));
 
-        // ১. স্টক মুভমেন্ট লগ সেভ করা
         StockMovement entity = mapper.toEntity(dto, product, warehouse, sourceWarehouse, performer);
         StockMovement savedEntity = repository.saveAndFlush(entity);
 
-        // ২. 🎯 ইনভেন্টরি আপডেট বা মাইনাস করার বিজনেস লজিক
         String movementType = savedEntity.getMovementType().name();
 
         if (movementType.equals("OUTWARD") || movementType.equals("ADJUSTMENT")) {
-            // টার্গেট গুদাম থেকে স্টক পরিমাণ মাইনাস করা
             Inventory inventory = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
                     .orElseThrow(() -> new RuntimeException("Inventory record not found for this product in the target warehouse!"));
 
@@ -72,13 +69,11 @@ public class StockMovementServiceImp implements StockMovementService {
             inventoryRepository.save(inventory);
 
         } else if (movementType.equals("TRANSFER")) {
-            // সোর্স গুদাম থেকে স্টক মাইনাস হবে
             Inventory sourceInv = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getSourceWarehouseId())
                     .orElseThrow(() -> new RuntimeException("Source inventory record not found!"));
             sourceInv.setQuantityOnHand(Math.max(sourceInv.getQuantityOnHand() - dto.getQuantity(), 0));
             inventoryRepository.save(sourceInv);
 
-            // ডেস্টিনেশন বা টার্গেট গুদামে স্টক প্লাস হবে
             Inventory targetInv = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
                     .orElseGet(() -> {
                         Inventory newInv = new Inventory();
@@ -92,7 +87,6 @@ public class StockMovementServiceImp implements StockMovementService {
             inventoryRepository.save(targetInv);
 
         } else if (movementType.equals("INWARD")) {
-            // ইনওয়ার্ড হলে টার্গেট গুদামে স্টক যোগ হবে
             Inventory inventory = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId())
                     .orElseGet(() -> {
                         Inventory newInv = new Inventory();
@@ -106,7 +100,6 @@ public class StockMovementServiceImp implements StockMovementService {
             inventoryRepository.save(inventory);
         }
 
-        // সরাসরি অবজেক্ট গ্রাফ থেকে রিলেশনাল নামসহ ফ্ল্যাটেনড ডিটিও রিটার্ন
         return mapper.convertTOResponseDTO(savedEntity);
     }
 

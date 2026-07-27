@@ -25,7 +25,7 @@ export class InvoiceComponent implements OnInit {
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
-  userRole: string = ''; // 🌟 ইউজার রোল ভেরিয়েবল
+  userRole: string = ''; 
 
   isPdfModalOpen = false;
   selectedInvoiceForPdf: InvoiceResponseModel | null = null;
@@ -52,12 +52,11 @@ export class InvoiceComponent implements OnInit {
   constructor(
     private service: InvoiceService,
     private orderService: CustomerOrderService,
-    private storage: StorageService, // 🌟 ইনজেক্ট করা হলো
+    private storage: StorageService, 
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    // 🌟 ইউজারের রোল রিট্রিভ করা
     const user = this.storage.getUser();
     if (user) {
       this.userRole = user.role;

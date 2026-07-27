@@ -35,15 +35,12 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
             throw new IllegalArgumentException("Line item data cannot be null");
         }
 
-        // প্যারেন্ট GoodsReceivedNote অবজেক্ট কুয়েরি করা
         GoodsReceivedNote grn = goodsReceivedNoteRepository.findById(dto.getGrnId())
                 .orElseThrow(() -> new RuntimeException("Goods Received Note not found with ID: " + dto.getGrnId()));
 
-        // অ্যাসোসিয়েটেড Product অবজেক্ট কুয়েরি করা
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
-        // ম্যাপার দিয়ে এনটিটি তৈরি করা
         GRNLineItem lineItem = grnLineItemMapper.toEntity(dto, grn, product);
 
         GRNLineItem savedItem = grnLineItemRepository.save(lineItem);
@@ -58,11 +55,9 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
             throw new IllegalArgumentException("Update data cannot be null");
         }
 
-        // এক্সিস্টিং লাইন আইটেম রেকর্ড খুঁজে বের করা
         GRNLineItem item = grnLineItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("GRN Line Item not found with ID: " + id));
 
-        // প্যারেন্ট জিআরএন বা প্রোডাক্ট পরিবর্তন করা হলে তা হ্যান্ডেল করা
         GoodsReceivedNote grn = item.getGoodsReceivedNote();
         if (dto.getGrnId() != null && !dto.getGrnId().equals(grn.getId())) {
             grn = goodsReceivedNoteRepository.findById(dto.getGrnId())
@@ -75,7 +70,6 @@ public class GRNLineItemServiceImp implements GRNLineItemService {
                     .orElseThrow(() -> new RuntimeException("New Product not found with ID: " + dto.getProductId()));
         }
 
-        // ম্যাপার দিয়ে এনটিটি ফিল্ডস আপডেট করা
         grnLineItemMapper.updateEntity(dto, item, grn, product);
 
         GRNLineItem updatedItem = grnLineItemRepository.save(item);

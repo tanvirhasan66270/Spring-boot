@@ -11,7 +11,7 @@ import {
   providedIn: 'root',
 })
 export class PoliceStationService {
-  private apiUrl = environment.apiUrl + 'policestation';
+  private apiUrl = environment.apiUrl + 'policestation/';
 
   constructor(private http: HttpClient) {}
 

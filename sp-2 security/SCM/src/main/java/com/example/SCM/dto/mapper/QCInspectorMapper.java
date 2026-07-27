@@ -20,7 +20,6 @@ public class QCInspectorMapper {
 
         QCInspectorResponseDTO dto = new QCInspectorResponseDTO();
 
-        // QCInspector প্রোফাইল ফিল্ডস ম্যাপিং
         dto.setId(inspector.getId());
         dto.setContactPerson(inspector.getContactPerson());
         dto.setAddress(inspector.getAddress());
@@ -35,7 +34,6 @@ public class QCInspectorMapper {
         dto.setCreatedAt(inspector.getCreatedAt());
         dto.setUpdatedAt(inspector.getUpdatedAt());
 
-        // Auth Account (User) থেকে ডেটা ম্যাপিং (Source of Truth)
         User user = inspector.getUser();
         if (user != null) {
             dto.setUserId(user.getId());

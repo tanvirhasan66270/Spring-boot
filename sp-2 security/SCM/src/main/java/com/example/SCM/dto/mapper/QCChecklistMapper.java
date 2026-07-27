@@ -17,7 +17,6 @@ public class QCChecklistMapper {
         dto.setPassed(entity.isPassed());
         dto.setRemarks(entity.getRemarks());
 
-        // ✅ একক এপিআই রেসপন্সের জন্য অলরেডি সঠিক আছে
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
 

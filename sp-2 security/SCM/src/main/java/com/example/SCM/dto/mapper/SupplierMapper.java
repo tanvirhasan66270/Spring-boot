@@ -10,14 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class SupplierMapper {
 
-    // Supplier Entity থেকে SupplierResponseDTO-তে রূপান্তর (Flattening Relation)
 
     public SupplierResponseDTO toResponseDTO(Supplier supplier) {
 
 
         SupplierResponseDTO dto = new SupplierResponseDTO();
 
-        // Supplier প্রোফাইল ফিল্ডস ম্যাপিং
         dto.setId(supplier.getId());
         dto.setContactPerson(supplier.getContactPerson());
         dto.setAddress(supplier.getAddress());
@@ -36,7 +34,6 @@ public class SupplierMapper {
         dto.setCreatedAt(supplier.getCreatedAt());
         dto.setUpdatedAt(supplier.getUpdatedAt());
 
-        // Auth Account (User) থেকে ডেটা ম্যাপিং
         User user = supplier.getUser();
         if (user != null) {
             dto.setUserId(user.getId());
@@ -87,14 +84,12 @@ public class SupplierMapper {
 
 
 
-    // Request DTO থেকে মূল Supplier প্রোফাইল এনটিটি তৈরি (রwith relation objectলেশন অবজেক্টসহ)
 
     public Supplier toSupplierEntity(SupplierRequestDTO dto, User user, PoliceStation policeStation) {
 
 
         Supplier supplier = new Supplier();
 
-        // DTO থেকে ইনপুট ফিল্ডস সেট করা
         supplier.setName(dto.getName());
         supplier.setContactPerson(dto.getContactPerson());
         supplier.setEmail(dto.getEmail());
@@ -120,7 +115,6 @@ public class SupplierMapper {
         supplier.setRating(dto.getRating());
         supplier.setAverageLeadTimeDays(dto.getAverageLeadTimeDays());
 
-        // ফরেন কি/রিলেশন অবজেক্ট ইনজেক্ট করা
         supplier.setUser(user);
         supplier.setPoliceStation(policeStation);
 

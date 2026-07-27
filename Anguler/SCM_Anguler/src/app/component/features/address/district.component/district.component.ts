@@ -15,7 +15,7 @@ import { DivisionResponseModel } from '../../../shared/model/divisionModel';
 })
 export class DistrictComponent implements OnInit {
   districts: DistrictResponseModel[] = [];
-  divisions: DivisionResponseModel[] = []; // ড্রপডাউনের জন্য ডিভিশন লিস্ট
+  divisions: DivisionResponseModel[] = []; 
 
   district: DistrictRequestModel = {
     name: '',
@@ -27,7 +27,7 @@ export class DistrictComponent implements OnInit {
 
   isEdit = false;
   currentEditId: number | null = null;
-  isDrawerOpen = false; // ডান পাশের স্লাইড ড্রয়ার স্টেট
+  isDrawerOpen = false; 
 
   constructor(
     private service: DistrictService,

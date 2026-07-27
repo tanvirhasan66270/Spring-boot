@@ -49,7 +49,6 @@ public class POLineItemServiceImp implements POLineItemService {
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
-        // ইনভেন্টরি এভেইলেবল স্টক চেক (Optional টাইপ সেফটি সিঙ্ক মেনে)
         Inventory inventory = inventoryRepository.findByProductId(product.getId())
                 .stream()
                 .findFirst()
@@ -64,7 +63,7 @@ public class POLineItemServiceImp implements POLineItemService {
         inventory.setQuantityReserved(inventory.getQuantityReserved() + dto.getQuantity());
         inventoryRepository.save(inventory);
 
-        // DTO -> Entity কনভার্সন
+        // DTO -> Entity conversion
         POLineItem item = poLineItemMapper.toEntity(dto, order, product);
 
         if (POLineItemStatus.SHIPPED.name().equalsIgnoreCase(dto.getStatus())) {
@@ -73,7 +72,7 @@ public class POLineItemServiceImp implements POLineItemService {
 
         POLineItem savedItem = poLineItemRepository.save(item);
 
-        //রোল-আপ লজিক: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmount ডাটাবেজে আপডেট করা
+        //role-up logic: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmountdatabase update
         double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
@@ -116,11 +115,10 @@ public class POLineItemServiceImp implements POLineItemService {
             }
         }
 
-        // ম্যাপার দিয়ে ফিল্ড আপডেট
         poLineItemMapper.updateEntity(dto, item, product);
         POLineItemStatus newStatus = item.getStatus();
 
-        // স্টেট মেশিন লজিক ১ (PENDING -> SHIPPED): ট্র্যাকিং কোড এবং ইনভেন্টরি ফাইনাল ডিডাকশন
+        // (PENDING -> SHIPPED)
         if (oldStatus != POLineItemStatus.SHIPPED && newStatus == POLineItemStatus.SHIPPED) {
             if (item.getTrackingNumber() == null) {
                 item.setTrackingNumber(trackingCodeGenerator.generateTrackingCode());
@@ -129,7 +127,6 @@ public class POLineItemServiceImp implements POLineItemService {
             inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
         }
 
-        //স্টেট মেশিন লজিক ২ (CANCELLED): রিজার্ভড স্টক রিলিজ
         if (oldStatus != POLineItemStatus.CANCELLED && newStatus == POLineItemStatus.CANCELLED) {
             if (oldStatus != POLineItemStatus.SHIPPED && oldStatus != POLineItemStatus.DELIVERED) {
                 inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
@@ -173,7 +170,6 @@ public class POLineItemServiceImp implements POLineItemService {
 
         PurchaseOrder order = item.getPurchaseOrder();
 
-        // ডিলিট করার আগে লক থাকা রিজার্ভড স্টক রিলিজ করা
         if (item.getStatus() != POLineItemStatus.CANCELLED && item.getStatus() != POLineItemStatus.SHIPPED) {
             Inventory inventory = inventoryRepository.findByProductId(item.getProduct().getId())
                     .stream()
@@ -187,15 +183,12 @@ public class POLineItemServiceImp implements POLineItemService {
 
         poLineItemRepository.delete(item);
 
-        // রোল-আপ লজিক: আইটেম চিরতরে মুছে যাওয়ার পর প্যারেন্ট অর্ডারের totalAmount পুনরায় হিসাব করে কমানো
         double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
         order.setTotalAmount(updatedTotal);
         purchaseOrderRepository.save(order);
     }
 
-    /**
-    * লজিস্টিকস ড্যাশবোর্ডে ট্র্যাকিং নাম্বার দিয়ে আইটেমের স্টেট জানার জন্য
-     */
+
     @Override
     @Transactional(readOnly = true)
     public POLineItemResponseDTO tracking(String trackingNumber) {

@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class POLineItemMapper {
 
-    //"YYYY-MM-DD" স্ট্রিং
+    //"YYYY-MM-DD"
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
@@ -41,11 +41,9 @@ public class POLineItemMapper {
             item.setStatus(POLineItemStatus.PENDING); // ডিফল্ট স্ট্যাটাস PENDING সেট হবে
         }
 
-        // রিলেশনাল ফরেন অবজেক্টগুলো ইনজেক্ট করা
         item.setPurchaseOrder(purchaseOrder);
         item.setProduct(product);
 
-        // নোট: lineTotal এর ক্যালকুলেশনটি এনটিটির @PrePersist বা @PreUpdate মেথডের মাধ্যমে অটোমেটিক সম্পন্ন হবে।
         return item;
     }
 

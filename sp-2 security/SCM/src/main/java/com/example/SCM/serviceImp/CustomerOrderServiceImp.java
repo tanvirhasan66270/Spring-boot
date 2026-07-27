@@ -6,6 +6,7 @@ import com.example.SCM.dto.mapper.OrderLineItemMapper;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 import com.example.SCM.entity.*;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.CustomerOrderStatus;
 import com.example.SCM.enumClass.PaymentMethod;
 import com.example.SCM.enumClass.ServiceType;
@@ -14,6 +15,8 @@ import com.example.SCM.service.CustomerOrderService;
 import com.example.SCM.service.ActivityLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -33,6 +36,21 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
     private final CustomerRepository customerRepository;
+
+    // Dynamically resolves current active user or system actor
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+        return "SYSTEM_AUTOMATION";
+    }
 
     @Transactional
     @Override
@@ -61,6 +79,20 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             sendInitPaymentVerificationEmail(savedOrder, inputPaid);
         }
 
+        //  ACTIVITY LOG: CREATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "CUSTOMER_ORDER",
+                savedOrder.getId().toString(),
+                "Customer Order created successfully. Order Number: " + savedOrder.getOrderNumber() + " for Customer: " + savedOrder.getCustomerName(),
+                null,
+                "{\"orderNumber\":\"" + savedOrder.getOrderNumber() + "\", \"totalAmount\":" + savedOrder.getTotalAmount() + ", \"paymentMethod\":\"" + savedOrder.getPaymentMethod() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return orderMapper.convertTOResponseDTO(savedOrder);
     }
 
@@ -69,6 +101,8 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     public void processFinalPaymentConfirmation(Long orderId, double amountPaid, String method) {
         CustomerOrder order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order matrix record missing for ID: " + orderId));
+
+        double oldPaid = Double.parseDouble(order.getPaidAmount() != null ? order.getPaidAmount() : "0");
 
         if (amountPaid > order.getTotalAmount()) {
             throw new IllegalArgumentException("Error: Confirmed payment amount exceeds grand total order limit.");
@@ -81,6 +115,20 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder updatedOrder = orderRepository.save(order);
 
         sendOrderConfirmationEmail(updatedOrder);
+
+        //  ACTIVITY LOG: PAYMENT_CONFIRMATION
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "CUSTOMER_ORDER",
+                updatedOrder.getId().toString(),
+                "Payment confirmed for Order Number: " + updatedOrder.getOrderNumber() + " via " + method,
+                "{\"paidAmount\":" + oldPaid + "}",
+                "{\"paidAmount\":" + amountPaid + ", \"paymentMethod\":\"" + method + "\", \"paymentStatus\":\"" + updatedOrder.getPaymentStatus() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     @Transactional
@@ -88,6 +136,8 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
+
+        double oldTotal = order.getTotalAmount();
 
         if (dto.getDeliveryAddress() != null) order.setDeliveryAddress(dto.getDeliveryAddress());
         if (dto.getDeliveryPhone() != null) order.setDeliveryPhone(dto.getDeliveryPhone());
@@ -104,7 +154,23 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             });
         }
         order.executeCalculations();
-        return orderMapper.convertTOResponseDTO(orderRepository.save(order));
+        CustomerOrder updatedOrder = orderRepository.save(order);
+
+        //  ACTIVITY LOG: UPDATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "CUSTOMER_ORDER",
+                updatedOrder.getId().toString(),
+                "Customer Order details updated for Order Number: " + updatedOrder.getOrderNumber(),
+                "{\"totalAmount\":" + oldTotal + "}",
+                "{\"totalAmount\":" + updatedOrder.getTotalAmount() + ", \"deliveryAddress\":\"" + updatedOrder.getDeliveryAddress() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
+        return orderMapper.convertTOResponseDTO(updatedOrder);
     }
 
     @Transactional
@@ -113,26 +179,26 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
 
+        String oldStatus = order.getStatus() != null ? order.getStatus().name() : "N/A";
+
         try {
             CustomerOrderStatus newStatus = CustomerOrderStatus.valueOf(status.toUpperCase());
             order.setStatus(newStatus);
 
-            //  লজিস্টিক অটো-সিঙ্ক বিজনেস রুলস:
             if (newStatus == CustomerOrderStatus.DELIVERED) {
-                // প্রোডাক্ট সফলভাবে ডেলিভারি হয়ে গেলে পুরো টাকা পরিশোধ ধরে নিয়ে Paid Amount আপডেট করা
+                // if paid full amount than Paid Amount update
                 double total = order.getTotalAmount();
                 order.setPaidAmount(String.valueOf(total));
-                // executeCalculations() কল করলে এটি অটোমেটিক Paid, Due = 0 এবং PaymentStatus = PAID করে দেবে
+                // executeCalculations() if call it automatic Paid, Due = 0 and PaymentStatus = PAID that
                 order.executeCalculations();
             }
             else if (newStatus == CustomerOrderStatus.CANCELLED) {
-                // অর্ডার বাতিল হলে রিমার্ক বা স্ট্যাটাস সিঙ্ক
                 if (order.getRemarks() == null || order.getRemarks().isEmpty()) {
                     order.setRemarks("Order lifecycle cancelled by management node.");
                 }
             }
             else if (newStatus == CustomerOrderStatus.RETURNED) {
-                // রিটার্ন আসলে
+                // for return
                 order.setRemarks("Consignment returned back to logistics hub.");
             }
 
@@ -141,6 +207,21 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         }
 
         CustomerOrder updatedOrder = orderRepository.save(order);
+
+        //  ACTIVITY LOG: STATUS_UPDATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE_STATUS",
+                "CUSTOMER_ORDER",
+                updatedOrder.getId().toString(),
+                "Order status updated to " + updatedOrder.getStatus() + " for Order Number: " + updatedOrder.getOrderNumber(),
+                "{\"status\":\"" + oldStatus + "\"}",
+                "{\"status\":\"" + updatedOrder.getStatus() + "\", \"paymentStatus\":\"" + updatedOrder.getPaymentStatus() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return orderMapper.convertTOResponseDTO(updatedOrder);
     }
 
@@ -156,7 +237,26 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
     @Transactional
     public void delete(Long id) {
-        orderRepository.deleteById(id);
+        CustomerOrder order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
+
+        String orderNumber = order.getOrderNumber();
+
+        orderRepository.delete(order);
+
+        //  ACTIVITY LOG: DELETE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "CUSTOMER_ORDER",
+                id.toString(),
+                "Customer Order deleted for Order Number: " + orderNumber,
+                "{\"orderNumber\":\"" + orderNumber + "\"}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     @Transactional(readOnly = true)

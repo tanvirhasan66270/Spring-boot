@@ -26,8 +26,7 @@ export class DailyReportComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null; 
 
-  readonly imageBaseUrl = environment.apiUrl + "reports/";
-
+readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/reports/";
   formModel = {
     warehouseId: '',
     reportDate: new Date().toISOString().split('T')[0],
@@ -91,8 +90,13 @@ export class DailyReportComponent implements OnInit {
     return !!imageName && imageName.trim().length > 0;
   }
 
-  getImageUrl(imageName: string | null | undefined): string {
-    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+ getImageUrl(imageName: string | null | undefined): string {
+    if (!imageName) return '';
+    if (imageName.startsWith('http')) {
+      return imageName;
+    }
+    const cleanName = imageName.includes('/') ? imageName.substring(imageName.lastIndexOf('/') + 1) : imageName;
+    return `${this.imageBaseUrl}${cleanName}`;
   }
 
   onImageError(event: Event): void {
@@ -127,7 +131,6 @@ export class DailyReportComponent implements OnInit {
       new Blob([JSON.stringify(reportDto)], { type: 'application/json' })
     );
     
-    // ফাইল পার্ট সংযুক্তিকরণ
     if (this.selectedFile) {
       formData.append('attachment', this.selectedFile);
     }

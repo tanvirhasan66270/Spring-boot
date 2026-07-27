@@ -35,7 +35,6 @@ export class CustomerComponent implements OnInit {
   confirmPassword = '';
   errorMessage: string | null = null;
 
-  // ফিক্সড: টাইপ সেফটি নিশ্চিত করার জন্য 'any' পরিবর্তন করে রিকোয়েস্ট ইন্টারফেস অ্যাসাইন করা হয়েছে
   customer: CustomerRequestModel = {
     name: '',
     email: '',
@@ -174,7 +173,6 @@ export class CustomerComponent implements OnInit {
     });
   }
 
-  // ফিক্সড: এডিট মোডে চেইন রেন্ডারিং পাইপলাইন যেন ব্রেক না করে
   onDivisionOrDistrictEditPipeline(countryId: number, divisionId: number, districtId: number) {
     this.divisionService.getByCountryId(countryId).subscribe((res) => {
       this.divisions = res || [];
@@ -247,7 +245,6 @@ export class CustomerComponent implements OnInit {
     }
   }
 
-  // ফিক্সড: ব্যাকএন্ড থেকে আসা ডুপ্লিকেট ভ্যালিডেশন এরর পার্সিং ইঞ্জিন যুক্ত করা হয়েছে
   private handleBackendError(err: any) {
     this.errorMessage = null;
     const errorContext = err.error?.message || err.message || '';
@@ -305,7 +302,6 @@ export class CustomerComponent implements OnInit {
       requestDto.password = this.customer.password;
     }
 
-    // JSON কনভার্ট পার্ট ফিক্সিং
     formData.append(
       'customer',
       new Blob([JSON.stringify(requestDto)], { type: 'application/json' }),
@@ -363,7 +359,6 @@ export class CustomerComponent implements OnInit {
     this.selectedDistrictId = c.districtId ? +c.districtId : null;
     this.customer.policeStationId = c.policeStationId ? +c.policeStationId : 0;
 
-    // ফিক্সড: এডিট মোডে মাল্টি-টিয়ার ড্রপডাউন লোডের জন্য সেফ পাইপলাইন মেথড ট্রিগার
     if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
       this.onDivisionOrDistrictEditPipeline(
         this.selectedCountryId,

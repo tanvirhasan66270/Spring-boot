@@ -7,11 +7,16 @@ import com.example.SCM.dto.request.InvoiceRequestDTO;
 import com.example.SCM.dto.response.InvoiceResponseDTO;
 import com.example.SCM.entity.CustomerOrder;
 import com.example.SCM.entity.Invoice;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.InvoiceStatus;
 import com.example.SCM.repository.InvoiceRepository;
 import com.example.SCM.repository.CustomerOrderRepository;
+import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.InvoiceService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,18 +34,34 @@ public class InvoiceServiceImp implements InvoiceService {
     private final TrackingCodeGenerator codeGenerator;
     private final MailService mailService;
 
+    // Activity Log & Request Context Dependencies
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
+
+    // Dynamically resolves current active user or system actor
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+        return "SYSTEM_AUTOMATION";
+    }
+
     @Override
     @Transactional
     public InvoiceResponseDTO save(InvoiceRequestDTO dto) {
         Invoice invoice = mapper.toEntity(dto);
 
-        //  অটো ট্র্যাকিং কোড বাইন্ডিং
         invoice.setInvoiceNumber(codeGenerator.generateTrackingCode());
 
-        //  আপনার কাস্টম রিপোজিটরি মেথড findByIdWithDetails দিয়ে অবজেক্ট গ্রাফ লোড করা
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order linkage missing for verification ID: " + dto.getCustomerOrderId()));
-
 
         if (order.getCustomer() != null) {
             invoice.setIssuedToName(order.getCustomer().getName());
@@ -52,10 +73,24 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice savedInvoice = repository.save(invoice);
 
-        //  স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
+        // স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
         if (savedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !savedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(savedInvoice, savedInvoice.getCustomerEmail());
         }
+
+        //  ACTIVITY LOG: CREATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "INVOICE",
+                savedInvoice.getId().toString(),
+                "New Invoice generated successfully. Invoice Number: " + savedInvoice.getInvoiceNumber() + " for Customer: " + savedInvoice.getIssuedToName(),
+                null,
+                "{\"totalAmount\":" + savedInvoice.getTotalAmount() + ", \"paymentStatus\":\"" + savedInvoice.getPaymentStatus() + "\", \"invoiceStatus\":\"" + savedInvoice.getInvoiceStatus() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
 
         return mapper.toResponseDTO(savedInvoice);
     }
@@ -66,10 +101,13 @@ public class InvoiceServiceImp implements InvoiceService {
         Invoice invoice = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice dataset node not found at ID: " + id));
 
-        // এনটিটি ডেটা কন্টেইনার ওভাররাইট/আপডেট করা
+        double oldTotalAmount = invoice.getTotalAmount();
+        String oldPaymentStatus = invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "N/A";
+        String oldInvoiceStatus = invoice.getInvoiceStatus() != null ? invoice.getInvoiceStatus().name() : "N/A";
+
         mapper.updateEntityFromDTO(dto, invoice);
 
-        //কাস্টম রিপোজিটরি মেথড দিয়ে ভেরিফিকেশন
+        // customer repository method vereficasion
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order node structural integrity broken."));
 
@@ -83,10 +121,24 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice updatedInvoice = repository.save(invoice);
 
-        // স্ট্যাটাস ISSUED হলে রিয়েল-টাইম মেইল নোটিফিকেশন ট্রিগার করা
+        // if ISSUE realtime mail notification is treggred
         if (updatedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !updatedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(updatedInvoice, updatedInvoice.getCustomerEmail());
         }
+
+        //  ACTIVITY LOG: UPDATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "INVOICE",
+                updatedInvoice.getId().toString(),
+                "Invoice financial metadata updated for Invoice Number: " + updatedInvoice.getInvoiceNumber(),
+                "{\"totalAmount\":" + oldTotalAmount + ", \"paymentStatus\":\"" + oldPaymentStatus + "\", \"invoiceStatus\":\"" + oldInvoiceStatus + "\"}",
+                "{\"totalAmount\":" + updatedInvoice.getTotalAmount() + ", \"paymentStatus\":\"" + updatedInvoice.getPaymentStatus() + "\", \"invoiceStatus\":\"" + updatedInvoice.getInvoiceStatus() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
 
         return mapper.toResponseDTO(updatedInvoice);
     }
@@ -108,10 +160,27 @@ public class InvoiceServiceImp implements InvoiceService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("Target Invoice lifecycle instance missing in datastore layer.");
-        }
-        repository.deleteById(id);
+        Invoice invoice = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Target Invoice lifecycle instance missing in datastore layer ID: " + id));
+
+        String invoiceNumber = invoice.getInvoiceNumber();
+        double totalAmount = invoice.getTotalAmount();
+
+        repository.delete(invoice);
+
+        //  ACTIVITY LOG: DELETE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "INVOICE",
+                id.toString(),
+                "Invoice record purged permanently. Invoice Number was: " + invoiceNumber,
+                "{\"invoiceNumber\":\"" + invoiceNumber + "\", \"totalAmount\":" + totalAmount + "}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     private void sendInvoiceEmail(Invoice invoice, String customerEmail) {
@@ -191,7 +260,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 invoice.getCurrency(),
                 invoice.getDeliveryAddress(),
                 invoice.getPaymentStatus().name().equals("PAID") ? "status-paid" :
-                 invoice.getPaymentStatus().name().equals("PARTIALLY_PAID") ? "status-partial" : "status-unpaid",
+                        invoice.getPaymentStatus().name().equals("PARTIALLY_PAID") ? "status-partial" : "status-unpaid",
                 invoice.getPaymentStatus().name(),
                 invoice.getSubtotal(),
                 invoice.getTaxRate(),

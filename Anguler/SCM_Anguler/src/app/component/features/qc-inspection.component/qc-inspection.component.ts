@@ -157,7 +157,6 @@ export class QcInspectionComponent implements OnInit {
       return;
     }
 
-    // 🎯 জ্যাকসন ম্যাপিং ও এনাম প্রোটেকশন পার্সিং পেলোড
     const payload: QCInspectionRequestModel = {
       ...this.inspection,
       grnId: +this.inspection.grnId,
@@ -168,7 +167,7 @@ export class QcInspectionComponent implements OnInit {
       result: this.inspection.result ? this.inspection.result.toUpperCase() : 'GOOD',
       checklists: this.inspection.checklists.map((c) => ({
         checkpointName: c.checkpointName || 'General Checkpoint',
-        isPassed: String(c.isPassed) === 'true', // পিওর বুলিয়ান কাস্টিং
+        isPassed: String(c.isPassed) === 'true', 
         remarks: c.remarks || '',
       })),
     };

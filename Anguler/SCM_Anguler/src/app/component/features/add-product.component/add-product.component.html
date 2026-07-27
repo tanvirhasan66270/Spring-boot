@@ -10,7 +10,6 @@
     </button>
   </div>
 
-  <!-- 🌟 কাস্টমার ভিউ: কার্ড গ্রিড যেখানে Buy এবং View Details বাটন রয়েছে -->
   @if (userRole === 'CUSTOMER') {
     <div class="row g-4">
       @for (p of products; track p.id) {

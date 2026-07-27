@@ -52,7 +52,7 @@ public class ProductServiceImp implements ProductService {
         return "UNKNOWN_USER";
     }
 
-    // application.properties থেকে আপলোড ডিরেক্টরি পাথ লোড হবে
+    // from application.properties upload deractory path loaded
     @Value("${image.upload.dir}")
     private String uploadDir;
 
@@ -64,7 +64,7 @@ public class ProductServiceImp implements ProductService {
             throw new IllegalArgumentException("Product request data cannot be null");
         }
 
-        // প্রোডাক্ট কোড ডুপ্লিকেট কি না চেক
+        // duplicate product check
         if (dto.getProductCode() != null && !dto.getProductCode().trim().isEmpty()) {
             Optional<Product> existingProduct = productRepository.findByProductCode(dto.getProductCode());
             if (existingProduct.isPresent()) {
@@ -72,17 +72,17 @@ public class ProductServiceImp implements ProductService {
             }
         }
 
-        // ডাটাবেজ থেকে রিলেশনাল ক্যাটাগরি খুঁজে বের করা
+        // finding relasional catagory from database
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + dto.getCategoryId()));
 
-        // ইমেজ ফাইল হ্যান্ডেল করা (যদি ফ্রন্টএন্ড থেকে ফাইল পাঠানো হয়)
+
         if (image != null && !image.isEmpty()) {
             String uploadedFileName = uploadProductImage(image, dto.getName());
-            dto.setImage(uploadedFileName); // জেনারেটেড ফাইল নেম বা পাথটি ডিটিও-তে ইনজেক্ট করা হলো
+            dto.setImage(uploadedFileName);
         }
 
-        //Mapper দিয়ে Entity-তে রূপান্তর এবং ডাটাবেজে সেভ (weight সহ)
+        //Mapper from Entity- convert and database save (with weight )
         Product product = productMapper.toEntity(dto, category);
         Product savedProduct = productRepository.save(product);
 
@@ -112,16 +112,13 @@ public class ProductServiceImp implements ProductService {
             throw new IllegalArgumentException("Product request data cannot be null");
         }
 
-        //এক্সিস্টিং প্রোডাক্ট খুঁজে বের করা
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + id));
 
-        //ওল্ড ভ্যালু ট্র্যাকিং (for log)
         String oldName = product.getName();
         String oldCode = product.getProductCode();
         Long oldCategoryId = product.getCategory() != null ? product.getCategory().getId() : null;
 
-        //প্রোডাক্ট কোড ইউনিক কি না ভেরিফাই করা (কোড চেইঞ্জ করা হলে)
         if (dto.getProductCode() != null && !dto.getProductCode().equals(product.getProductCode())) {
             Optional<Product> duplicateCheck = productRepository.findByProductCode(dto.getProductCode());
             if (duplicateCheck.isPresent()) {
@@ -129,23 +126,19 @@ public class ProductServiceImp implements ProductService {
             }
         }
 
-        //ক্যাটাগরি পরিবর্তন করা হয়ে থাকলে নতুন ক্যাটাগরি লোড করা
         Category category = product.getCategory();
         if (dto.getCategoryId() != null && !dto.getCategoryId().equals(category.getId())) {
             category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new RuntimeException("New Category not found with ID: " + dto.getCategoryId()));
         }
 
-        //নতুন ইমেজ আপলোড দিলে আগের ইমেজ ওভাররাইট/নতুন পাথ ডিটিও-তে সেট করা
         if (image != null && !image.isEmpty()) {
             String newImageName = uploadProductImage(image, dto.getName());
             dto.setImage(newImageName);
         } else {
-            // যদি নতুন কোনো ছবি আপলোড না করা হয়, তবে ডাটাবেজে আগের যে ছবি ছিল সেটাই বহাল থাকবে
             dto.setImage(product.getImage());
         }
 
-        // ্যাপারের মাধ্যমে অবজেক্ট ডেটা আপডেট করা (weight অটো সিঙ্ক হবে)
         productMapper.updateEntity(dto, product, category);
         Product updatedProduct = productRepository.save(product);
 
@@ -213,25 +206,22 @@ public class ProductServiceImp implements ProductService {
 
     private String uploadProductImage(MultipartFile file, String productName) {
         try {
-            // uploads/product ফোল্ডার পাথ তৈরি করা
             Path path = Paths.get(uploadDir, "product");
 
             if (!Files.exists(path)) {
                 Files.createDirectories(path);
             }
 
-            // ফাইলের এক্সটেনশন (.png, .jpg ইত্যাদি) এক্সট্রাক্ট করা
+            //  (.png, .jpg etc) extract
             String ext = "";
             String original = file.getOriginalFilename();
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf("."));
             }
 
-            // ফাইলের নাম স্যানিটাইজ করা এবং UUID টোকেন যুক্ত করা (ফাইলনেম কনফ্লিক্ট এড়াতে)
             String cleanedName = (productName != null ? productName : "product").trim().replaceAll("\\s+", "_");
             String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
 
-            // ফাইলটি ডিরেক্টরিতে কপি করা (with website sefty macanigom)
             Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
 
             return fileName;

@@ -293,7 +293,6 @@
         <div class="modal-body bg-light p-4 d-flex justify-content-center">
           <div #pdfPreviewContainer class="bg-white p-5 shadow-sm rounded-3 border" style="width: 100%; max-width: 700px; font-family: Arial, sans-serif; color: #000;">
             
-            <!-- প্রফেশনাল এন্টারপ্রাইজ লোগো ও হেডার -->
             <div class="text-center mb-4 pb-3 border-bottom">
               <h1 class="fw-bold mb-0" style="letter-spacing: 3px; font-size: 36px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
                 <span style="color: #0b2545;">S</span><span style="color: #0b2545;">C</span><span style="color: #38b000;">M</span>
@@ -310,13 +309,11 @@
               </div>
             </div>
 
-            <!-- ইনভয়েস টাইটেল ও কোড -->
             <div class="text-center mb-4">
               <h3 class="fw-bold text-dark mb-1" style="letter-spacing: 1px;">COMMERCIAL INVOICE</h3>
               <p class="text-muted small mb-0"><b>Invoice Code:</b> {{ selectedInvoiceForPdf?.invoiceNumber || 'DRAFT_GEN_ID' }} | <b>Order ID:</b> #{{ selectedInvoiceForPdf?.customerOrderId || 'N/A' }}</p>
             </div>
 
-            <!-- ক্লায়েন্ট ও অডিট টাইমলাইন (ওপর থেকে ডেট রিমোভ করে শুধু রিসিপিয়েন্ট ও স্ট্যাটাস রাখা হয়েছে) -->
             <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded border border-secondary-subtle">
               <div class="col-7">
                 <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">Issued To Recipient</span>
@@ -331,7 +328,6 @@
               </div>
             </div>
             
-           <!-- মূল টেবিল বডি -->
           <table class="table table-bordered align-middle fs-7 mb-4">
             <tbody>
               <tr>
@@ -399,7 +395,6 @@
               </div>
             }
 
-            <!-- ৩টি প্রফেশনাল সিগনেচার সেকশন -->
             <div class="row pt-5 border-top text-center" style="display: flex; justify-content: space-between; margin-top: 80px !important; padding-top: 25px !important;">
               <div style="width: 30%; display: inline-block;">
                 <div style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;"></div>

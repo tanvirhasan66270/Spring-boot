@@ -10,7 +10,6 @@ import { VehicleService } from '../../../service/vehicle.service';
 import { CustomerService } from '../../../service/customer.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
 
-// 🌟 jsPDF এবং html2canvas ইমপোর্ট
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { environment } from '../../../../environment/environment';
@@ -255,7 +254,6 @@ export class DeliveryTripComponent implements OnInit {
     }
   }
 
-  // 🌟 PDF মোডাল কন্ট্রোল মেথডসমূহ
   openPdfModal(trip: DeliveryTripResponseModel) {
     this.selectedTripForPdf = trip;
     this.isPdfModalOpen = true;

@@ -26,17 +26,7 @@ public class DailyReportMapper {
     }
 
 
-    public void updateEntityFromDTO(DailyReportRequestDTO dto, DailyReport entity) {
-        if (dto == null || entity == null) return;
 
-        if (dto.getSummary() != null) entity.setSummary(dto.getSummary());
-        if (dto.getTotalTasksDone() > 0) entity.setTotalTasksDone(dto.getTotalTasksDone());
-        if (dto.getIssuesLogged() >= 0) entity.setIssuesLogged(dto.getIssuesLogged());
-
-        if (dto.getReportDate() != null && !dto.getReportDate().isBlank()) {
-            entity.setReportDate(LocalDate.parse(dto.getReportDate()));
-        }
-    }
 
 
     public DailyReportResponseDTO convertTOResponseDTO(DailyReport entity) {

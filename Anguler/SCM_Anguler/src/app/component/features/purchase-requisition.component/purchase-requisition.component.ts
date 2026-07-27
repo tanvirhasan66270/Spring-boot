@@ -17,13 +17,12 @@ import { StorageService, KEYS } from '../../../auth/auth_service/storage.service
 export class PurchaseRequisitionComponent implements OnInit {
 
   requisitions: purchaseRequisitionResponseModel[] = [];
-  filteredRequisitions: purchaseRequisitionResponseModel[] = []; // 🎯 ডাইনামিক রিয়েল-টাইম সার্চ বাফার
+  filteredRequisitions: purchaseRequisitionResponseModel[] = []; 
   products: any[] = [];
   suppliers: any[] = [];
   userRole: string = '';
   currentSupplierId: number | null = null;
 
-  // 🔍 ডুয়াল সার্চ ইনপুট মডেলস
   searchId: string = '';
   searchUrgency: string = '';
 
@@ -64,7 +63,6 @@ export class PurchaseRequisitionComponent implements OnInit {
       }
     }
 
-    // 🔒 সেশন ক্যাশ থেকে সাপ্লায়ার মেটা অবজেক্ট ও আইডি রিড
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
     if (cachedSupplier) {
       this.currentSupplierId = cachedSupplier.id;
@@ -80,7 +78,6 @@ export class PurchaseRequisitionComponent implements OnInit {
       next: (data) => {
         const allRequisitions = data || [];
 
-        // 🔒 STRICT DATA ISOLATION LOCK: ইউজার SUPPLIER হলে শুধুমাত্র তার সাথে ম্যাচিং APPROVED ডাটা ম্যাপ হবে
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.requisitions = allRequisitions.filter((pr: any) => {
             const hasSupplier = pr.supplierIds?.includes(this.currentSupplierId) || 
@@ -88,12 +85,12 @@ export class PurchaseRequisitionComponent implements OnInit {
             return hasSupplier && pr.approvalStatus === 'APPROVED';
           });
         } else {
-          // ADMIN/MANAGER/PROCUREMENT হলে গ্লোবাল ডাটা লোড হবে
+          // ADMIN/MANAGER/PROCUREMENT 
           this.requisitions = allRequisitions;
         }
 
         this.filteredRequisitions = [...this.requisitions];
-        this.applyDoubleSearch(); // যদি সার্চ ফিল্ডে অলরেডি কোনো ইনপুট থাকে
+        this.applyDoubleSearch(); 
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -103,7 +100,6 @@ export class PurchaseRequisitionComponent implements OnInit {
     }); 
   }
 
-  // 🎯 ডুয়াল সার্চ বার ফিল্টারিং লজিক (PR Reference ID এবং Urgency Level)
   applyDoubleSearch() {
     const idTerm = this.searchId.toLowerCase().trim();
     const urgencyTerm = this.searchUrgency.toLowerCase().trim();
@@ -123,7 +119,7 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   loadProducts() { this.productService.findAll().subscribe(data => { this.products = data || []; this.cdr.markForCheck(); }); }
   loadSuppliers() { 
-    if (this.userRole === 'SUPPLIER') return; // সাপ্লায়ার হলে গ্লোবাল ভেন্ডার লিস্ট লোড করার প্রয়োজন নেই
+    if (this.userRole === 'SUPPLIER') return; 
     this.supplierService.findAll().subscribe(data => { this.suppliers = data || []; this.cdr.markForCheck(); }); 
   }
 

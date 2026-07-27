@@ -23,6 +23,8 @@ public class Scheduler {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PurchaseOrderTokenRepository purchaseOrderTokenRepository;
 
+    //Crone-jock
+
 
     @Scheduled(cron = "0 0 0 * * *")
     public void deleteExpiredPR() {
@@ -58,9 +60,8 @@ public class Scheduler {
             token.setActive(false);
             token.setDeletedAt(LocalDateTime.now());
 
-            // Token Invalid করে দিচ্ছি
+
             token.setToken("EXPIRED_" + token.getId());
-            // অথবা token.setToken(null);
 
             tokenRepository.save(token);
         }

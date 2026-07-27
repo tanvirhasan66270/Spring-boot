@@ -136,7 +136,6 @@
             {{ formModel.movementType === 'TRANSFER' ? 'Destination Warehouse Node (To)' : 'Target Warehouse Node' }}
           </label>
           
-          <!-- TRANSFER এর ক্ষেত্রে ড্রপডাউন থাকবে, অন্যথায় ইনভেন্টরি থেকে অটো-ফিল হওয়া নাম রিড-অনলি আকারে দেখাবে -->
           @if (formModel.movementType === 'TRANSFER') {
             <select class="form-select fs-7" [(ngModel)]="formModel.warehouseId" name="warehouseId" required>
               <option [value]="0">-- Choose Destination Facility --</option>

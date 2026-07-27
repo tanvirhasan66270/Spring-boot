@@ -5,10 +5,15 @@ import com.example.SCM.dto.request.QCInspectionRequestDTO;
 import com.example.SCM.dto.request.QCChecklistRequestDTO;
 import com.example.SCM.dto.response.QCInspectionResponseDTO;
 import com.example.SCM.entity.*;
+import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.repository.*;
+import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.QCInspectionService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,8 +34,27 @@ public class QCInspectionServiceImp implements QCInspectionService {
     private final UserRepository userRepository;
     private final QCInspectionMapper qcInspectionMapper;
 
+    // Activity Log & Request Context Dependencies
+    private final ActivityLogService activityLogService;
+    private final HttpServletRequest request;
+
     @Value("${image.upload.dir}")
     private String uploadDir;
+
+    // Dynamically resolves current active user or system actor
+
+    private String resolveCurrentUserId() {
+        String userId = request.getHeader("X-User-Id");
+        if (userId != null && !userId.isBlank()) {
+            return userId;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !authentication.getName().equals("anonymousUser")) {
+            return authentication.getName();
+        }
+        return "SYSTEM_AUTOMATION";
+    }
 
     @Override
     @Transactional
@@ -58,12 +82,30 @@ public class QCInspectionServiceImp implements QCInspectionService {
         }
 
         QCInspection saved = qcInspectionRepository.saveAndFlush(inspection);
+
+        //  ACTIVITY LOG: CREATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "CREATE",
+                "QC_INSPECTION",
+                saved.getId().toString(),
+                "Quality Control Inspection created for Product ID: " + product.getId() + " by Inspector ID: " + inspector.getId(),
+                null,
+                "{\"inspectionType\":\"" + saved.getInspectionType() + "\", \"grnId\":" + grn.getId() + "}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return qcInspectionMapper.convertTOResponseDTO(saved);
     }
+
     @Override
     @Transactional
     public QCInspectionResponseDTO update(Long id, QCInspectionRequestDTO dto, MultipartFile file) {
         QCInspection inspection = qcInspectionRepository.findById(id).orElseThrow(() -> new RuntimeException("QC Record not found"));
+
+        String oldType = inspection.getInspectionType();
 
         GoodsReceivedNote grn = goodsReceivedNoteRepository.findById(dto.getGrnId()).orElse(inspection.getGoodsReceivedNote());
         Product product = productRepository.findById(dto.getProductId()).orElse(inspection.getProduct());
@@ -89,6 +131,20 @@ public class QCInspectionServiceImp implements QCInspectionService {
 
         QCInspection updated = qcInspectionRepository.saveAndFlush(inspection);
 
+        //  ACTIVITY LOG: UPDATE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "UPDATE",
+                "QC_INSPECTION",
+                updated.getId().toString(),
+                "QC Inspection record updated for ID: " + updated.getId(),
+                "{\"inspectionType\":\"" + oldType + "\"}",
+                "{\"inspectionType\":\"" + updated.getInspectionType() + "\"}",
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
+
         return qcInspectionMapper.convertTOResponseDTO(updated);
     }
 
@@ -109,8 +165,26 @@ public class QCInspectionServiceImp implements QCInspectionService {
     @Override
     @Transactional
     public void delete(Long id) {
-        if (!qcInspectionRepository.existsById(id)) throw new RuntimeException("QC record not found");
-        qcInspectionRepository.deleteById(id);
+        QCInspection inspection = qcInspectionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("QC record not found"));
+
+        String inspectionType = inspection.getInspectionType();
+
+        qcInspectionRepository.delete(inspection);
+
+        //  ACTIVITY LOG: DELETE
+        activityLogService.log(
+                resolveCurrentUserId(),
+                null,
+                "DELETE",
+                "QC_INSPECTION",
+                id.toString(),
+                "QC Inspection record deleted for ID: " + id,
+                "{\"inspectionType\":\"" + inspectionType + "\"}",
+                null,
+                ActionStatus.SUCCESS,
+                request.getRemoteAddr()
+        );
     }
 
     private String uploadLabReport(MultipartFile file, String inspectionType) {
@@ -124,7 +198,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
             if (original != null && original.contains(".")) {
                 ext = original.substring(original.lastIndexOf("."));
             }
-            String cleanedName = inspectionType.trim().replaceAll("\\s+", "_");
+            String cleanedName = inspectionType != null ? inspectionType.trim().replaceAll("\\s+", "_") : "GENERAL";
             String fileName = "QC_" + cleanedName + "_" + UUID.randomUUID() + ext;
 
             Files.copy(file.getInputStream(), path.resolve(fileName));

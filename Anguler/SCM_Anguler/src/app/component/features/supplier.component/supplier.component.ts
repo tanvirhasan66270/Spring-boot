@@ -227,13 +227,11 @@ export class SupplierComponent implements OnInit {
   save() {
     this.errorMessage = null;
 
-    // ১. নতুন প্রোফাইল ক্রিয়েশনের সময় পাসওয়ার্ড ভ্যালিডেশন চেক
     if (!this.isEdit && this.supplier.password !== this.confirmPassword) {
       this.errorMessage = 'Validation Fault: Access passwords do not match.';
       return;
     }
 
-    // ২. অ্যাড্রেস হাইরার্কি চেইন ভ্যালিডেশন
     if (this.supplier.policeStationId === 0) {
       this.errorMessage = 'Validation Fault: Local base station terminal configuration hierarchy incomplete.';
       return;
@@ -258,7 +256,6 @@ export class SupplierComponent implements OnInit {
         error: (err) => this.handleBackendError(err)
       });
     } else {
-      // ৪. নতুন ক্রিয়েশনের সময় মাল্টিপার্ট হিসেবে ইমেজ সহ পাঠানো (POST)
       this.service.save(this.supplier, this.selectedFile).subscribe({
         next: () => {
           alert("Supplier station node successfully initialized!");

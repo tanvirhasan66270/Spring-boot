@@ -16,7 +16,7 @@ import { CountryResponseModel } from '../../../shared/model/country/countryModel
 })
 export class Division implements OnInit {
   divisions: DivisionResponseModel[] = [];
-  countries: CountryResponseModel[] = []; // ড্রপডাউন সিলেক্টরের জন্য কান্ট্রি লিস্ট
+  countries: CountryResponseModel[] = []; 
 
   division: DivisionRequestModel = {
     name: '',
@@ -27,7 +27,7 @@ export class Division implements OnInit {
 
   isEdit = false;
   currentEditId: number | null = null;
-  isDrawerOpen = false; // ডান পাশের ড্রয়ার স্টেট
+  isDrawerOpen = false; 
 
   constructor(
     private service: DivisionService,

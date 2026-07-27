@@ -10,14 +10,16 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./public-contact.component.css']
 })
 export class PublicContactComponent {
-  feedback = { name: '', email: '', subject: '', message: '' };
+  feedback = { name: '', email: '', phone: '', subject: '', message: '' };
+  formSubmitted = false;
 
   submitForm(): void {
     if (!this.feedback.name || !this.feedback.email || !this.feedback.message) {
-      alert('Please fill out all required fields.');
+      alert('Please fill out all required fields (Name, Email, Message).');
       return;
     }
-    alert(`Thank you for reaching out, ${this.feedback.name}! Our customer service team will get back to you within 24 hours.`);
-    this.feedback = { name: '', email: '', subject: '', message: '' };
+    this.formSubmitted = true;
+    this.feedback = { name: '', email: '', phone: '', subject: '', message: '' };
+    setTimeout(() => { this.formSubmitted = false; }, 5000);
   }
 }

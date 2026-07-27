@@ -71,7 +71,6 @@ filteredLineItems: POLineItemResponseDTO[] = [];
         error: (err) => console.error('Failed to resolve supplier identity:', err)
       });
     } else {
-      // অন্যান্য রোলের (ADMIN/MANAGER) জন্য গ্লোবাল ডেটা লোড
       this.loadSecurePipelineData();
     }
   }
@@ -134,14 +133,12 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   onPoChange(event: any) {
     const poId = +event.target.value;
     
-    // ১. সিলেক্ট করা PO অবজেক্ট খুঁজে বের করা
     const targetPo = this.purchaseOrders.find(po => po.id === poId);
     
     if (targetPo && targetPo.status === 'RECEIVED') {
       this.item.poNumber = targetPo.poNumber; // প্যারেন্ট PO নাম্বার অটো সিঙ্ক
       const productMap = new Map();
       
-      // ক) যদি PO অবজেক্টের ভেতরে line items বা items অ্যারে থাকে:
       if (targetPo.items && Array.isArray(targetPo.items)) {
         targetPo.items.forEach((item: any) => { 
           if (item.product) productMap.set(item.product.id, item.product); 
@@ -152,16 +149,13 @@ filteredLineItems: POLineItemResponseDTO[] = [];
           if (item.product) productMap.set(item.product.id, item.product); 
         });
       }
-      // খ) যদি PO অবজেক্টের সাথে সরাসরি সিঙ্গেল প্রোডাক্ট ম্যাপ করা থাকে:
       else if (targetPo.product) {
         productMap.set(targetPo.product.id, targetPo.product);
       }
       
-      // ড্রপডাউন অ্যারে আপডেট
       this.products = Array.from(productMap.values());
       
     } else {
-      // যদি কোনো PO সিলেক্ট করা না থাকে বা সিলেক্টেড PO-এর স্ট্যাটাস RECEIVED না হয়, তবে প্রোডাক্ট ড্রপডাউন খালি থাকবে
       this.products = [];
       this.item.poNumber = '';
     }

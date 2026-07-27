@@ -26,17 +26,16 @@ public class CategoryServiceImp implements CategoryService {
     @Override
     public CategoryResponseDTO save(CategoryRequestDTO dto) {
 
-        // ইউনিক ক্যাটাগরি নেম চেক (ডুপ্লিকেট এড়াতে)
         Optional<Category> existingCategory = categoryRepository.findByCategoryName(dto.getCategoryName());
         if (existingCategory.isPresent()) {
             throw new RuntimeException("Category name '" + dto.getCategoryName() + "' already exists!");
         }
 
-        // DTO -> Entity রূপান্তর এবং সেভ
+        // DTO -> Entity
         Category category = categoryMapper.toEntity(dto);
         Category savedCategory = categoryRepository.save(category);
 
-        // Entity -> Response DTO রূপান্তর করে রিটার্ন
+        // Entity -> Response DTO
         return categoryMapper.toResponseDTO(savedCategory);
     }
 
@@ -46,11 +45,9 @@ public class CategoryServiceImp implements CategoryService {
     public CategoryResponseDTO update(Long id, CategoryRequestDTO dto) {
 
 
-        // আইডি দিয়ে ডাটাবেজে চেক করা
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Category not found with ID: " + id));
 
-        // নাম পরিবর্তন করলে সেটি অন্য কোনো ক্যাটাগরির সাথে ডুপ্লিকেট হচ্ছে কি না চেক
         if (dto.getCategoryName() != null && !dto.getCategoryName().equals(category.getCategoryName())) {
             Optional<Category> duplicateCheck = categoryRepository.findByCategoryName(dto.getCategoryName());
             if (duplicateCheck.isPresent()) {
@@ -58,10 +55,8 @@ public class CategoryServiceImp implements CategoryService {
             }
         }
 
-        // ম্যাপারের মাধ্যমে এক্সিস্টিং এনটিটি আপডেট করা
         categoryMapper.updateEntity(dto, category);
 
-        // ডাটাবেজে আপডেট সেভ
         Category updatedCategory = categoryRepository.save(category);
 
         return categoryMapper.toResponseDTO(updatedCategory);

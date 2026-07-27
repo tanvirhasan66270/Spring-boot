@@ -40,7 +40,6 @@ public class PurchaseRequisitionMapper {
             pr.setUrgencyLevel(UrgencyLevel.valueOf(dto.getUrgencyLevel().toUpperCase()));
         }
 
-        // 🎯 ওল্ড কোড এরর ফিক্স: List-কে LinkedHashSet-এ রূপান্তর করে এনটিটিতে সেট করা হলো
         if (products != null) {
             pr.setProducts(new LinkedHashSet<>(products));
         }

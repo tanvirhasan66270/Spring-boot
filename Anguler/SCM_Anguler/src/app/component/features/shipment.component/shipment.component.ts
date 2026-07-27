@@ -7,7 +7,6 @@ import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
-// 🌟 jsPDF এবং html2canvas ইমপোর্ট
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { environment } from '../../../../environment/environment';
@@ -25,7 +24,6 @@ export class ShipmentComponent implements OnInit {
   purchaseOrders: any[] = [];
   suppliers: any[] = [];
 
-  //  ডুয়াল সার্চ বাফার মডেলস
   searchNo: string = '';
   searchVehicle: string = '';
 
@@ -80,7 +78,6 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       }
     }
 
-    // 🔒 ক্যাশ মেমরি থেকে কারেন্ট সাপ্লায়ারের আইডি এবং নাম সঠিকভাবে রিড করা
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
     if (cachedSupplier) {
       this.currentSupplierId = cachedSupplier.id;
@@ -99,14 +96,12 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       next: (data) => {
         const allShipments = data || [];
 
-        // 🌟 সেফটি চেক: যদি লজিস্টিক অফিসার বা অন্য কোনো রোলেও ডেটা ফিল্টার হয়ে জিরো হয়ে যায়, 
-        // তবে রিকোয়ারমেন্ট অনুযায়ী অল শিপমেন্টস দেখানোর ব্যবস্থা রাখা হলো
+      
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.shipments = allShipments.filter((s: any) => {
             const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
             return sId === this.currentSupplierId;
           });
-          // যদি সাপ্লায়ার আইডির সাথে ম্যাচ করে কোনো শিপমেন্ট না পাওয়া যায়, তবে ব্যাকআপ হিসেবে সব দেখাবে বা খালি থাকবে
           if (this.shipments.length === 0 && allShipments.length > 0) {
             this.shipments = allShipments;
           }
@@ -124,7 +119,6 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     });
   }
 
-  // 🎯 ডুয়াল সার্চ ইঞ্জিন প্রসেসর
   applyDoubleSearch() {
     const noTerm = this.searchNo.toLowerCase().trim();
     const vehicleTerm = this.searchVehicle.toLowerCase().trim();

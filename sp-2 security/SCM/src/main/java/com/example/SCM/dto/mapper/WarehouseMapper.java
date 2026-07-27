@@ -7,7 +7,7 @@ import com.example.SCM.entity.Warehouse;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WarehouseMapper {
+public class    WarehouseMapper {
 
     public Warehouse toEntity(WarehouseRequestDTO dto, PoliceStation policeStation) {
 

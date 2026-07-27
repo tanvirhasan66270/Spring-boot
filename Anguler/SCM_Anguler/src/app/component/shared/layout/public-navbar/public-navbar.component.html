@@ -86,7 +86,7 @@
             <div class="col-md-6 border-end">
               <h6 class="mega-title text-primary"><i class="bi bi-person me-2"></i> For Buyers / Customers</h6>
               <ul class="list-unstyled mega-list">
-                <li><a routerLink="/register">Create Corporate Buyer Profile</a></li>
+                <li><a routerLink="/join-us">Create Corporate Buyer Profile</a></li>
                 <li><a routerLink="/order">Place Purchase Requisitions</a></li>
                 <li><a routerLink="/quotation">Submit RFQ Requests</a></li>
               </ul>
@@ -94,7 +94,7 @@
             <div class="col-md-6 ps-md-4">
               <h6 class="mega-title text-success"><i class="bi bi-shop me-2"></i> For Suppliers / Vendors</h6>
               <ul class="list-unstyled mega-list">
-                <li><a routerLink="/register">Become an Enlisted Vendor</a></li>
+                <li><a routerLink="/join-us">Become an Enlisted Vendor</a></li>
                 <li><a routerLink="/quotation">Submit Supply Quotations</a></li>
                 <li><a routerLink="/compliance">Review Trade Compliance</a></li>
               </ul>
@@ -166,7 +166,7 @@
 
       <!-- Action CTAs -->
       <a routerLink="/login" class="btn btn-outline-primary px-3 fw-bold rounded-pill">Sign In</a>
-      <button class="btn btn-primary px-3.5 fw-bold rounded-pill" (click)="showQuoteModal = true">Request Quote</button>
+      <a routerLink="/join-us" class="btn btn-warning px-3.5 fw-bold rounded-pill text-dark">Join Us</a>
     </div>
 
     <!-- HAMBURGER BUTTON (MOBILE) -->
@@ -201,7 +201,7 @@
       <hr class="my-3">
       <div class="row g-2">
         <div class="col-6"><a routerLink="/login" class="btn btn-outline-primary w-100 py-2" (click)="mobileMenuOpen = false">Sign In</a></div>
-        <div class="col-6"><button class="btn btn-primary w-100 py-2" (click)="showQuoteModal = true; mobileMenuOpen = false">Request Quote</button></div>
+        <div class="col-6"><a routerLink="/join-us" class="btn btn-warning w-100 py-2 fw-bold text-dark" (click)="mobileMenuOpen = false">Join Us</a></div>
       </div>
     </div>
   </div>

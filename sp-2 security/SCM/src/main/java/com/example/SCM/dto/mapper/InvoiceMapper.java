@@ -76,7 +76,6 @@ public class InvoiceMapper {
         return dto;
     }
 
-    //  এক্সিস্টিং ইনভয়েস আপডেট করার জন্য ইউটিলিটি ম্যাপার মেথড
     public void updateEntityFromDTO(InvoiceRequestDTO dto, Invoice invoice) {
 
         invoice.setCustomerOrderId(dto.getCustomerOrderId());

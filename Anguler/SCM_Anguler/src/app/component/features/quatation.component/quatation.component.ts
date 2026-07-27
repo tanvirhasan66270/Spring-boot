@@ -45,7 +45,6 @@ export class QuatationComponent implements OnInit {
   currentSupplierId: number | null = null;
   currentSupplierName: string = ''; 
 
-  // PDF প্রিভিউ মডালের জন্য ভেরিয়েবল
   isPdfModalOpen = false;
   selectedQuotationForPdf: QuotationResponseModel | null = null;
   @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
@@ -328,21 +327,18 @@ export class QuatationComponent implements OnInit {
     return !this.isProcurement();
   }
 
-  // PDF প্রিভিউ মডাল ওপেন করার ফাংশন
   openPdfModal(q: QuotationResponseModel) {
     this.selectedQuotationForPdf = q;
     this.isPdfModalOpen = true;
     this.cdr.markForCheck();
   }
 
-  // PDF প্রিভিউ মডাল বন্ধ করার ফাংশন
   closePdfModal() {
     this.isPdfModalOpen = false;
     this.selectedQuotationForPdf = null;
     this.cdr.markForCheck();
   }
 
-  // প্রিভিউ মডাল থেকে ওয়ার্ড পেজ আকারে পিডিএফ ডাউনলোড করার ফাংশন
   downloadPdfFromModal() {
     if (!this.selectedQuotationForPdf) return;
 

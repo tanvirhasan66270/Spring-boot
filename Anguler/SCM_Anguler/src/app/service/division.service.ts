@@ -10,7 +10,7 @@ import {
   providedIn: 'root',
 })
 export class DivisionService {
-  private apiUrl = environment.apiUrl + 'division';
+  private apiUrl = environment.apiUrl + 'division/';
 
   constructor(private http: HttpClient) {}
 

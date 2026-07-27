@@ -64,7 +64,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     private productService: AddProductService,
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
-    public storage: StorageService, // 🌟 private থেকে public করা হয়েছে যাতে HTML থেকে এক্সেস করা যায়
+    public storage: StorageService, 
     private cdr: ChangeDetectorRef,
   ) {}
 

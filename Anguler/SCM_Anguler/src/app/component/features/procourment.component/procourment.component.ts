@@ -327,12 +327,10 @@ export class ProcourmentComponent implements OnInit {
     this.selectedDistrictId = (o as any).districtId ? +(o as any).districtId : ((o as any).policeStation?.district?.id || null);
     this.procurement.policeStationId = o.policeStationId ? +o.policeStationId : 0;
 
-    // ব্যাকআপ চেক: যদি প্যারেন্ট নোড প্রোপার্টি অবজেক্ট আকারে থাকে
     if (!this.selectedCountryId && (o as any).country) { this.selectedCountryId = +(o as any).country.id; }
     if (!this.selectedDivisionId && (o as any).division) { this.selectedDivisionId = +(o as any).division.id; }
     if (!this.selectedDistrictId && (o as any).district) { this.selectedDistrictId = +(o as any).district.id; }
 
-    // পাইপলাইন মেথড ট্রিগার করে রিজিওনাল অপশন অপটিমাইজেশন লোড করা
     if (this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId) {
       this.onDivisionOrDistrictEditPipeline(this.selectedCountryId, this.selectedDivisionId, this.selectedDistrictId);
     }

@@ -24,7 +24,7 @@ export class CountryComponent implements OnInit {
 
   isEdit = false;
   currentEditId: number | null = null; 
-  isDrawerOpen = false; // ডান পাশের ড্রয়ার স্টেট ট্র্যাকিং
+  isDrawerOpen = false; 
 
   constructor(
     private service: CountryService,
@@ -85,7 +85,7 @@ export class CountryComponent implements OnInit {
       active: c.active
     };
     this.isEdit = true;
-    this.openDrawer(); // এডিটে ক্লিক করলে ড্রয়ার ওপেন হবে
+    this.openDrawer(); 
   }
 
   delete(id: number) {

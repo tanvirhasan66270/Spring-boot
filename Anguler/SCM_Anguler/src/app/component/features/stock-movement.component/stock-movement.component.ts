@@ -95,7 +95,6 @@ export class StockMovementComponent implements OnInit {
     });
   }
 
-  // 🎯 প্রোডাক্ট সিলেক্ট করলে ইনভেন্টরি থেকে ওয়্যারহাউজ অটো-ফিল করা
   onProductChange() {
     if (!this.formModel.productId || +this.formModel.productId === 0) {
       this.formModel.warehouseId = 0;
@@ -122,7 +121,6 @@ export class StockMovementComponent implements OnInit {
     }
   }
 
-  // 🎯 টার্গেট ওয়্যারহাউজের নাম রিড-অনলি মোডে দেখানোর জন্য হেল্পার মেথড
   getTargetWarehouseName(): string {
     if (!this.formModel.warehouseId) return 'Auto-filled from inventory stock...';
     const wh = this.warehouses.find(w => w.id === +this.formModel.warehouseId);

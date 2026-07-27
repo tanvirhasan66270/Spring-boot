@@ -60,6 +60,7 @@ import { PublicAboutComponent } from './component/public/public-about/public-abo
 import { PublicServicesComponent } from './component/public/public-services/public-services.component';
 import { PublicNetworkComponent } from './component/public/public-network/public-network.component';
 import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
+import { PublicJoinUsComponent } from './component/public/public-join-us/public-join-us.component';
 import { SupplierProfileComponent } from './component/profile/supplier-profile.component/supplier-profile.component';
 import { AdminComponent } from './component/features/admin.component/admin.component';
 
@@ -86,6 +87,7 @@ export const routes: Routes = [
       { path: 'services', component: PublicServicesComponent },
       { path: 'network', component: PublicNetworkComponent },
       { path: 'contact', component: PublicContactComponent },
+      { path: 'join-us', component: PublicJoinUsComponent },
     ],
   },
   {

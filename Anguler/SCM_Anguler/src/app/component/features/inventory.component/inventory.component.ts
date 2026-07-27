@@ -24,7 +24,6 @@ export class InventoryComponent implements OnInit {
   isEdit = false;
   currentEditId: number | null = null;
 
-  // ইনিশিয়াল ব্ল্যাঙ্ক রিকোয়েস্ট অবজেক্ট স্টেটম্যাপ
   stock: InventoryRequestModel = {
     productId: 0,
     warehouseId: 0,
@@ -76,7 +75,6 @@ export class InventoryComponent implements OnInit {
       return;
     }
 
-    // পিওর ডাটা টাইপ ইন্টিগ্রিটি এনফোর্সমেন্ট
     const payload: InventoryRequestModel = {
       productId: +this.stock.productId,
       warehouseId: +this.stock.warehouseId,

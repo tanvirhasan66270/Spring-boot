@@ -28,7 +28,6 @@ public class AdminServiceImpl implements AdminService {
     @Transactional
     @Override
     public AdminResponse create(AdminRequest request) {
-        // অতিরিক্ত ব্র্যাকেট এবং সিনট্যাক্স এররগুলো এখানে দূর করা হয়েছে
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
@@ -93,7 +92,6 @@ public class AdminServiceImpl implements AdminService {
         return adminMapper.toResponse(admin);
     }
 
-    // কমেন্টআউট করা ডিলিট মেথডটি চাইলে আনকমেন্ট করে ব্যবহার করতে পারেন:
     /*
     @Transactional
     @Override

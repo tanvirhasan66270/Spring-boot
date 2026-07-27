@@ -63,6 +63,6 @@ public class VehicleMapper {
         }
         if (dto.getFuelLevel() != null) entity.setFuelLevel(dto.getFuelLevel());
 
-        entity.setDriver(driver); // ড্রাইভার চেঞ্জ বা রিমুভ (null) করা হলে সেট হবে
+        entity.setDriver(driver);
     }
 }
