@@ -5,6 +5,7 @@ import { InventoryRequestModel, InventoryResponseModel } from '../../shared/mode
 import { InventoryService } from '../../../service/inventory.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { WarehouseService } from '../../../service/warehouse.service';
+import { StorageService } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-inventory',
@@ -24,6 +25,11 @@ export class InventoryComponent implements OnInit {
   isEdit = false;
   currentEditId: number | null = null;
 
+  // Status Edit States
+  statusEditId: number | null = null;
+  statusEditValue: string = '';
+  statusSaving = false;
+
   stock: InventoryRequestModel = {
     productId: 0,
     warehouseId: 0,
@@ -38,6 +44,7 @@ export class InventoryComponent implements OnInit {
     private service: InventoryService,
     private productService: AddProductService,
     private warehouseService: WarehouseService,
+    public storage: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -122,6 +129,48 @@ export class InventoryComponent implements OnInit {
         error: (err) => alert(err.error?.message || err.message)
       });
     }
+  }
+
+  // Status Change Methods
+  openStatusEdit(inv: InventoryResponseModel) {
+    this.statusEditId = inv.id;
+    this.statusEditValue = inv.stockStatus;
+    this.cdr.markForCheck();
+  }
+
+  closeStatusEdit() {
+    this.statusEditId = null;
+    this.statusEditValue = '';
+    this.cdr.markForCheck();
+  }
+
+  changeStatus(inv: InventoryResponseModel) {
+    if (!this.statusEditValue || this.statusEditValue === inv.stockStatus) {
+      this.closeStatusEdit();
+      return;
+    }
+    this.statusSaving = true;
+    const payload: InventoryRequestModel = {
+      productId: inv.productId,
+      warehouseId: inv.warehouseId,
+      quantityOnHand: inv.quantityOnHand,
+      quantityReserved: inv.quantityReserved,
+      locationStatus: inv.locationStatus || '',
+      expiryDate: inv.expiryDate || undefined,
+      stockStatus: this.statusEditValue
+    };
+    this.service.update(inv.id, payload).subscribe({
+      next: () => {
+        this.statusSaving = false;
+        this.closeStatusEdit();
+        this.loadInventoryMatrix();
+      },
+      error: (err) => {
+        this.statusSaving = false;
+        this.handleErrorLog(err);
+        this.closeStatusEdit();
+      }
+    });
   }
 
   private handleErrorLog(err: any) {

@@ -50,9 +50,14 @@
   color: white;
 }
 
+.card.shadow-sm.border-0.rounded-3 {
+  overflow: visible !important;
+}
+
 .table-responsive {
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible !important;
 }
 
 .table th {
@@ -70,6 +75,7 @@
   color: #1e293b;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
+  position: relative;
 }
 
 .btn-icon {
@@ -109,4 +115,10 @@
 
 .fs-8 {
   font-size: 11px !important;
+}
+
+.status-floating-card {
+  z-index: 99999 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2) !important;
 }

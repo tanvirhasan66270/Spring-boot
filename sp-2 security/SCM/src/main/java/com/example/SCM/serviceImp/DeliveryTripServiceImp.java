@@ -136,7 +136,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
                         <li><b>Vehicle Fleet Assigned:</b> %s</li>
                     </ul>
                     <div class='btn-container'>
-                        <a href='http://localhost:8080/api/delivery-trips/%d' class='btn'>View Manifest Details</a>
+                        <a href='http://localhost:8085/api/delivery-trips/%d' class='btn'>View Manifest Details</a>
                     </div>
                     <p>Your action is required to trigger routing map console nodes to IN_TRANSIT.</p>
                     <p>Best regards,<br><b>SCM Logistics Support Team</b></p>

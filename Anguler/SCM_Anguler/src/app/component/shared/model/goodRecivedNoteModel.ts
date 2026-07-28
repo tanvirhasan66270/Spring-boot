@@ -21,7 +21,7 @@ export interface GRNLineItemResponseModel {
 
 export interface GoodsReceivedNoteRequestModel {
   poId: number;
-  productId: number;
+  productId: number | null;
   receivedQuantity: number;
   receivedBy: number; // লগইন করা ইউজারের আইডি
   warehouseId: number;

@@ -39,11 +39,15 @@ export class DeliveryTripComponent implements OnInit {
 
   userRole: string = '';
 
-  // 🌟 PDF മോডাল ও প্রিভিউ প্রপার্টিজ
+  // PDF Preview States
   isPdfModalOpen = false;
   selectedTripForPdf: DeliveryTripResponseModel | null = null;
   @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
-  readonly imageBaseUrl = environment.imgUrl + "trips/"; // যদি ছবি বা সিগনেচার ফোল্ডার বেস ইউআরএল থাকে
+  readonly imageBaseUrl = environment.imgUrl;
+
+  // Missing Document Upload Modal States
+  isUploadModalOpen = false;
+  selectedTripForUpload: DeliveryTripResponseModel | null = null;
 
   formModel: DeliveryTripRequestModel = {
     dispatcherId: 0,
@@ -218,6 +222,51 @@ export class DeliveryTripComponent implements OnInit {
         },
         error: (err) => this.handleError(err),
       });
+  }
+
+  openUploadModal(trip: DeliveryTripResponseModel) {
+    this.selectedTripForUpload = trip;
+    this.currentTripId = trip.id;
+    this.selectedSignature = null;
+    this.selectedPhoto = null;
+    this.isUploadModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeUploadModal() {
+    this.isUploadModalOpen = false;
+    this.selectedTripForUpload = null;
+    this.currentTripId = null;
+    this.cdr.markForCheck();
+  }
+
+  uploadMissingDocs() {
+    if (!this.currentTripId) return;
+
+    this.service
+      .changeStatus(
+        this.currentTripId,
+        'DELIVERED',
+        this.selectedSignature,
+        this.selectedPhoto,
+      )
+      .subscribe({
+        next: () => {
+          alert('Delivery documents uploaded and synced successfully.');
+          this.closeUploadModal();
+          this.loadTrips();
+        },
+        error: (err) => this.handleError(err),
+      });
+  }
+
+  viewDocument(filePath?: string | null) {
+    if (!filePath) {
+      alert('No document attached.');
+      return;
+    }
+    const fullUrl = filePath.startsWith('http') ? filePath : this.imageBaseUrl + filePath;
+    window.open(fullUrl, '_blank');
   }
 
   edit(trip: DeliveryTripResponseModel) {

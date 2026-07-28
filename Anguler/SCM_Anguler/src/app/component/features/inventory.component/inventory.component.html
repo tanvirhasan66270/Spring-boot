@@ -16,9 +16,9 @@
     </div>
   }
 
-  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+  <div class="card shadow-sm border-0 rounded-3 overflow-visible">
     <div class="card-body p-0">
-      <div class="table-responsive">
+      <div class="table-responsive" style="overflow-y: visible !important;">
         <table class="table table-hover align-middle mb-0 fs-7">
           <thead class="table-light text-uppercase fs-8">
             <tr>
@@ -30,7 +30,7 @@
               <th>Available Sellable</th>
               <th>Warehouse Placement</th>
               <th>Status Matrix</th>
-              <th class="text-end px-4" width="130">Actions</th>
+              <th class="text-end px-4" width="160">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -67,8 +67,33 @@
                     {{ inv.stockStatus }}
                   </span>
                 </td>
-                <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-2">
+                <td class="text-end px-4 position-relative">
+                  <div class="d-flex justify-content-end gap-2 align-items-center">
+                    
+                    <!-- Status Change Icon for LOGISTICS_OFFICER, MANAGER, ADMIN -->
+@if (['LOGISTICS_OFFICER', 'MANAGER', 'ADMIN'].includes(storage.getUser()!.role!)) {                      <div class="position-relative">
+                        <button class="btn btn-icon btn-light text-info" title="Change Stock Status" (click)="statusEditId === inv.id ? closeStatusEdit() : openStatusEdit(inv)">
+                          <i class="bi bi-arrow-repeat"></i>
+                        </button>
+                        @if (statusEditId === inv.id) {
+                          <div class="card shadow-lg border-0 p-3 status-floating-card" style="width: 220px; position: absolute; right: 0; top: 100%; margin-top: 5px; z-index: 99999;">
+                            <label class="form-label fw-bold small text-dark mb-1">Update Stock Status</label>
+                            <select class="form-select form-select-sm fs-8 mb-2" [(ngModel)]="statusEditValue">
+                              <option value="IN_STOCK">IN_STOCK</option>
+                              <option value="LOW_STOCK">LOW_STOCK</option>
+                              <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
+                            </select>
+                            <div class="d-flex gap-1">
+                              <button class="btn btn-sm btn-success flex-grow-1 fw-bold fs-8" [disabled]="statusSaving" (click)="changeStatus(inv)">
+                                @if (statusSaving) { <span class="spinner-border spinner-border-sm me-1"></span> } Save
+                              </button>
+                              <button class="btn btn-sm btn-outline-secondary fs-8" (click)="closeStatusEdit()">Cancel</button>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+
                     <button class="btn btn-icon btn-light text-warning" title="Edit Parameters" (click)="edit(inv)">
                       <i class="bi bi-pencil-fill"></i>
                     </button>

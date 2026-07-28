@@ -186,6 +186,7 @@
     </div>
   </div>
 
+  <!-- Status Patch Modal -->
   @if (isStatusModalOpen) {
     <div class="modal-overlay d-flex align-items-center justify-content-center">
       <div class="modal-window bg-white rounded shadow-lg p-4 animate-scale-in">
@@ -217,6 +218,29 @@
         <div class="d-flex gap-2 justify-content-end pt-2 border-top">
           <button class="btn btn-success text-white px-4 fs-7 fw-bold" (click)="executeStatusPatch()"><i class="bi bi-check-circle-fill me-1"></i>Execute Patch</button>
           <button class="btn btn-secondary px-4 fs-7" (click)="closeStatusModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Missing Document Upload Modal -->
+  @if (isUploadModalOpen) {
+    <div class="modal-overlay d-flex align-items-center justify-content-center" style="z-index: 1080;">
+      <div class="modal-window bg-white rounded shadow-lg p-4 animate-scale-in" style="width: 400px;">
+        <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-cloud-arrow-up-fill text-primary me-1"></i>Upload Delivery Docs</h5>
+        
+        <div class="mb-2">
+          <label class="form-label fw-bold text-dark fs-8">Upload Digital Recipient Signature</label>
+          <input type="file" class="form-control form-control-sm fs-7" (change)="onFileChange($event, 'sig')" accept="image/*">
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold text-dark fs-8">Upload Proof of Delivery (POD) Photo</label>
+          <input type="file" class="form-control form-control-sm fs-7" (change)="onFileChange($event, 'photo')" accept="image/*">
+        </div>
+
+        <div class="d-flex gap-2 justify-content-end pt-2 border-top">
+          <button class="btn btn-primary text-white px-3 fs-7 fw-bold" (click)="uploadMissingDocs()"><i class="bi bi-save me-1"></i>Save & Sync</button>
+          <button class="btn btn-secondary px-3 fs-7" (click)="closeUploadModal()">Cancel</button>
         </div>
       </div>
     </div>
@@ -311,26 +335,41 @@
                   <td class="fw-bold bg-light">Operational Remarks</td>
                   <td>{{ selectedTripForPdf?.remarks || 'No remarks recorded.' }}</td>
                 </tr>
+                
+                <!-- Digital Recipient Signature -->
                 <tr>
                   <td class="fw-bold bg-light">Digital Recipient Signature</td>
                   <td>
                     @if (selectedTripForPdf?.recipientSignature) {
-                      <span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Synced & Attached</span>
+                      <div class="text-center">
+                        <img [src]="imageBaseUrl + selectedTripForPdf!.recipientSignature" 
+                             alt="Recipient Signature"
+                             style="max-height: 80px; max-width: 220px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; background: #fafafa;">
+                        <br><small class="text-success fw-bold mt-1 d-block"><i class="bi bi-check-circle-fill"></i> Synced & Attached</small>
+                      </div>
                     } @else {
                       <span class="text-muted">Not Provided</span>
                     }
                   </td>
                 </tr>
+
+                <!-- Proof of Delivery (POD) Photo -->
                 <tr>
                   <td class="fw-bold bg-light">Proof of Delivery (POD) Photo</td>
                   <td>
                     @if (selectedTripForPdf?.deliveryPhotoUrl) {
-                      <span class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Synced & Attached</span>
+                      <div class="text-center">
+                        <img [src]="imageBaseUrl + selectedTripForPdf!.deliveryPhotoUrl" 
+                             alt="POD Photo"
+                             style="max-height: 80px; max-width: 220px; border: 1px solid #ccc; border-radius: 4px; padding: 4px; background: #fafafa;">
+                        <br><small class="text-success fw-bold mt-1 d-block"><i class="bi bi-check-circle-fill"></i> Synced & Attached</small>
+                      </div>
                     } @else {
                       <span class="text-muted">Not Provided</span>
                     }
                   </td>
                 </tr>
+
                 @if (userRole !== 'LOGISTICS_OFFICER') {
                   <tr>
                     <td class="fw-bold bg-light">Created At</td>
@@ -377,8 +416,8 @@
 
   <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
 
-  @if (isDrawerOpen || isStatusModalOpen) {
-    <div class="drawer-backdrop" (click)="isDrawerOpen ? closeDrawer() : closeStatusModal()"></div>
+  @if (isDrawerOpen || isStatusModalOpen || isUploadModalOpen) {
+    <div class="drawer-backdrop" (click)="isDrawerOpen ? closeDrawer() : (isStatusModalOpen ? closeStatusModal() : closeUploadModal())"></div>
   }
 
 </div>

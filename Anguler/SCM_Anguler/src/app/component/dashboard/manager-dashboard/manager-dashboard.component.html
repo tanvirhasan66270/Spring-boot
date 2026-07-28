@@ -339,6 +339,81 @@
     </div>
   </div>
 
+  <!-- ───────────────── GRN RECEIVING / REJECTION ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4" *ngIf="!isLoading">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-box-arrow-in-down text-success me-2"></i> Goods Received Notes — Awaiting Decision
+      </h6>
+      <span class="badge bg-success rounded-pill" *ngIf="grns.length">{{ grns.length }}</span>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">GRN Reference</th>
+              <th>Linked PO</th>
+              <th>Warehouse</th>
+              <th>Receiver</th>
+              <th>Received Qty</th>
+              <th>QC Status</th>
+              <th>Current Stage</th>
+              <th class="text-end pe-4">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let g of grns">
+              <td class="ps-4 font-monospace fw-bold text-dark">{{ g.grnNumber }}</td>
+              <td class="font-monospace fw-semibold text-primary">#{{ g.poNumber }}</td>
+              <td class="fw-semibold text-secondary">{{ g.warehouseName }}</td>
+              <td>{{ g.receivedByName }}</td>
+              <td class="font-monospace fw-bold text-dark">{{ g.receivedQuantity }} Units</td>
+              <td>
+                <span *ngIf="g.inspectedByName" class="badge bg-success-subtle text-success">
+                  <i class="bi bi-patch-check-fill me-1"></i>{{ g.inspectedByName }}
+                </span>
+                <span *ngIf="!g.inspectedByName" class="badge bg-warning-subtle text-warning">
+                  <i class="bi bi-hourglass-split me-1"></i>Pending
+                </span>
+              </td>
+              <td>
+                <span class="badge px-2 py-1 text-uppercase border"
+                  [ngClass]="{
+                    'bg-light text-dark border-secondary': g.status === 'PENDING',
+                    'bg-warning-subtle text-warning border-warning': g.status === 'PARTIALLY_RECEIVED',
+                    'bg-info-subtle text-info border-info': g.status === 'INSPECTED'
+                  }">
+                  {{ g.status }}
+                </span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="d-flex justify-content-end gap-1">
+                  <button class="btn btn-sm btn-success fw-semibold px-2 py-1 rounded-2"
+                    [disabled]="grnStatusSaving === g.id"
+                    (click)="changeGrnStatus(g, 'RECEIVED')">
+                    <span *ngIf="grnStatusSaving === g.id" class="spinner-border spinner-border-sm me-1"></span>
+                    <i *ngIf="grnStatusSaving !== g.id" class="bi bi-check-circle me-1"></i> Receive
+                  </button>
+                  <button class="btn btn-sm btn-danger fw-semibold px-2 py-1 rounded-2"
+                    [disabled]="grnStatusSaving === g.id"
+                    (click)="changeGrnStatus(g, 'REJECTED')">
+                    <i class="bi bi-x-circle me-1"></i> Reject
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="grns.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted font-monospace">
+                <i class="bi bi-check-circle text-success me-1"></i> No GRNs awaiting decision.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- ───────────────── SUMMARY ROW ───────────────── -->
   <div class="row g-3 mb-4" *ngIf="!isLoading">
     <div class="col-md-3">

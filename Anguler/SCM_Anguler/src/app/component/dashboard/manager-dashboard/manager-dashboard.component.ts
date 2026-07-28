@@ -13,8 +13,10 @@ import { DeliveryTripService } from '../../../service/delivery-trip.service';
 import { QcInspectionService } from '../../../service/qc-inspection.service';
 import { NotificationService } from '../../../system/service/notification.service';
 import { ActivityLogService } from '../../../service/activity.log.service';
+import { GoodRecivedNoteService } from '../../../service/good-recived-note.service';
 import { NotificationModel } from '../../../system/NotificationModel';
 import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
+import { GoodsReceivedNoteResponseModel } from '../../shared/model/goodRecivedNoteModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 
 @Component({
@@ -49,6 +51,8 @@ export class ManagerDashboardComponent implements OnInit {
 
   approvals: any[] = [];
   pendingPOs: any[] = [];
+  grns: GoodsReceivedNoteResponseModel[] = [];
+  grnStatusSaving: number | null = null;
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
 
@@ -81,6 +85,7 @@ export class ManagerDashboardComponent implements OnInit {
     private qcService: QcInspectionService,
     private notificationService: NotificationService,
     private activityLogService: ActivityLogService,
+    private grnService: GoodRecivedNoteService,
   ) {}
 
   ngOnInit(): void {
@@ -97,8 +102,8 @@ export class ManagerDashboardComponent implements OnInit {
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
-    // 🎯 টোটাল কল ৮ করা হলো (নতুন মেথড সহ)
-    const totalCalls = 8;
+    // 🎯 টোটাল কল ৯ করা হলো (নতুন GRN মেথড সহ)
+    const totalCalls = 9;
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -116,6 +121,7 @@ export class ManagerDashboardComponent implements OnInit {
     this.loadQcInspections(checkDone);
     this.loadNotifications(checkDone);
     this.loadActivityLogs(checkDone);
+    this.loadGRNs(checkDone);
     
     // 🎯 পাইপলাইনে নতুন মেথডটি সেন্ট্রাললি এক্সিকিউট করা হলো
     this.loadPendingPurchaseOrders(checkDone);
@@ -311,6 +317,48 @@ export class ManagerDashboardComponent implements OnInit {
         done();
       },
       error: () => done(),
+    });
+  }
+
+  loadGRNs(done: () => void): void {
+    this.grnService.findAll().subscribe({
+      next: (data) => {
+        this.grns = (data || []).filter((g: GoodsReceivedNoteResponseModel) =>
+          g.status === 'PENDING' || g.status === 'PARTIALLY_RECEIVED' || g.status === 'INSPECTED'
+        );
+        this.cdr.markForCheck();
+        done();
+      },
+      error: () => done(),
+    });
+  }
+
+  changeGrnStatus(grn: GoodsReceivedNoteResponseModel, newStatus: string) {
+    if (!confirm(`Set GRN ${grn.grnNumber} status to "${newStatus}"?`)) return;
+    this.grnStatusSaving = grn.id;
+    const payload = {
+      poId: grn.poId,
+      productId: grn.productId || null,
+      receivedQuantity: grn.receivedQuantity,
+      receivedBy: grn.receivedBy,
+      warehouseId: grn.warehouseId,
+      receivedAt: grn.receivedAt,
+      status: newStatus,
+      remarks: grn.remarks,
+      inspectedBy: grn.inspectedBy,
+      inspectionDate: grn.inspectionDate,
+      lineItems: [],
+    };
+    this.grnService.update(grn.id, payload).subscribe({
+      next: () => {
+        this.grnStatusSaving = null;
+        this.loadGRNs(() => this.cdr.markForCheck());
+      },
+      error: (err) => {
+        this.grnStatusSaving = null;
+        alert(err.error?.message || 'Status update failed.');
+        this.cdr.markForCheck();
+      },
     });
   }
 

@@ -38,6 +38,10 @@ export class GoodRecivedNoteComponent implements OnInit {
   currentEditId: number | null = null;
   currentUserId: number = 0;
 
+  statusEditId: number | null = null;
+  statusEditValue: string = '';
+  statusSaving = false;
+
   // PDF Preview States
   @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
   isPdfModalOpen = false;
@@ -45,7 +49,7 @@ export class GoodRecivedNoteComponent implements OnInit {
 
   grn: GoodsReceivedNoteRequestModel = {
     poId: 0,
-    productId: 0,
+    productId: null,
     receivedQuantity: 0,
     receivedBy: 0,
     warehouseId: 0,
@@ -237,7 +241,7 @@ export class GoodRecivedNoteComponent implements OnInit {
       ...this.grn,
       poId: +this.grn.poId,
       warehouseId: +this.grn.warehouseId,
-      productId: this.grn.productId ? +this.grn.productId : 0,
+      productId: this.grn.productId ? +this.grn.productId : null,
       receivedBy: +this.grn.receivedBy,
       inspectedBy: this.grn.inspectedBy ? +this.grn.inspectedBy : null,
       status: this.grn.status || 'PENDING',
@@ -281,7 +285,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.isEdit = true;
     this.grn = {
       poId: o.poId,
-      productId: o.productId || 0,
+      productId: o.productId || null,
       receivedQuantity: o.receivedQuantity,
       receivedBy: o.receivedBy,
       warehouseId: o.warehouseId,
@@ -315,7 +319,7 @@ export class GoodRecivedNoteComponent implements OnInit {
   reset() {
     this.grn = {
       poId: 0,
-      productId: 0,
+      productId: null,
       receivedQuantity: 0,
       receivedBy: this.currentUserId,
       warehouseId: 0,
@@ -330,5 +334,51 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;
+  }
+
+  openStatusEdit(grn: GoodsReceivedNoteResponseModel) {
+    this.statusEditId = grn.id;
+    this.statusEditValue = grn.status;
+    this.cdr.markForCheck();
+  }
+
+  closeStatusEdit() {
+    this.statusEditId = null;
+    this.statusEditValue = '';
+    this.cdr.markForCheck();
+  }
+
+  changeStatus(grn: GoodsReceivedNoteResponseModel) {
+    if (!this.statusEditValue || this.statusEditValue === grn.status) {
+      this.closeStatusEdit();
+      return;
+    }
+    this.statusSaving = true;
+    const payload: GoodsReceivedNoteRequestModel = {
+      poId: grn.poId,
+      productId: grn.productId || null,
+      receivedQuantity: grn.receivedQuantity,
+      receivedBy: grn.receivedBy,
+      warehouseId: grn.warehouseId,
+      receivedAt: grn.receivedAt,
+      status: this.statusEditValue,
+      remarks: grn.remarks,
+      inspectedBy: grn.inspectedBy,
+      inspectionDate: grn.inspectionDate,
+      lineItems: [],
+    };
+    this.service.update(grn.id, payload).subscribe({
+      next: () => {
+        this.statusSaving = false;
+        this.closeStatusEdit();
+        this.loadGRNs();
+      },
+      error: (err) => {
+        this.statusSaving = false;
+        this.errorMessage = err.error?.message || 'Status update failed.';
+        this.closeStatusEdit();
+        this.cdr.markForCheck();
+      },
+    });
   }
 }

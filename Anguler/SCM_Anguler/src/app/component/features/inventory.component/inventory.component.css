@@ -10,9 +10,15 @@
 .bg-indigo-subtle { background-color: #e0e7ff !important; }
 .border-indigo { border-color: #4f46e5 !important; }
 
+/* টেবিলের ওভারফ্লো ফিক্স করা হয়েছে যাতে স্ট্যাটাস কার্ড কাটা না পড়ে */
+.card.shadow-sm.border-0.rounded-3 {
+  overflow: visible !important;
+}
+
 .table-responsive {
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible !important;
 }
 
 .table th {
@@ -30,6 +36,7 @@
   color: #1e293b;
   border-bottom: 1px solid #f1f5f9;
   font-size: 13px;
+  position: relative;
 }
 
 .btn-icon {
@@ -77,3 +84,10 @@
 
 .fs-7 { font-size: 13px !important; }
 .fs-8 { font-size: 11px !important; }
+
+/* স্ট্যাটাস ড্রপডাউন ভাসমান কার্ডের স্টাইল */
+.status-floating-card {
+  z-index: 99999 !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2) !important;
+}

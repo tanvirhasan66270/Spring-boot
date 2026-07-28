@@ -28,7 +28,6 @@ export class DeliveryTripService {
     return this.http.put<DeliveryTripResponseModel>(`${this.apiUrl}/${id}`, trip);
   }
 
-  //  for patch mathod
   changeStatus(id: number, status: string, signatureFile?: File | null, photoFile?: File | null): Observable<DeliveryTripResponseModel> {
     const formData = new FormData();
     formData.append('status', status);
