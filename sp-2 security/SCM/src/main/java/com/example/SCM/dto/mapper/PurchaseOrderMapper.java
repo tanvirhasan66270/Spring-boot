@@ -18,6 +18,10 @@ public class PurchaseOrderMapper {
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public PurchaseOrderResponseDTO convertTOResponseDTO(PurchaseOrder po) {
+        if (po == null) {
+            return null;
+        }
+
         PurchaseOrderResponseDTO dto = new PurchaseOrderResponseDTO();
 
         dto.setId(po.getId());
@@ -31,16 +35,33 @@ public class PurchaseOrderMapper {
         dto.setCreatedAt(po.getCreatedAt());
         dto.setUpdatedAt(po.getUpdatedAt());
 
-        if (po.getSupplier() != null) {
-            dto.setSupplierId(po.getSupplier().getId());
-            dto.setSupplierName(po.getSupplier().getName());
-            dto.setSupplierEmail(po.getSupplier().getEmail());
+        // 1. Supplier সেফ ম্যাপিং (যদি সরাসরি supplier না থাকে, Quotation থেকে বের করার ফলব্যাক ব্যবস্থা)
+        try {
+            if (po.getSupplier() != null) {
+                dto.setSupplierId(po.getSupplier().getId());
+                dto.setSupplierName(po.getSupplier().getName());
+                dto.setSupplierEmail(po.getSupplier().getEmail());
+            } else if (po.getQuotation() != null && po.getQuotation().getSupplier() != null) {
+                dto.setSupplierId(po.getQuotation().getSupplier().getId());
+                dto.setSupplierName(po.getQuotation().getSupplier().getName());
+                dto.setSupplierEmail(po.getQuotation().getSupplier().getEmail());
+            }
+        } catch (Exception e) {
+            // Lazy loading exception হ্যান্ডেল করার জন্য
         }
 
-        if (po.getPurchaseRequisition() != null) {
-            dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
+        // 2. Purchase Requisition সেফ ম্যাপিং
+        try {
+            if (po.getPurchaseRequisition() != null) {
+                dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
+            } else if (po.getQuotation() != null && po.getQuotation().getPurchaseRequisition() != null) {
+                dto.setPurchaseRequisitionId(po.getQuotation().getPurchaseRequisition().getId());
+            }
+        } catch (Exception e) {
+            // Lazy loading exception হ্যান্ডেল করার জন্য
         }
 
+        // 3. Quotation সেফ ম্যাপিং
         if (po.getQuotation() != null) {
             dto.setQuotationId(po.getQuotation().getId());
         }
@@ -63,9 +84,7 @@ public class PurchaseOrderMapper {
             po.setExpectedDeliveryDate(LocalDate.parse(dto.getExpectedDeliveryDate(), dateFormatter));
         }
 
-
         po.setStatus(PurchaseOrderStatus.DRAFT);
-
         po.setQuotation(quotation);
         po.setSupplier(supplier);
         po.setPurchaseRequisition(pr);
@@ -92,13 +111,6 @@ public class PurchaseOrderMapper {
         if (dto.getExpectedDeliveryDate() != null && !dto.getExpectedDeliveryDate().trim().isEmpty()) {
             po.setExpectedDeliveryDate(LocalDate.parse(dto.getExpectedDeliveryDate(), dateFormatter));
         }
-
-        //  dto.getStatus() থেকে সরাসরি status সেট করা যাবে না।
-        // PurchaseOrder-এর স্ট্যাটাস-পরিবর্তন শুধুমাত্র নির্দিষ্ট, নিয়ন্ত্রিত মেথডের মাধ্যমে হবে:
-        //   - managerIssuedOrderByToken(token)  -> DRAFT to ISSUED
-        //   - supplierReceivedOrder(token)      -> ISSUED to RECEIVED
-        //   - updateShipmentQuantityCheck(id,q) -> PARTIALLY_RECEIVED / RECEIVED
-
 
         if (quotation != null) po.setQuotation(quotation);
         if (supplier != null) po.setSupplier(supplier);

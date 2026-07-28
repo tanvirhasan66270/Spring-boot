@@ -68,9 +68,28 @@ export class PurchaseRequisitionComponent implements OnInit {
       this.currentSupplierId = cachedSupplier.id;
     }
 
-    this.loadRequisitions();
-    this.loadProducts();
-    this.loadSuppliers();
+    if (this.userRole === 'SUPPLIER' && !this.currentSupplierId && currentUser?.userId) {
+      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({
+        next: (supplier) => {
+          if (supplier && supplier.id) {
+            this.currentSupplierId = supplier.id;
+            this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: supplier.name });
+          }
+          this.loadRequisitions();
+          this.loadProducts();
+          this.loadSuppliers();
+        },
+        error: () => {
+          this.loadRequisitions();
+          this.loadProducts();
+          this.loadSuppliers();
+        }
+      });
+    } else {
+      this.loadRequisitions();
+      this.loadProducts();
+      this.loadSuppliers();
+    }
   }
 
   loadRequisitions() { 

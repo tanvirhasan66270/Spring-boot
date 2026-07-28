@@ -123,9 +123,16 @@ public class QuotationServiceImp implements QuotationService {
     @Override
     @Transactional(readOnly = true)
     public List<QuotationResponseDTO> findAll() {
-
-
         return quotationRepository.findAllWithDetails()
+                .stream()
+                .map(quotationMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<QuotationResponseDTO> findBySupplierId(Long supplierId) {
+        return quotationRepository.findBySupplierId(supplierId)
                 .stream()
                 .map(quotationMapper::toResponseDTO)
                 .collect(Collectors.toList());

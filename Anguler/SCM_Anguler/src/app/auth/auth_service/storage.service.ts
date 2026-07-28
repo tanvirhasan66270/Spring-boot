@@ -35,7 +35,9 @@ export class StorageService {
 
   getToken(): string | null {
     const raw = localStorage.getItem(KEYS.TOKEN);
-    return raw ? CryptoUtil.decrypt(raw) : null;
+    if (!raw) return null;
+    const decrypted = CryptoUtil.decrypt(raw);
+    return decrypted ? decrypted : raw;
   }
 
   getUser(): LoginResponse | null {
@@ -43,9 +45,16 @@ export class StorageService {
     if (!raw) return null;
     const json = CryptoUtil.decrypt(raw);
     try {
-      return json ? JSON.parse(json) : null;
+      if (json) {
+        return JSON.parse(json);
+      }
+      return JSON.parse(raw);
     } catch {
-      return null;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
     }
   }
 
@@ -97,9 +106,16 @@ export class StorageService {
 
     try {
       const json = CryptoUtil.decrypt(raw);
-      return json ? JSON.parse(json) : null;
+      if (json) {
+        return JSON.parse(json);
+      }
+      return JSON.parse(raw);
     } catch {
-      return null;
+      try {
+        return JSON.parse(raw) as T;
+      } catch {
+        return null;
+      }
     }
   }
 

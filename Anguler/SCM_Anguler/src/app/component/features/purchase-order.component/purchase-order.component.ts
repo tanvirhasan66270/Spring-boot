@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { PurchaseOrderRequestModel, PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { QuotationService } from '../../../service/quatation.service';
+import { SupplierService } from '../../../service/supplier.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
 // jsPDF এবং html2canvas ইমপোর্ট
@@ -27,7 +28,7 @@ export class PurchaseOrderComponent implements OnInit {
   isEdit = false;
   currentEditId: number | null = null;
   
-  activeRole: string = 'CUSTOMER';
+  activeRole: string = 'SUPPLIER';
   currentSupplierId: number | null = null;
 
   searchQuery: string = '';        
@@ -54,24 +55,42 @@ export class PurchaseOrderComponent implements OnInit {
   constructor(
     private service: PurchaseOrderService,
     private quotationService: QuotationService,
+    private supplierService: SupplierService,
     private storage: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
-    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
+    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'SUPPLIER';
     const currentUser = this.storage.getUser();
     if (currentUser) {
       this.order.issuedBy = currentUser.userId;
     }
 
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as { id: number; [key: string]: any };
-    if (cachedSupplier) {
+    if (cachedSupplier && cachedSupplier.id) {
       this.currentSupplierId = cachedSupplier.id;
     }
 
-    this.loadOrders();
-    this.loadQuotations();
+    if (this.activeRole === 'SUPPLIER' && !this.currentSupplierId && currentUser?.userId) {
+      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({
+        next: (supplier: any) => {
+          if (supplier && supplier.id) {
+            this.currentSupplierId = supplier.id;
+            this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: supplier.name });
+          }
+          this.loadOrders();
+          this.loadQuotations();
+        },
+        error: () => {
+          this.loadOrders();
+          this.loadQuotations();
+        }
+      });
+    } else {
+      this.loadOrders();
+      this.loadQuotations();
+    }
   }
 
   canAddPurchaseOrder(): boolean {
@@ -83,7 +102,9 @@ export class PurchaseOrderComponent implements OnInit {
   isManagementUser(): boolean {
     return this.activeRole === 'ADMIN' || 
            this.activeRole === 'MANAGER' || 
-           this.activeRole === 'PROCUREMENT';
+           this.activeRole === 'PROCUREMENT' ||
+           this.activeRole === 'COMMERCIAL_OFFICER' ||
+           this.activeRole === 'LOGISTICS_OFFICER';
   }
 
   shouldShowCardSearchBar(): boolean {
@@ -106,21 +127,26 @@ export class PurchaseOrderComponent implements OnInit {
   applyDataIsolationAndFilters(): void {
     let ordersPipe = [...this.orders];
 
-    if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
-      ordersPipe = ordersPipe.filter((po: any) => {
-        const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
-        return sId === this.currentSupplierId;
-      });
+    if (this.activeRole === 'SUPPLIER') {
+      if (this.currentSupplierId) {
+        ordersPipe = ordersPipe.filter((po: any) => {
+        const poSupId = Number(po.supplierId || po.supplier?.id || 0);
+          const currentId = Number(this.currentSupplierId);
+          return poSupId === currentId;
+        });
+      } else {
+        ordersPipe = [];
+      }
     } 
     else if (this.activeRole === 'LOGISTICS_OFFICER') {
-      // লজিস্টিক অফিসার সব দেখতে পাবে
+      // লজিস্টিকস অফিসারদের জন্য ফিল্টার লজিক
     }
-    else if (!this.isManagementUser() && this.activeRole !== 'SUPPLIER') {
+    else if (!this.isManagementUser()) {
       ordersPipe = []; 
     }
 
-    if (this.isManagementUser()) {
-      if (this.searchQuery.trim() !== '') {
+    if (this.isManagementUser() || this.activeRole === 'SUPPLIER') {
+      if (this.searchQuery && this.searchQuery.trim() !== '') {
         const query = this.searchQuery.toLowerCase();
         ordersPipe = ordersPipe.filter((o: any) => 
           (o.poNumber && o.poNumber.toLowerCase().includes(query)) || 
@@ -128,7 +154,7 @@ export class PurchaseOrderComponent implements OnInit {
         );
       }
 
-      if (this.searchSupplier.trim() !== '') {
+      if (this.searchSupplier && this.searchSupplier.trim() !== '') {
         const supplierQuery = this.searchSupplier.toLowerCase();
         ordersPipe = ordersPipe.filter((o: any) => 
           (o.supplierName && o.supplierName.toLowerCase().includes(supplierQuery)) || 
@@ -137,7 +163,7 @@ export class PurchaseOrderComponent implements OnInit {
         );
       }
 
-      if (this.searchDate !== '') {
+      if (this.searchDate && this.searchDate !== '') {
         ordersPipe = ordersPipe.filter((o: any) => 
           (o.createdAt && o.createdAt.includes(this.searchDate)) ||
           (o.expectedDeliveryDate && o.expectedDeliveryDate.includes(this.searchDate))
@@ -244,7 +270,7 @@ export class PurchaseOrderComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // প্রিভিউ মডাল থেকে ওয়ার্ড পেজ আকারে পিডিএফ ডাউনলোড করার ফাংশন
+  // প্রিভিউ মডাল থেকে ওয়ার্ড পেজ আকারে পিডিএফ ডাউনলোড করার ফাংশন
   downloadPdfFromModal() {
     if (!this.selectedOrderForPdf) return;
 

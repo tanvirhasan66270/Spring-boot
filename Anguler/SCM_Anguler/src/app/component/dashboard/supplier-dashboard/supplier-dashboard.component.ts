@@ -191,7 +191,10 @@ export class SupplierDashboardComponent implements OnInit {
         }));
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Quotation Load Error:', err)
+      error: (err) => {
+  console.error('Full Error Object:', err);
+  console.error('Server Error Message:', err.error?.message || err.message);
+}
     });
 
     this.prService.findAll().subscribe({

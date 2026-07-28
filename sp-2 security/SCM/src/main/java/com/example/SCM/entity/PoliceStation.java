@@ -28,7 +28,7 @@ public class PoliceStation {
     private Boolean active = true;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "district_id")
     private District district;
 

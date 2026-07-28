@@ -13,8 +13,8 @@ export class QuotationService {
   constructor(private http: HttpClient) { }
 
   findAll(): Observable<QuotationResponseModel[]> {
-    return this.http.get<QuotationResponseModel[]>(this.apiUrl);
-  }
+  return this.http.get<QuotationResponseModel[]>(this.apiUrl);
+}
 
   getById(id: number): Observable<QuotationResponseModel> {
     return this.http.get<QuotationResponseModel>(`${this.apiUrl}/${id}`);
@@ -24,11 +24,10 @@ export class QuotationService {
   save(quotation: QuotationRequestModel, file: File | null): Observable<QuotationResponseModel> {
     const formData = new FormData();
     
-    // কন্ট্রোলারের String টাইপের সাথে মিল রেখে সরাসরি জেসন স্ট্রিং অ্যাপেন্ড করা হলো
     formData.append('quotation', JSON.stringify(quotation));
     
     if (file) {
-      formData.append('image', file); // @RequestPart("image") এর সাথে সিঙ্কড
+      formData.append('image', file); 
     }
 
     return this.http.post<QuotationResponseModel>(this.apiUrl, formData);
@@ -42,7 +41,6 @@ export class QuotationService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
   updateStatus(id: number, status: string): Observable<any> {
-  // আপনার ব্যাকএন্ডের URL অনুযায়ী পাথ ঠিক করবেন
   return this.http.patch(`${environment.apiUrl}quotations/${id}/status`, status);
 }
 }

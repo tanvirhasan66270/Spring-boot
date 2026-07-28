@@ -44,7 +44,7 @@ public class User implements UserDetails {
     private Role role;
 
    
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "police_station_id")
     private PoliceStation policeStation;
 

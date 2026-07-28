@@ -28,7 +28,7 @@ public class District {
 
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "division_id")
     private Division division;
 

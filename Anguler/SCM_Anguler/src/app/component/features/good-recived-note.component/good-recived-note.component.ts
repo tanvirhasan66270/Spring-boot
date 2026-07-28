@@ -32,11 +32,14 @@ export class GoodRecivedNoteComponent implements OnInit {
   users: any[] = [];
 
   errorMessage: string | null = null;
-  receivedQuantityError: string | null = null; 
+  receivedQuantityError: string | null = null;
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
   currentUserId: number = 0;
+
+  // যুক্ত করা হয়েছে: ইউজার রোল যা এইচটিএমএল-এ *ngIf এর জন্য ব্যবহৃত হবে
+  userRole: string = 'CUSTOMER';
 
   statusEditId: number | null = null;
   statusEditValue: string = '';
@@ -68,11 +71,14 @@ export class GoodRecivedNoteComponent implements OnInit {
     private productService: AddProductService,
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
-    public storage: StorageService, 
+    public storage: StorageService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   ngOnInit() {
+    // রোল এবং ইউজার আইডি ইনিশিয়ালাইজ করা হচ্ছে
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
+
     const user = this.storage.getUser();
     if (user) {
       this.currentUserId = user.userId;
@@ -196,7 +202,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas: HTMLCanvasElement) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; 
+      const imgWidth = 210;
       const pageHeight = 295;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;

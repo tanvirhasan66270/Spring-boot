@@ -23,9 +23,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.roleSubscription = this.storage.role$.subscribe((role) => {
       if (role) {
-        this.activeRole = role;
+        this.activeRole = role.toUpperCase();
       } else {
-        this.activeRole = this.storage.getActiveRole();
+        this.activeRole = this.storage.getActiveRole()?.toUpperCase();
       }
     });
   }

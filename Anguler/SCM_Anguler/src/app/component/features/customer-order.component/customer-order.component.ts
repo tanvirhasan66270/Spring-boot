@@ -27,7 +27,7 @@ export class CustomerOrderComponent implements OnInit {
   isDrawerOpen = false;
   isEdit = false;
   currentEditId: number | null = null;
-  userRole: string = ''; 
+  userRole: string = '';
   loggedInCustomerName: string = '';
 
   @ViewChild('orderPdfContainer') orderPdfContainer!: ElementRef;
@@ -57,15 +57,15 @@ export class CustomerOrderComponent implements OnInit {
   order: CustomerOrderRequestModel = {
     customerId: 0,
     deliveryAddress: '',
-    deliveryPhone: '',      
+    deliveryPhone: '',
     estimatedDelivery: '',
     serviceType: 'STANDARD',
-    priority: 'NORMAL',      
-    currency: 'BDT',            
+    priority: 'NORMAL',
+    currency: 'BDT',
     codAmount: 0,
-    paymentMethod: 'CASH',    
+    paymentMethod: 'CASH',
     status: 'PENDING',
-    remarks: '',                
+    remarks: '',
     items: []
   };
 
@@ -215,14 +215,14 @@ export class CustomerOrderComponent implements OnInit {
 
   downloadOrderPdf() {
     const element = this.orderPdfContainer.nativeElement;
-    html2canvas(element, { 
-      scale: 2, 
+    html2canvas(element, {
+      scale: 2,
       useCORS: true,
-      windowHeight: element.scrollHeight 
+      windowHeight: element.scrollHeight
     }).then((canvas: HTMLCanvasElement) => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210; 
+      const imgWidth = 210;
       const pageHeight = 295;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
@@ -246,7 +246,7 @@ export class CustomerOrderComponent implements OnInit {
     this.reset();
     this.isEdit = false;
     this.isDrawerOpen = true;
-    
+
     if (this.userRole === 'CUSTOMER') {
       const user = this.storage.getUser();
       if (user) {
@@ -389,15 +389,15 @@ export class CustomerOrderComponent implements OnInit {
     this.order = {
       customerId: o.customerId,
       deliveryAddress: o.deliveryAddress,
-      deliveryPhone: o.deliveryPhone || '',      
+      deliveryPhone: o.deliveryPhone || '',
       estimatedDelivery: o.estimatedDelivery,
       serviceType: o.serviceType,
-      priority: o.priority || 'NORMAL',   
-      currency: o.currency || 'BDT',                
+      priority: o.priority || 'NORMAL',
+      currency: o.currency || 'BDT',
       codAmount: Number(o.codAmount) || 0,
-      paymentMethod: o.paymentMethod || 'CASH',    
+      paymentMethod: o.paymentMethod || 'CASH',
       status: o.status,
-      remarks: o.remarks || '',                    
+      remarks: o.remarks || '',
       items: o.lineItems.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -436,7 +436,7 @@ export class CustomerOrderComponent implements OnInit {
       remarks: '',
       items: []
     };
-    
+
     if (this.userRole === 'CUSTOMER') {
       const user = this.storage.getUser();
       if (user) {

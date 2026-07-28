@@ -11,6 +11,7 @@ public interface QuotationService {
     QuotationResponseDTO save(QuotationRequestDTO dto , MultipartFile imge);
     QuotationResponseDTO update(Long id, QuotationRequestDTO dto);
     List<QuotationResponseDTO> findAll();
+    List<QuotationResponseDTO> findBySupplierId(Long supplierId);
     Optional<QuotationResponseDTO> getById(Long id);
     void delete(Long id);
     QuotationResponseDTO updateStatus(Long id, String status);

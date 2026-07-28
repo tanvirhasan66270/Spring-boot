@@ -86,24 +86,42 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       this.currentSupplierName = user?.name || 'Your Supplier Account';
     }
 
-    this.loadShipments();
-    this.loadPurchaseOrders();
-    this.loadSuppliers();
+    if (this.userRole === 'SUPPLIER' && !this.currentSupplierId && user?.userId) {
+      this.supplierService.getSupplierByUserId(user.userId).subscribe({
+        next: (supplier) => {
+          if (supplier && supplier.id) {
+            this.currentSupplierId = supplier.id;
+            this.currentSupplierName = supplier.name || this.currentSupplierName;
+            this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: this.currentSupplierName });
+          }
+          this.loadShipments();
+          this.loadPurchaseOrders();
+        },
+        error: () => {
+          this.loadShipments();
+          this.loadPurchaseOrders();
+        }
+      });
+    } else {
+      this.loadShipments();
+      this.loadPurchaseOrders();
+      this.loadSuppliers();
+    }
   }
 
- loadShipments() {
+  loadShipments() {
     this.service.findAll().subscribe({
       next: (data) => {
         const allShipments = data || [];
 
-      
-        if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
-          this.shipments = allShipments.filter((s: any) => {
-            const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
-            return sId === this.currentSupplierId;
-          });
-          if (this.shipments.length === 0 && allShipments.length > 0) {
-            this.shipments = allShipments;
+        if (this.userRole === 'SUPPLIER') {
+          if (this.currentSupplierId) {
+            this.shipments = allShipments.filter((s: any) => {
+              const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
+              return Number(sId) === Number(this.currentSupplierId);
+            });
+          } else {
+            this.shipments = [];
           }
         } else {
           this.shipments = allShipments;
@@ -138,7 +156,15 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
   loadPurchaseOrders() {
     this.poService.findAll().subscribe({ 
       next: (data) => {
-        this.purchaseOrders = data || [];
+        const allPOs = data || [];
+        if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+          this.purchaseOrders = allPOs.filter((po: any) => {
+            const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
+            return Number(sId) === Number(this.currentSupplierId);
+          });
+        } else {
+          this.purchaseOrders = allPOs;
+        }
         this.cdr.markForCheck();
       },
       error: (err) => console.error("PO Load Error:", err)

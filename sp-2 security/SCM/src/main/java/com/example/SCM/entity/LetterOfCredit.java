@@ -37,7 +37,7 @@ public class LetterOfCredit {
     private Supplier supplier;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issuing_bank_id", nullable = false)
+    @JoinColumn(name = "issuing_bank", nullable = false)
     private LCBank issuingBank;
 
     @Column(nullable = false)

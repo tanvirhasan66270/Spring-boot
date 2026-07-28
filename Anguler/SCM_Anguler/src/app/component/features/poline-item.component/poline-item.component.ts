@@ -5,7 +5,7 @@ import { POLineItemRequestDTO, POLineItemResponseDTO } from '../../shared/model/
 import { PoLineItemService } from '../../../service/po-line-item.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { AddProductService } from '../../../service/add-product.service';
-import { StorageService } from '../../../auth/auth_service/storage.service';
+import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 import { SupplierService } from '../../../service/supplier.service';
 
 @Component({
@@ -57,18 +57,27 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   ) { }
 
   ngOnInit() {
-    this.activeRole = this.storage.getActiveRole();
+    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || '';
     const user = this.storage.getUser();
     
-    if (user && this.activeRole === 'SUPPLIER') {
+    const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
+    if (cachedSupplier) {
+      this.currentSupplierId = cachedSupplier.id;
+    }
+
+    if (user && this.activeRole === 'SUPPLIER' && !this.currentSupplierId) {
       this.supplierService.getSupplierByUserId(user.userId).subscribe({
         next: (res) => {
           if (res) {
             this.currentSupplierId = res.id;
+            this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: res.name });
             this.loadSecurePipelineData();
           }
         },
-        error: (err) => console.error('Failed to resolve supplier identity:', err)
+        error: (err) => {
+          console.error('Failed to resolve supplier identity:', err);
+          this.loadSecurePipelineData();
+        }
       });
     } else {
       this.loadSecurePipelineData();

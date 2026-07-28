@@ -4,6 +4,7 @@ import com.example.SCM.dto.request.ShipmentRequestDTO;
 import com.example.SCM.dto.response.ShipmentResponseDTO;
 import com.example.SCM.entity.User;
 import com.example.SCM.service.ShipmentService;
+import com.example.SCM.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class ShipmentController {
 
     private final ShipmentService shipmentService;
+    private final SupplierRepository supplierRepository;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> create(
@@ -52,10 +54,14 @@ public class ShipmentController {
         if (principal instanceof User currentUser) {
             // ইউজার রোল SUPPLIER হলে শুধুমাত্র তার নিজস্ব শিপমেন্ট ম্যাট্রিক্স ফিল্টার হবে
             if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
-                List<ShipmentResponseDTO> supplierFiltered = list.stream()
-                        .filter(s -> s.getSupplierId() != null && s.getSupplierId().equals(currentUser.getId()))
-                        .collect(Collectors.toList());
-                return ResponseEntity.ok(supplierFiltered);
+                return supplierRepository.findByUserId(currentUser.getId())
+                        .map(supplier -> {
+                            List<ShipmentResponseDTO> supplierFiltered = list.stream()
+                                    .filter(s -> s.getSupplierId() != null && s.getSupplierId().equals(supplier.getId()))
+                                    .collect(Collectors.toList());
+                            return ResponseEntity.ok(supplierFiltered);
+                        })
+                        .orElse(ResponseEntity.ok(java.util.Collections.emptyList()));
             }
         }
 

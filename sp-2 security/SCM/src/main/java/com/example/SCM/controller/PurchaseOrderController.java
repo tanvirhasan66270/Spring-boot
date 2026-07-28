@@ -4,6 +4,7 @@ import com.example.SCM.dto.request.PurchaseOrderRequestDTO;
 import com.example.SCM.dto.response.PurchaseOrderResponseDTO;
 import com.example.SCM.entity.User;
 import com.example.SCM.service.PurchaseOrderService;
+import com.example.SCM.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class PurchaseOrderController {
 
     private final PurchaseOrderService purchaseOrderService;
+    private final SupplierRepository supplierRepository;
 
     @PostMapping
     public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
@@ -57,11 +59,14 @@ public class PurchaseOrderController {
         if (principal instanceof User currentUser) {
             // ৩. রোল যদি SUPPLIER হয়, তবে ডাটাবেজ লেভেলে ফিল্টার লক সক্রিয় হবে
             if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
-                List<PurchaseOrderResponseDTO> filteredOrders = allOrders.stream()
-                        .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(currentUser.getId()))
-                        .collect(Collectors.toList());
-
-                return ResponseEntity.ok(filteredOrders);
+                return supplierRepository.findByUserId(currentUser.getId())
+                        .map(supplier -> {
+                            List<PurchaseOrderResponseDTO> filteredOrders = allOrders.stream()
+                                    .filter(po -> po.getSupplierId() != null && po.getSupplierId().equals(supplier.getId()))
+                                    .collect(Collectors.toList());
+                            return ResponseEntity.ok(filteredOrders);
+                        })
+                        .orElse(ResponseEntity.ok(java.util.Collections.emptyList()));
             }
             // 🎯 রোল ADMIN, MANAGER বা PROCUREMENT হলে সরাসরি সব ডাটা রিটার্ন করবে
             return ResponseEntity.ok(allOrders);

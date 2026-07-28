@@ -41,7 +41,7 @@ export class QuatationComponent implements OnInit {
   currentEditId: number | null = null;
   selectedFile: File | null = null;
   
-  activeRole: string = 'CUSTOMER';
+  activeRole: string = 'SUPPLIER';
   currentSupplierId: number | null = null;
   currentSupplierName: string = ''; 
 
@@ -74,21 +74,43 @@ export class QuatationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
+    this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'SUPPLIER';
     const user = this.storage.getUser();
     
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
     if (cachedSupplier) {
       this.currentSupplierId = cachedSupplier.id;
+      console.log(this.currentSupplierId);
       this.currentSupplierName = cachedSupplier.name || user?.name || 'Your Supplier Account';
+      console.log(this.currentSupplierName)
     } else {
       this.currentSupplierName = user?.name || 'Your Supplier Account';
     }
 
-    this.loadQuotations();
-    this.loadProducts();
-    this.loadSuppliers();
-    this.loadRequisitions();
+    if (this.activeRole === 'SUPPLIER' && !this.currentSupplierId && user?.userId) {
+      this.supplierService.getSupplierByUserId(user.userId).subscribe({
+        next: (supplier) => {
+          if (supplier && supplier.id) {
+            this.currentSupplierId = supplier.id;
+            this.currentSupplierName = supplier.name || this.currentSupplierName;
+            this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: this.currentSupplierName });
+          }
+          this.loadQuotations();
+          this.loadProducts();
+          this.loadRequisitions();
+        },
+        error: () => {
+          this.loadQuotations();
+          this.loadProducts();
+          this.loadRequisitions();
+        }
+      });
+    } else {
+      this.loadQuotations();
+      this.loadProducts();
+      this.loadSuppliers();
+      this.loadRequisitions();
+    }
   }
 
   getSupplierNameById(supplierId: number): string {
@@ -132,28 +154,17 @@ export class QuatationComponent implements OnInit {
     this.service.findAll().subscribe({
       next: (data) => {
         const allRfqs = data || [];
+
+        console.log(allRfqs);
         
         if (this.activeRole === 'SUPPLIER') {
-          if (!this.currentSupplierId) {
-            const user = this.storage.getUser();
-            const match = allRfqs.find((q: any) => {
-              const sName = q.supplierName || '';
-              return sName.toLowerCase() === (user?.name || '').toLowerCase();
-            });
-            if (match) {
-              this.currentSupplierId = match.supplierId || (match.supplierId ? match.supplierId : null);
-              this.currentSupplierName = match.supplierName || this.currentSupplierName;
-              this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: this.currentSupplierName });
-            }
-          }
-
           if (this.currentSupplierId) {
             this.quotations = allRfqs.filter((q: any) => {
               const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
               return Number(sId) === Number(this.currentSupplierId);
             });
           } else {
-            this.quotations = allRfqs;
+            this.quotations = [];
           }
         } else {
           this.quotations = allRfqs;

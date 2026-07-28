@@ -31,6 +31,7 @@ export class QcInspectionComponent implements OnInit {
   currentEditId: number | null = null;
   selectedFile: File | null = null;
   currentUserId: number = 0;
+  userRole: string = 'CUSTOMER';
 
   inspection: QCInspectionRequestModel = {
     grnId: 0,
@@ -54,9 +55,10 @@ export class QcInspectionComponent implements OnInit {
     private qcInspectorService: QcInspectorService,
     private storage: StorageService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) { }
 
   ngOnInit() {
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
     const user = this.storage.getUser();
     if (user) {
       this.currentUserId = user.userId;
@@ -101,6 +103,18 @@ export class QcInspectionComponent implements OnInit {
     });
   }
 
+  getInspectorDisplayName(): string {
+    const user: any = this.storage.getUser();
+    if (!user) return 'Not Assigned';
+
+    const matchedInspector = this.inspectors.find((i: any) => Number(i.id) === Number(user.userId));
+    if (matchedInspector) {
+      return `${matchedInspector.name} (${matchedInspector.designation || 'QC Inspector'})`;
+    }
+
+    return user.name || 'Current Inspector';
+  }
+
   onFileChange(event: any) {
     if (event.target.files && event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
@@ -128,6 +142,7 @@ export class QcInspectionComponent implements OnInit {
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
+
   closeDrawer() {
     this.isDrawerOpen = false;
     this.reset();
@@ -167,7 +182,7 @@ export class QcInspectionComponent implements OnInit {
       result: this.inspection.result ? this.inspection.result.toUpperCase() : 'GOOD',
       checklists: this.inspection.checklists.map((c) => ({
         checkpointName: c.checkpointName || 'General Checkpoint',
-        isPassed: String(c.isPassed) === 'true', 
+        isPassed: String(c.isPassed) === 'true',
         remarks: c.remarks || '',
       })),
     };
@@ -218,10 +233,10 @@ export class QcInspectionComponent implements OnInit {
       inspectedAt: o.inspectedAt,
       checklists: o.checklists
         ? o.checklists.map((c) => ({
-            checkpointName: c.checkpointName,
-            isPassed: c.isPassed,
-            remarks: c.remarks,
-          }))
+          checkpointName: c.checkpointName,
+          isPassed: c.isPassed,
+          remarks: c.remarks,
+        }))
         : [],
     };
     this.isDrawerOpen = true;

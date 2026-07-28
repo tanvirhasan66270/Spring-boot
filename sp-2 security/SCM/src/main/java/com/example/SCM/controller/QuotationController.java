@@ -3,8 +3,9 @@ package com.example.SCM.controller;
 import com.example.SCM.dto.request.QuotationRequestDTO;
 import com.example.SCM.dto.response.QuotationResponseDTO;
 import com.example.SCM.entity.User;
+import com.example.SCM.repository.SupplierRepository;
 import com.example.SCM.service.QuotationService;
-import com.fasterxml.jackson.databind.ObjectMapper; // 🎯 স্ট্যান্ডার্ড জ্যাকসন লাইব্রেরি ইম্পোর্ট
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,8 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/quotations")
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class QuotationController {
 
     private final QuotationService quotationService;
+    private final SupplierRepository supplierRepository;
 
     // 1. Create New Quotation (POST Multipart)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -51,24 +53,24 @@ public class QuotationController {
     @GetMapping
     public ResponseEntity<List<QuotationResponseDTO>> getAllQuotations() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        List<QuotationResponseDTO> list = quotationService.findAll();
 
         if (principal instanceof User currentUser) {
-            // ইউজার রোল SUPPLIER হলে শুধুমাত্র তার ওনড মেটেরিয়াল কোটেশন ফিল্টার হবে
             if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
-                List<QuotationResponseDTO> supplierFiltered = list.stream()
-                        .filter(q -> q.getSupplierId() != null && q.getSupplierId().equals(currentUser.getId()))
-                        .collect(Collectors.toList());
-                return ResponseEntity.ok(supplierFiltered);
+                return supplierRepository.findByUserId(currentUser.getId())
+                        .map(supplier -> {
+                            List<QuotationResponseDTO> supplierQuotations =
+                                    quotationService.findBySupplierId(supplier.getId());
+                            return ResponseEntity.ok(supplierQuotations);
+                        })
+                        .orElse(ResponseEntity.ok(Collections.emptyList()));
             }
         }
 
-        // ADMIN, MANAGER বা PROCUREMENT হলে গ্লোবাল ডাটা পাবে
+        List<QuotationResponseDTO> list = quotationService.findAll();
         if (list.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(list);
-
     }
 
     // 4. Update Existing Quotation (PUT)
