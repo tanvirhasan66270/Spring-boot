@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.SCM.dto.response.ChatContactDTO;
+
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImp {
@@ -68,9 +70,9 @@ public class MessageServiceImp {
         message.setSenderId(senderId);
         message.setSenderName(senderName);
         message.setRecipientId(recipientId);
-        message.setSubject(dto.getSubject());
+        message.setSubject(dto.getSubject() != null ? dto.getSubject() : "Chat Message");
         message.setBody(dto.getBody());
-        message.setPriority(dto.getPriority().toUpperCase());
+        message.setPriority(dto.getPriority() != null ? dto.getPriority().toUpperCase() : "MEDIUM");
         return message;
     }
 
@@ -78,6 +80,41 @@ public class MessageServiceImp {
     public List<MessageResponseDTO> getInbox(String userId) {
         return repository.findByRecipientIdOrderByCreatedAtDesc(userId).stream()
                 .map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatContactDTO> getChatlist(String userId) {
+        User currentUser = userRepository.findById(Long.valueOf(userId))
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        Role role = currentUser.getRole();
+        List<User> users;
+        if (role == Role.CUSTOMER) {
+            users = userRepository.findByRole(Role.SALES_OFFICER);
+        } else if (role == Role.SALES_OFFICER) {
+            users = userRepository.findByRole(Role.CUSTOMER);
+        } else if (role == Role.SUPPLIER) {
+            users = userRepository.findUsersByRoles(List.of(Role.MANAGER, Role.PROCUREMENT));
+        } else {
+            users = userRepository.findAll().stream()
+                    .filter(u -> !u.getId().toString().equals(userId))
+                    .collect(Collectors.toList());
+        }
+
+        return users.stream().map(u -> new ChatContactDTO(
+                u.getId(),
+                u.getName(),
+                u.getEmail(),
+                u.getRole().toString(),
+                u.getPhoneNumber()
+        )).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<MessageResponseDTO> getChatHistory(String user1, String user2) {
+        return repository.findChatHistory(user1, user2).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional

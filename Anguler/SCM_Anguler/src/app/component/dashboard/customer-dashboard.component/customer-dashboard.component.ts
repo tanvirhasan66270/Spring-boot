@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
@@ -15,6 +15,9 @@ import { NotificationService } from '../../../system/service/notification.servic
 import { NotificationModel } from '../../../system/NotificationModel';
 import { ActivityLogService } from '../../../service/activity.log.service';
 import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
+import { InvoiceService } from '../../../service/invoice.service';
+import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-customer-dashboard',
@@ -37,6 +40,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   monthlyExpenses: number[] = [];
   monthLabels: string[] = [];
   recommendations: any[] = [];
+  readonly imageBaseUrl = environment.imgUrl + "product/";
 
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
@@ -104,6 +108,8 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     private activityLogService: ActivityLogService,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private route: ActivatedRoute,
+    private invoiceService: InvoiceService,
   ) {}
 
   ngOnInit(): void {
@@ -118,6 +124,29 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadRecommendations();
     this.loadNotifications();
     this.loadActivities();
+
+    this.route.queryParams.subscribe(params => {
+      if (params['track'] === 'true') {
+        setTimeout(() => {
+          const btn = document.getElementById('track-product-btn');
+          if (btn) {
+            btn.click();
+          } else {
+            this.openTrackModal();
+          }
+        }, 150);
+      }
+      if (params['billing'] === 'true') {
+        setTimeout(() => {
+          const btn = document.getElementById('billing-ledger-btn');
+          if (btn) {
+            btn.click();
+          } else {
+            this.openBillingModal();
+          }
+        }, 150);
+      }
+    });
   }
 
   // Track Product Modal Methods
@@ -131,7 +160,73 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   closeTrackModal(): void {
     this.isTrackModalOpen = false;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { track: null },
+      queryParamsHandling: 'merge'
+    });
     this.cdr.markForCheck();
+  }
+
+  isBillingModalOpen = false;
+  searchBillingCode = '';
+  billingSearchResult: any = null;
+  billingSearched = false;
+
+  // Billing Ledger Modal Methods
+  openBillingModal(): void {
+    this.isBillingModalOpen = true;
+    this.searchBillingCode = '';
+    this.billingSearchResult = null;
+    this.billingSearched = false;
+    this.cdr.markForCheck();
+  }
+
+  closeBillingModal(): void {
+    this.isBillingModalOpen = false;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { billing: null },
+      queryParamsHandling: 'merge'
+    });
+    this.cdr.markForCheck();
+  }
+
+  searchBilling(): void {
+    this.billingSearched = true;
+    if (!this.searchBillingCode || this.searchBillingCode.trim() === '') {
+      this.billingSearchResult = null;
+      return;
+    }
+
+    this.invoiceService.findAll().subscribe({
+      next: (invoices) => {
+        this.orderService.findAll().subscribe({
+          next: (orders) => {
+            const order = (orders || []).find(
+              o => o.orderNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase()
+            );
+            const foundInvoice = (invoices || []).find(inv => 
+              inv.invoiceNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase() ||
+              (order && inv.customerOrderId === order.id)
+            );
+            this.billingSearchResult = foundInvoice || null;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            const foundInvoice = (invoices || []).find(inv => 
+              inv.invoiceNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase()
+            );
+            this.billingSearchResult = foundInvoice || null;
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      error: () => {
+        this.billingSearchResult = null;
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   trackOrder(): void {
@@ -467,18 +562,27 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   loadRecommendations(): void {
     this.productService.findAll().subscribe({
       next: (data) => {
-        this.recommendations = (data || []).slice(0, 3).map((p: ProductResponseModel) => ({
+        this.recommendations = (data || []).slice(0, 5).map((p: ProductResponseModel) => ({
           name: p.name || 'Product',
           price: p.sellingPrice || 0,
           rating:
             Math.round(((p.sellingPrice || 0) / Math.max(p.unitCost || 1, 1)) * 10) / 10 > 5
               ? 5
               : Math.round(((p.sellingPrice || 0) / Math.max(p.unitCost || 1, 1)) * 10) / 10 || 4.0,
-          image: 'bi-box-seam',
+          image: p.image || null,
         }));
         this.cdr.markForCheck();
       },
     });
+  }
+
+  getImageUrl(imageName: string | null | undefined): string {
+    return imageName ? `${this.imageBaseUrl}${imageName}` : '';
+  }
+
+  onImageError(prod: any): void {
+    prod.image = null;
+    this.cdr.markForCheck();
   }
 
   loadNotifications(): void {
@@ -509,6 +613,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
       LOGIN: 'bi-box-arrow-in-right text-info',
     };
     return icons[action] || 'bi-clock text-secondary';
+  }
+
+  isChildRouteActive(): boolean {
+    return this.router.url.includes('customer_profile');
+  }
+
+  onEditProfileTriggered(): void {
+    this.showSettings = false;
+    this.router.navigate(['customer_profile'], { relativeTo: this.route });
   }
 
   logout(): void {

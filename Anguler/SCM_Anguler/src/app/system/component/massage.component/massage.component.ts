@@ -1,18 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MessageRequestModel, MessageResponseModel } from '../../massageModel';
 import { MessageService } from '../../service/massage.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
-import { ManagerService } from '../../../service/manager.service';
-import { LogisticsOfficerService } from '../../../service/logistics-officer.service';
-import { ProcurementService } from '../../../service/procourment.service';
-import { DriverService } from '../../../service/driver.service';
-import { CustomerService } from '../../../service/customer.service';
-import { SupplierService } from '../../../service/supplier.service';
-import { CommercialOfficerService } from '../../../service/commercial-officer.service';
-import { SalesOfficerService } from '../../../service/sales-officer.service';
-import { QcInspectorService } from '../../../service/qc-inspactor.service';
 
 @Component({
   selector: 'app-massage',
@@ -21,160 +12,169 @@ import { QcInspectorService } from '../../../service/qc-inspactor.service';
   templateUrl: './massage.component.html',
   styleUrl: './massage.component.css',
 })
-export class MassageComponent implements OnInit {
-  messages: MessageResponseModel[] = [];
-  isDrawerOpen = false;
+export class MassageComponent implements OnInit, OnDestroy {
+  contacts: any[] = [];
+  selectedContact: any = null;
+  chatMessages: MessageResponseModel[] = [];
+  messageText: string = '';
+  currentUser: any = null;
+  searchQuery: string = '';
+  loadingContacts = true;
+  loadingHistory = false;
   errorMessage: string | null = null;
-  currentUserRole: string = '';
-  availableUsers: Array<{ id: string; name: string }> = [];
-
-  formModel: MessageRequestModel = {
-    recipientId: '',
-    subject: '',
-    body: '',
-    priority: 'MEDIUM',
-  };
+  
+  private pollInterval: any = null;
 
   constructor(
     private service: MessageService,
     private storage: StorageService,
-    private managerService: ManagerService,
-    private logisticsService: LogisticsOfficerService,
-    private procurementService: ProcurementService,
-    private driverService: DriverService,
-    private customerService: CustomerService,
-    private supplierService: SupplierService,
-    private commercialService: CommercialOfficerService,
-    private salesService: SalesOfficerService,
-    private qcInspectorService: QcInspectorService,
     private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
-    const user = this.storage.getUser();
-    if (user) {
-      this.currentUserRole = user.role;
-    }
-    this.loadInbox();
-    this.loadAvailableUsers();
+    this.currentUser = this.storage.getUser();
+    this.loadContacts();
   }
 
-  canSelectUser(): boolean {
-    const restrictedRoles = ['DRIVER', 'CUSTOMER', 'SUPPLIER'];
-    return !restrictedRoles.includes(this.currentUserRole.toUpperCase());
+  ngOnDestroy() {
+    this.clearPolling();
   }
 
-  loadAvailableUsers() {
-    if (!this.canSelectUser()) return;
-
-    this.managerService.findAll().subscribe({
-      next: (data) => {
-        const users = (data || []).map((u: any) => ({
-          id: (u.userId || u.id).toString(),
-          name: u.name || u.managerName,
-        }));
-        this.availableUsers = [...this.availableUsers, ...users];
-        this.cdr.markForCheck();
-      },
-    });
-    this.logisticsService.findAll().subscribe({
-      next: (data) => {
-        const users = (data || []).map((u: any) => ({
-          id: (u.userId || u.id).toString(),
-          name: u.name || u.officerName,
-        }));
-        this.availableUsers = [...this.availableUsers, ...users];
-        this.cdr.markForCheck();
-      },
-    });
-    this.procurementService.findAll().subscribe({
-      next: (data) => {
-        const users = (data || []).map((u: any) => ({
-          id: (u.userId || u.id).toString(),
-          name: u.name || u.procurementName,
-        }));
-        this.availableUsers = [...this.availableUsers, ...users];
-        this.cdr.markForCheck();
-      },
-    });
-    this.commercialService.findAll().subscribe({
-      next: (data) => {
-        const users = (data || []).map((u: any) => ({
-          id: (u.userId || u.id).toString(),
-          name: u.name || u.officerName,
-        }));
-        this.availableUsers = [...this.availableUsers, ...users];
-        this.cdr.markForCheck();
-      },
-    });
-    this.salesService.findAll().subscribe({
-      next: (data) => {
-        const users = (data || []).map((u: any) => ({
-          id: (u.userId || u.id).toString(),
-          name: u.name || u.officerName,
-        }));
-        this.availableUsers = [...this.availableUsers, ...users];
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  loadInbox() {
+  loadContacts() {
+    this.loadingContacts = true;
     this.errorMessage = null;
-    this.service.getInbox().subscribe({
+    this.service.getChatlist().subscribe({
       next: (data) => {
-        this.messages = data || [];
+        this.contacts = data || [];
+        this.loadingContacts = false;
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.errorMessage =
-          err.error?.message ||
-          err.error?.detail ||
-          err.message ||
-          'Unable to load inbox messages.';
+        this.errorMessage = err.error?.message || 'Unable to retrieve chat list connections.';
+        this.loadingContacts = false;
         this.cdr.markForCheck();
-      },
+      }
     });
   }
 
-  openMessage(m: MessageResponseModel) {
-    if (m.status === 'UNREAD') {
-      this.service.markAsRead(m.id).subscribe({
-        next: () => {
-          m.status = 'READ';
-          this.cdr.markForCheck();
-        },
-      });
-    }
-    alert(`From: ${m.senderName}\nSubject: ${m.subject}\n\n${m.body}`);
+  selectContact(contact: any) {
+    this.clearPolling();
+    this.selectedContact = contact;
+    this.chatMessages = [];
+    this.loadingHistory = true;
+    this.cdr.markForCheck();
+
+    this.loadChatHistory();
+
+    // Poll every 3 seconds for new messages
+    this.pollInterval = setInterval(() => {
+      this.loadChatHistory(true);
+    }, 3000);
   }
 
-  submitMessage() {
-    this.errorMessage = null;
+  loadChatHistory(isPolling = false) {
+    if (!this.selectedContact) return;
 
-    if (!this.canSelectUser()) {
-      this.formModel.recipientId = null;
-    }
+    this.service.getChatHistory(this.selectedContact.id.toString()).subscribe({
+      next: (data) => {
+        this.chatMessages = data || [];
+        if (!isPolling) {
+          this.loadingHistory = false;
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        if (!isPolling) {
+          this.loadingHistory = false;
+        }
+        this.cdr.markForCheck();
+      }
+    });
+  }
 
-    this.service.send(this.formModel).subscribe({
+  sendChatMessage() {
+    if (!this.messageText.trim() || !this.selectedContact) return;
+
+    const req: MessageRequestModel = {
+      recipientId: this.selectedContact.id.toString(),
+      subject: 'Chat Message',
+      body: this.messageText.trim(),
+      priority: 'MEDIUM'
+    };
+
+    const textToSend = this.messageText;
+    this.messageText = ''; // Clear text immediately for snappy UI
+    this.cdr.markForCheck();
+
+    this.service.send(req).subscribe({
       next: () => {
-        alert('SCM Matrix Message routed successfully.');
-        this.closeDrawer();
-        this.loadInbox();
+        this.loadChatHistory();
       },
       error: (err) => {
-        this.errorMessage =
-          err.error?.message || err.error?.detail || err.message || 'Unable to send message.';
+        alert(err.error?.message || 'Failed to deliver message.');
+        this.messageText = textToSend; // Restore text in case of failure
         this.cdr.markForCheck();
-      },
+      }
     });
   }
 
-  openDrawer() {
-    this.isDrawerOpen = true;
+  filteredContacts() {
+    if (!this.searchQuery.trim()) {
+      return this.contacts;
+    }
+    return this.contacts.filter(c =>
+      c.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+      c.role.toLowerCase().includes(this.searchQuery.toLowerCase())
+    );
   }
-  closeDrawer() {
-    this.isDrawerOpen = false;
-    this.formModel = { recipientId: '', subject: '', body: '', priority: 'MEDIUM' };
+
+  getEmptyStatePlaceholder(): string {
+    if (this.currentUser?.role === 'SUPPLIER') {
+      return 'Choose a Procurement or Manager from the chat list sidebar to pull credentials and retrieve message records.';
+    } else if (this.currentUser?.role === 'CUSTOMER') {
+      return 'Choose a Sales Officer from the chat list sidebar to pull credentials and retrieve message records.';
+    } else if (this.currentUser?.role === 'SALES_OFFICER') {
+      return 'Choose a Customer from the chat list sidebar to pull credentials and retrieve message records.';
+    } else {
+      return 'Choose a contact from the chat list sidebar to pull credentials and retrieve message records.';
+    }
+  }
+
+  getEmptyStateSubtext(): string {
+    if (this.currentUser?.role === 'SUPPLIER') {
+      return 'Only connected Procurement and Manager roles are linked in this portal.';
+    } else if (this.currentUser?.role === 'CUSTOMER') {
+      return 'Only connected Sales Officer roles are linked in this portal.';
+    } else if (this.currentUser?.role === 'SALES_OFFICER') {
+      return 'Only connected Customer roles are linked in this portal.';
+    } else {
+      return 'Only connected contact roles are linked in this portal.';
+    }
+  }
+
+  getRoleBadgeClass(role: string): string {
+    const classes: Record<string, string> = {
+      CUSTOMER: 'bg-info-subtle text-info border border-info',
+      SALES_OFFICER: 'bg-success-subtle text-success border border-success',
+      PROCUREMENT: 'bg-warning-subtle text-warning border border-warning',
+      MANAGER: 'bg-danger-subtle text-danger border border-danger',
+    };
+    return classes[role] || 'bg-primary-subtle text-primary border border-primary';
+  }
+
+  getInitials(name: string): string {
+    if (!name) return 'U';
+    const parts = name.split(' ');
+    if (parts.length > 1) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0][0].toUpperCase();
+  }
+
+  private clearPolling() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
   }
 }

@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NotificationService } from '../../../../system/service/notification.service';
 import { StorageService } from '../../../../auth/auth_service/storage.service';
 import { AuthService } from '../../../../auth/auth_service/auth-service';
 import { FormsModule } from '@angular/forms';
+import { CustomerOrderService } from '../../../../service/customer-order.service';
 
 @Component({
   selector: 'app-header',
@@ -31,11 +32,17 @@ export class Header implements OnInit, OnDestroy {
   employeeId = '';
   departmentName = 'SCM Corporate Node';
 
+  activeRole = 'CUSTOMER';
+  walletBalance = 0;
+  dueAmountTotal = 0;
+  private roleSubscription!: any;
+
   constructor(
     private notificationService: NotificationService,
     private storage: StorageService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private orderService: CustomerOrderService
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +53,17 @@ export class Header implements OnInit, OnDestroy {
       this.employeeId = `EMP-${this.user.userId}`;
       this.departmentName = this.getDepartmentName(this.user.role);
     }
+
+    this.roleSubscription = this.storage.role$.subscribe((role) => {
+      if (role) {
+        this.activeRole = role.toUpperCase();
+      } else {
+        this.activeRole = this.storage.getActiveRole()?.toUpperCase() || 'CUSTOMER';
+      }
+      if (this.activeRole === 'CUSTOMER') {
+        this.loadCustomerFinanceData();
+      }
+    });
 
     this.loadUnreadCount();
 
@@ -60,6 +78,25 @@ export class Header implements OnInit, OnDestroy {
     if (this.clockInterval) {
       clearInterval(this.clockInterval);
     }
+    if (this.roleSubscription) {
+      this.roleSubscription.unsubscribe();
+    }
+  }
+
+  loadCustomerFinanceData() {
+    this.orderService.findAll().subscribe({
+      next: (orders) => {
+        const customerOrders = orders ? orders.filter((o) => o.customerId === this.user?.userId) : [];
+        this.walletBalance = customerOrders
+          .filter((o) => o.paymentStatus === 'PAID')
+          .reduce((sum, o) => sum + (o.codAmount || 0), 0);
+
+        this.dueAmountTotal = customerOrders
+          .filter((o) => o.paymentStatus !== 'PAID')
+          .reduce((sum, o) => sum + (parseFloat(o.dueAmount as any) || 0), 0);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadUnreadCount() {

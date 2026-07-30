@@ -349,3 +349,26 @@
     padding: 0 1rem;
   }
 }
+
+/* Customer specific header styling */
+.customer-header {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.customer-header .header-time-capsule {
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 500;
+}
+
+.customer-header .btn-light {
+  background-color: #f8fafc;
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
+}
+
+.customer-header .btn-light:hover {
+  background-color: #f1f5f9;
+}

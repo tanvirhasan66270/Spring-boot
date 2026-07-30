@@ -62,6 +62,7 @@ import { PublicNetworkComponent } from './component/public/public-network/public
 import { PublicContactComponent } from './component/public/public-contact/public-contact.component';
 import { PublicJoinUsComponent } from './component/public/public-join-us/public-join-us.component';
 import { SupplierProfileComponent } from './component/profile/supplier-profile.component/supplier-profile.component';
+import { CustomerProfileComponent } from './component/profile/customer-profile.component/customer-profile.component';
 import { AdminComponent } from './component/features/admin.component/admin.component';
 
 const ALL_ROLES = [
@@ -157,7 +158,13 @@ export const routes: Routes = [
     children: [
       { path: 'dashboard', component: RoleDeriectComponent },
       { path: 'dashboard/admin', component: AdminDashboardComponent },
-      { path: 'dashboard/customer', component: CustomerDashboardComponent },
+      {
+        path: 'dashboard/customer',
+        component: CustomerDashboardComponent,
+        children: [
+          { path: 'customer_profile', component: CustomerProfileComponent }
+        ]
+      },
       { path: 'dashboard/manager', component: ManagerDashboardComponent },
       { path: 'dashboard/procurement', component: ProcurementDashboardComponent },
       { path: 'dashboard/qc-inspector', component: QCInspectorDashboardComponent },

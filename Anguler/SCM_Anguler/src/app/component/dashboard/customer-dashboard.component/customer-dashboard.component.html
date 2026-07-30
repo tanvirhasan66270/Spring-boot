@@ -1,520 +1,656 @@
-<div class="customer-dashboard px-3 py-4">
+<div class="customer-dashboard px-4 py-4" style="background-color: #f8fafc; min-height: 100vh;">
 
-  <!-- 🌟 যদি showOrderFormOnly ফলস থাকে, তবে সাধারণ ড্যাশবোর্ড দেখাবে -->
+  <!-- 🌟 showOrderFormOnly check -->
   <ng-container *ngIf="!showOrderFormOnly">
+    
     <!-- LOADING SKELETON -->
     <ng-container *ngIf="loading">
       <div class="row g-4 mb-4">
         <div class="col-lg-8">
-          <div class="skeleton skeleton-card h-100" style="height: 100px"></div>
+          <div class="skeleton skeleton-card h-100" style="height: 150px"></div>
         </div>
         <div class="col-lg-4">
-          <div class="skeleton skeleton-card h-100" style="height: 100px"></div>
+          <div class="skeleton skeleton-card h-100" style="height: 150px"></div>
         </div>
       </div>
       <div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
         <div class="col" *ngFor="let s of [1, 2, 3, 4, 5]">
-          <div class="skeleton skeleton-card" style="height: 80px"></div>
+          <div class="skeleton skeleton-card" style="height: 100px"></div>
         </div>
       </div>
-      <div class="row g-3 mb-4">
-        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 240px"></div></div>
-        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 240px"></div></div>
-      </div>
-      <div class="skeleton skeleton-card mb-4" style="height: 200px"></div>
       <div class="row g-4 mb-4">
-        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 180px"></div></div>
-        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 180px"></div></div>
+        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 280px"></div></div>
+        <div class="col-md-6"><div class="skeleton skeleton-card" style="height: 280px"></div></div>
       </div>
     </ng-container>
 
-    <!-- DASHBOARD CONTENT -->
-    <ng-container *ngIf="!loading">
-      <!-- TOP WELCOME ROW -->
-      <div class="row g-4 mb-4">
+    <!-- DASHBOARD MAIN CONTENT -->
+    <ng-container *ngIf="!loading && !isChildRouteActive()">
+      
+      <!-- HERO WELCOME BANNER + HIGHLIGHT FINANCE CARDS -->
+      <div class="row g-4 mb-4 align-items-stretch">
         <div class="col-lg-8">
-          <div
-            class="welcome-card p-4 rounded-4 shadow-sm border-0 d-flex justify-content-between align-items-center h-100"
-          >
-            <div>
-              <h3 class="fw-bold mb-1 text-dark">Welcome back, {{ user?.name || userName || 'Customer' }}</h3>
-              <p class="text-secondary small mb-0">
-                Manage your orders, payments, and track shipments in real-time.
+          <div class="welcome-hero-card p-4 rounded-4 shadow-sm border-0 d-flex justify-content-between align-items-center h-100 position-relative overflow-hidden">
+            <div class="welcome-text-wrapper z-1">
+              <h2 class="fw-bold mb-2 text-dark font-sans" style="letter-spacing: -0.02em;">Welcome back, {{ user?.name || userName || 'Customer' }}</h2>
+              <p class="text-secondary mb-0 fs-6" style="max-width: 500px; font-weight: 500;">
+                Manage your orders, payments, and account in one place.
               </p>
             </div>
-            <div class="d-flex gap-2">
-              <button
-                class="btn btn-sm btn-outline-primary fw-semibold"
-                (click)="showSettings = true"
-              >
-                <i class="bi bi-gear-wide-connected"></i> Settings
+            <div class="welcome-actions z-1 d-flex gap-2.5">
+              <button class="btn btn-settings px-4 py-2 fw-semibold rounded-3 d-flex align-items-center gap-2" (click)="showSettings = true">
+                <i class="bi bi-gear"></i> Settings
               </button>
-              <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-                <i class="bi bi-box-arrow-right"></i> Log_Out
+              <button class="btn btn-logout px-4 py-2 fw-semibold rounded-3 d-flex align-items-center gap-2" (click)="logout()">
+                <i class="bi bi-box-arrow-right"></i> Log Out
               </button>
             </div>
+            <!-- Background glow -->
+            <div class="hero-glow"></div>
           </div>
         </div>
 
-        <!-- Wallet and Payments Grid -->
+        <!-- Wallet and Due Payments Cards -->
         <div class="col-lg-4">
           <div class="row g-3 h-100">
+            <!-- Wallet Card -->
             <div class="col-6">
-              <div
-                class="wallet-card card border-0 p-3 shadow-sm rounded-4 h-100 text-white text-center"
-              >
-                <div class="small fw-semibold opacity-75 mb-1">Wallet Balance</div>
-                <div class="fs-4 fw-bold font-monospace">৳{{ walletBalance | number: '1.2-2' }}</div>
-                <i class="bi bi-wallet2 fs-2 opacity-15 mt-1 d-block"></i>
+              <div class="finance-kpi-card purple-gradient border-0 p-4 shadow-sm rounded-4 h-100 d-flex flex-column justify-content-between text-white position-relative overflow-hidden" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                <div>
+                  <div class="text-white-50 fw-semibold uppercase-label mb-1">Wallet Balance</div>
+                  <h3 class="fw-bold font-monospace mb-0">৳{{ walletBalance | number: '1.2-2' }}</h3>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <span class="fs-8 fw-semibold text-white-50">Real-time</span>
+                  <i class="bi bi-wallet2 fs-2 opacity-50"></i>
+                </div>
+                <div class="glow-bubble"></div>
               </div>
             </div>
+            <!-- Due Payments Card -->
             <div class="col-6">
-              <div class="due-card card border-0 p-3 shadow-sm rounded-4 h-100 text-center">
-                <div class="small fw-semibold text-secondary mb-1">Due Payments</div>
-                <div class="fs-4 fw-bold text-danger font-monospace">
-                  ৳{{ dueAmountTotal | number: '1.2-2' }}
+              <div class="finance-kpi-card bg-white border border-light p-4 shadow-sm rounded-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden">
+                <div>
+                  <div class="text-muted fw-semibold uppercase-label mb-1">Due Payments</div>
+                  <h3 class="fw-bold font-monospace mb-0 text-danger">৳{{ dueAmountTotal | number: '1.2-2' }}</h3>
                 </div>
-                <i class="bi bi-credit-card-2-front fs-2 text-danger opacity-20 mt-1 d-block"></i>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <span class="fs-8 fw-semibold text-muted">Outstanding</span>
+                  <i class="bi bi-credit-card-2-front fs-2 text-danger opacity-25"></i>
+                </div>
+                <div class="glow-bubble" style="background: rgba(239, 68, 68, 0.03);"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- KPI GRID -->
+      <!-- KPI METRIC CARDS (5 columns) -->
       <div class="row row-cols-2 row-cols-md-5 g-3 mb-4">
+        <!-- Total Orders -->
         <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-dark border-3 rounded-3"
-          >
-            <div class="fs-4 fw-bold text-dark font-monospace">{{ stats.total }}</div>
-            <div class="text-secondary small text-uppercase fw-bold">Total Orders</div>
+          <div class="kpi-metric-card border-0 shadow-sm p-4 bg-white rounded-4 d-flex flex-column justify-content-between position-relative overflow-hidden border-start border-5 border-primary h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted text-uppercase fw-bold label-text">Total Orders</span>
+              <div class="kpi-icon-badge bg-primary bg-opacity-10 text-primary"><i class="bi bi-cart"></i></div>
+            </div>
+            <h2 class="fw-bold text-dark font-monospace mb-1">{{ stats.total }}</h2>
+            <div class="kpi-trend text-success"><i class="bi bi-arrow-up-right me-1"></i> + 12% this month</div>
           </div>
         </div>
+        <!-- Active Orders -->
         <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-primary border-3 rounded-3"
-          >
-            <div class="fs-4 fw-bold text-primary font-monospace">{{ stats.active }}</div>
-            <div class="text-secondary small text-uppercase fw-bold">Active Orders</div>
+          <div class="kpi-metric-card border-0 shadow-sm p-4 bg-white rounded-4 d-flex flex-column justify-content-between position-relative overflow-hidden border-start border-5 border-success h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted text-uppercase fw-bold label-text">Active Orders</span>
+              <div class="kpi-icon-badge bg-success bg-opacity-10 text-success"><i class="bi bi-hourglass-split"></i></div>
+            </div>
+            <h2 class="fw-bold text-dark font-monospace mb-1">{{ stats.active }}</h2>
+            <div class="kpi-trend text-primary"><i class="bi bi-arrow-repeat me-1"></i> 2 Processing</div>
           </div>
         </div>
+        <!-- Delivered -->
         <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-success border-3 rounded-3"
-          >
-            <div class="fs-4 fw-bold text-success font-monospace">{{ stats.completed }}</div>
-            <div class="text-secondary small text-uppercase fw-bold">Delivered</div>
+          <div class="kpi-metric-card border-0 shadow-sm p-4 bg-white rounded-4 d-flex flex-column justify-content-between position-relative overflow-hidden border-start border-5 border-info h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted text-uppercase fw-bold label-text">Delivered</span>
+              <div class="kpi-icon-badge bg-info bg-opacity-10 text-info"><i class="bi bi-check-circle"></i></div>
+            </div>
+            <h2 class="fw-bold text-dark font-monospace mb-1">{{ stats.completed }}</h2>
+            <div class="kpi-trend text-success"><i class="bi bi-shield-check me-1"></i> 98% Success</div>
           </div>
         </div>
+        <!-- Pending -->
         <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-warning border-3 rounded-3"
-          >
-            <div class="fs-4 fw-bold text-warning font-monospace">{{ stats.pending }}</div>
-            <div class="text-secondary small text-uppercase fw-bold">Pending</div>
+          <div class="kpi-metric-card border-0 shadow-sm p-4 bg-white rounded-4 d-flex flex-column justify-content-between position-relative overflow-hidden border-start border-5 border-warning h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted text-uppercase fw-bold label-text">Pending</span>
+              <div class="kpi-icon-badge bg-warning bg-opacity-10 text-warning"><i class="bi bi-pause-circle"></i></div>
+            </div>
+            <h2 class="fw-bold text-dark font-monospace mb-1">{{ stats.pending }}</h2>
+            <div class="kpi-trend text-warning"><i class="bi bi-credit-card me-1"></i> Waiting Payment</div>
           </div>
         </div>
+        <!-- Cancelled -->
         <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 text-center bg-white border-bottom border-danger border-3 rounded-3"
-          >
-            <div class="fs-4 fw-bold text-danger font-monospace">{{ stats.cancelled }}</div>
-            <div class="text-secondary small text-uppercase fw-bold">Cancelled</div>
+          <div class="kpi-metric-card border-0 shadow-sm p-4 bg-white rounded-4 d-flex flex-column justify-content-between position-relative overflow-hidden border-start border-5 border-danger h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="text-muted text-uppercase fw-bold label-text">Cancelled</span>
+              <div class="kpi-icon-badge bg-danger bg-opacity-10 text-danger"><i class="bi bi-x-circle"></i></div>
+            </div>
+            <h2 class="fw-bold text-dark font-monospace mb-1">{{ stats.cancelled }}</h2>
+            <div class="kpi-trend text-muted"><i class="bi bi-calendar me-1"></i> Last 6 Months</div>
           </div>
         </div>
       </div>
 
       <!-- QUICK ACTIONS -->
-      <div class="row g-3 mb-4">
-        <!-- 🌟 Place New Order Button (Triggers Inline Form View) -->
-        <div class="col-md-6 col-lg-3">
-          <div
-            class="quick-action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-            (click)="openOrderFormView()"
-            style="cursor: pointer;"
-          >
-            <i class="bi bi-cart-plus fs-2 text-warning mb-2 d-block"></i>
-            <span class="fw-bold text-dark d-block">Place New Order</span>
-            <small class="text-muted">Explore items in the central catalog</small>
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0">Quick Actions</h5>
+          <a routerLink="/order" class="text-primary text-decoration-none fw-bold fs-7.5" (click)="openOrderFormView()">View All <i class="bi bi-chevron-right fs-8"></i></a>
+        </div>
+        <div class="row g-3">
+          <!-- Place New Order -->
+          <div class="col">
+            <div class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center" (click)="openOrderFormView()" style="cursor: pointer;">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-primary bg-primary bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-cart fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Place New Order</h6>
+            </div>
           </div>
-        </div>
-
-        <!-- Track Product Quick Action Card -->
-        <div class="col-md-6 col-lg-3">
-          <div
-            class="quick-action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-            (click)="openTrackModal()"
-            style="cursor: pointer;"
-          >
-            <i class="bi bi-search fs-2 text-primary mb-2 d-block"></i>
-            <span class="fw-bold text-dark d-block">Track Product</span>
-            <small class="text-muted">Check live status with tracking code</small>
+          <!-- Track Product -->
+          <div class="col">
+            <div class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center" (click)="openTrackModal()" style="cursor: pointer;">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-success bg-success bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-geo-alt fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Track Product</h6>
+            </div>
           </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3">
-          <a
-            routerLink="/invoice"
-            class="quick-action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-          >
-            <i class="bi bi-receipt fs-2 text-success mb-2 d-block"></i>
-            <span class="fw-bold text-dark d-block">Billing Ledger</span>
-            <small class="text-muted">Print and pay outstanding dues</small>
-          </a>
-        </div>
-        <div class="col-md-6 col-lg-3">
-          <a
-            routerLink="/messages"
-            class="quick-action-btn text-center p-3 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-          >
-            <i class="bi bi-question-circle fs-2 text-secondary mb-2 d-block"></i>
-            <span class="fw-bold text-dark d-block">Support Desk</span>
-            <small class="text-muted">Contact the corporate help center</small>
-          </a>
+          <!-- Billing Ledger -->
+          <div class="col">
+            <div id="billing-ledger-btn" class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center" (click)="openBillingModal()" style="cursor: pointer;">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-info bg-info bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-journal-text fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Billing Ledger</h6>
+            </div>
+          </div>
+          <!-- Invoices -->
+          <div class="col">
+            <a routerLink="/invoice" class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-primary bg-primary bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-file-earmark-text fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Invoices</h6>
+            </a>
+          </div>
+          <!-- Support Desk -->
+          <div class="col">
+            <a routerLink="/messages" class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-danger bg-danger bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-headset fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Support Desk</h6>
+            </a>
+          </div>
+          <!-- Wishlist -->
+          <div class="col">
+            <a routerLink="/product" class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-danger bg-danger bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-heart fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Wishlist</h6>
+            </a>
+          </div>
+          <!-- My Profile -->
+          <div class="col">
+            <a routerLink="/dashboard/customer/customer_profile" class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-primary bg-primary bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-person fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">My Profile</h6>
+            </a>
+          </div>
         </div>
       </div>
 
-      <!-- CHARTS BLOCK -->
+      <!-- CHARTS & VISUAL ANALYTICS -->
       <div class="row g-4 mb-4">
+        <!-- Monthly Order Trend -->
         <div class="col-md-6">
           <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-            <h6 class="fw-bold text-dark mb-3">
-              <i class="bi bi-graph-up text-primary me-2"></i> Monthly Expenses Trend
-            </h6>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h6 class="fw-bold text-dark mb-0">Monthly Order Trend</h6>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle py-1 px-3.5 rounded-pill fs-8 fw-semibold" type="button">This Year</button>
+              </div>
+            </div>
             <ng-container *ngIf="chartDots.length > 0; else emptyChart">
-              <svg viewBox="0 0 500 200" width="100%" height="180">
-                <line x1="40" y1="20" x2="480" y2="20" stroke="#f0f0f0" stroke-width="1"></line>
-                <line x1="40" y1="80" x2="480" y2="80" stroke="#f0f0f0" stroke-width="1"></line>
-                <line x1="40" y1="140" x2="480" y2="140" stroke="#f0f0f0" stroke-width="1"></line>
-                <line x1="40" y1="170" x2="480" y2="170" stroke="#ddd" stroke-width="1.5"></line>
-                <path
-                  [attr.d]="chartPath"
-                  fill="none"
-                  stroke="#6366f1"
-                  stroke-width="3"
-                  stroke-linecap="round"
-                ></path>
-                <circle
-                  *ngFor="let dot of chartDots; let i = index"
-                  [attr.cx]="dot.x"
-                  [attr.cy]="dot.y"
-                  r="4"
-                  fill="#4f46e5"
-                ></circle>
-                <text
-                  *ngFor="let label of monthLabels; let i = index"
-                  [attr.x]="chartDots[i]?.x"
-                  y="190"
-                  font-size="10"
-                  fill="#999"
-                  [attr.text-anchor]="
-                    i === 0 ? 'start' : i === monthLabels.length - 1 ? 'end' : 'middle'
-                  "
-                >
-                  {{ label }}
-                </text>
-              </svg>
+              <div class="position-relative">
+                <svg viewBox="0 0 500 200" width="100%" height="180">
+                  <line x1="40" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-width="1.5"></line>
+                  <line x1="40" y1="80" x2="480" y2="80" stroke="#f1f5f9" stroke-width="1.5"></line>
+                  <line x1="40" y1="140" x2="480" y2="140" stroke="#f1f5f9" stroke-width="1.5"></line>
+                  <line x1="40" y1="170" x2="480" y2="170" stroke="#cbd5e1" stroke-width="1.5"></line>
+                  <path [attr.d]="chartPath" fill="none" stroke="#2563eb" stroke-width="3.5" stroke-linecap="round"></path>
+                  <circle *ngFor="let dot of chartDots; let i = index" [attr.cx]="dot.x" [attr.cy]="dot.y" r="5.5" fill="#2563eb" stroke="#ffffff" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(37,99,235,0.3));"></circle>
+                  <text *ngFor="let label of monthLabels; let i = index" [attr.x]="chartDots[i]?.x" y="190" font-size="10.5" font-weight="600" fill="#64748b" [attr.text-anchor]="i === 0 ? 'start' : i === monthLabels.length - 1 ? 'end' : 'middle'">
+                    {{ label }}
+                  </text>
+                </svg>
+                <!-- SVG Curve overlay badge mimicking mockup -->
+                <div class="position-absolute bg-primary text-white px-2.5 py-1 rounded fs-8 fw-bold font-monospace" style="top: 25px; left: 70%; transform: translate(-50%, -50%); border: 1px solid rgba(255,255,255,0.2); pointer-events: none;">
+                  {{ stats.total }} Orders <br/> <small style="font-size: 0.6rem; opacity: 0.8;">Jul 2026</small>
+                </div>
+              </div>
             </ng-container>
             <ng-template #emptyChart>
-              <div class="text-center text-muted py-4">No expense data available</div>
+              <div class="text-center text-muted py-5">
+                <i class="bi bi-bar-chart fs-3 d-block opacity-25 mb-2"></i>
+                No expense data available
+              </div>
             </ng-template>
           </div>
         </div>
 
+        <!-- Order Status Distribution -->
         <div class="col-md-6">
           <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-            <h6 class="fw-bold text-dark mb-3">
-              <i class="bi bi-pie-chart text-success me-2"></i> Order Status Distribution
-            </h6>
-            <div class="d-flex align-items-center justify-content-around h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h6 class="fw-bold text-dark mb-0">Order Status Distribution</h6>
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle py-1 px-3.5 rounded-pill fs-8 fw-semibold" type="button">This Year</button>
+            </div>
+            <div class="d-flex align-items-center justify-content-around h-100 py-3">
               <ng-container *ngIf="stats.total > 0; else emptyDonut">
-                <svg viewBox="0 0 120 120" width="120" height="120">
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="45"
-                    fill="transparent"
-                    stroke="#e2e8f0"
-                    stroke-width="14"
-                  ></circle>
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="45"
-                    fill="transparent"
-                    stroke="#10b981"
-                    stroke-width="14"
-                    [attr.stroke-dasharray]="donutDelivered"
-                    stroke-dashoffset="0"
-                  ></circle>
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="45"
-                    fill="transparent"
-                    stroke="#3b82f6"
-                    stroke-width="14"
-                    [attr.stroke-dasharray]="donutProcessing"
-                    [attr.stroke-dashoffset]="donutOffsetProcessing"
-                  ></circle>
-                  <circle
-                    cx="60"
-                    cy="60"
-                    r="45"
-                    fill="transparent"
-                    stroke="#ef4444"
-                    stroke-width="14"
-                    [attr.stroke-dasharray]="donutCancelled"
-                    [attr.stroke-dashoffset]="donutOffsetCancelled"
-                  ></circle>
+                <svg viewBox="0 0 120 120" width="130" height="130">
+                  <circle cx="60" cy="60" r="45" fill="transparent" stroke="#f1f5f9" stroke-width="15"></circle>
+                  <circle cx="60" cy="60" r="45" fill="transparent" stroke="#10b981" stroke-width="15" [attr.stroke-dasharray]="donutDelivered" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                  <circle cx="60" cy="60" r="45" fill="transparent" stroke="#2563eb" stroke-width="15" [attr.stroke-dasharray]="donutProcessing" [attr.stroke-dashoffset]="donutOffsetProcessing" stroke-linecap="round"></circle>
+                  <circle cx="60" cy="60" r="45" fill="transparent" stroke="#ef4444" stroke-width="15" [attr.stroke-dasharray]="donutCancelled" [attr.stroke-dashoffset]="donutOffsetCancelled" stroke-linecap="round"></circle>
                 </svg>
-                <div>
-                  <div class="d-flex align-items-center gap-2 small mb-1">
-                    <span class="badge bg-success rounded-circle p-1">&nbsp;</span> Delivered ({{
-                      deliveredPercent
-                    }}%)
+                <div class="d-flex flex-column gap-2 pe-3">
+                  <div class="d-flex align-items-center gap-2.5 small font-sans fw-semibold text-secondary">
+                    <span class="badge rounded-circle p-1" style="background-color: #10b981;">&nbsp;</span> Delivered ({{ stats.completed }} / {{ deliveredPercent }}%)
                   </div>
-                  <div class="d-flex align-items-center gap-2 small mb-1">
-                    <span class="badge bg-primary rounded-circle p-1">&nbsp;</span> Processing ({{
-                      processingPercent
-                    }}%)
+                  <div class="d-flex align-items-center gap-2.5 small font-sans fw-semibold text-secondary">
+                    <span class="badge rounded-circle p-1" style="background-color: #2563eb;">&nbsp;</span> Processing ({{ stats.active }} / {{ processingPercent }}%)
                   </div>
-                  <div class="d-flex align-items-center gap-2 small">
-                    <span class="badge bg-danger rounded-circle p-1">&nbsp;</span> Cancelled ({{
-                      cancelledPercent
-                    }}%)
+                  <div class="d-flex align-items-center gap-2.5 small font-sans fw-semibold text-secondary">
+                    <span class="badge rounded-circle p-1" style="background-color: #f59e0b;">&nbsp;</span> Pending ({{ stats.pending }} / {{ stats.total > 0 ? (stats.pending / stats.total * 100 | number:'1.0-0') : 0 }}%)
+                  </div>
+                  <div class="d-flex align-items-center gap-2.5 small font-sans fw-semibold text-secondary">
+                    <span class="badge rounded-circle p-1" style="background-color: #ef4444;">&nbsp;</span> Cancelled ({{ stats.cancelled }} / {{ cancelledPercent }}%)
                   </div>
                 </div>
               </ng-container>
               <ng-template #emptyDonut>
-                <div class="text-center text-muted py-4">No order data available</div>
+                <div class="text-center text-muted py-5">
+                  <i class="bi bi-pie-chart fs-3 d-block opacity-25 mb-2"></i>
+                  No order data available
+                </div>
               </ng-template>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- RECENT CONSIGNMENTS TABLE -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-        <div class="card-header bg-white py-3 border-0">
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-clock-history text-warning me-2"></i> Active Order Pipeline Logs
+      <!-- RECENT ORDERS + RECENT INVOICES (Side-by-side row) -->
+      <div class="row g-4 mb-4">
+        <!-- Recent Orders -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-dark mb-0">Recent Orders</h6>
+              <a routerLink="/order" class="text-primary text-decoration-none fw-bold fs-8">View All</a>
+            </div>
+            <div class="d-flex flex-column gap-3">
+              <div *ngFor="let o of recentOrders.slice(0, 3)" class="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg">
+                <div class="product-icon bg-light rounded-3 d-flex align-items-center justify-content-center text-primary" style="width: 48px; height: 48px; min-width: 48px;">
+                  <i class="bi fs-4" [ngClass]="(o.lineItems[0]?.productName || '').toLowerCase().includes('bearing') ? 'bi-gear-fill' : (o.lineItems[0]?.productName || '').toLowerCase().includes('motor') ? 'bi-cpu-fill' : 'bi-box-seam-fill'"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-bold text-dark fs-7.5 text-truncate">{{ o.orderNumber }}</div>
+                  <div class="text-secondary fs-8 text-truncate">{{ o.lineItems[0]?.productName || 'Industrial Bearing' }}</div>
+                  <div class="text-muted fs-8">{{ o.createdAt | date:'mediumDate' }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-bold text-dark fs-7.5">৳{{ o.totalAmount | number:'1.2-2' }}</div>
+                  <span class="badge rounded-pill fs-8.5 px-2.5 py-1 mt-1 border" [ngClass]="{
+                    'bg-success-subtle text-success border-success': o.status === 'DELIVERED',
+                    'bg-primary-subtle text-primary border-primary': ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status),
+                    'bg-warning-subtle text-warning border-warning': o.status === 'PENDING',
+                    'bg-danger-subtle text-danger border-danger': o.status === 'CANCELLED'
+                  }">{{ o.status }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-center mt-3 pt-2 border-top">
+              <a routerLink="/order" class="text-primary text-decoration-none fw-bold fs-7.5 d-flex align-items-center justify-content-center gap-1">
+                View All Orders <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Invoices -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold text-dark mb-0">Recent Invoices</h6>
+              <a routerLink="/invoice" class="text-primary text-decoration-none fw-bold fs-8">View All</a>
+            </div>
+            <div class="d-flex flex-column gap-3">
+              <div *ngFor="let o of recentOrders.slice(0, 3)" class="d-flex align-items-center gap-3 p-2 rounded-3 hover-bg">
+                <div class="invoice-icon bg-light rounded-3 d-flex align-items-center justify-content-center text-info" style="width: 48px; height: 48px; min-width: 48px;">
+                  <i class="bi bi-file-earmark-text-fill fs-4"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-bold text-dark fs-7.5 text-truncate">INV-{{ o.orderNumber ? o.orderNumber.split('-')[1]?.substring(0, 5) : o.id }}</div>
+                  <div class="text-muted fs-8">{{ o.createdAt | date:'mediumDate' }}</div>
+                </div>
+                <div class="text-end d-flex align-items-center gap-3">
+                  <div>
+                    <div class="fw-bold text-dark fs-7.5">৳{{ (o.paymentStatus === 'PAID' ? o.totalAmount : o.dueAmount) | number:'1.2-2' }}</div>
+                    <span class="badge rounded-pill fs-8.5 px-2.5 py-1 mt-1 border" [ngClass]="{
+                      'bg-success-subtle text-success border-success': o.paymentStatus === 'PAID',
+                      'bg-danger-subtle text-danger border-danger': o.paymentStatus !== 'PAID'
+                    }">{{ o.paymentStatus === 'PAID' ? 'Paid' : 'Unpaid' }}</span>
+                  </div>
+                  <button class="btn btn-icon btn-light rounded-circle border p-1" style="width: 32px; height: 32px;" title="Download Invoice">
+                    <i class="bi bi-download text-primary fs-7"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="text-center mt-3 pt-2 border-top">
+              <a routerLink="/invoice" class="text-primary text-decoration-none fw-bold fs-7.5 d-flex align-items-center justify-content-center gap-1">
+                View All Invoices <i class="bi bi-arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVE ORDER PIPELINE (Full width table) -->
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
+        <div class="card-header bg-white py-3.5 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark text-uppercase d-flex align-items-center gap-2">
+            Active Order Pipeline
           </h6>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 fs-8">
-              <thead class="table-light text-uppercase">
+            <table class="table table-hover align-middle mb-0 fs-7.5 border-0">
+              <thead class="table-light text-uppercase text-secondary border-0" style="font-size: 0.68rem; letter-spacing: 0.05em; background-color: #f8fafc;">
                 <tr>
-                  <th class="ps-4">Consignment Reference</th>
-                  <th>Value</th>
-                  <th>Settlement Status</th>
-                  <th>Lifecycle Stage</th>
-                  <th>Est. Arrival</th>
+                  <th class="ps-4 py-3">Order ID</th>
+                  <th>Total Amount</th>
+                  <th>Payment Status</th>
+                  <th>Order Status</th>
+                  <th>Expected Delivery</th>
+                  <th class="pe-4 text-end"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let o of recentOrders">
-                  <td class="ps-4 font-monospace fw-bold text-primary">{{ o.orderNumber }}</td>
+                <tr *ngFor="let o of recentOrders" class="border-bottom-0">
+                  <td class="ps-4 font-monospace fw-bold text-primary py-3">{{ o.orderNumber }}</td>
+                  <td><strong class="font-monospace text-dark">৳{{ o.totalAmount | number: '1.2-2' }}</strong></td>
                   <td>
-                    <strong>৳{{ o.totalAmount | number: '1.2-2' }}</strong>
-                  </td>
-                  <td>
-                    <span
-                      class="badge px-2.5 py-1 text-uppercase"
-                      [ngClass]="{
-                        'bg-success-subtle text-success': o.paymentStatus === 'PAID',
-                        'bg-warning-subtle text-warning': o.paymentStatus === 'PARTIALLY_PAID',
-                        'bg-danger-subtle text-danger': o.paymentStatus === 'UNPAID',
-                      }"
-                    >
+                    <span class="badge px-3 py-1.5 text-uppercase fw-semibold border rounded-pill" [ngClass]="{
+                      'bg-success-subtle text-success border-success': o.paymentStatus === 'PAID',
+                      'bg-warning-subtle text-warning border-warning': o.paymentStatus === 'PARTIALLY_PAID',
+                      'bg-danger-subtle text-danger border-danger': o.paymentStatus === 'UNPAID'
+                    }">
                       {{ o.paymentStatus || 'UNPAID' }}
                     </span>
                   </td>
                   <td>
-                    <span class="badge bg-secondary text-uppercase">{{ o.status }}</span>
+                    <span class="badge px-3 py-1.5 text-uppercase fw-semibold border rounded-pill" [ngClass]="{
+                      'bg-success-subtle text-success border-success': o.status === 'DELIVERED',
+                      'bg-primary-subtle text-primary border-primary': ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(o.status),
+                      'bg-warning-subtle text-warning border-warning': o.status === 'PENDING',
+                      'bg-danger-subtle text-danger border-danger': o.status === 'CANCELLED'
+                    }">
+                      {{ o.status }}
+                    </span>
                   </td>
-                  <td class="text-muted font-monospace">
-                    {{ o.estimatedDelivery | date: 'mediumDate' }}
+                  <td class="text-muted font-monospace">{{ o.estimatedDelivery | date: 'mediumDate' }}</td>
+                  <td class="pe-4 text-end">
+                    <i class="bi bi-chevron-right text-primary" style="cursor: pointer;" (click)="openTrackModal(); searchTrackingCode = o.orderNumber; trackOrder();"></i>
                   </td>
                 </tr>
                 <tr *ngIf="recentOrders.length === 0">
-                  <td colspan="5" class="text-center py-4 text-muted">
-                    No logistics records registered in current workspace pipeline.
+                  <td colspan="6" class="text-center py-5 text-muted font-monospace fs-8">
+                    No active order records found.
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
-
-      <!-- NOTIFICATIONS + ACTIVITY LOG -->
-      <div class="row g-4 mb-4">
-        <div class="col-md-6">
-          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-            <h6 class="fw-bold text-dark mb-3">
-              <i class="bi bi-bell text-info me-2"></i> Recent Notifications
-            </h6>
-            <div *ngIf="notifications.length > 0; else emptyNotifications">
-              <div
-                *ngFor="let n of notifications"
-                class="notification-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2"
-                [class.notification-unread]="!n.isRead"
-              >
-                <div class="notification-icon flex-shrink-0">
-                  <i
-                    class="bi"
-                    [ngClass]="{
-                      'bi-bell-fill text-primary': n.type === 'SHIPMENT',
-                      'bi-exclamation-triangle text-warning': n.type === 'TRIP_ALERT',
-                      'bi-check-circle-fill text-success': n.type === 'REPORT_APPROVED',
-                      'bi-info-circle text-secondary':
-                        n.type !== 'SHIPMENT' &&
-                        n.type !== 'TRIP_ALERT' &&
-                        n.type !== 'REPORT_APPROVED',
-                    }"
-                  ></i>
-                </div>
-                <div class="flex-grow-1 min-width-0">
-                  <div class="fw-semibold text-dark small text-truncate">{{ n.title }}</div>
-                  <div class="text-muted" style="font-size: 0.75rem">{{ n.message }}</div>
-                  <div class="text-muted mt-1" style="font-size: 0.7rem">
-                    {{ n.createdAt | date: 'short' }}
-                  </div>
-                </div>
-                <span
-                  *ngIf="!n.isRead"
-                  class="badge bg-primary rounded-circle p-1 align-self-center"
-                ></span>
-              </div>
-            </div>
-            <ng-template #emptyNotifications>
-              <div class="text-center text-muted py-3">
-                <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
-                No recent notifications
-              </div>
-            </ng-template>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-            <h6 class="fw-bold text-dark mb-3">
-              <i class="bi bi-activity text-danger me-2"></i> Recent Activity Log
-            </h6>
-            <div *ngIf="activities.length > 0; else emptyActivities">
-              <div
-                *ngFor="let a of activities"
-                class="activity-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2"
-              >
-                <div class="activity-icon flex-shrink-0">
-                  <i class="bi" [ngClass]="getActionIcon(a.action)"></i>
-                </div>
-                <div class="flex-grow-1 min-width-0">
-                  <div class="fw-semibold text-dark small">
-                    {{ a.description || a.action + ' on ' + a.module }}
-                  </div>
-                  <div class="text-muted" style="font-size: 0.75rem">
-                    <span
-                      class="badge me-1"
-                      [ngClass]="{
-                        'bg-success-subtle text-success': a.actionStatus === 'SUCCESS',
-                        'bg-danger-subtle text-danger': a.actionStatus === 'FAILED',
-                      }"
-                    >
-                      {{ a.actionStatus }}
-                    </span>
-                    {{ a.performedAt | date: 'short' }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <ng-template #emptyActivities>
-              <div class="text-center text-muted py-3">
-                <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
-                No activity recorded yet
-              </div>
-            </ng-template>
-          </div>
+        <div class="text-center py-3 border-top bg-white">
+          <a routerLink="/order" class="text-primary text-decoration-none fw-bold fs-7.5 d-flex align-items-center justify-content-center gap-1">
+            View All Active Orders <i class="bi bi-arrow-right"></i>
+          </a>
         </div>
       </div>
 
-      <!-- RECOMMENDATIONS -->
+      <!-- RECOMMENDED FOR YOU (5 products) -->
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
-        <h6 class="fw-bold text-dark mb-3">
-          <i class="bi bi-handbag text-indigo me-2"></i> Recommended for You
-        </h6>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold text-dark mb-0">Recommended For You</h5>
+          <a routerLink="/product" class="text-primary text-decoration-none fw-bold fs-8">View All</a>
+        </div>
         <div *ngIf="recommendations.length > 0; else emptyRecommendations">
-          <div class="row g-3">
-            <div class="col-md-4" *ngFor="let prod of recommendations">
-              <div class="recommendation-item p-3 border rounded-3 d-flex align-items-center gap-3">
-                <div class="prod-img bg-light p-2 rounded">
-                  <i class="bi {{ prod.image }} text-primary fs-3"></i>
-                </div>
-                <div>
-                  <div class="fw-bold text-dark small">{{ prod.name }}</div>
-                  <div class="text-success small fw-semibold">
-                    ৳{{ prod.price | number: '1.2-2' }}
+          <div class="row row-cols-1 row-cols-md-5 g-3">
+            <div class="col" *ngFor="let prod of recommendations; let i = index">
+              <div class="recommendation-card p-3 border border-light rounded-4 d-flex flex-column align-items-center text-center bg-white hover-shadow transition h-100">
+                <div class="prod-img w-100 rounded-3 mb-3 d-flex align-items-center justify-content-center text-primary position-relative overflow-hidden" style="height: 120px; background-color: #f1f5f9;">
+                  <!-- Dark Rank Badge matching user mockup -->
+                  <div class="position-absolute top-0 end-0 m-2 px-2.5 py-1 bg-dark text-white rounded-pill fw-bold" style="font-size: 0.65rem; z-index: 10; background-color: rgba(15, 23, 42, 0.8) !important;">
+                    #{{ i + 1 }}
                   </div>
-                  <small class="text-muted"
-                    ><i class="bi bi-star-fill text-warning me-1"></i>{{ prod.rating }}</small
-                  >
+                  <img *ngIf="prod.image" [src]="getImageUrl(prod.image)" (error)="onImageError(prod)" class="w-100 h-100 object-fit-cover" style="position: absolute; top: 0; left: 0; z-index: 2;" />
+                  <i class="bi fs-1" [ngClass]="prod.name.toLowerCase().includes('bearing') ? 'bi-gear-fill' : prod.name.toLowerCase().includes('motor') ? 'bi-cpu-fill' : 'bi-box-seam-fill'" style="position: absolute; z-index: 1;"></i>
                 </div>
+                <h6 class="fw-bold text-dark small text-truncate w-100 mb-1" style="font-size: 0.8rem;">{{ prod.name }}</h6>
+                <div class="text-success small fw-semibold font-monospace mb-2" style="font-size: 0.85rem;">৳{{ prod.price | number: '1.2-2' }}</div>
+                
+                <div class="d-flex align-items-center gap-1 mb-2">
+                  <i class="bi bi-star-fill text-warning fs-8.5"></i>
+                  <span class="text-secondary fw-semibold font-monospace" style="font-size: 0.75rem;">{{ prod.rating }}</span>
+                </div>
+                
+                <div class="badge-stock mb-3 d-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill" style="background-color: #f0fdf4; border: 1px solid #dcfce7; color: #15803d; font-size: 0.65rem;">
+                  <span class="pulse-dot-green"></span> In Stock
+                </div>
+
+                <button class="btn btn-outline-primary btn-sm w-100 rounded-pill py-1.5 fw-bold fs-8" (click)="openOrderFormView(); currentProduct = prod.name + ' (৳' + prod.price + ')';">Add to Cart</button>
               </div>
             </div>
           </div>
         </div>
         <ng-template #emptyRecommendations>
-          <div class="text-center text-muted py-3">No product recommendations available</div>
+          <div class="text-center text-muted py-4 font-monospace fs-8">No product recommendations available.</div>
         </ng-template>
       </div>
+
+      <!-- RECENT NOTIFICATIONS + RECENT ACTIVITY + NEED HELP? (3 columns) -->
+      <div class="row g-4 mb-4">
+        <!-- Recent Notifications -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h6 class="fw-bold text-dark mb-0">Recent Notifications</h6>
+              <a routerLink="/notifications" class="text-primary text-decoration-none fw-bold fs-8">View All</a>
+            </div>
+            <div *ngIf="notifications.length > 0; else emptyNotifications" class="timeline-container ps-3">
+              <div *ngFor="let n of notifications" class="notification-item position-relative pb-4 ps-4">
+                <div class="timeline-dot bg-white border border-primary text-primary shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; left: -14px;">
+                  <i class="bi" [ngClass]="{
+                    'bi-bell-fill text-primary': n.type === 'SHIPMENT',
+                    'bi-exclamation-triangle-fill text-warning': n.type === 'TRIP_ALERT',
+                    'bi-check-circle-fill text-success': n.type === 'REPORT_APPROVED',
+                    'bi-info-circle-fill text-secondary': n.type !== 'SHIPMENT' && n.type !== 'TRIP_ALERT' && n.type !== 'REPORT_APPROVED'
+                  }"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-bold text-dark fs-7.5">{{ n.title }}</div>
+                  <div class="text-secondary mt-1 fs-8">{{ n.message }}</div>
+                  <small class="text-muted d-block mt-1 font-monospace fs-8.5">{{ n.createdAt | date: 'short' }}</small>
+                </div>
+              </div>
+            </div>
+            <ng-template #emptyNotifications>
+              <div class="text-center text-muted py-5 fs-8">
+                <i class="bi bi-bell-slash fs-2 d-block mb-2 opacity-25"></i>
+                No recent notifications.
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h6 class="fw-bold text-dark mb-0">Recent Activity</h6>
+              <a routerLink="/activity-log" class="text-primary text-decoration-none fw-bold fs-8">View All</a>
+            </div>
+            <div *ngIf="activities.length > 0; else emptyActivities" class="timeline-container ps-3">
+              <div *ngFor="let a of activities" class="notification-item position-relative pb-4 ps-4">
+                <div class="timeline-dot bg-white border border-danger text-danger shadow-sm rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; left: -14px;">
+                  <i class="bi" [ngClass]="getActionIcon(a.action)"></i>
+                </div>
+                <div class="flex-grow-1 min-width-0">
+                  <div class="fw-bold text-dark fs-7.5">{{ a.description || a.action + ' on ' + a.module }}</div>
+                  <div class="text-secondary mt-1 fs-8">
+                    <span class="badge me-1" [ngClass]="{
+                      'bg-success-subtle text-success border border-success': a.actionStatus === 'SUCCESS',
+                      'bg-danger-subtle text-danger border border-danger': a.actionStatus === 'FAILED'
+                    }">
+                      {{ a.actionStatus }}
+                    </span>
+                  </div>
+                  <small class="text-muted d-block mt-1 font-monospace fs-8.5">{{ a.performedAt | date: 'short' }}</small>
+                </div>
+              </div>
+            </div>
+            <ng-template #emptyActivities>
+              <div class="text-center text-muted py-5 fs-8">
+                <i class="bi bi-clock-history fs-2 d-block mb-2 opacity-25"></i>
+                No activity recorded.
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- Need Help? widget -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100 position-relative overflow-hidden">
+            <h6 class="fw-bold text-dark mb-1">Need Help?</h6>
+            <p class="text-secondary small mb-4" style="max-width: 170px;">We're here to help you. Get support for any issues.</p>
+            
+            <!-- Person with Headset Illustration (pure HTML/CSS) -->
+            <div class="support-illustration-wrapper">
+              <div class="support-avatar-circle">
+                <div class="support-head"></div>
+                <div class="support-body"></div>
+                <div class="support-headset"></div>
+              </div>
+            </div>
+
+            <div class="d-flex flex-column gap-3.5 mt-2">
+              <!-- Live Chat -->
+              <div class="d-flex align-items-center gap-3">
+                <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; min-width: 38px;">
+                  <i class="bi bi-chat-dots-fill"></i>
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-dark fs-7.5" style="cursor: pointer;" routerLink="/messages">Live Chat</h6>
+                  <small class="text-muted fs-8">Chat with our team</small>
+                </div>
+              </div>
+              <!-- Call Support -->
+              <div class="d-flex align-items-center gap-3">
+                <div class="bg-success bg-opacity-10 text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; min-width: 38px;">
+                  <i class="bi bi-telephone-fill"></i>
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-dark fs-7.5">Call Support</h6>
+                  <small class="text-muted fs-8">017XXXXXXXXX</small>
+                </div>
+              </div>
+              <!-- Raise Ticket -->
+              <div class="d-flex align-items-center gap-3">
+                <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; min-width: 38px;">
+                  <i class="bi bi-ticket-perforated-fill"></i>
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-0 text-dark fs-7.5" style="cursor: pointer;" routerLink="/messages">Raise Ticket</h6>
+                  <small class="text-muted fs-8">Submit a support ticket</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </ng-container>
+
+    <!-- 🎯 চাইল্ড রুট একটিভ হলে প্রোফাইল কম্পোনেন্ট ড্যাশবোর্ডের ভেতরেই লোড হবে -->
+    <div *ngIf="isChildRouteActive()" class="animate-fade mt-2">
+      <div class="card border-0 shadow-sm p-2 rounded-4 bg-white">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
   </ng-container>
 
-  <!-- 🌟 যদি showOrderFormOnly ট্রু হয়, তবে ড্যাশবোর্ড হাইড হয়ে সরাসরি শুধু "Dispatch New Purchase Order" ফর্মটি দেখাবে -->
+  <!-- 🌟 showOrderFormOnly check -->
   <ng-container *ngIf="showOrderFormOnly">
-    <div class="card shadow-sm border-0 rounded-4 p-4 bg-white mb-4">
+    <div class="card shadow-sm border-0 rounded-4 p-4 bg-white mb-4 border-top border-5 border-success">
       <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-        <h4 class="fw-bold text-dark mb-0">
-          <i class="bi bi-cart-plus-fill text-primary me-2"></i> Dispatch New Purchase Order
+        <h4 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+          <i class="bi bi-cart-plus-fill text-success"></i> Dispatch New Purchase Order
         </h4>
-        <button class="btn btn-outline-secondary btn-sm fw-bold rounded-pill px-3" (click)="closeOrderFormView()">
+        <button class="btn btn-outline-secondary btn-sm fw-bold rounded-pill px-4" (click)="closeOrderFormView()">
           <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
         </button>
       </div>
 
-      <form #orderForm="ngForm" (ngSubmit)="orderForm.valid && saveFormOrder()">
+      <form #orderForm="ngForm" (ngSubmit)="orderForm.valid && saveFormOrder()" class="needs-validation">
         
         <!-- Target Customer Profile -->
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Customer Profile</label>
-          <input type="text" class="form-control fs-7 bg-light fw-bold text-dark" [value]="customer?.name ? (customer?.name + ' (' + customer?.email + ')') : (userName + ' (Customer)')" disabled>
+          <input type="text" class="form-control fs-7 bg-light fw-bold text-dark rounded-3" [value]="customer?.name ? (customer?.name + ' (' + customer?.email + ')') : (userName + ' (Customer)')" disabled>
         </div>
 
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Delivery Phone Channel</label>
-            <input type="text" class="form-control fs-7 font-monospace" [(ngModel)]="order.deliveryPhone" name="deliveryPhone" placeholder="01XXXXXXXXX" required minlength="11">
+            <input type="text" class="form-control fs-7 font-monospace rounded-3" [(ngModel)]="order.deliveryPhone" name="deliveryPhone" placeholder="01XXXXXXXXX" required minlength="11">
           </div>
           
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Roadmap</label>
-            <input type="text" class="form-control fs-7 bg-light text-muted fw-bold" value="Auto-Fixed by Priority Rule" disabled>
+            <input type="text" class="form-control fs-7 bg-light text-muted fw-bold rounded-3" value="Auto-Fixed by Priority Rule" disabled>
             <div class="mt-1 fs-8 fw-semibold text-success"><i class="bi bi-calendar3 me-1"></i> Fixed 90 Days (Standard Timeline)</div>
           </div>
         </div>
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Delivery Address Destination</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="order.deliveryAddress" name="deliveryAddress" placeholder="Full physical shipping street layout..." required></textarea>
+          <textarea class="form-control fs-7 rounded-3" rows="2" [(ngModel)]="order.deliveryAddress" name="deliveryAddress" placeholder="Full physical shipping street layout..." required></textarea>
         </div>
 
-        <div class="row g-2 mb-3">
+        <div class="row g-3 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Service Strategy Matrix</label>
-            <select class="form-select fs-7" [(ngModel)]="order.serviceType" name="serviceType" required>
+            <select class="form-select fs-7 rounded-3" [(ngModel)]="order.serviceType" name="serviceType" required>
               <option value="STANDARD">STANDARD Logistics Delivery</option>
               <option value="EXPRESS">EXPRESS Bullet Velocity</option>
               <option value="OVERNIGHT">OVERNIGHT Cargo</option>
@@ -524,7 +660,7 @@
           
           <div class="col-md-6">
             <label class="form-label fw-bold small text-uppercase text-secondary">Order Priority Matrix</label>
-            <select class="form-select fs-7 fw-bold border-info" [(ngModel)]="order.priority" name="priority" required>
+            <select class="form-select fs-7 fw-bold border-info rounded-3" [(ngModel)]="order.priority" name="priority" required>
               <option value="LOW">LOW Priority (120 Days / 1% Disc.)</option>
               <option value="NORMAL">NORMAL Priority (90 Days Standard)</option>
               <option value="HIGH">HIGH Priority (50 Days / +7% Cost)</option>
@@ -535,7 +671,7 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Payment Strategy Router</label>
-          <select class="form-select fs-7" [(ngModel)]="order.paymentMethod" name="paymentMethod" required>
+          <select class="form-select fs-7 rounded-3" [(ngModel)]="order.paymentMethod" name="paymentMethod" required>
             <option value="CASH">CASH On Delivery</option>
             <option value="BANK">BANK Transfer Swift Service</option>
             <option value="BKASH">BKASH Mobile Wallet</option>
@@ -544,65 +680,57 @@
           </select>
         </div>
         
-        @if (order.paymentMethod === 'BANK') {
-          <div class="alert alert-info border border-primary bg-white shadow-sm py-2.5 mb-3">
-            <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
-            
-            <div class="mb-2 p-2 bg-light rounded border border-info-subtle fs-8 font-monospace text-dark">
-              <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Pay using this company account:</div>
-              <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
-              <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
-            </div>
-
-            <div class="form-group">
-              <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index (Customer Bank account)</label>
-              <input type="text" class="form-control form-control-sm font-monospace fs-7" placeholder="e.g. 10214300982341" name="bankNodeAcc">
-            </div>
+        <div *ngIf="order.paymentMethod === 'BANK'" class="alert alert-info border border-primary bg-white shadow-sm p-3 mb-3 rounded-4">
+          <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
+          <div class="mb-2 p-2.5 bg-light rounded border border-info-subtle fs-8 font-monospace text-dark">
+            <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Pay using this company account:</div>
+            <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
+            <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
           </div>
-        }
-
-        @if (['BKASH', 'NAGAD', 'ROCKET'].includes(order.paymentMethod)) {
-          <div class="alert alert-danger border border-danger bg-white shadow-sm py-2.5 mb-3">
-            <h6 class="fw-bold text-danger mb-2 small text-uppercase"><i class="bi bi-phone-vibrate me-2"></i>MFS Wallet Engine Verification</h6>
-            
-            <div class="mb-2 p-2 bg-light rounded border border-danger-subtle fs-8 font-monospace text-dark">
-              <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-danger me-1"></i> Send money to this company number:</div>
-              <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span class="text-danger fw-bold">01712-345678</span> (Send Money / Cash In)</div>
-            </div>
-
-            <div class="form-group mb-2">
-              <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number (Customer Account)</label>
-              <input type="text" class="form-control form-control-sm font-monospace fs-7" [(ngModel)]="order.deliveryPhone" name="mfsNodePhone" placeholder="01XXXXXXXXX">
-            </div>
+          <div class="form-group">
+            <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index</label>
+            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" placeholder="e.g. 10214300982341" name="bankNodeAcc">
           </div>
-        }
+        </div>
+
+        <div *ngIf="['BKASH', 'NAGAD', 'ROCKET'].includes(order.paymentMethod)" class="alert alert-danger border border-danger bg-white shadow-sm p-3 mb-3 rounded-4">
+          <h6 class="fw-bold text-danger mb-2 small text-uppercase"><i class="bi bi-phone-vibrate me-2"></i>MFS Wallet Engine Verification</h6>
+          <div class="mb-2 p-2.5 bg-light rounded border border-danger-subtle fs-8 font-monospace text-dark">
+            <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-danger me-1"></i> Send money to this company number:</div>
+            <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span class="text-danger fw-bold">01712-345678</span></div>
+          </div>
+          <div class="form-group mb-2">
+            <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number</label>
+            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="order.deliveryPhone" name="mfsNodePhone" placeholder="01XXXXXXXXX">
+          </div>
+        </div>
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Initial Payment Context / COD Amount</label>
-          <input type="number" class="form-control fs-7 font-monospace fw-bold text-success" [(ngModel)]="order.codAmount" name="codAmount" min="0" placeholder="0.00" required>
+          <input type="number" class="form-control fs-7 font-monospace fw-bold text-success rounded-3" [(ngModel)]="order.codAmount" name="codAmount" min="0" placeholder="0.00" required>
         </div>
 
         <div class="mb-4">
           <label class="form-label fw-bold small text-uppercase text-secondary">Special Delivery Remarks</label>
-          <input type="text" class="form-control fs-7" [(ngModel)]="order.remarks" name="remarks" placeholder="Drop parcel at reception, fragile, etc.">
+          <input type="text" class="form-control fs-7 rounded-3" [(ngModel)]="order.remarks" name="remarks" placeholder="Fragile details, packaging etc.">
         </div>
 
-        <hr class="my-3 text-muted" />
+        <hr class="my-4 text-muted" />
 
-       <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="fw-bold text-dark mb-0 small text-uppercase">
-              <i class="bi bi-box-seam me-2 text-primary"></i>Product Specification Allocations
-            </h6>
-            <a routerLink="/product" class="btn btn-sm btn-outline-primary py-0 px-2 fs-8 fw-semibold text-decoration-none">
-              <i class="bi bi-search me-1"></i> Browse Marketplace
-            </a>
-          </div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0 small text-uppercase d-flex align-items-center gap-2">
+            <i class="bi bi-box-seam text-success"></i> Product Specification Allocations
+          </h6>
+          <a routerLink="/product" class="btn btn-sm btn-outline-primary py-1 px-3 rounded-pill fs-8 fw-bold text-decoration-none">
+            <i class="bi bi-search me-1"></i> Browse Catalog
+          </a>
+        </div>
 
-        <div class="bg-light p-2.5 rounded mb-3 border">
+        <div class="bg-light p-3 rounded-4 mb-4 border">
           <div class="row g-2 align-items-end">
             <div class="col-md-5">
               <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Inventory Product</label>
-              <input class="form-control form-control-sm fs-7.5" list="dashProductList" [(ngModel)]="currentProduct" placeholder="Search product..." name="dashProdSearch">
+              <input class="form-control form-control-sm fs-7.5 rounded-3" list="dashProductList" [(ngModel)]="currentProduct" placeholder="Search product..." name="dashProdSearch">
               <datalist id="dashProductList">
                 @for (p of products; track p.id) {
                   <option [value]="p.name + ' (৳' + p.sellingPrice + ')'"></option>
@@ -611,107 +739,108 @@
             </div>
             <div class="col-md-2">
               <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Qty</label>
-              <input type="number" class="form-control form-control-sm font-monospace text-center fs-7.5" [(ngModel)]="currentQuantity" name="dashItemQty" min="1" />
+              <input type="number" class="form-control form-control-sm font-monospace text-center fs-7.5 rounded-3" [(ngModel)]="currentQuantity" name="dashItemQty" min="1" />
             </div>
             <div class="col-md-3">
               <label class="fs-8 text-muted fw-bold text-uppercase mb-1">Notes</label>
-              <input type="text" class="form-control form-control-sm fs-7.5" [(ngModel)]="currentRemarks" name="dashItemRem" placeholder="Notes" />
+              <input type="text" class="form-control form-control-sm fs-7.5 rounded-3" [(ngModel)]="currentRemarks" name="dashItemRem" placeholder="Notes" />
             </div>
             <div class="col-md-2">
-              <button type="button" class="btn btn-sm btn-dark w-100 fw-bold fs-7.5" (click)="addItemToForm()">Add</button>
+              <button type="button" class="btn btn-sm btn-success w-100 fw-bold fs-7.5 py-2 rounded-3" (click)="addItemToForm()">Add Item</button>
             </div>
           </div>
         </div>
 
-        <div class="card bg-white mb-4 border">
-          <div class="card-header bg-light py-2 px-3 fw-bold fs-8 text-secondary">
+        <!-- Attached Items list -->
+        <div class="card bg-white mb-4 border rounded-4 overflow-hidden shadow-sm">
+          <div class="card-header bg-light py-2.5 px-3 fw-bold fs-8 text-secondary border-0">
             Attached Products List ({{ order.items.length }})
           </div>
-          <ul class="list-group list-group-flush fs-7.5">
+          <ul class="list-group list-group-flush fs-7.5 border-0">
             @for (item of order.items; track $index; let idx = $index) {
-              <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+              <li class="list-group-item d-flex justify-content-between align-items-center py-2.5 border-light border-0 border-bottom">
                 <div>
-                  <span class="fw-bold text-dark d-block">{{ getProductName(item.productId) }}</span>
-                  <small class="text-muted font-monospace">Qty: <b>{{ item.quantity }} units</b></small>
+                  <span class="fw-bold text-dark d-block mb-0.5">{{ getProductName(item.productId) }}</span>
+                  <small class="text-muted font-monospace">Quantity: <b>{{ item.quantity }} units</b></small>
                 </div>
                 <button type="button" class="btn btn-sm text-danger border-0 p-1" (click)="removeItemFromForm(idx)">
-                  <i class="bi bi-x-circle-fill fs-5"></i>
+                  <i class="bi bi-trash3-fill fs-6"></i>
                 </button>
               </li>
             }
             @if (order.items.length === 0) {
-              <li class="list-group-item text-center text-muted py-3 small font-monospace">No products attached yet.</li>
+              <li class="list-group-item text-center text-muted py-4 small font-monospace border-0">No products attached yet in payload schema.</li>
             }
           </ul>
         </div>
 
         <!-- Live Financial Summary Card -->
-        <div class="card bg-light border p-3 mb-4 rounded-3 font-monospace">
-          <h6 class="fw-bold text-dark small text-uppercase mb-2 pb-1 border-bottom">Order Financial Summary</h6>
-          <div class="d-flex justify-content-between small mb-1">
-            <span class="text-muted">Item Subtotal:</span>
-            <span class="fw-bold">৳{{ calculateItemSubtotal() | number:'1.2-2' }}</span>
+        <div class="card border border-light p-4 mb-4 rounded-4 bg-light shadow-sm">
+          <h6 class="fw-bold text-dark small text-uppercase mb-3 pb-2 border-bottom">Order Financial Summary</h6>
+          <div class="d-flex justify-content-between small mb-1.5 font-monospace">
+            <span class="text-secondary">Item Subtotal:</span>
+            <span class="fw-bold text-dark">৳{{ calculateItemSubtotal() | number:'1.2-2' }}</span>
           </div>
-          <div class="d-flex justify-content-between small mb-1">
-            <span class="text-muted">Delivery Charge:</span>
-            <span class="fw-bold text-info">৳{{ calculateDeliveryCharge() | number:'1.2-2' }}</span>
+          <div class="d-flex justify-content-between small mb-1.5 font-monospace">
+            <span class="text-secondary">Delivery Charge:</span>
+            <span class="fw-bold text-primary">৳{{ calculateDeliveryCharge() | number:'1.2-2' }}</span>
           </div>
-          <div class="d-flex justify-content-between small mb-1">
-            <span class="text-muted">Paid Amount:</span>
+          <div class="d-flex justify-content-between small mb-1.5 font-monospace">
+            <span class="text-secondary">Paid Amount:</span>
             <span class="fw-bold text-success">৳{{ (order.codAmount || 0) | number:'1.2-2' }}</span>
           </div>
-          <div class="d-flex justify-content-between small mb-2 text-danger">
+          <div class="d-flex justify-content-between small mb-3 text-danger font-monospace">
             <span>Due Amount:</span>
             <span class="fw-bold">৳{{ calculateDueAmount() | number:'1.2-2' }}</span>
           </div>
-          <div class="d-flex justify-content-between fs-7 pt-2 border-top text-dark fw-bold">
+          <div class="d-flex justify-content-between fs-6 pt-3 border-top text-dark fw-bold font-monospace">
             <span>Total Amount:</span>
-            <span class="text-success fs-6">৳{{ calculateTotalAmount() | number:'1.2-2' }}</span>
+            <span class="text-success fs-5">৳{{ calculateTotalAmount() | number:'1.2-2' }}</span>
           </div>
         </div>
 
-        <div class="d-flex gap-2 pt-2">
-          <button class="btn btn-success flex-grow-1 py-2.5 fw-semibold fs-7" type="submit">
+        <div class="d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-success flex-grow-1 py-3 fw-bold fs-7 text-uppercase rounded-3" type="submit">
             <i class="bi bi-cloud-arrow-up-fill me-2"></i> Dispatch Consignment Node
           </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="closeOrderFormView()">Cancel</button>
+          <button type="button" class="btn btn-outline-secondary px-4 fs-7 text-uppercase rounded-3" (click)="closeOrderFormView()">Cancel</button>
         </div>
       </form>
     </div>
   </ng-container>
 
-  <!-- Modern & Dynamic Track Product Modal Window -->
-  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px);" *ngIf="isTrackModalOpen">
+  <!-- Track Product Modal -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px);" *ngIf="isTrackModalOpen">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
         
-        <div class="modal-header bg-gradient bg-primary text-white px-4 py-3.5 border-0">
+        <div class="modal-header bg-primary text-white px-4 py-3.5 border-0 d-flex justify-content-between align-items-center" style="background-color: #2563eb !important;">
           <div class="d-flex align-items-center gap-3">
-            <div class="bg-white bg-opacity-25 p-2.5 rounded-3">
+            <div class="bg-white bg-opacity-20 p-2.5 rounded-3">
               <i class="bi bi-box-seam-fill fs-4 text-white"></i>
             </div>
             <div>
               <h5 class="modal-title fw-bold mb-0">Live Product Tracking</h5>
-              <p class="text-white-50 small mb-0">Real-time logistic pipeline and fulfillment status</p>
+              <p class="text-white-50 small mb-0 fs-8">Real-time logistic pipeline and fulfillment status</p>
             </div>
           </div>
           <button type="button" class="btn-close btn-close-white" (click)="closeTrackModal()"></button>
         </div>
 
         <div class="modal-body p-4 bg-light">
-          <div class="card border-0 shadow-sm rounded-3 p-3 mb-4 bg-white">
+          <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
             <label class="form-label fw-bold small text-uppercase text-secondary mb-2">Consignment Tracking Reference</label>
             <div class="input-group">
               <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-upc-scan"></i></span>
               <input type="text" class="form-control font-monospace border-start-0 bg-light fs-7" [(ngModel)]="searchTrackingCode" placeholder="Enter tracking code (e.g., ORD-1782838721455)" />
-              <button class="btn btn-dark px-4 fw-bold d-flex align-items-center gap-2" type="button" (click)="trackOrder()">
+              <button class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2" type="button" (click)="trackOrder()" style="background-color: #2563eb !important; border-color: #2563eb !important;">
                 <i class="bi bi-search"></i> Search Status
               </button>
             </div>
           </div>
 
           @if (trackedResult) {
-            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 animate-fade-in">
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4">
               
               <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
                 <div>
@@ -719,92 +848,79 @@
                   <h4 class="font-monospace fw-bold text-primary mb-0">{{ trackedResult.orderNumber }}</h4>
                 </div>
                 <div class="text-end">
-                  <span class="badge px-3 py-2 fs-8 text-uppercase fw-bold rounded-pill"
-                    [ngClass]="{
-                      'bg-success-subtle text-success border border-success': trackedResult.status === 'DELIVERED',
-                      'bg-primary-subtle text-primary border border-primary': ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(trackedResult.status),
-                      'bg-warning-subtle text-warning border border-warning': trackedResult.status === 'PENDING',
-                      'bg-danger-subtle text-danger border border-danger': trackedResult.status === 'CANCELLED'
-                    }">
+                  <span class="badge px-3 py-2 fs-8 text-uppercase fw-bold rounded-pill" [ngClass]="{
+                    'bg-success-subtle text-success border border-success': trackedResult.status === 'DELIVERED',
+                    'bg-primary-subtle text-primary border border-primary': ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(trackedResult.status),
+                    'bg-warning-subtle text-warning border border-warning': trackedResult.status === 'PENDING',
+                    'bg-danger-subtle text-danger border border-danger': trackedResult.status === 'CANCELLED'
+                  }">
                     <i class="bi bi-circle-fill small me-1"></i> {{ trackedResult.status }}
                   </span>
                 </div>
               </div>
 
-              <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded-3 border-0">
+              <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded-4">
                 <div class="col-md-6">
-                  <span class="text-muted small d-block">Recipient Customer</span>
+                  <span class="text-muted small d-block mb-0.5">Recipient Customer</span>
                   <strong class="text-dark">{{ trackedResult.customerName }}</strong>
                 </div>
                 <div class="col-md-6">
-                  <span class="text-muted small d-block">Settlement Financial State</span>
+                  <span class="text-muted small d-block mb-0.5">Settlement Financial State</span>
                   <span class="badge bg-warning-subtle text-warning border border-warning fw-bold px-2 py-1 text-uppercase">
                     {{ trackedResult.paymentStatus || 'UNPAID' }}
                   </span>
                 </div>
                 <div class="col-md-6 mt-2">
-                  <span class="text-muted small d-block">Estimated Arrival Roadmap</span>
+                  <span class="text-muted small d-block mb-0.5">Estimated Arrival Roadmap</span>
                   <span class="font-monospace fw-bold text-dark"><i class="bi bi-calendar3 text-primary me-1"></i> {{ trackedResult.estimatedDelivery || 'N/A' }}</span>
                 </div>
                 <div class="col-md-6 mt-2">
-                  <span class="text-muted small d-block">Total Consignment Value</span>
+                  <span class="text-muted small d-block mb-0.5">Total Consignment Value</span>
                   <span class="font-monospace fw-bold text-success fs-6">৳{{ trackedResult.totalAmount | number:'1.2-2' }}</span>
                 </div>
               </div>
 
-              <div class="mt-3">
+              <div>
                 <span class="text-uppercase font-monospace text-secondary fs-8 fw-bold d-block mb-3">Milestone Progress Pipeline</span>
                 <div class="d-flex justify-content-between position-relative px-2">
                   
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('PENDING') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('PENDING') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-clock-history"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Pending</small>
                   </div>
 
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('CONFIRMED') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('CONFIRMED') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-shield-check"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Confirmed</small>
                   </div>
 
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('PROCESSING') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('PROCESSING') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-gear-fill"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Processing</small>
                   </div>
 
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('SHIPPED') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('SHIPPED') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-truck"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Shipped</small>
                   </div>
 
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('OUT_FOR_DELIVERY') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('OUT_FOR_DELIVERY') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-geo-alt-fill"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Out For Delivery</small>
                   </div>
 
                   <div class="text-center z-1">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm"
-                      [ngClass]="isStepCompleted('DELIVERED') ? 'bg-success' : 'bg-secondary'"
-                      style="width: 34px; height: 34px; font-size: 13px;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1 text-white shadow-sm" [ngClass]="isStepCompleted('DELIVERED') ? 'bg-success' : 'bg-secondary'" style="width: 32px; height: 32px; font-size: 13px;">
                       <i class="bi bi-box-seam-fill"></i>
                     </div>
                     <small class="text-muted fw-bold fs-8">Delivered</small>
@@ -815,27 +931,192 @@
 
             </div>
           } @else if (trackSearched && !trackedResult) {
-            <div class="card border-0 bg-danger-subtle text-danger p-4 text-center rounded-3">
+            <div class="card border-0 bg-danger-subtle text-danger p-4 text-center rounded-4">
               <i class="bi bi-exclamation-triangle-fill fs-2 mb-2"></i>
               <h6 class="fw-bold mb-1">Consignment Not Resolved</h6>
-              <p class="small mb-0">No active order records found matching this tracking reference code in node cache.</p>
+              <p class="small mb-0">No active order records found matching this tracking reference code in database cache.</p>
             </div>
           }
 
         </div>
 
-        <div class="modal-footer bg-white px-4 py-3 border-top">
-          <button type="button" class="btn btn-secondary px-4 fw-bold rounded-pill" (click)="closeTrackModal()">Close Panel</button>
+        <div class="modal-footer bg-white px-4 py-3 border-top justify-content-end" style="border-top: 1px solid #f1f5f9 !important;">
+          <button type="button" class="btn px-4 py-2.5 fw-bold text-white rounded-pill" style="background-color: #64748b; border: 0; font-size: 0.85rem;" (click)="closeTrackModal()">Close Panel</button>
         </div>
 
       </div>
     </div>
   </div>
-  <div class="modal-backdrop fade show" *ngIf="isTrackModalOpen"></div>
+
+  <!-- Billing Ledger Modal -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px);" *ngIf="isBillingModalOpen">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
+        
+        <div class="modal-header bg-primary text-white px-4 py-3.5 border-0 d-flex justify-content-between align-items-center" style="background-color: #2563eb !important;">
+          <div class="d-flex align-items-center gap-3">
+            <!-- White pill-shaped logo icon from image mockup -->
+            <div style="width: 20px; height: 36px; background-color: #ffffff; border-radius: 8px;"></div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0">Billing Ledger Lookup</h5>
+              <p class="text-white-50 small mb-0 fs-8">Search billing statements and invoice details by order reference number</p>
+            </div>
+          </div>
+          <!-- Clean modern X button close -->
+          <i class="bi bi-x fs-1 text-white-50" style="cursor: pointer; line-height: 1; transition: color 0.2s;" (click)="closeBillingModal()" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'"></i>
+        </div>
+
+        <div class="modal-body p-4 bg-light">
+          <!-- Light card layout matching image mockup style -->
+          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white" style="border: 1px solid #e2e8f0 !important; background-color: #fafbfc !important;">
+            <label class="form-label fw-bold text-uppercase text-secondary mb-3" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #64748b !important;">ORDER REFERENCE NUMBER</label>
+            <div class="input-group border rounded-3 overflow-hidden bg-white p-1" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+              <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-receipt fs-5"></i></span>
+              <input type="text" class="form-control border-0 bg-white fs-6 py-2" [(ngModel)]="searchBillingCode" placeholder="Enter order number (e.g., ORD-1782838721455)" style="outline: none; box-shadow: none;" />
+              <button class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2 rounded-2" type="button" (click)="searchBilling()" style="background-color: #2563eb !important; border-color: #2563eb !important;">
+                <i class="bi bi-search"></i> Retrieve Billing
+              </button>
+            </div>
+          </div>
+
+          @if (billingSearchResult) {
+            <div class="card border-0 shadow-sm rounded-4 bg-white p-4 animate-fade-in">
+              
+              <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+                <div>
+                  <span class="text-uppercase text-muted fs-8 fw-bold d-block">Invoice Reference</span>
+                  <h4 class="font-monospace fw-bold text-primary mb-0">{{ billingSearchResult.invoiceNumber }}</h4>
+                </div>
+                <div class="text-end">
+                  <span class="badge px-3 py-2 fs-8 text-uppercase fw-bold rounded-pill" [ngClass]="{
+                    'bg-success-subtle text-success border border-success': billingSearchResult.paymentStatus === 'PAID',
+                    'bg-warning-subtle text-warning border border-warning': billingSearchResult.paymentStatus === 'PARTIALLY_PAID',
+                    'bg-danger-subtle text-danger border border-danger': billingSearchResult.paymentStatus === 'UNPAID',
+                    'bg-secondary-subtle text-secondary border border-secondary': billingSearchResult.paymentStatus === 'REFUNDED'
+                  }">
+                    <i class="bi bi-circle-fill small me-1"></i> {{ billingSearchResult.paymentStatus }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- General Meta Grid -->
+              <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded-4">
+                <div class="col-6 col-md-4">
+                  <span class="text-muted small d-block mb-0.5">Invoice ID</span>
+                  <strong class="text-dark font-monospace">#{{ billingSearchResult.id }}</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  <span class="text-muted small d-block mb-0.5">Customer Order ID</span>
+                  <strong class="text-dark font-monospace">#{{ billingSearchResult.customerOrderId || 'N/A' }}</strong>
+                </div>
+                <div class="col-6 col-md-4">
+                  <span class="text-muted small d-block mb-0.5">Currency</span>
+                  <span class="badge bg-dark-subtle text-dark font-monospace">{{ billingSearchResult.currency || 'BDT' }}</span>
+                </div>
+                <div class="col-12 col-md-6 mt-2">
+                  <span class="text-muted small d-block mb-0.5">Issued To Name</span>
+                  <strong class="text-dark">{{ billingSearchResult.issuedToName }}</strong>
+                </div>
+                <div class="col-12 col-md-6 mt-2">
+                  <span class="text-muted small d-block mb-0.5">Customer Email</span>
+                  <strong class="text-dark font-monospace">{{ billingSearchResult.customerEmail }}</strong>
+                </div>
+              </div>
+
+              <!-- Financial Breakdown Row -->
+              <div class="mb-4">
+                <span class="text-uppercase font-monospace text-secondary fs-8 fw-bold d-block mb-2">Financial Breakdown</span>
+                <div class="border rounded-4 p-3 bg-white shadow-sm">
+                  <div class="row g-2 fs-7.5">
+                    <div class="col-6 text-muted">Subtotal:</div>
+                    <div class="col-6 text-end fw-bold text-dark font-monospace">৳{{ billingSearchResult.subtotal | number:'1.2-2' }}</div>
+                    
+                    <div class="col-6 text-muted">Tax Rate:</div>
+                    <div class="col-6 text-end text-dark font-monospace">{{ billingSearchResult.taxRate }}% (৳{{ billingSearchResult.taxAmount | number:'1.2-2' }})</div>
+                    
+                    <div class="col-6 text-muted">Discount Rate:</div>
+                    <div class="col-6 text-end text-dark font-monospace">{{ billingSearchResult.discountPercentage }}% (৳{{ billingSearchResult.discountAmount | number:'1.2-2' }})</div>
+                    
+                    <div class="col-6 text-muted">Shipping Fees:</div>
+                    <div class="col-6 text-end text-dark font-monospace">৳{{ billingSearchResult.shippingFees | number:'1.2-2' }}</div>
+                    
+                    <div class="col-12 border-top my-2"></div>
+                    
+                    <div class="col-6 fw-bold text-dark fs-7">Total Amount:</div>
+                    <div class="col-6 text-end fw-bold text-primary fs-7 font-monospace">৳{{ billingSearchResult.totalAmount | number:'1.2-2' }}</div>
+                    
+                    <div class="col-6 fw-bold text-success fs-7.5">Paid Amount:</div>
+                    <div class="col-6 text-end fw-bold text-success fs-7.5 font-monospace">৳{{ billingSearchResult.paidAmount | number:'1.2-2' }}</div>
+                    
+                    <div class="col-6 fw-bold text-danger fs-7.5">Due Amount:</div>
+                    <div class="col-6 text-end fw-bold text-danger fs-7.5 font-monospace">৳{{ billingSearchResult.dueAmount | number:'1.2-2' }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Status & Method Matrix -->
+              <div class="row g-3 fs-7.5 border-top pt-3">
+                <div class="col-6 col-md-4">
+                  <span class="text-muted d-block mb-0.5">Payment Method:</span>
+                  <span class="badge bg-secondary-subtle text-dark border px-2.5 py-1">{{ billingSearchResult.paymentMethod || 'N/A' }}</span>
+                </div>
+                <div class="col-6 col-md-8">
+                  <span class="text-muted d-block mb-0.5">Transaction Reference:</span>
+                  <strong class="text-dark font-monospace">{{ billingSearchResult.transactionReference || 'N/A' }}</strong>
+                </div>
+              </div>
+
+              <div class="text-center pt-4 border-top mt-4">
+                <button class="btn btn-outline-primary px-4 fw-bold rounded-pill" type="button">
+                  <i class="bi bi-download me-1"></i> Download Billing Invoice PDF
+                </button>
+              </div>
+
+            </div>
+          } @else if (billingSearched && !billingSearchResult) {
+            <div class="card border-0 bg-danger-subtle text-danger p-4 text-center rounded-4">
+              <i class="bi bi-exclamation-triangle-fill fs-2 mb-2"></i>
+              <h6 class="fw-bold mb-1">Invoice Record Not Found</h6>
+              <p class="small mb-0">No active billing records found matching this order reference code in database cache.</p>
+            </div>
+          }
+
+        </div>
+
+        <div class="modal-footer bg-white px-4 py-3 border-top justify-content-end" style="border-top: 1px solid #f1f5f9 !important;">
+          <button type="button" class="btn px-4 py-2.5 fw-bold text-white rounded-pill" style="background-color: #64748b; border: 0; font-size: 0.85rem;" (click)="closeBillingModal()">Close Panel</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop fade show" *ngIf="isTrackModalOpen || isBillingModalOpen"></div>
+
+  <!-- Mobile Bottom Navigation Bar (mimics mockup) -->
+  <div class="mobile-bottom-nav d-md-none position-fixed bottom-0 start-0 w-100 bg-white border-top shadow-lg d-flex justify-content-around py-2.5" style="z-index: 1000;">
+    <a routerLink="/dashboard" class="text-center text-decoration-none d-flex flex-column align-items-center text-primary">
+      <i class="bi bi-grid-fill fs-5"></i>
+      <span class="fs-8.5 fw-bold">Dashboard</span>
+    </a>
+    <a routerLink="/order" class="text-center text-decoration-none d-flex flex-column align-items-center text-muted">
+      <i class="bi bi-bag fs-5"></i>
+      <span class="fs-8.5 fw-semibold">Orders</span>
+    </a>
+    <a routerLink="/product" class="text-center text-decoration-none d-flex flex-column align-items-center text-muted">
+      <i class="bi bi-geo-alt fs-5"></i>
+      <span class="fs-8.5 fw-semibold">Track</span>
+    </a>
+    <a routerLink="/invoice" class="text-center text-decoration-none d-flex flex-column align-items-center text-muted">
+      <i class="bi bi-credit-card fs-5"></i>
+      <span class="fs-8.5 fw-semibold">Payments</span>
+    </a>
+    <a routerLink="/dashboard/customer/customer_profile" class="text-center text-decoration-none d-flex flex-column align-items-center text-muted" routerLinkActive="text-primary">
+      <i class="bi bi-person fs-5"></i>
+      <span class="fs-8.5 fw-semibold">Profile</span>
+    </a>
+  </div>
 
   <!-- SETTINGS PANEL -->
-  <app-dashboard-settings
-    [isOpen]="showSettings"
-    (close)="showSettings = false"
-  ></app-dashboard-settings>
+  <app-dashboard-settings [isOpen]="showSettings" (close)="showSettings = false" (onEditProfile)="onEditProfileTriggered()"></app-dashboard-settings>
 </div>

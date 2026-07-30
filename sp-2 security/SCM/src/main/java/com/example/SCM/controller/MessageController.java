@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.example.SCM.dto.response.ChatContactDTO;
+
 @RestController
 @RequestMapping("/api/messages")
 @RequiredArgsConstructor
@@ -41,6 +43,31 @@ public class MessageController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(service.getInbox(finalUserId));
+    }
+
+    @GetMapping("/chatlist")
+    public ResponseEntity<List<ChatContactDTO>> getChatlist(
+            @AuthenticationPrincipal User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+
+        String finalUserId = resolveUserId(currentUser, backupUserId);
+        if (finalUserId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(service.getChatlist(finalUserId));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<MessageResponseDTO>> getChatHistory(
+            @RequestParam String contactId,
+            @AuthenticationPrincipal User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+
+        String finalUserId = resolveUserId(currentUser, backupUserId);
+        if (finalUserId == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(service.getChatHistory(finalUserId, contactId));
     }
 
     @PatchMapping("/{id}/read")

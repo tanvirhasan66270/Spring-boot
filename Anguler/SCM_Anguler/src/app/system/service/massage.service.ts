@@ -36,6 +36,21 @@ export class MessageService {
     return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/inbox`, { headers });
   }
 
+  getChatlist(): Observable<any[]> {
+    const headers = this.validateHeaders();
+    if (!headers) return new Observable<any[]>(obs => obs.next([]));
+    return this.http.get<any[]>(`${this.apiUrl}/chatlist`, { headers });
+  }
+
+  getChatHistory(contactId: string): Observable<MessageResponseModel[]> {
+    const headers = this.validateHeaders();
+    if (!headers) return new Observable<MessageResponseModel[]>(obs => obs.next([]));
+    return this.http.get<MessageResponseModel[]>(`${this.apiUrl}/history`, {
+      headers,
+      params: { contactId }
+    });
+  }
+
   send(message: MessageRequestModel): Observable<MessageResponseModel[]> {
     const headers = this.validateHeaders();
     if (!headers) return new Observable<MessageResponseModel[]>(obs => obs.next([]));
