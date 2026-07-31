@@ -115,10 +115,22 @@ export class StockMovementComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  onMovementTypeChange() {
-    if (this.formModel.movementType !== 'TRANSFER') {
-      this.formModel.sourceWarehouseId = null;
+  getSelectedProductStock(): string {
+    if (!this.formModel.productId || +this.formModel.productId === 0) {
+      return '';
     }
+    const matchedStock = this.stocks.find(s => 
+      s.productId === +this.formModel.productId || 
+      (s.product && s.product.id === +this.formModel.productId)
+    );
+    if (matchedStock) {
+      return `${matchedStock.quantityOnHand || matchedStock.availableSellable || 0} Units`;
+    }
+    return '0 Units';
+  }
+
+  onMovementTypeChange() {
+    // No longer clearing sourceWarehouseId, as it's visible and available for all transaction types
   }
 
   getTargetWarehouseName(): string {
@@ -155,19 +167,11 @@ export class StockMovementComponent implements OnInit {
       return;
     }
 
-    if (this.formModel.movementType === 'TRANSFER') {
-      if (!this.formModel.sourceWarehouseId || +this.formModel.sourceWarehouseId === 0) {
-        this.errorMessage =
-          'Validation Fault: Origin Source Warehouse context is required for TRANSFER type.';
-        this.cdr.markForCheck();
-        return;
-      }
-      if (+this.formModel.warehouseId === +this.formModel.sourceWarehouseId!) {
-        this.errorMessage =
-          'Business Conflict: Source warehouse and Target destination warehouse cannot be identical.';
-        this.cdr.markForCheck();
-        return;
-      }
+    if (this.formModel.sourceWarehouseId && +this.formModel.warehouseId === +this.formModel.sourceWarehouseId) {
+      this.errorMessage =
+        'Business Conflict: Source warehouse and Target destination warehouse cannot be identical.';
+      this.cdr.markForCheck();
+      return;
     }
 
     const payload: StockMovementRequestModel = {

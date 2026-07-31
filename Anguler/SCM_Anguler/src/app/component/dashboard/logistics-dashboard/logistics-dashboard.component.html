@@ -1,267 +1,700 @@
-<div class="logistics-dashboard px-3 py-4">
+<div class="logistics-dashboard p-4 bg-light min-vh-100" style="background-color: #f8f9fa !important;">
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div
-    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center"
-  >
+  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 bg-white d-flex justify-content-between align-items-center">
     <div>
       <h3 class="fw-bold mb-1 text-dark">Logistics Command Center</h3>
-      <p class="text-secondary small mb-0">
-        Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Dispatch and fleet
-        tracking console.
-      </p>
+      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName || 'Mst Rehana' }}</strong> | Dispatch and fleet tracking console.</p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <button
-        class="btn btn-sm btn-outline-secondary fw-semibold"
-        (click)="toggleSettings()"
-        title="Dashboard Settings"
-      >
-        <i class="bi bi-gear-wide-connected"></i>
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-outline-secondary d-flex align-items-center justify-content-center bg-white shadow-sm border-light" style="width: 40px; height: 40px; border-radius: 8px;" (click)="toggleSettings()">
+        <i class="bi bi-gear text-secondary fs-5"></i>
       </button>
-      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
+      <button class="btn btn-outline-danger d-flex align-items-center gap-2 bg-white shadow-sm border-light text-danger fw-semibold" style="height: 40px; border-radius: 8px;" (click)="logout()">
         <i class="bi bi-box-arrow-right"></i> Log_Out
       </button>
     </div>
   </div>
 
-  <!-- ───────────────── LOADING STATE ───────────────── -->
   @if (loading) {
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
-      <p class="text-muted mt-2 small">Loading logistics data...</p>
     </div>
   }
 
-  <!-- ───────────────── KPI GRID ───────────────── -->
-  <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
-    <div class="col" *ngFor="let kpi of kpis">
-      <div
-        class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{
-          kpi.color
-        }} h-100"
-      >
-        <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
-        <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
-        <div class="small font-monospace">
-          <span
-            class="fw-bold"
-            [ngClass]="
-              kpi.trend > 0 ? 'text-warning' : kpi.trend < 0 ? 'text-success' : 'text-muted'
-            "
-          >
-            <i
-              class="bi"
-              [ngClass]="
-                kpi.trend > 0
-                  ? 'bi-arrow-up-right'
-                  : kpi.trend < 0
-                    ? 'bi-arrow-down-right'
-                    : 'bi-dash'
-              "
-            ></i>
-            {{ kpi.label === 'Warehouse Capacity' ? getCapacityTrendText() : kpi.trend + ' items' }}
-          </span>
+  <!-- ───────────────── KPI GRID (6 Cards) ───────────────── -->
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-6 g-3 mb-4">
+    <!-- Outbound Shipments -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box bg-primary text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px;">
+            <i class="bi bi-truck fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Outbound Shipments</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalShipments || 12 }}</span>
+              <span class="badge bg-primary-subtle text-primary rounded-pill px-2">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold text-success mt-auto">
+          <i class="bi bi-arrow-up-short"></i> 20% vs yesterday
+        </div>
+      </div>
+    </div>
+    
+    <!-- Delivery Trips -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box bg-success text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px;">
+            <i class="bi bi-diagram-2 fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Delivery Trips</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips || 8 }}</span>
+              <span class="badge bg-success-subtle text-success rounded-pill px-2">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold text-success mt-auto">
+          <i class="bi bi-arrow-up-short"></i> 14% vs yesterday
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Vehicles -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px; background-color: #6366f1;">
+            <i class="bi bi-car-front fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Active Vehicles</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles || 15 }}</span>
+              <span class="badge rounded-pill px-2" style="background-color: #e0e7ff; color: #4338ca;">Total</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold mt-auto" style="color: #4f46e5;">
+          {{ availableVehicles || 5 }} Available
+        </div>
+      </div>
+    </div>
+
+    <!-- Warehouse Capacity -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box bg-warning text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px; background-color: #f59e0b !important;">
+            <i class="bi bi-building fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Warehouse Capacity</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ warehouseCapacityPercent || 72 }}%</span>
+              <span class="badge rounded-pill px-2" style="background-color: #fef3c7; color: #d97706;">Utilized</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold text-success mt-auto">
+          <i class="bi bi-arrow-up-short"></i> 12% vs yesterday
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Movements -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px; background-color: #06b6d4;">
+            <i class="bi bi-arrow-left-right fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Inventory Movements</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalMovements || 28 }}</span>
+              <span class="badge rounded-pill px-2" style="background-color: #cffafe; color: #0891b2;">Today</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold text-success mt-auto">
+          <i class="bi bi-arrow-up-short"></i> 30% vs yesterday
+        </div>
+      </div>
+    </div>
+
+    <!-- Delayed Shipments -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="icon-box bg-danger text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0" style="width: 42px; height: 42px; background-color: #ef4444 !important;">
+            <i class="bi bi-clock fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary small fw-semibold lh-1 mb-2">Delayed Shipments</div>
+            <div class="d-flex align-items-center justify-content-between">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ delayedShipments || 2 }}</span>
+              <span class="badge bg-danger-subtle text-danger rounded-pill px-2">Delayed</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold text-danger mt-auto">
+          <i class="bi bi-arrow-down-short"></i> 1 vs yesterday
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ───────────────── QUICK ACTIONS ───────────────── -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-4">
-      <a
-        routerLink="/shipment"
-        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-      >
-        <i class="bi bi-truck fs-2 text-primary mb-1 d-block"></i>
-        <strong class="text-dark d-block">Dispatch Shipment</strong>
-        <small class="text-muted">Launch cargo shipping manifests</small>
-      </a>
-    </div>
-    <div class="col-md-4">
-      <a
-        routerLink="/delivery-trip"
-        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-      >
-        <i class="bi bi-signpost-split fs-2 text-success mb-1 d-block"></i>
-        <strong class="text-dark d-block">Schedule Trip</strong>
-        <small class="text-muted">Allocate routing timelines to drivers</small>
-      </a>
-    </div>
-    <div class="col-md-4">
-      <a
-        routerLink="/warehouse"
-        class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
-      >
-        <i class="bi bi-building fs-2 text-warning mb-1 d-block"></i>
-        <strong class="text-dark d-block">Warehouse Audits</strong>
-        <small class="text-muted">Manage stock placement layouts</small>
-      </a>
-    </div>
-  </div>
-
-  <!-- ───────────────── CHARTS & WAREHOUSES ───────────────── -->
+  <!-- ───────────────── ROW 1: SCHEDULE, FLEET, TIMELINE ───────────────── -->
   <div class="row g-4 mb-4">
-    <div class="col-md-7">
-      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3">
-          <i class="bi bi-graph-up-arrow text-primary me-2"></i> Shipment Logistics Performance
-        </h6>
-        <svg viewBox="0 0 500 150" width="100%" height="150">
-          <line x1="40" y1="10" x2="480" y2="10" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="40" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="40" y1="110" x2="480" y2="110" stroke="#f1f5f9" stroke-width="1"></line>
-          <line x1="40" y1="130" x2="480" y2="130" stroke="#cbd5e1" stroke-width="1.5"></line>
-          <path
-            d="M 40 110 L 120 70 L 220 90 L 320 40 L 480 20"
-            fill="none"
-            stroke="#2563eb"
-            stroke-width="3"
-            stroke-linecap="round"
-          ></path>
-          <circle cx="480" cy="20" r="4.5" fill="#1e40af"></circle>
-          <text x="40" y="145" font-size="10.5" fill="#64748b">WK 23</text>
-          <text x="220" y="145" font-size="10.5" fill="#64748b">WK 24</text>
-          <text x="320" y="145" font-size="10.5" fill="#64748b">WK 25</text>
-          <text x="480" y="145" font-size="10.5" fill="#64748b" text-anchor="end">
-            Active WK 26
-          </text>
-        </svg>
+    <!-- Today's Dispatch Schedule -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark"><i class="bi bi-calendar-event me-2"></i>Today's Dispatch Schedule</h6>
+          <a href="#" class="text-primary text-decoration-none fw-semibold fs-7" (click)="openScheduleModal($event)">View Full Schedule</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-7 border-top">
+              <thead class="table-light text-secondary">
+                <tr>
+                  <th class="ps-4 fw-semibold">Trip ID</th>
+                  <th class="fw-semibold">Destination</th>
+                  <th class="fw-semibold">Time</th>
+                  <th class="fw-semibold text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of dispatchSchedule.slice(0, 3)">
+                  <td class="ps-4 fw-bold text-dark">{{ row.tripId }}</td>
+                  <td class="text-secondary">{{ row.destination }}</td>
+                  <td class="text-secondary">{{ row.time }}</td>
+                  <td class="text-center">
+                    <span class="fw-semibold small" [ngClass]="{
+                      'text-success': row.status === 'In Transit',
+                      'text-primary': row.status === 'Scheduled',
+                      'text-warning': row.status === 'Pending'
+                    }">{{ row.status }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-5">
-      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3">
-          <i class="bi bi-boxes text-warning me-2"></i> Warehouse Volume Occupancy
-        </h6>
-        @if (warehouses.length === 0) {
-          <div class="text-center py-3 text-muted small">
-            <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
-            No warehouse data available
+    <!-- Fleet Status Overview -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <h6 class="fw-bold text-dark mb-4"><i class="bi bi-car-front me-2"></i>Fleet Status Overview</h6>
+        <div class="d-flex justify-content-center mb-4 position-relative">
+          <svg viewBox="0 0 42 42" class="donut-chart" style="width: 150px; height: 150px;">
+            <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+            <!-- Available (Green) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#10b981" stroke-width="6" [attr.stroke-dasharray]="fleetStats.available.dash" [attr.stroke-dashoffset]="fleetStats.available.offset"></circle>
+            <!-- On Route (Blue) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#3b82f6" stroke-width="6" [attr.stroke-dasharray]="fleetStats.onRoute.dash" [attr.stroke-dashoffset]="fleetStats.onRoute.offset"></circle>
+            <!-- Maintenance (Orange) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f59e0b" stroke-width="6" [attr.stroke-dasharray]="fleetStats.maintenance.dash" [attr.stroke-dashoffset]="fleetStats.maintenance.offset"></circle>
+            <!-- Offline (Red) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#ef4444" stroke-width="6" [attr.stroke-dasharray]="fleetStats.offline.dash" [attr.stroke-dashoffset]="fleetStats.offline.offset"></circle>
+          </svg>
+          <div class="position-absolute top-50 start-50 translate-middle text-center bg-white rounded-circle" style="width: 80px; height: 80px; padding-top: 25px;">
+            <div class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles }}</div>
+            <div class="text-muted" style="font-size: 0.65rem;">Total</div>
           </div>
-        } @else {
-          <div class="d-flex flex-column gap-3">
-            <div *ngFor="let wh of warehouses" class="p-2 border rounded-3 bg-light">
-              <div class="d-flex justify-content-between small fw-bold mb-1">
-                <span class="text-dark">{{ wh.name }}</span>
-                <span class="text-secondary font-monospace"
-                  >{{ wh.usedPercent || 0 }}% ({{ wh.capacity }} units)</span
-                >
+        </div>
+        <!-- Legend -->
+        <div class="d-flex flex-column gap-2 mt-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #10b981;"></span>Available</span>
+            <span class="fs-7 fw-semibold text-dark">{{ fleetStats.available.val }} ({{ fleetStats.available.pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #3b82f6;"></span>On Route</span>
+            <span class="fs-7 fw-semibold text-dark">{{ fleetStats.onRoute.val }} ({{ fleetStats.onRoute.pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #f59e0b;"></span>Maintenance</span>
+            <span class="fs-7 fw-semibold text-dark">{{ fleetStats.maintenance.val }} ({{ fleetStats.maintenance.pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #ef4444;"></span>Offline</span>
+            <span class="fs-7 fw-semibold text-dark">{{ fleetStats.offline.val }} ({{ fleetStats.offline.pct }}%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Shipment Timeline -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history me-2"></i>Live Shipment Timeline</h6>
+          <a href="#" class="text-primary text-decoration-none fw-semibold fs-7" (click)="openShipmentModal($event)">View All Shipments</a>
+        </div>
+        <div class="timeline-container px-3 position-relative">
+          <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-4 border-start border-2 border-light"></div>
+          <div class="timeline-item d-flex gap-3 mb-4 position-relative" *ngFor="let item of liveTimeline.slice(0, 2)">
+            <div class="timeline-dot bg-{{ item.color }} rounded-circle border border-white border-2 shadow-sm" style="width: 14px; height: 14px; margin-top: 4px; z-index: 2;"></div>
+            <div class="d-flex justify-content-between w-100 align-items-start">
+              <div>
+                <div class="fw-bold text-dark">Order {{ item.order }}</div>
+                <div class="text-muted small">{{ item.status }}</div>
               </div>
-              <div class="progress" style="height: 6px">
-                <div
-                  class="progress-bar"
-                  role="progressbar"
-                  [style.width.%]="wh.usedPercent || 0"
-                  [ngClass]="{
-                    'bg-success': (wh.usedPercent || 0) < 60,
-                    'bg-warning': (wh.usedPercent || 0) >= 60 && (wh.usedPercent || 0) < 85,
-                    'bg-danger': (wh.usedPercent || 0) >= 85,
-                  }"
-                ></div>
+              <div class="text-end">
+                <div class="small fw-semibold text-{{ item.color }}">{{ item.time }}</div>
+                <div class="text-muted small" style="font-size: 0.7rem;">{{ item.time2 }}</div>
               </div>
             </div>
           </div>
-        }
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ───────────────── SHIPMENTS TRACKER TABLE ───────────────── -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <div class="card-header bg-white py-3 border-0">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-clock-history text-primary me-2"></i> Outbound Shipment Dispatch Logs
-      </h6>
-    </div>
-    <div class="card-body p-0">
-      @if (shipments.length === 0) {
-        <div class="text-center py-5 text-muted">
-          <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
-          No shipments recorded yet
+  <!-- ───────────────── ROW 2: PERFORMANCE, WAREHOUSE, INVENTORY ───────────────── -->
+  <div class="row g-4 mb-4">
+    <!-- Shipment Performance -->
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold text-dark mb-0">Shipment Performance (This Month)</h6>
+          <select class="form-select form-select-sm w-auto border-0 bg-light rounded-pill px-3 fw-semibold text-secondary">
+            <option>This Month</option>
+          </select>
         </div>
-      } @else {
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0 fs-8">
-            <thead class="table-light text-uppercase">
-              <tr>
-                <th class="ps-4">Logistics ID</th>
-                <th>Assigned Fleet</th>
-                <th>Target Destination</th>
-                <th>Route ETA</th>
-                <th>Tracking State</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let s of shipments">
-                <td class="ps-4 font-monospace fw-bold text-primary">{{ s.id }}</td>
-                <td class="fw-semibold">
-                  <i class="bi bi-truck-flatbed me-1.5 text-secondary"></i>{{ s.vehicle }}
-                </td>
-                <td class="text-secondary">{{ s.destination }}</td>
-                <td class="font-monospace">{{ s.eta }}</td>
-                <td>
-                  <span
-                    class="badge rounded-pill text-uppercase px-2.5 py-1"
-                    [ngClass]="{
+        <div class="flex-grow-1 position-relative" style="min-height: 150px;">
+          <svg viewBox="0 0 500 150" class="w-100" style="height: 120px;" preserveAspectRatio="none">
+            <!-- Background gradient -->
+            <defs>
+              <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3" />
+                <stop offset="100%" stop-color="#3b82f6" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="0" y1="30" x2="500" y2="30" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="0" y1="60" x2="500" y2="60" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="0" y1="90" x2="500" y2="90" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="0" y1="120" x2="500" y2="120" stroke="#f1f5f9" stroke-width="1" />
+            
+            <!-- Dynamic Filled area -->
+            <path [attr.d]="shipmentPerformanceFill" fill="url(#chartGradient)"/>
+            
+            <!-- Dynamic Line -->
+            <path [attr.d]="shipmentPerformancePoints" fill="none" stroke="#3b82f6" stroke-width="3" stroke-linecap="round"/>
+            
+            <!-- Points (using dynamic data) -->
+            <circle *ngFor="let pt of shipmentDataPoints" [attr.cx]="pt.x" [attr.cy]="pt.y" r="4" fill="#ffffff" stroke="#3b82f6" stroke-width="2" />
+            
+            <!-- X Axis Labels -->
+            <text x="0" y="150" font-size="10" fill="#94a3b8">Jul 01</text>
+            <text x="90" y="150" font-size="10" fill="#94a3b8">Jul 07</text>
+            <text x="180" y="150" font-size="10" fill="#94a3b8">Jul 14</text>
+            <text x="280" y="150" font-size="10" fill="#94a3b8">Jul 21</text>
+            <text x="380" y="150" font-size="10" fill="#94a3b8">Jul 28</text>
+            <text x="470" y="150" font-size="10" fill="#94a3b8">Jul 31</text>
+          </svg>
+        </div>
+        <div class="row g-3 mt-3 border-top pt-3">
+          <div class="col-3">
+            <div class="p-2 rounded-3 bg-light text-center">
+              <div class="text-muted small">Total Shipments</div>
+              <div class="fs-5 fw-bold text-dark lh-1 mt-1">{{ shipmentHistoryStats.total }} <span class="fs-8 text-success fw-normal ms-1"><i class="bi bi-arrow-up-short"></i>18%</span></div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded-3 bg-success-subtle text-center">
+              <div class="text-muted small">Delivered</div>
+              <div class="fs-5 fw-bold text-dark lh-1 mt-1">{{ shipmentHistoryStats.delivered }} <span class="fs-8 text-success fw-normal ms-1"><i class="bi bi-arrow-up-short"></i>22%</span></div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded-3 bg-warning-subtle text-center">
+              <div class="text-muted small">In Transit</div>
+              <div class="fs-5 fw-bold text-dark lh-1 mt-1">{{ shipmentHistoryStats.inTransit }} <span class="fs-8 text-danger fw-normal ms-1"><i class="bi bi-arrow-down-short"></i>5%</span></div>
+            </div>
+          </div>
+          <div class="col-3">
+            <div class="p-2 rounded-3 bg-danger-subtle text-center">
+              <div class="text-muted small">Delayed</div>
+              <div class="fs-5 fw-bold text-dark lh-1 mt-1">{{ shipmentHistoryStats.delayed }} <span class="fs-8 text-danger fw-normal ms-1"><i class="bi bi-arrow-down-short"></i>33%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warehouse Capacity Progress -->
+    <div class="col-lg-4">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="fw-bold text-dark mb-0"><i class="bi bi-boxes me-2 text-warning"></i>Warehouse Capacity</h6>
+          <a href="#" class="text-primary text-decoration-none fw-semibold fs-7 d-flex align-items-center gap-1" (click)="openWarehouseModal($event)">View All <i class="bi bi-chevron-down small"></i></a>
+        </div>
+        
+        <div class="mb-4" *ngFor="let wh of warehouses.slice(0, 2)">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fs-7 fw-semibold text-dark">{{ wh.name }}</span>
+            <span class="fs-7 fw-bold text-dark">{{ wh.usedPercent }}%<span class="text-muted fw-normal">({{ wh.used }} / {{ wh.capacity }})</span></span>
+          </div>
+          <div class="progress" style="height: 10px;">
+            <div class="progress-bar rounded-pill" 
+                 [ngClass]="{'bg-success': wh.usedPercent < 70, 'bg-warning': wh.usedPercent >= 70 && wh.usedPercent < 90, 'bg-danger': wh.usedPercent >= 90}"
+                 role="progressbar" 
+                 [style.width]="wh.usedPercent + '%'" 
+                 [attr.aria-valuenow]="wh.usedPercent" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inventory Movement -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3">
+        <h6 class="fw-bold text-dark mb-4"><i class="bi bi-arrow-left-right me-2 text-info"></i>Inventory Movement (Today)</h6>
+        <div class="d-flex justify-content-center mb-4 position-relative">
+          <svg viewBox="0 0 42 42" class="donut-chart" style="width: 150px; height: 150px;">
+            <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="#fff"></circle>
+            <!-- In (Green) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#10b981" stroke-width="6" [attr.stroke-dasharray]="inventoryStats.in.dash" [attr.stroke-dashoffset]="inventoryStats.in.offset"></circle>
+            <!-- Out (Blue) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#3b82f6" stroke-width="6" [attr.stroke-dasharray]="inventoryStats.out.dash" [attr.stroke-dashoffset]="inventoryStats.out.offset"></circle>
+            <!-- Transfer (Orange) -->
+            <circle class="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f59e0b" stroke-width="6" [attr.stroke-dasharray]="inventoryStats.transfer.dash" [attr.stroke-dashoffset]="inventoryStats.transfer.offset"></circle>
+          </svg>
+          <div class="position-absolute top-50 start-50 translate-middle text-center bg-white rounded-circle" style="width: 80px; height: 80px; padding-top: 25px;">
+            <div class="fs-4 fw-bold text-dark lh-1">{{ totalMovements }}</div>
+            <div class="text-muted" style="font-size: 0.65rem;">Total</div>
+          </div>
+        </div>
+        <!-- Legend -->
+        <div class="d-flex flex-column gap-2 mt-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #10b981;"></span>In</span>
+            <span class="fs-7 fw-semibold text-dark">{{ inventoryStats.in.val }} ({{ inventoryStats.in.pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #3b82f6;"></span>Out</span>
+            <span class="fs-7 fw-semibold text-dark">{{ inventoryStats.out.val }} ({{ inventoryStats.out.pct }}%)</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fs-7 text-dark"><span class="d-inline-block rounded-circle me-2" style="width: 8px; height: 8px; background-color: #f59e0b;"></span>Transfer</span>
+            <span class="fs-7 fw-semibold text-dark">{{ inventoryStats.transfer.val }} ({{ inventoryStats.transfer.pct }}%)</span>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
+          <span class="text-muted small">Total Movements</span>
+          <span class="fw-bold fs-5 text-dark">{{ totalMovements }} <span class="fs-8 text-success fw-normal ms-1"><i class="bi bi-arrow-up-short"></i>30% vs yesterday</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── ROW 3: DISPATCH QUEUE, MAP, ACTIVITY ───────────────── -->
+  <div class="row g-4 mb-4">
+    <!-- Dispatch Queue -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark">Dispatch Queue</h6>
+          <a href="#" class="text-primary text-decoration-none fw-semibold fs-7" (click)="openDispatchModal($event)">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-7">
+              <thead class="table-light text-secondary border-top">
+                <tr>
+                  <th class="ps-4 fw-semibold">Shipment ID</th>
+                  <th class="fw-semibold">Customer</th>
+                  <th class="fw-semibold">Driver</th>
+                  <th class="fw-semibold">Vehicle</th>
+                  <th class="fw-semibold">Destination</th>
+                  <th class="fw-semibold">Priority</th>
+                  <th class="fw-semibold">ETA</th>
+                  <th class="fw-semibold">Status</th>
+                  <th class="fw-semibold text-center">Track</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let s of dispatchQueue.slice(0, 3)">
+                  <td class="ps-4 fw-bold text-primary">{{ s.id }}</td>
+                  <td class="text-dark fw-semibold">{{ s.customer }}</td>
+                  <td class="text-secondary">{{ s.driver }}</td>
+                  <td class="text-dark">{{ s.vehicle }}</td>
+                  <td class="text-secondary">{{ s.destination }}</td>
+                  <td>
+                    <span class="fw-bold" [ngClass]="{
+                      'text-danger': s.priority === 'High',
+                      'text-warning': s.priority === 'Medium',
+                      'text-success': s.priority === 'Low'
+                    }">{{ s.priority }}</span>
+                  </td>
+                  <td class="text-secondary">{{ s.eta }}</td>
+                  <td>
+                    <span class="badge rounded-pill text-uppercase px-2" [ngClass]="{
                       'bg-primary-subtle text-primary': s.status === 'IN_TRANSIT',
-                      'bg-success-subtle text-success': s.status === 'DELIVERED',
-                      'bg-warning-subtle text-warning': s.status === 'DISPATCHING',
-                      'bg-secondary-subtle text-secondary': s.status === 'PENDING',
-                    }"
-                  >
-                    {{ s.status }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                      'bg-secondary-subtle text-secondary': s.status === 'SCHEDULED' || s.status === 'PENDING'
+                    }">{{ s.status }}</span>
+                  </td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-light text-primary rounded-circle"><i class="bi bi-geo-alt"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      }
+      </div>
+    </div>
+
+    <!-- Live Tracking Map Placeholder -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+          <h6 class="mb-0 fw-bold text-dark">Live Tracking Map</h6>
+          <a href="#" class="text-primary text-decoration-none fw-semibold fs-7" (click)="openMapModal($event)">View Full Map</a>
+        </div>
+        <div class="card-body p-2 position-relative">
+          <div class="bg-light rounded-4 h-100 w-100 position-relative overflow-hidden d-flex justify-content-center align-items-center" style="min-height: 250px; background: url('https://www.transparenttextures.com/patterns/cartographer.png') #eef2f6;">
+            <!-- Map dummy lines -->
+            <svg class="position-absolute top-0 start-0 w-100 h-100">
+              <line x1="20%" y1="20%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+              <line x1="80%" y1="20%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+              <line x1="20%" y1="80%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+              <line x1="80%" y1="80%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+            </svg>
+            <div class="position-absolute" style="top: 15%; left: 15%;">
+              <div class="badge bg-white text-dark shadow-sm border mb-1">Rajshahi</div>
+              <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:12px; height:12px;"></div>
+            </div>
+            <div class="position-absolute" style="top: 15%; right: 15%;">
+              <div class="badge bg-white text-dark shadow-sm border mb-1">Sylhet</div>
+              <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:12px; height:12px;"></div>
+            </div>
+            <div class="position-absolute" style="bottom: 15%; left: 15%;">
+              <div class="badge bg-white text-dark shadow-sm border mb-1">Khulna</div>
+              <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:12px; height:12px;"></div>
+            </div>
+            <div class="position-absolute" style="bottom: 15%; right: 15%;">
+              <div class="badge bg-white text-dark shadow-sm border mb-1">Chattogram</div>
+              <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:12px; height:12px;"></div>
+            </div>
+            <div class="position-absolute text-center" style="top: 45%; left: 45%;">
+              <div class="badge bg-white text-dark shadow-sm border mb-1">Dhaka</div>
+              <div class="bg-success text-white rounded-circle shadow border border-white border-2 d-flex justify-content-center align-items-center fs-6" style="width:24px; height:24px;">
+                <i class="bi bi-truck"></i>
+              </div>
+            </div>
+            
+            <div class="position-absolute bottom-0 end-0 p-2 d-flex flex-column gap-1">
+              <button class="btn btn-sm btn-white shadow-sm border"><i class="bi bi-plus"></i></button>
+              <button class="btn btn-sm btn-white shadow-sm border"><i class="bi bi-dash"></i></button>
+              <button class="btn btn-sm btn-white shadow-sm border"><i class="bi bi-cursor-fill"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-3">
+      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h6 class="fw-bold text-dark mb-0">Recent Activity</h6>
+          <button class="btn btn-link text-primary p-0 text-decoration-none fw-semibold fs-7" (click)="openActivityModal()">View All</button>
+        </div>
+        <div class="timeline-container position-relative">
+          <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-2 border-start border-2 border-light"></div>
+          
+          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
+            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+              <i class="bi bi-truck fs-8"></i>
+            </div>
+            <div>
+              <div class="small fw-bold text-dark">02:10 PM</div>
+              <div class="fs-7 fw-semibold text-dark mt-1">Shipment #1257 dispatched</div>
+              <div class="text-muted" style="font-size: 0.7rem;">Driver: Karim Hossain</div>
+            </div>
+          </div>
+          
+          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
+            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+              <i class="bi bi-box-seam fs-8"></i>
+            </div>
+            <div>
+              <div class="small fw-bold text-dark">01:45 PM</div>
+              <div class="fs-7 fw-semibold text-dark mt-1">Warehouse B inventory updated</div>
+              <div class="text-muted" style="font-size: 0.7rem;">SKU: PRD-2234</div>
+            </div>
+          </div>
+
+          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
+            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+              <i class="bi bi-check-circle fs-8"></i>
+            </div>
+            <div>
+              <div class="small fw-bold text-dark">01:20 PM</div>
+              <div class="fs-7 fw-semibold text-dark mt-1">Delivery completed</div>
+              <div class="text-muted" style="font-size: 0.7rem;">Shipment #1258</div>
+            </div>
+          </div>
+
+          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
+            <div class="bg-danger-subtle text-danger rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+              <i class="bi bi-tools fs-8"></i>
+            </div>
+            <div>
+              <div class="small fw-bold text-dark">12:55 PM</div>
+              <div class="fs-7 fw-semibold text-dark mt-1">Vehicle TR-03 entered maintenance</div>
+              <div class="text-muted" style="font-size: 0.7rem;">Reason: Routine Check</div>
+            </div>
+          </div>
+
+          <div class="timeline-item d-flex gap-3 position-relative">
+            <div class="bg-primary-subtle text-primary rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+              <i class="bi bi-calendar-event fs-8"></i>
+            </div>
+            <div>
+              <div class="small fw-bold text-dark">12:30 PM</div>
+              <div class="fs-7 fw-semibold text-dark mt-1">New delivery trip scheduled</div>
+              <div class="text-muted" style="font-size: 0.7rem;">Trip: TR-02</div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ───────────────── NOTIFICATIONS & ACTIVITY LOG ───────────────── -->
-  <div class="row g-4 mb-4">
-    <!-- Notifications -->
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
-        <div
-          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
-        >
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-bell text-warning me-2"></i> Recent Notifications
-          </h6>
-          <span class="badge bg-warning-subtle text-warning">{{ notifications.length }}</span>
+  <!-- ───────────────── FOOTER ALERTS ───────────────── -->
+  <h6 class="fw-bold mb-3 text-dark mt-2">Alerts & Notifications</h6>
+  
+  <div class="row g-3">
+    <div class="col-md-3" *ngFor="let alert of alerts">
+      <div class="card border-0 shadow-sm rounded-4 bg-white p-3 d-flex flex-row align-items-center gap-3">
+        <div class="text-{{ alert.type }} fs-4">
+          <i [class]="alert.icon"></i>
         </div>
-        <div class="card-body p-0">
-          @if (notifications.length === 0) {
-            <div class="text-center py-4 text-muted small">
-              <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-50"></i>
-              No notifications
+        <div class="flex-grow-1">
+          <div class="fs-7 fw-bold text-dark lh-sm mb-1">{{ alert.message.split('(')[0] }}</div>
+          <div class="text-muted" style="font-size: 0.65rem;" *ngIf="alert.message.includes('(')">
+             {{ alert.message.substring(alert.message.indexOf('(')+1, alert.message.indexOf(')')) }}
+          </div>
+        </div>
+        <div class="text-muted fw-semibold" style="font-size: 0.7rem;">{{ alert.time }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── ACTIVITY MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showActivityModal" [style.display]="showActivityModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark">Logistics Officer Activity</h5>
+          <button type="button" class="btn-close" (click)="closeActivityModal()"></button>
+        </div>
+        <div class="modal-body">
+          @if (loadingActivities) {
+            <div class="text-center py-4">
+              <div class="spinner-border text-primary spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          } @else if (allUserActivities.length === 0) {
+            <div class="text-center py-4 text-muted">
+              No activity logs found.
             </div>
           } @else {
-            <div class="d-flex flex-column">
-              <div
-                *ngFor="let n of notifications"
-                class="notification-item px-4 py-3 border-bottom"
-              >
-                <div class="d-flex align-items-start gap-3">
-                  <i
-                    class="bi mt-1"
-                    [ngClass]="getNotificationIcon(n.type) + ' ' + getNotificationColor(n.type)"
-                  ></i>
-                  <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <span class="fw-semibold text-dark small">{{ n.title }}</span>
-                      <span class="text-muted font-monospace" style="font-size: 0.7rem">{{
-                        formatDate(n.createdAt)
-                      }}</span>
-                    </div>
-                    <p class="text-secondary small mb-0 mt-1">{{ n.message }}</p>
+            <div class="position-relative ps-2">
+              <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-2 border-start border-2 border-light"></div>
+              <div class="timeline-item d-flex gap-3 mb-4 position-relative" *ngFor="let act of allUserActivities">
+                <div class="bg-light text-secondary rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
+                  <i class="bi bi-clock-history fs-8"></i>
+                </div>
+                <div>
+                  <div class="small fw-bold text-dark">{{ formatDate(act.performedAt) }}</div>
+                  <div class="fs-7 fw-semibold text-dark mt-1">{{ act.action }}</div>
+                  <div class="text-muted" style="font-size: 0.7rem;">{{ act.module }} - {{ act.description || 'System log' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── WAREHOUSE MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showWarehouseModal" [style.display]="showWarehouseModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-boxes me-2 text-warning"></i>Warehouse Capacity</h5>
+          <button type="button" class="btn-close" (click)="closeWarehouseModal()"></button>
+        </div>
+        <div class="modal-body">
+          @if (warehouses.length === 0) {
+            <div class="text-center py-4 text-muted">
+              No warehouses found.
+            </div>
+          } @else {
+            <div class="mb-4" *ngFor="let wh of warehouses">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fs-7 fw-semibold text-dark">{{ wh.name }}</span>
+                <span class="fs-7 fw-bold text-dark">{{ wh.usedPercent }}%<span class="text-muted fw-normal">({{ wh.used }} / {{ wh.capacity }})</span></span>
+              </div>
+              <div class="progress" style="height: 10px;">
+                <div class="progress-bar rounded-pill" 
+                     [ngClass]="{'bg-success': wh.usedPercent < 70, 'bg-warning': wh.usedPercent >= 70 && wh.usedPercent < 90, 'bg-danger': wh.usedPercent >= 90}"
+                     role="progressbar" 
+                     [style.width]="wh.usedPercent + '%'" 
+                     [attr.aria-valuenow]="wh.usedPercent" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── SHIPMENT MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showShipmentModal" [style.display]="showShipmentModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-clock-history me-2"></i>Live Shipment Timeline</h5>
+          <button type="button" class="btn-close" (click)="closeShipmentModal()"></button>
+        </div>
+        <div class="modal-body">
+          @if (liveTimeline.length === 0) {
+            <div class="text-center py-4 text-muted">
+              No shipments found.
+            </div>
+          } @else {
+            <div class="timeline-container px-3 position-relative">
+              <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-4 border-start border-2 border-light"></div>
+              <div class="timeline-item d-flex gap-3 mb-4 position-relative" *ngFor="let item of liveTimeline">
+                <div class="timeline-dot bg-{{ item.color }} rounded-circle border border-white border-2 shadow-sm" style="width: 14px; height: 14px; margin-top: 4px; z-index: 2;"></div>
+                <div class="d-flex justify-content-between w-100 align-items-start">
+                  <div>
+                    <div class="fw-bold text-dark">Order {{ item.order }}</div>
+                    <div class="text-muted small">{{ item.status }}</div>
+                  </div>
+                  <div class="text-end">
+                    <div class="small fw-semibold text-{{ item.color }}">{{ item.time }}</div>
+                    <div class="text-muted small" style="font-size: 0.7rem;">{{ item.time2 }}</div>
                   </div>
                 </div>
               </div>
@@ -270,64 +703,178 @@
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Activity Log -->
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
-        <div
-          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
-        >
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-activity text-info me-2"></i> Activity Log
-          </h6>
-          <span class="badge bg-info-subtle text-info">{{ activities.length }}</span>
+  <!-- ───────────────── DISPATCH QUEUE MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showDispatchModal" [style.display]="showDispatchModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark">Dispatch Queue</h5>
+          <button type="button" class="btn-close" (click)="closeDispatchModal()"></button>
         </div>
-        <div class="card-body p-0">
-          @if (activities.length === 0) {
-            <div class="text-center py-4 text-muted small">
-              <i class="bi bi-journal-x fs-3 d-block mb-2 opacity-50"></i>
-              No activity recorded
+        <div class="modal-body p-0">
+          @if (dispatchQueue.length === 0) {
+            <div class="text-center py-4 text-muted">
+              No shipments in dispatch queue.
             </div>
           } @else {
-            <div class="d-flex flex-column">
-              <div *ngFor="let a of activities" class="activity-item px-4 py-3 border-bottom">
-                <div class="d-flex align-items-start gap-3">
-                  <i
-                    class="bi mt-1"
-                    [ngClass]="getActionIcon(a.action) + ' ' + getActionColor(a.action)"
-                  ></i>
-                  <div class="flex-grow-1">
-                    <div class="d-flex justify-content-between align-items-start">
-                      <span class="fw-semibold text-dark small"
-                        >{{ a.module }} — {{ a.action }}</span
-                      >
-                      <span class="text-muted font-monospace" style="font-size: 0.7rem">{{
-                        formatDate(a.performedAt)
-                      }}</span>
-                    </div>
-                    <p class="text-secondary small mb-0 mt-1">
-                      {{ a.description || 'No description' }}
-                    </p>
-                    <span
-                      class="badge mt-1"
-                      [ngClass]="
-                        a.actionStatus === 'SUCCESS'
-                          ? 'bg-success-subtle text-success'
-                          : 'bg-danger-subtle text-danger'
-                      "
-                    >
-                      {{ a.actionStatus }}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div class="table-responsive mt-3">
+              <table class="table table-hover align-middle mb-0 fs-7">
+                <thead class="table-light text-secondary border-top border-bottom">
+                  <tr>
+                    <th class="ps-4 fw-semibold">Shipment ID</th>
+                    <th class="fw-semibold">Customer</th>
+                    <th class="fw-semibold">Driver</th>
+                    <th class="fw-semibold">Vehicle</th>
+                    <th class="fw-semibold">Destination</th>
+                    <th class="fw-semibold">Priority</th>
+                    <th class="fw-semibold">ETA</th>
+                    <th class="fw-semibold">Status</th>
+                    <th class="fw-semibold text-center">Track</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let s of dispatchQueue">
+                    <td class="ps-4 fw-bold text-primary">{{ s.id }}</td>
+                    <td class="text-dark fw-semibold">{{ s.customer }}</td>
+                    <td class="text-secondary">{{ s.driver }}</td>
+                    <td class="text-dark">{{ s.vehicle }}</td>
+                    <td class="text-secondary">{{ s.destination }}</td>
+                    <td>
+                      <span class="fw-bold" [ngClass]="{
+                        'text-danger': s.priority === 'High',
+                        'text-warning': s.priority === 'Medium',
+                        'text-success': s.priority === 'Low'
+                      }">{{ s.priority }}</span>
+                    </td>
+                    <td class="text-secondary">{{ s.eta }}</td>
+                    <td>
+                      <span class="badge rounded-pill text-uppercase px-2" [ngClass]="{
+                        'bg-primary-subtle text-primary': s.status === 'IN_TRANSIT',
+                        'bg-secondary-subtle text-secondary': s.status === 'SCHEDULED' || s.status === 'PENDING'
+                      }">{{ s.status }}</span>
+                    </td>
+                    <td class="text-center">
+                      <button class="btn btn-sm btn-light text-primary rounded-circle"><i class="bi bi-geo-alt"></i></button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           }
         </div>
       </div>
     </div>
   </div>
+
+  <!-- ───────────────── DISPATCH SCHEDULE MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showScheduleModal" [style.display]="showScheduleModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark"><i class="bi bi-calendar-event me-2"></i>Today's Dispatch Schedule</h5>
+          <button type="button" class="btn-close" (click)="closeScheduleModal()"></button>
+        </div>
+        <div class="modal-body p-0">
+          @if (dispatchSchedule.length === 0) {
+            <div class="text-center py-4 text-muted">
+              No schedules found for today.
+            </div>
+          } @else {
+            <div class="table-responsive mt-3">
+              <table class="table table-hover align-middle mb-0 fs-7">
+                <thead class="table-light text-secondary border-top border-bottom">
+                  <tr>
+                    <th class="ps-4 fw-semibold">Trip ID</th>
+                    <th class="fw-semibold">Destination</th>
+                    <th class="fw-semibold">Time</th>
+                    <th class="fw-semibold text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of dispatchSchedule">
+                    <td class="ps-4 fw-bold text-dark">{{ row.tripId }}</td>
+                    <td class="text-secondary">{{ row.destination }}</td>
+                    <td class="text-secondary">{{ row.time }}</td>
+                    <td class="text-center">
+                      <span class="badge rounded-pill px-2 text-dark border" [ngClass]="{
+                        'bg-light border-secondary-subtle': row.status === 'PENDING' || row.status === 'SCHEDULED'
+                      }">{{ row.status }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── MAP MODAL ───────────────── -->
+  <div class="modal fade" [class.show]="showMapModal" [style.display]="showMapModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow rounded-4">
+        <div class="modal-header border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold text-dark">Live Tracking Map</h5>
+          <button type="button" class="btn-close" (click)="closeMapModal()"></button>
+        </div>
+        <div class="modal-body">
+          @if (hasActiveTrackingDevice) {
+            <div class="bg-light rounded-4 w-100 position-relative overflow-hidden d-flex justify-content-center align-items-center" style="min-height: 500px; background: url('https://www.transparenttextures.com/patterns/cartographer.png') #eef2f6;">
+              <!-- Map dummy lines -->
+              <svg class="position-absolute top-0 start-0 w-100 h-100">
+                <line x1="20%" y1="20%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+                <line x1="80%" y1="20%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+                <line x1="20%" y1="80%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+                <line x1="80%" y1="80%" x2="50%" y2="50%" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4"></line>
+              </svg>
+              <div class="position-absolute" style="top: 15%; left: 15%;">
+                <div class="badge bg-white text-dark shadow-sm border mb-1">Rajshahi</div>
+                <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:16px; height:16px;"></div>
+              </div>
+              <div class="position-absolute" style="top: 15%; right: 15%;">
+                <div class="badge bg-white text-dark shadow-sm border mb-1">Sylhet</div>
+                <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:16px; height:16px;"></div>
+              </div>
+              <div class="position-absolute" style="bottom: 15%; left: 15%;">
+                <div class="badge bg-white text-dark shadow-sm border mb-1">Khulna</div>
+                <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:16px; height:16px;"></div>
+              </div>
+              <div class="position-absolute" style="bottom: 15%; right: 15%;">
+                <div class="badge bg-white text-dark shadow-sm border mb-1">Chattogram</div>
+                <div class="bg-primary rounded-circle shadow border border-white border-2" style="width:16px; height:16px;"></div>
+              </div>
+              <div class="position-absolute text-center" style="top: 45%; left: 45%;">
+                <div class="badge bg-white text-dark shadow-sm border mb-1">Dhaka</div>
+                <div class="bg-success text-white rounded-circle shadow border border-white border-2 d-flex justify-content-center align-items-center fs-5" style="width:40px; height:40px;">
+                  <i class="bi bi-truck"></i>
+                </div>
+              </div>
+              
+              <div class="position-absolute bottom-0 end-0 p-3 d-flex flex-column gap-2">
+                <button class="btn btn-white shadow border"><i class="bi bi-plus"></i></button>
+                <button class="btn btn-white shadow border"><i class="bi bi-dash"></i></button>
+                <button class="btn btn-white shadow border"><i class="bi bi-cursor-fill"></i></button>
+              </div>
+            </div>
+          } @else {
+            <div class="text-center py-5">
+              <div class="mb-4 d-inline-flex justify-content-center align-items-center bg-light rounded-circle" style="width: 80px; height: 80px;">
+                <i class="bi bi-geo-alt-fill text-muted" style="font-size: 2.5rem;"></i>
+              </div>
+              <h4 class="fw-bold text-dark mb-2">No Connected Tracking Device</h4>
+              <p class="text-secondary mx-auto" style="max-width: 400px;">
+                We cannot display the live tracking map because there are no active GPS tracking devices connected to your current shipments.
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- ───────────────── SETTINGS PANEL ───────────────── -->
 <app-dashboard-settings [isOpen]="showSettings" (close)="closeSettings()"></app-dashboard-settings>

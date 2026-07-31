@@ -46,21 +46,45 @@
   transform: translateY(-1px);
 }
 
-/* Right Slide Drawer Engine */
+/* Center Modal View Engine (সেন্টার পপআপ মোডাল ভিউ) */
 .custom-drawer {
   position: fixed;
-  top: 0;
-  right: -460px;
-  width: 450px;
-  height: 100vh;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 650px;
+  max-width: 95vw;
+  max-height: 85vh; /* উচ্চতা একটু কমিয়ে ফিক্সড করা হয়েছে যাতে সব ডিভাইসে সুন্দর দেখায় */
   background-color: #ffffff;
   z-index: 1050;
-  box-shadow: -4px 0 24px rgba(15, 23, 42, 0.15);
-  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.25);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .custom-drawer.open {
-  right: 0;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ড্রয়ার বা মোডালের বডি স্ক্রোলএবল এবং সঠিক প্যাডিংয়ের জন্য */
+.drawer-body {
+  padding: 24px !important;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+/* ফুটার বাটনগুলোর নিচে ও উপরে পর্যাপ্ত গ্যাপ রাখার জন্য */
+.drawer-footer {
+  padding: 16px 24px !important;
+  background-color: #ffffff;
+  border-top: 1px solid #e2e8f0;
 }
 
 .drawer-backdrop {
@@ -69,8 +93,8 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.3);
-  backdrop-filter: blur(2px);
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(3px);
   z-index: 1040;
 }
 
