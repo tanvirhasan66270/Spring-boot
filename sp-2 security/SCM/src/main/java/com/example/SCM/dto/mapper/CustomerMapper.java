@@ -30,6 +30,7 @@ public class CustomerMapper {
         dto.setNidNumber(entity.getNidNumber());
         dto.setImage(entity.getImage());
 
+
         if (entity.getDob() != null) {
             dto.setDob(dateFormat.format(entity.getDob()));
         }

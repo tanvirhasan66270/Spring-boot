@@ -43,6 +43,8 @@ public class CustomerOrderMapper {
                 LocalDate.parse(dto.getEstimatedDelivery()) : null);
         order.setLineItems(new ArrayList<>());
 
+
+
         if (dto.getItems() != null) {
             dto.getItems().forEach(itemDto -> {
                 OrderLineItem item = lineItemMapper.toEntity(itemDto);
