@@ -2,7 +2,6 @@ package com.example.SCM.controller;
 
 import com.example.SCM.dto.request.CustomerRequestDTO;
 import com.example.SCM.dto.response.CustomerResponseDTO;
-import com.example.SCM.dto.response.ManagerResponseDTO;
 import com.example.SCM.service.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +20,8 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> create(
             @RequestPart("customer") CustomerRequestDTO dto,
             @RequestPart(value = "image", required = false) MultipartFile image
@@ -34,8 +33,8 @@ public class CustomerController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("customer") CustomerRequestDTO dto,
@@ -44,8 +43,8 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.update(id, dto, image));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
         List<CustomerResponseDTO> list = customerService.findAll();
 
@@ -56,24 +55,24 @@ public class CustomerController {
         return ResponseEntity.ok(list);
     }
 
+    //  এখানে @customerSecurity.isSelf যোগ করা হলো, যাতে কাস্টমার শুধু নিজের আইডি দিয়ে দেখতে পারে
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER') or @customerSecurity.isSelf(#id, authentication)")
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
         return customerService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER') " +
-//            "or @customerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<CustomerResponseDTO> getByUserId(@PathVariable Long id) {
         return customerService.findUserById(id)
                 .map(ResponseEntity::ok)

@@ -24,6 +24,7 @@ public class SupplierController {
     private final SupplierService supplierService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> save(
             @RequestPart("suppliers") String supplierJson,
@@ -36,6 +37,7 @@ public class SupplierController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> update(
             @PathVariable Long id,
@@ -49,6 +51,7 @@ public class SupplierController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @GetMapping
 //    @PreAuthorize("hasRole('ADMIN') or @supplierSecurity.isSelfUser(#id, authentication)")
 
@@ -60,6 +63,7 @@ public class SupplierController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @GetMapping("/{id}")
     public ResponseEntity<SupplierResponseDTO> getById(@PathVariable Long id) {
         return supplierService.getById(id)
@@ -67,12 +71,14 @@ public class SupplierController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         supplierService.delete(id);
         return ResponseEntity.ok("Supplier profile and associated auth account deleted successfully!");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
     @GetMapping("/user/{id}")
     public ResponseEntity<SupplierResponseDTO> getByUserId(@PathVariable Long id) {
         return supplierService.findUserById(id)

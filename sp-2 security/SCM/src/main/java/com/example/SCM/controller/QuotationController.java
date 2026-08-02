@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/quotations")
@@ -27,6 +28,7 @@ public class QuotationController {
     private final SupplierRepository supplierRepository;
 
     // 1. Create New Quotation (POST Multipart)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QuotationResponseDTO> createQuotation(
             @RequestPart("quotation") String quotationJson,
@@ -42,6 +44,7 @@ public class QuotationController {
     }
 
     // 2. Get Quotation By ID (GET)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<QuotationResponseDTO> getQuotationById(@PathVariable Long id) {
         return quotationService.getById(id)
@@ -50,6 +53,7 @@ public class QuotationController {
     }
 
     // 3. Get All Quotations (GET)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @GetMapping
     public ResponseEntity<List<QuotationResponseDTO>> getAllQuotations() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -74,6 +78,7 @@ public class QuotationController {
     }
 
     // 4. Update Existing Quotation (PUT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @PutMapping("/{id}")
     public ResponseEntity<QuotationResponseDTO> updateQuotation(
             @PathVariable Long id,
@@ -84,6 +89,7 @@ public class QuotationController {
     }
 
     // 5. Delete Quotation (DELETE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuotation(@PathVariable Long id) {
         quotationService.delete(id);
@@ -91,6 +97,7 @@ public class QuotationController {
         return ResponseEntity.noContent().build();
     }
     // 6. Update Quotation Status (PATCH)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
     @PatchMapping("/{id}/status")
     public ResponseEntity<QuotationResponseDTO> updateStatus(
             @PathVariable Long id,

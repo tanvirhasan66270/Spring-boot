@@ -23,6 +23,7 @@ public class LetterOfCreditController {
     private final LetterOfCreditService lcService;
 
     // 1. Create New Letter of Credit (POST - Multipart Form Data)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> createLC(
@@ -37,6 +38,7 @@ public class LetterOfCreditController {
     }
 
     // 2. Update Existing Letter of Credit (PUT - Multipart Form Data)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
@@ -52,6 +54,7 @@ public class LetterOfCreditController {
     }
 
     // 3. Commercial Amendment Gateway (PATCH - Standard JSON Request)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PatchMapping("/amend/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
@@ -62,12 +65,14 @@ public class LetterOfCreditController {
     }
 
     // 4. Get All LCs (GET)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping
     public ResponseEntity<List<LetterOfCreditResponseDTO>> getAllLCs() {
         return ResponseEntity.ok(lcService.findAll());
     }
 
     // 5. Get LC By ID (GET)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<LetterOfCreditResponseDTO> getLCById(@PathVariable Long id) {
         return lcService.getById(id)
@@ -76,6 +81,7 @@ public class LetterOfCreditController {
     }
 
     // 6. Delete LC (DELETE)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {

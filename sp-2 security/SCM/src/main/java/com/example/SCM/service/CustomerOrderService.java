@@ -10,10 +10,16 @@ public interface CustomerOrderService {
     CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto);
     CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto);
 
-    // 🌟 নতুন যোগ করা স্ট্যাটাস আপডেট মেথড সিগনেচার
+    // 🌟 স্ট্যাটাস আপডেট মেথড সিগনেচার
     CustomerOrderResponseDTO updateOrderStatus(Long id, String status);
 
     List<CustomerOrderResponseDTO> findAll();
+
+
+    // 🌟 কাস্টমার ভেদে তার নিজের অর্ডারগুলো পাওয়ার সিগনেচার
+    List<CustomerOrderResponseDTO> findByCustomerUsername(String username);
+//    List<CustomerOrderResponseDTO> findByCustomerId(Long id);
+
     Optional<CustomerOrderResponseDTO> getById(Long id);
     void delete(Long id);
     Optional<CustomerOrderResponseDTO> trackOrder(String orderNumber);

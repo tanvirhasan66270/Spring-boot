@@ -24,6 +24,7 @@ public class DriverController {
     private final DriverService driverService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<DriverResponseDTO> save(
             @RequestPart("driver") String driverJson,
@@ -41,6 +42,7 @@ public class DriverController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<DriverResponseDTO> update(
             @PathVariable Long id,
@@ -56,11 +58,13 @@ public class DriverController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @GetMapping
     public ResponseEntity<List<DriverResponseDTO>> findAll() {
         return ResponseEntity.ok(driverService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<DriverResponseDTO> getById(@PathVariable Long id) {
         return driverService.getById(id)
@@ -68,12 +72,14 @@ public class DriverController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         driverService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @driverSecurity.isSelf(#id, authentication)")
     public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {

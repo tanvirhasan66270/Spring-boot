@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/stock-movements")
@@ -18,6 +19,7 @@ public class StockMovementController {
     private final StockMovementService service;
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<StockMovementResponseDTO> logMovement(@RequestBody StockMovementRequestDTO dto) {
         StockMovementResponseDTO response = service.logMovement(dto);
@@ -25,6 +27,7 @@ public class StockMovementController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping
     public ResponseEntity<List<StockMovementResponseDTO>> findAll() {
         List<StockMovementResponseDTO> list = service.findAll();
@@ -35,6 +38,7 @@ public class StockMovementController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<StockMovementResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)
@@ -43,6 +47,7 @@ public class StockMovementController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

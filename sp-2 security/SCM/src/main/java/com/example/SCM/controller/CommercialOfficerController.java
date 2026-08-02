@@ -24,6 +24,7 @@ public class CommercialOfficerController {
     private final CommercialOfficerService officerService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PostMapping
     public ResponseEntity<CommercialOfficerResponseDTO> save(
             @RequestPart("commercialOfficer") String officerJson,
@@ -40,6 +41,7 @@ public class CommercialOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PutMapping(value = "/{id}")
     public ResponseEntity<CommercialOfficerResponseDTO> update(
             @PathVariable Long id,
@@ -54,11 +56,13 @@ public class CommercialOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping
     public ResponseEntity<List<CommercialOfficerResponseDTO>> findAll() {
         return ResponseEntity.ok(officerService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<CommercialOfficerResponseDTO> getById(@PathVariable Long id) {
         return officerService.getById(id)
@@ -66,12 +70,14 @@ public class CommercialOfficerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CommercialOfficerResponseDTO> getByUserId(@PathVariable Long id) {

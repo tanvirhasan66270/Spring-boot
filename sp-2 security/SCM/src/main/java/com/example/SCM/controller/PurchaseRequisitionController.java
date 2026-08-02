@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/purchase-requisitions")
@@ -18,18 +19,21 @@ public class PurchaseRequisitionController {
 
     private final PurchaseRequisitionService purchaseRequisitionService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PostMapping
     public ResponseEntity<PurchaseRequisitionResponseDTO> create(@RequestBody PurchaseRequisitionRequestDTO dto) {
         PurchaseRequisitionResponseDTO response = purchaseRequisitionService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PutMapping("/{id}/approve")
     public ResponseEntity<PurchaseRequisitionResponseDTO> approve(@PathVariable Long id) {
         PurchaseRequisitionResponseDTO response = purchaseRequisitionService.approveRequisition(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PutMapping("/{id}/reject-or-cancel")
     public ResponseEntity<PurchaseRequisitionResponseDTO> rejectOrCancel(
             @PathVariable Long id,
@@ -39,6 +43,7 @@ public class PurchaseRequisitionController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PutMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> update(
             @PathVariable Long id,
@@ -47,6 +52,7 @@ public class PurchaseRequisitionController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @GetMapping
     public ResponseEntity<List<PurchaseRequisitionResponseDTO>> getAll() {
         List<PurchaseRequisitionResponseDTO> list = purchaseRequisitionService.findAll();
@@ -56,6 +62,7 @@ public class PurchaseRequisitionController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseRequisitionResponseDTO> getById(@PathVariable Long id) {
         return purchaseRequisitionService.getById(id)
@@ -63,6 +70,7 @@ public class PurchaseRequisitionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseRequisitionService.delete(id);

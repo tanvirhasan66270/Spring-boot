@@ -230,6 +230,17 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         return orderRepository.findAllOrdersWithDetails().stream().map(orderMapper::convertTOResponseDTO).collect(Collectors.toList());
     }
 
+    @Override
+    public List<CustomerOrderResponseDTO> findByCustomerUsername(String username) {
+        // 1. রিপোজিটরি থেকে ইউজারের নাম দিয়ে অর্ডারগুলো কুয়েরি করে আনা
+        List<CustomerOrder> orders = orderRepository.findByCustomerEmail(username);
+
+        // 2. অর্ডার লিস্টকে DTO-তে রূপান্তর করে রিটার্ন করা
+        return orders.stream()
+                .map(orderMapper::convertTOResponseDTO) // আপনার প্রজেক্টের সঠিক ম্যাপার মেথড এখানে ব্যবহার করবেন
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public Optional<CustomerOrderResponseDTO> getById(Long id) {
         return orderRepository.findByIdWithDetails(id).map(orderMapper::convertTOResponseDTO);

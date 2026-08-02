@@ -29,6 +29,7 @@ public class DailyReportController {
     @Value("${image.upload.dir}")
     private String uploadDir;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> create(
@@ -39,6 +40,7 @@ public class DailyReportController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> update(
@@ -49,6 +51,7 @@ public class DailyReportController {
         return ResponseEntity.ok(reportService.update(id, dto, attachment));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getAll() {
@@ -59,6 +62,7 @@ public class DailyReportController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> getById(@PathVariable Long id) {
@@ -67,6 +71,7 @@ public class DailyReportController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("warehouse/{warehouseId}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
@@ -78,12 +83,14 @@ public class DailyReportController {
     }
 
     @Transactional
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PatchMapping("approve/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<DailyReportResponseDTO> approve(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.approveReport(id, null));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("email-approve")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> emailApprove(
@@ -111,6 +118,7 @@ public class DailyReportController {
             """.formatted(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -118,6 +126,7 @@ public class DailyReportController {
         return ResponseEntity.ok("Daily report record purged successfully.");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("uploads/reports/{filename:.+}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<Resource> viewReportImage(@PathVariable String filename) {

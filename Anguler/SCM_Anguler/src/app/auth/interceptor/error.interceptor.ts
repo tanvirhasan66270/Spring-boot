@@ -13,12 +13,12 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (error.status === 401) {
         storage.clearSession();
         router.navigate(['/login']);
-      } else if (error.status === 403) {
-        router.navigate(['/dashboard']);
-      }
-      if (error.status === 401 || error.status === 403) {
         return EMPTY;
+      } else if (error.status === 403) {
+        // Just pass the 403 error to the component. Do not redirect globally.
+        return throwError(() => error);
       }
+      
       return throwError(() => error);
     }),
   );

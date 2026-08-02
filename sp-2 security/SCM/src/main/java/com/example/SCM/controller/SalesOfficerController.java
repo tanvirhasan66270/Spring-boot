@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/sales-officers")
@@ -21,6 +22,7 @@ public class SalesOfficerController {
     private final SalesOfficerService officerService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PostMapping
     public ResponseEntity<SalesOfficerResponseDTO> save(
             @RequestPart("salesOfficer") String officerJson,
@@ -33,6 +35,7 @@ public class SalesOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PutMapping( "/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> update(
             @PathVariable Long id,
@@ -46,11 +49,13 @@ public class SalesOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping
     public ResponseEntity<List<SalesOfficerResponseDTO>> findAll() {
         return ResponseEntity.ok(officerService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> getById(@PathVariable Long id) {
         return officerService.getById(id)
@@ -58,12 +63,14 @@ public class SalesOfficerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> getByUserId(@PathVariable Long id) {
         return officerService.findUserById(id)

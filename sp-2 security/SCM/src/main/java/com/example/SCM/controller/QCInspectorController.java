@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/qc-inspectors")
@@ -21,6 +22,7 @@ public class QCInspectorController {
     // @Autowired বাদ দিয়ে final করা হয়েছে (কনস্ট্রাক্টর ইনজেকশন বেস্ট প্র্যাকটিস)
     private final QCInspectorService qcInspectorService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> create(
             @RequestPart("qcInspector") QCInspectorRequestDTO dto,
@@ -32,6 +34,7 @@ public class QCInspectorController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QCInspectorResponseDTO> update(
             @PathVariable Long id,
@@ -42,6 +45,7 @@ public class QCInspectorController {
     }
 
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @GetMapping
     public ResponseEntity<List<QCInspectorResponseDTO>> getAll() {
         List<QCInspectorResponseDTO> inspectors = qcInspectorService.findAll();
@@ -53,6 +57,7 @@ public class QCInspectorController {
         return ResponseEntity.ok(inspectors);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<QCInspectorResponseDTO> getById(@PathVariable Long id) {
         return qcInspectorService.getById(id)
@@ -60,12 +65,14 @@ public class QCInspectorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         qcInspectorService.delete(id);
         return ResponseEntity.ok("Deleted successfully");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
     @GetMapping("/user/{id}")
     public ResponseEntity<QCInspectorResponseDTO> getByUserId(@PathVariable Long id) {
         return qcInspectorService.findUserById(id)

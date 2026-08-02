@@ -20,6 +20,7 @@ public class GRNLineItemController {
 
     // এটি সিঙ্গেল লাইন আইটেম আলাদাভাবে ইনভেন্টরিতে অ্যাড করার জন্য ব্যবহৃত হবে।
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> create(@RequestBody GRNLineItemRequestDTO dto) {
@@ -29,6 +30,7 @@ public class GRNLineItemController {
 
     // Update Existing GRN Line Item (PUT)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> update(
@@ -41,6 +43,7 @@ public class GRNLineItemController {
 
     // আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GRNLineItemResponseDTO>> getAll() {
@@ -55,6 +58,7 @@ public class GRNLineItemController {
 
     // 4. Get GRN Line Item By ID (GET)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
@@ -65,6 +69,7 @@ public class GRNLineItemController {
 
     // Delete GRN Line Item By ID (DELETE)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {

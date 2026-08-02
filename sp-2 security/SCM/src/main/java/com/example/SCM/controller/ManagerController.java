@@ -24,6 +24,7 @@ public class ManagerController {
     private final ManagerService managerService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
     public ResponseEntity<ManagerResponseDTO> save(
             @RequestPart("manager") String managerJson,
@@ -36,6 +37,7 @@ public class ManagerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping(value = "/{id}")
     public ResponseEntity<ManagerResponseDTO> update(
             @PathVariable Long id,
@@ -49,11 +51,13 @@ public class ManagerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping
     public ResponseEntity<List<ManagerResponseDTO>> findAll() {
         return ResponseEntity.ok(managerService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/{id}")
     public ResponseEntity<ManagerResponseDTO> getById(@PathVariable Long id) {
         return managerService.getById(id)
@@ -61,12 +65,14 @@ public class ManagerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         managerService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ManagerResponseDTO> getByUserId(@PathVariable Long id) {

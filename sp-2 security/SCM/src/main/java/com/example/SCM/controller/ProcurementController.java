@@ -24,6 +24,7 @@ public class ProcurementController {
     private final ProcurementService procurementService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PostMapping
     public ResponseEntity<ProcurementResponseDTO> save(
             @RequestPart("procurement") String procurementJson,
@@ -36,6 +37,7 @@ public class ProcurementController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @PutMapping(value = "/{id}")
     public ResponseEntity<ProcurementResponseDTO> update(
             @PathVariable Long id,
@@ -49,11 +51,13 @@ public class ProcurementController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @GetMapping
     public ResponseEntity<List<ProcurementResponseDTO>> findAll() {
         return ResponseEntity.ok(procurementService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @GetMapping("/{id}")
     public ResponseEntity<ProcurementResponseDTO> getById(@PathVariable Long id) {
         return procurementService.getById(id)
@@ -61,12 +65,14 @@ public class ProcurementController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         procurementService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @procurementSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ProcurementResponseDTO> getByUserId(@PathVariable Long id) {

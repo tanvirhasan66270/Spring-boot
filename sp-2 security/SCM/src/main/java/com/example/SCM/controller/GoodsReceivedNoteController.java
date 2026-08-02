@@ -18,6 +18,7 @@ public class GoodsReceivedNoteController {
 
     private final GoodsReceivedNoteService goodsReceivedNoteService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> create(@RequestBody GoodsReceivedNoteRequestDTO dto) {
@@ -28,6 +29,7 @@ public class GoodsReceivedNoteController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> update(
@@ -38,6 +40,7 @@ public class GoodsReceivedNoteController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GoodsReceivedNoteResponseDTO>> getAll() {
@@ -50,6 +53,7 @@ public class GoodsReceivedNoteController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GoodsReceivedNoteResponseDTO> getById(@PathVariable Long id) {
@@ -58,6 +62,7 @@ public class GoodsReceivedNoteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {

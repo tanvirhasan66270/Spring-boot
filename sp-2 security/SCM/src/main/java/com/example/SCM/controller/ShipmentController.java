@@ -16,6 +16,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/shipments")
@@ -25,6 +26,7 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
     private final SupplierRepository supplierRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> create(
             @RequestPart("shipment") String shipmentJson,
@@ -35,6 +37,7 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
             @PathVariable Long id,
@@ -46,6 +49,7 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.update(id, dto, file));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -71,6 +75,7 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)
@@ -78,6 +83,7 @@ public class ShipmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         shipmentService.delete(id);

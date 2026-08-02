@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/admin")
@@ -17,21 +18,25 @@ public class AdminController {
 
     private final AdminService adminService;
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public ResponseEntity<AdminResponse> create(@RequestBody AdminRequest request) {
         return new ResponseEntity<>(adminService.create(request), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<AdminResponse> update(@PathVariable Long id, @RequestBody AdminRequest request) {
         return ResponseEntity.ok(adminService.update(id, request));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<AdminResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(adminService.getById(id));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<AdminResponse>> getAll() {
         return ResponseEntity.ok(adminService.getAll());

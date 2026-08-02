@@ -19,12 +19,14 @@ public class POLineItemController {
 
     private final POLineItemService poLineItemService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PostMapping
     public ResponseEntity<POLineItemResponseDTO> save(@RequestBody POLineItemRequestDTO dto) {
         POLineItemResponseDTO response = poLineItemService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PutMapping("/{id}")
     public ResponseEntity<POLineItemResponseDTO> update(
             @PathVariable Long id,
@@ -33,6 +35,7 @@ public class POLineItemController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<POLineItemResponseDTO>> getAll() {
         List<POLineItemResponseDTO> list = poLineItemService.findAll();
@@ -42,6 +45,7 @@ public class POLineItemController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<POLineItemResponseDTO> getById(@PathVariable Long id) {
         return poLineItemService.getById(id)
@@ -49,6 +53,7 @@ public class POLineItemController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
@@ -59,6 +64,7 @@ public class POLineItemController {
     // Track Purchase Order Line Item Status (GET)
     //লজিস্টিকস ও ট্র্যাকিং ড্যাশবোর্ডে মার্চেন্ট বা ক্লায়েন্ট কোড দিয়ে সার্চ করার জন্য এন্ডপয়েন্ট
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @GetMapping("/track/{trackingNumber}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER') " +
 //            "or @poLineItemSecurity.isSupplierOwner(#trackingNumber, authentication)")

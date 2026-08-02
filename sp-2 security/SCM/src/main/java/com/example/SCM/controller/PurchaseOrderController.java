@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/purchase-orders")
@@ -22,11 +23,13 @@ public class PurchaseOrderController {
     private final PurchaseOrderService purchaseOrderService;
     private final SupplierRepository supplierRepository;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PostMapping
     public ResponseEntity<PurchaseOrderResponseDTO> create(@RequestBody PurchaseOrderRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(purchaseOrderService.save(dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PutMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> update(
             @PathVariable Long id,
@@ -34,6 +37,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(purchaseOrderService.update(id, dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
     @GetMapping("/supplier/{supplierId}")
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getOrdersBySupplier(@PathVariable Long supplierId) {
         List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
@@ -48,6 +52,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(supplierOrders);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
         // ১. ডাটাবেজ থেকে সমস্ত PO তুলে আনা
@@ -96,6 +101,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(allOrders);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
@@ -103,12 +109,14 @@ public class PurchaseOrderController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         purchaseOrderService.delete(id);
         return ResponseEntity.ok("Deleted Successfully");
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PutMapping("/{id}/status")
     public ResponseEntity<PurchaseOrderResponseDTO> updateStatus(
             @PathVariable Long id,
@@ -117,12 +125,14 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @PutMapping("/{id}/approve")
     public ResponseEntity<PurchaseOrderResponseDTO> approve(@PathVariable Long id) {
         PurchaseOrderResponseDTO response = purchaseOrderService.approveOrder(id);
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @GetMapping("/email-issue")
     public ResponseEntity<String> emailIssueOrder(@RequestParam String token) {
         try {
@@ -146,6 +156,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(html);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
     @GetMapping("/email-receive")
     public ResponseEntity<String> emailReceiveOrder(@RequestParam String token) {
         try {

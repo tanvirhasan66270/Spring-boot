@@ -20,6 +20,7 @@ public class DeliveryTripController {
 
     private final DeliveryTripService tripService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> create(@RequestBody DeliveryTripRequestDTO dto) {
@@ -29,6 +30,7 @@ public class DeliveryTripController {
         );
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> update(
@@ -38,6 +40,7 @@ public class DeliveryTripController {
         return ResponseEntity.ok(tripService.update(id, dto));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @PatchMapping(value = "/{id}/status", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     public ResponseEntity<DeliveryTripResponseDTO> changeStatus(
@@ -50,6 +53,7 @@ public class DeliveryTripController {
         return ResponseEntity.ok(tripService.updateTripStatus(id, status, signature, photo));
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<List<DeliveryTripResponseDTO>> getAll() {
@@ -62,6 +66,7 @@ public class DeliveryTripController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER')")
     public ResponseEntity<DeliveryTripResponseDTO> getById(@PathVariable Long id) {
@@ -70,6 +75,7 @@ public class DeliveryTripController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {

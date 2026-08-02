@@ -88,7 +88,7 @@ export class CustomerOrderComponent implements OnInit {
     }
 
     this.loadOrders();
-    this.loadCustomers();
+    // this.loadCustomers();
     this.loadProducts();
 
     setTimeout(() => {
@@ -272,14 +272,14 @@ export class CustomerOrderComponent implements OnInit {
     });
   }
 
-  loadCustomers() {
-    this.customerService.getAll().subscribe({
-      next: (data) => {
-        this.customers = data || [];
-        this.cdr.markForCheck();
-      }
-    });
-  }
+  // loadCustomers() {
+  //   this.customerService.getAll().subscribe({
+  //     next: (data) => {
+  //       this.customers = data || [];
+  //       this.cdr.markForCheck();
+  //     }
+  //   });
+  // }
 
   loadProducts() {
     this.productService.findAll().subscribe({

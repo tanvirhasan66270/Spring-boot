@@ -20,6 +20,7 @@ public class InventoryController {
 
     // 1. Save/Create New Inventory Stock (POST)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR')")
     public ResponseEntity<InventoryResponseDTO> save(@RequestBody InventoryRequestDTO dto) {
@@ -29,6 +30,7 @@ public class InventoryController {
 
     // 2. Update Existing Inventory Stock (PUT)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR')")
     public ResponseEntity<InventoryResponseDTO> update(
@@ -40,6 +42,7 @@ public class InventoryController {
 
     //3. Get All Inventory Records (GET)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR', " +
 //            "'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
@@ -53,6 +56,7 @@ public class InventoryController {
 
     //4. Get Inventory Record By ID (GET)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR', " +
 //            "'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
@@ -64,6 +68,7 @@ public class InventoryController {
 
     // 5. Delete Inventory Record (DELETE)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {

@@ -19,6 +19,7 @@ public class LCBankController {
 
     private final LCBankService bankService;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> createBank(@RequestBody LCBankRequestDTO dto) {
@@ -26,6 +27,7 @@ public class LCBankController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> updateBank(
@@ -35,6 +37,7 @@ public class LCBankController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping
     public ResponseEntity<List<LCBankResponseDTO>> getAllBanks() {
         List<LCBankResponseDTO> list = bankService.findAll();
@@ -44,6 +47,7 @@ public class LCBankController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<LCBankResponseDTO> getBankById(@PathVariable Long id) {
         return bankService.getById(id)
@@ -51,6 +55,7 @@ public class LCBankController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBank(@PathVariable Long id) {

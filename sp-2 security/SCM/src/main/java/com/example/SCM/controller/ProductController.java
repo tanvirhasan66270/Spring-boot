@@ -47,6 +47,7 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER','CUSTOMER')")
     @GetMapping
 //    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
@@ -54,6 +55,7 @@ public class ProductController {
         return ResponseEntity.ok(list);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER','CUSTOMER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {

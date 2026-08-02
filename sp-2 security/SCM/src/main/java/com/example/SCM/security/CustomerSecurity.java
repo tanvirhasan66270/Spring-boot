@@ -25,14 +25,13 @@ public class CustomerSecurity {
     }
 
     private boolean matches(Customer customer, String loginIdentifier) {
-        // TODO: same decision as DriverSecurity — pick the field that actually
-        // matches your login credential. Uncomment the correct one:
+        // কাস্টমার টেবিলের ইমেইল অথবা এর সাথে যুক্ত User একাউন্টের ইউজারনেম/ইমেইলের সাথে মিলিয়ে দেখা
+        boolean emailMatch = customer.getEmail() != null && loginIdentifier.equalsIgnoreCase(customer.getEmail());
 
-        // return loginIdentifier.equalsIgnoreCase(customer.getEmail());
-        // return loginIdentifier.equals(customer.getPhone());
-        // return customer.getUser() != null
-        //         && loginIdentifier.equalsIgnoreCase(customer.getUser().getUsername());
+        boolean userMatch = customer.getUser() != null &&
+                (loginIdentifier.equalsIgnoreCase(customer.getUser().getUsername()) ||
+                        loginIdentifier.equalsIgnoreCase(customer.getUser().getEmail()));
 
-        return false; // safe default until wired up — denies self-access rather than guessing wrong
+        return emailMatch || userMatch;
     }
 }

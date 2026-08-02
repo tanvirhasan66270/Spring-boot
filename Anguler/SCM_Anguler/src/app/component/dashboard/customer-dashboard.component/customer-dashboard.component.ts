@@ -123,7 +123,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadDashboardData();
     this.loadRecommendations();
     this.loadNotifications();
-    this.loadActivities();
+    // this.loadActivities();
 
     this.route.queryParams.subscribe(params => {
       if (params['track'] === 'true') {
@@ -595,15 +595,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadActivities(): void {
-    this.activityLogService.findByUserId(this.userId.toString()).subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 5);
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
-  }
+  // loadActivities(): void {
+  //   this.activityLogService.findByUserId(this.userId.toString()).subscribe({
+  //     next: (data) => {
+  //       this.activities = (data || []).slice(0, 5);
+  //       this.cdr.markForCheck();
+  //     },
+  //     error: () => {},
+  //   });
+  // }
 
   getActionIcon(action: string): string {
     const icons: Record<string, string> = {

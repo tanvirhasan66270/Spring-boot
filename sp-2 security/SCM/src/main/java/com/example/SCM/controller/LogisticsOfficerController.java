@@ -25,6 +25,7 @@ public class LogisticsOfficerController {
     private final LogisticsOfficerService officerService;
     private final ObjectMapper objectMapper;
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<LogisticsOfficerResponseDTO> save(
             @RequestPart("officer") String officerJson,
@@ -37,6 +38,7 @@ public class LogisticsOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<LogisticsOfficerResponseDTO> update(
             @PathVariable Long id,
@@ -50,11 +52,13 @@ public class LogisticsOfficerController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping
     public ResponseEntity<List<LogisticsOfficerResponseDTO>> findAll() {
         return ResponseEntity.ok(officerService.findAll());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<LogisticsOfficerResponseDTO> getById(@PathVariable Long id) {
         return officerService.getById(id)
@@ -62,12 +66,14 @@ public class LogisticsOfficerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         officerService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @logisticsOfficerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<LogisticsOfficerResponseDTO> getByUserId(@PathVariable Long id) {

@@ -16,6 +16,11 @@ export class CustomerOrderService {
     return this.http.get<CustomerOrderResponseModel[]>(this.apiUrl);
   }
 
+getByCustomerEmail(): Observable<CustomerOrderResponseModel[]> {
+  return this.http.get<CustomerOrderResponseModel[]>(`${this.apiUrl}/customer`);
+}
+
+
   getById(id: number): Observable<CustomerOrderResponseModel> {
     return this.http.get<CustomerOrderResponseModel>(`${this.apiUrl}/${id}`);
   }

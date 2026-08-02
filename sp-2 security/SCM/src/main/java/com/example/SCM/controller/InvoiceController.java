@@ -20,6 +20,7 @@ public class InvoiceController {
 
     // 1. Create New Invoice Ledger Node (POST)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<InvoiceResponseDTO> create(@RequestBody InvoiceRequestDTO dto) {
@@ -29,6 +30,7 @@ public class InvoiceController {
 
     //Mutate/Update Existing Invoice State Matrix (PUT)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<InvoiceResponseDTO> update(@PathVariable Long id, @RequestBody InvoiceRequestDTO dto) {
@@ -37,6 +39,7 @@ public class InvoiceController {
     }
     // Fetch All Invoices Register Dataset (GET)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<List<InvoiceResponseDTO>> findAll() {
@@ -49,6 +52,7 @@ public class InvoiceController {
 
     // Fetch Invoice Instance Details By Unique Record ID (GET)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER') " +
 //            "or @invoiceSecurity.isOwner(#id, authentication)")
@@ -60,6 +64,7 @@ public class InvoiceController {
 
     // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
