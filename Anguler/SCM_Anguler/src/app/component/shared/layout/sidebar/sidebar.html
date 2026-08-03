@@ -118,6 +118,10 @@
         <i class="bi bi-bag"></i>
         <span>Customer Orders</span>
       </a>
+      <a routerLink="/invoice" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['CUSTOMER'])">
+        <i class="bi bi-receipt"></i>
+        <span>Billing</span>
+      </a>
     </div>
 
     <!-- Inventory -->

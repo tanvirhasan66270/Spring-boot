@@ -1,22 +1,22 @@
 package com.example.SCM.repository;
 
 import com.example.SCM.entity.Invoice;
-import com.example.SCM.enumClass.InvoiceStatus;
-import com.example.SCM.enumClass.PaymentStatus;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
 
 
+    List<Invoice> findByCustomerEmail(String customerEmail);
 
-    // ৫. কাস্টম JPQL কুয়েরি: বকেয়া বা ডিউ ইনভয়েসগুলোর লিস্ট বের করা (ফাইন্যান্সিয়াল অ্যালার্টের জন্য)
+    // 5. Custom JPQL Query: Fetch pending due invoices
     @Query("SELECT i FROM Invoice i WHERE i.dueAmount > 0 AND i.invoiceStatus = com.example.SCM.enumClass.InvoiceStatus.ISSUED")
     List<Invoice> findPendingDueInvoices();
 

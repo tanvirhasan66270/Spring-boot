@@ -146,7 +146,18 @@ public class InvoiceServiceImp implements InvoiceService {
     @Override
     @Transactional(readOnly = true)
     public List<InvoiceResponseDTO> findAll() {
-        return repository.findAll().stream()
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCustomer = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"));
+                
+        List<Invoice> invoices;
+        if (isCustomer) {
+            invoices = repository.findByCustomerEmail(authentication.getName());
+        } else {
+            invoices = repository.findAll();
+        }
+        
+        return invoices.stream()
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -154,7 +165,20 @@ public class InvoiceServiceImp implements InvoiceService {
     @Override
     @Transactional(readOnly = true)
     public Optional<InvoiceResponseDTO> getById(Long id) {
-        return repository.findById(id).map(mapper::toResponseDTO);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCustomer = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"));
+
+        Optional<Invoice> invoiceOpt = repository.findById(id);
+
+        if (isCustomer && invoiceOpt.isPresent()) {
+            String customerEmail = authentication.getName();
+            if (!customerEmail.equals(invoiceOpt.get().getCustomerEmail())) {
+                return Optional.empty(); // Deny access
+            }
+        }
+
+        return invoiceOpt.map(mapper::toResponseDTO);
     }
 
     @Override
