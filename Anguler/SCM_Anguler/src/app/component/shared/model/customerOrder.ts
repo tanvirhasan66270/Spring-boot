@@ -17,16 +17,16 @@ export interface OrderLineItemResponseModel {
 }
 
 export interface CustomerOrderRequestModel {
-  customerId: number; // Auto fillup login user
+  customerId: number; 
   deliveryAddress: string;
   deliveryPhone: string;
-  estimatedDelivery: string; // ব্যাকএন্ড অটোক্যালকুলেট করবে, তবুও ইন্টারফেসে সিঙ্ক রাখা হলো
-  serviceType: string; // STANDARD, EXPRESS, OVERNIGHT, SAME_DAY
-  priority: string; // LOW, NORMAL, HIGH, URGENT
+  estimatedDelivery: string; 
+  serviceType: 'STANDARD' | 'EXPRESS' | 'OVERNIGHT' | 'SAME_DAY' | string; 
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' | string;  // LOW, NORMAL, HIGH, URGENT
   currency: string;
   codAmount: number;
-  paymentMethod: string; // CASH, BANK, BKASH, NAGAD, ROCKET
-  status: string;
+  paymentMethod: 'CASH' | 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | string;  // CASH, BANK, BKASH, NAGAD, ROCKET
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' |'DELIVERED' |'CANCELLED' | string;
   remarks: string;
   items: OrderLineItemRequestModel[];
 }
@@ -39,17 +39,17 @@ export interface CustomerOrderResponseModel {
   customerEmail: string;
   itemSubtotal: number;
   weight: number;
-  serviceType: string;
-  priority: string;
+  serviceType: 'STANDARD' | 'EXPRESS' | 'OVERNIGHT' | 'SAME_DAY' | string;
+  priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT' | string;
   currency: string;
   codAmount: number;
   deliveryCharge: number;
   totalAmount: number;
   paidAmount: number;
   dueAmount: number;
-  paymentStatus: string;
-  paymentMethod: string;
-  status: string;
+  paymentStatus:  'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'REFUNDED' | string;
+  paymentMethod: 'CASH' | 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | string;
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' |'DELIVERED' |'CANCELLED' | string;
   deliveryAddress: string;
   deliveryPhone: string;
   remarks: string;
