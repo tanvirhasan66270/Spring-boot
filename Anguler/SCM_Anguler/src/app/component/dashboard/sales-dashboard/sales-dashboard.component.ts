@@ -14,6 +14,8 @@ import { NotificationModel } from '../../../system/NotificationModel';
 import { ShipmentService } from '../../../service/shipment.service';
 import Chart from 'chart.js/auto';
 import { AddProductService } from '../../../service/add-product.service';
+import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
 
 @Component({
   selector: 'app-sales-dashboard',
@@ -58,6 +60,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
   targetProgress: number = 0;
 
+  purchaseOrders: PurchaseOrderResponseModel[] = [];
+
   constructor(
     private storage: StorageService,
     private router: Router,
@@ -69,7 +73,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
     private shipmentService: ShipmentService,
-    private productService: AddProductService
+    private productService: AddProductService,
+    private purchaseOrderService: PurchaseOrderService
   ) {}
 
   ngOnInit(): void {
@@ -90,7 +95,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
-    const totalCalls = 7; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products
+    const totalCalls = 8; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products, PurchaseOrders
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -109,6 +114,20 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.loadCustomers(checkDone);
     this.loadShipments(checkDone);
     this.loadProducts(checkDone);
+    this.loadPurchaseOrders(checkDone);
+  }
+
+  loadPurchaseOrders(done?: () => void): void {
+    this.purchaseOrderService.findAll().subscribe({
+      next: (data) => {
+        this.purchaseOrders = data || [];
+        if (done) done();
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        if (done) done();
+      }
+    });
   }
 
   loadOrders(done: () => void): void {
@@ -147,6 +166,10 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  get approvedQuotations(): any[] {
+    return (this.quotations || []).filter((q: any) => q.status?.toUpperCase() === 'APPROVED');
+  }
+
   loadInvoices(done: () => void): void {
     this.invoiceService.findAll().subscribe({
       next: (data) => {
@@ -168,7 +191,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadNotifications(done: () => void): void {
     this.notificationService.findAll().subscribe({
       next: (data) => {
-        this.notifications = (data || []).slice(0, 4);
+        this.notifications = data || [];
         done();
       },
       error: () => done(),
@@ -178,7 +201,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadShipments(done: () => void): void {
     this.shipmentService.findAll().subscribe({
       next: (data) => {
-        this.shipments = (data || []).slice(0, 4).map((s: any) => ({
+        this.shipments = (data || []).map((s: any) => ({
            id: s.shipmentNumber || s.id,
            vehicle: s.vehicleNumber || 'Unassigned',
            destination: s.sendByAddress || 'Warehouse',
@@ -188,6 +211,210 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       },
       error: () => done(),
     });
+  }
+
+  activeModal: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | null = null;
+  modalSearchText = '';
+  purchaseSelectedMonth: number | 'ALL' = 'ALL';
+  purchaseSelectedDate: string = '';
+  invoiceSelectedMonth: number | 'ALL' = 'ALL';
+  invoiceSelectedDate: string = '';
+
+  openModal(modalType: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices'): void {
+    this.activeModal = modalType;
+    this.modalSearchText = '';
+    this.purchaseSelectedMonth = 'ALL';
+    this.purchaseSelectedDate = '';
+    this.invoiceSelectedMonth = 'ALL';
+    this.invoiceSelectedDate = '';
+    if (modalType === 'purchase') {
+      this.loadPurchaseOrders();
+    }
+    this.cdr.markForCheck();
+  }
+
+  get issuedInvoices(): any[] {
+    return (this.invoices || []).filter((inv: any) => inv.invoiceStatus?.toUpperCase() === 'ISSUED');
+  }
+
+  get filteredModalInvoices(): any[] {
+    let list = this.issuedInvoices;
+
+    if (list.length === 0 && this.invoices.length > 0) {
+      list = this.invoices;
+    }
+
+    // 1. Text Search (Invoice Number, Order Number, Customer Name/Email)
+    if (this.modalSearchText) {
+      const q = this.modalSearchText.toLowerCase();
+      list = list.filter((inv: any) => {
+        const invNum = inv.invoiceNumber ? String(inv.invoiceNumber).toLowerCase() : '';
+        if (invNum.includes(q)) return true;
+
+        const orderIdStr = inv.customerOrderId ? String(inv.customerOrderId).toLowerCase() : '';
+        const orderFormatted = inv.customerOrderId ? `so-${inv.customerOrderId}` : '';
+        if (orderIdStr.includes(q) || orderFormatted.includes(q)) return true;
+
+        if (inv.customerOrderId && this.orders.length > 0) {
+          const matchingOrder = this.orders.find((o: any) => Number(o.id) === Number(inv.customerOrderId));
+          if (matchingOrder && matchingOrder.orderNumber && String(matchingOrder.orderNumber).toLowerCase().includes(q)) {
+            return true;
+          }
+        }
+
+        const custName = (inv.issuedToName || inv.customerName || '').toLowerCase();
+        const custEmail = (inv.customerEmail || '').toLowerCase();
+        if (custName.includes(q) || custEmail.includes(q)) return true;
+
+        return false;
+      });
+    }
+
+    // 2. Month Filter
+    if (this.invoiceSelectedMonth !== 'ALL') {
+      const monthIndex = Number(this.invoiceSelectedMonth);
+      list = list.filter((inv: any) => {
+        const dateStr = inv.issuedAt || inv.createdAt || inv.deliveryDate;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d.getMonth() === monthIndex;
+      });
+    }
+
+    // 3. Date Filter (YYYY-MM-DD)
+    if (this.invoiceSelectedDate) {
+      const targetDateStr = this.invoiceSelectedDate;
+      list = list.filter((inv: any) => {
+        const dateStr = inv.issuedAt || inv.createdAt || inv.deliveryDate;
+        if (!dateStr) return false;
+        return dateStr.startsWith(targetDateStr);
+      });
+    }
+
+    return list;
+  }
+
+  getCustomerOrderNoForInvoice(inv: any): string {
+    if (!inv || !inv.customerOrderId) return 'N/A';
+    const matchingOrder = this.orders.find((o: any) => Number(o.id) === Number(inv.customerOrderId));
+    if (matchingOrder && matchingOrder.orderNumber) {
+      return matchingOrder.orderNumber;
+    }
+    return `SO-${inv.customerOrderId}`;
+  }
+
+  closeModal(): void {
+    this.activeModal = null;
+    this.modalSearchText = '';
+    this.purchaseSelectedMonth = 'ALL';
+    this.purchaseSelectedDate = '';
+    this.invoiceSelectedMonth = 'ALL';
+    this.invoiceSelectedDate = '';
+    this.cdr.markForCheck();
+  }
+
+  get receivedPurchaseOrders(): PurchaseOrderResponseModel[] {
+    return (this.purchaseOrders || []).filter(po => po.status?.toUpperCase() === 'RECEIVED');
+  }
+
+  get filteredModalPurchaseOrders(): PurchaseOrderResponseModel[] {
+    let list = this.receivedPurchaseOrders;
+    
+    if (list.length === 0 && this.purchaseOrders.length > 0) {
+      list = this.purchaseOrders;
+    }
+
+    if (this.modalSearchText) {
+      const q = this.modalSearchText.toLowerCase();
+      list = list.filter(po => 
+        (po.poNumber && String(po.poNumber).toLowerCase().includes(q)) ||
+        (po.supplierName && String(po.supplierName).toLowerCase().includes(q)) ||
+        (po.supplierEmail && String(po.supplierEmail).toLowerCase().includes(q)) ||
+        (po.status && String(po.status).toLowerCase().includes(q))
+      );
+    }
+
+    if (this.purchaseSelectedMonth !== 'ALL') {
+      const monthIndex = Number(this.purchaseSelectedMonth);
+      list = list.filter(po => {
+        const dateStr = po.createdAt || po.expectedDeliveryDate;
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        return d.getMonth() === monthIndex;
+      });
+    }
+
+    if (this.purchaseSelectedDate) {
+      const targetDateStr = this.purchaseSelectedDate;
+      list = list.filter(po => {
+        const dateStr = po.createdAt || po.expectedDeliveryDate;
+        if (!dateStr) return false;
+        return dateStr.startsWith(targetDateStr);
+      });
+    }
+
+    return list;
+  }
+
+  get filteredModalOrders(): any[] {
+    if (!this.modalSearchText) return this.orders;
+    const q = this.modalSearchText.toLowerCase();
+    return this.orders.filter((o: any) => 
+      (o.orderNumber && String(o.orderNumber).toLowerCase().includes(q)) ||
+      (o.customerName && String(o.customerName).toLowerCase().includes(q)) ||
+      (o.customerEmail && String(o.customerEmail).toLowerCase().includes(q)) ||
+      (o.status && String(o.status).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalQuotations(): any[] {
+    const approved = this.approvedQuotations;
+    if (!this.modalSearchText) return approved;
+    const q = this.modalSearchText.toLowerCase();
+    return approved.filter((item: any) => 
+      (item.quotationNumber && String(item.quotationNumber).toLowerCase().includes(q)) ||
+      (item.customerName && String(item.customerName).toLowerCase().includes(q)) ||
+      (item.status && String(item.status).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalCustomers(): any[] {
+    if (!this.modalSearchText) return this.customers;
+    const q = this.modalSearchText.toLowerCase();
+    return this.customers.filter((c: any) => 
+      (c.name && String(c.name).toLowerCase().includes(q)) ||
+      (c.email && String(c.email).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalShipments(): any[] {
+    if (!this.modalSearchText) return this.shipments;
+    const q = this.modalSearchText.toLowerCase();
+    return this.shipments.filter((s: any) => 
+      (s.id && String(s.id).toLowerCase().includes(q)) ||
+      (s.vehicle && String(s.vehicle).toLowerCase().includes(q)) ||
+      (s.destination && String(s.destination).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalNotifications(): any[] {
+    if (!this.modalSearchText) return this.notifications;
+    const q = this.modalSearchText.toLowerCase();
+    return this.notifications.filter((n: any) => 
+      (n.title && String(n.title).toLowerCase().includes(q)) ||
+      (n.message && String(n.message).toLowerCase().includes(q)) ||
+      (n.type && String(n.type).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalTargetInvoices(): any[] {
+    if (!this.modalSearchText) return this.invoices;
+    const q = this.modalSearchText.toLowerCase();
+    return this.invoices.filter((inv: any) => 
+      (inv.invoiceNumber && String(inv.invoiceNumber).toLowerCase().includes(q)) ||
+      (inv.customerName && String(inv.customerName).toLowerCase().includes(q)) ||
+      (inv.invoiceStatus && String(inv.invoiceStatus).toLowerCase().includes(q))
+    );
   }
   
   loadProducts(done: () => void): void {
@@ -207,6 +434,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         this.customers = (data || []).map((c: any) => ({
           id: c.userId || c.id,
           name: c.name || 'Customer',
+          email: c.email || '',
           spent: 0,
           due: 0
         }));
@@ -217,20 +445,63 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+  private getOrderDueAmount(o: any): number {
+    if (!o || o.status === 'CANCELLED' || o.paymentStatus === 'PAID') return 0;
+    if (o.dueAmount != null && Number(o.dueAmount) > 0) {
+      return Number(o.dueAmount);
+    }
+    const total = Number(o.totalAmount) || Number(o.codAmount) || 0;
+    const paid = Number(o.paidAmount) || 0;
+    if (o.paymentStatus === 'UNPAID') return total;
+    if (o.paymentStatus === 'PARTIALLY_PAID') return Math.max(0, total - paid);
+    return Math.max(0, total - paid);
+  }
+
   buildCustomerStats(): void {
-    if (!this.customersLoaded || !this.ordersLoaded) return;
+    if (!this.ordersLoaded) return;
     
-    this.customers.forEach((c: any) => {
-      const customerOrders = this.orders.filter((o: any) => Number(o.customerId) === Number(c.id));
-      if (customerOrders.length > 0) {
-        c.spent = customerOrders.reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || Number(o.codAmount) || 0), 0);
-        c.due = customerOrders.filter((o:any)=>o.status !== 'DELIVERED' && o.status !== 'PAID' && o.paymentStatus !== 'PAID')
-                              .reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || 0), 0);
+    const customerMap = new Map<string, any>();
+
+    this.orders.forEach((o: any) => {
+      const email = (o.customerEmail || '').trim().toLowerCase();
+      
+      let key = email;
+      if (!key) {
+        key = o.customerId ? `id_${o.customerId}` : (o.customerName ? `name_${o.customerName.trim().toLowerCase()}` : '');
       }
+      if (!key) return;
+
+      if (!customerMap.has(key)) {
+        let matchedName = o.customerName || 'Customer';
+        let matchedEmail = o.customerEmail || '';
+        
+        if (this.customersLoaded && email) {
+          const matchedCust = this.customers.find((c: any) => c.email && c.email.trim().toLowerCase() === email);
+          if (matchedCust) {
+            matchedName = matchedCust.name || matchedName;
+            matchedEmail = matchedCust.email || matchedEmail;
+          }
+        }
+
+        customerMap.set(key, {
+          id: o.customerId || key,
+          name: matchedName,
+          email: matchedEmail,
+          spent: 0,
+          due: 0,
+          orderCount: 0
+        });
+      }
+
+      const item = customerMap.get(key)!;
+      item.spent += Number(o.totalAmount) || Number(o.codAmount) || 0;
+      item.due += this.getOrderDueAmount(o);
+      item.orderCount += 1;
     });
-    // Remove customers with 0 spent to make the table cleaner if we have more than 5
-    // this.customers = this.customers.filter((c: any) => c.spent > 0);
-    this.customers.sort((a: any, b: any) => b.spent - a.spent);
+
+    this.customers = Array.from(customerMap.values())
+      .filter((c: any) => c.spent > 0 || c.due > 0)
+      .sort((a: any, b: any) => b.spent - a.spent);
   }
 
   buildDynamicTasks(): void {
@@ -317,6 +588,38 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.router.navigate(['']);
   }
 
+  selectedOverviewMonth: number | 'ALL' = 7; // Default August
+  selectedOverviewYear: number = 2026;
+
+  yearsList: number[] = [2026, 2025, 2024, 2023];
+  monthsList = [
+    { value: 'ALL', label: 'All Months' },
+    { value: 0, label: 'January' },
+    { value: 1, label: 'February' },
+    { value: 2, label: 'March' },
+    { value: 3, label: 'April' },
+    { value: 4, label: 'May' },
+    { value: 5, label: 'June' },
+    { value: 6, label: 'July' },
+    { value: 7, label: 'August' },
+    { value: 8, label: 'September' },
+    { value: 9, label: 'October' },
+    { value: 10, label: 'November' },
+    { value: 11, label: 'December' }
+  ];
+
+  onMonthChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedOverviewMonth = val === 'ALL' ? 'ALL' : Number(val);
+    this.updateChartsWithDynamicData();
+  }
+
+  onYearChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    this.selectedOverviewYear = Number(val);
+    this.updateChartsWithDynamicData();
+  }
+
   // ---- Chart.js Dynamic Implementations ---- //
   initCharts() {
     const ctxOverview = document.getElementById('salesOverviewChart') as HTMLCanvasElement;
@@ -331,7 +634,28 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10, weight: 'bold', family: "'Inter', sans-serif" }, color: '#1e293b' } } },
           scales: {
-            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { callback: function(val) { return '৳' + (Number(val) / 1000) + 'K'; }, font: { size: 10 } } },
+            y: {
+              type: 'linear',
+              position: 'left',
+              beginAtZero: true,
+              grid: { color: '#f0f0f0' },
+              ticks: {
+                callback: function(val) {
+                  const num = Number(val);
+                  if (num >= 1000000) return '৳' + (num / 1000000).toFixed(1) + 'M';
+                  if (num >= 1000) return '৳' + (num / 1000).toFixed(0) + 'K';
+                  return '৳' + num;
+                },
+                font: { size: 10 }
+              }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              beginAtZero: true,
+              grid: { display: false },
+              ticks: { precision: 0, font: { size: 10 } }
+            },
             x: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
         }
@@ -361,29 +685,72 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     }
     if (!this.overviewChart || !this.productsChart || !this.targetChart) return;
 
-    // 1. Overview Chart (Last 6 Days)
-    const labels = [];
-    const revenueData = [];
-    const ordersData = [];
-    
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dayStr = d.toISOString().split('T')[0];
-      const displayDay = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      
-      labels.push(displayDay);
-      const dayOrders = this.orders.filter(o => o.createdAt?.startsWith(dayStr));
-      revenueData.push(dayOrders.reduce((sum, o) => sum + (o.totalAmount || o.codAmount || 0), 0));
-      // for visuals, we multiply order count so the line isn't flat near zero on a revenue scale, 
-      // or we can just use a secondary Y axis. For simplicity, we just plot raw count.
-      ordersData.push(dayOrders.length * 5000); // Visual scalar so it shows up on the chart
+    // 1. Overview Chart filtering based on Month & Year selection
+    const labels: string[] = [];
+    const revenueData: number[] = [];
+    const ordersData: number[] = [];
+
+    const year = Number(this.selectedOverviewYear) || 2026;
+
+    if (this.selectedOverviewMonth === 'ALL') {
+      const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      shortMonths.forEach((mName, mIndex) => {
+        labels.push(mName);
+        const monthOrders = this.orders.filter((o: any) => {
+          if (!o.createdAt) return false;
+          const d = new Date(o.createdAt);
+          return d.getFullYear() === year && d.getMonth() === mIndex;
+        });
+
+        const rev = monthOrders.reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || Number(o.codAmount) || 0), 0);
+        revenueData.push(rev);
+        ordersData.push(monthOrders.length);
+      });
+    } else {
+      const month = Number(this.selectedOverviewMonth);
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthObj = this.monthsList.find(m => m.value === month);
+      const mLabel = monthObj ? monthObj.label.substring(0, 3) : '';
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        labels.push(`${day} ${mLabel}`);
+        
+        const dayOrders = this.orders.filter((o: any) => {
+          if (!o.createdAt) return false;
+          const d = new Date(o.createdAt);
+          return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+        });
+
+        const rev = dayOrders.reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || Number(o.codAmount) || 0), 0);
+        revenueData.push(rev);
+        ordersData.push(dayOrders.length);
+      }
     }
 
     this.overviewChart.data.labels = labels;
     this.overviewChart.data.datasets = [
-      { label: 'Revenue', data: revenueData, borderColor: '#2962ff', backgroundColor: 'rgba(41, 98, 255, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#2962ff' },
-      { label: 'Orders', data: ordersData, borderColor: '#00c853', backgroundColor: 'rgba(0, 200, 83, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#00c853' }
+      {
+        label: 'Revenue',
+        data: revenueData,
+        borderColor: '#2962ff',
+        backgroundColor: 'rgba(41, 98, 255, 0.1)',
+        tension: 0.4,
+        fill: true,
+        borderWidth: 2,
+        pointBackgroundColor: '#2962ff',
+        yAxisID: 'y'
+      },
+      {
+        label: 'Orders',
+        data: ordersData,
+        borderColor: '#00c853',
+        backgroundColor: 'rgba(0, 200, 83, 0.1)',
+        tension: 0.4,
+        fill: false,
+        borderWidth: 2,
+        pointBackgroundColor: '#00c853',
+        yAxisID: 'y1'
+      }
     ];
     this.overviewChart.update();
 

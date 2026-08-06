@@ -144,7 +144,7 @@
   <!-- 3. Quick Action Cards Row -->
   <div class="row g-3 mb-4">
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/quotation" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a href="javascript:void(0);" (click)="openModal('quotations')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-plus-lg fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Issue Quotation</h6>
@@ -154,11 +154,11 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/purchase-order" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a href="javascript:void(0);" (click)="openModal('purchase')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-cart-plus fs-6"></i></div>
         <div class="flex-grow-1">
-          <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Create Sales Order</h6>
-          <p class="text-muted" style="font-size: 9px; margin:0; line-height: 1;">Create a new sales order</p>
+          <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">View Purchase </h6>
+          <p class="text-muted" style="font-size: 9px; margin:0; line-height: 1;">View monthly purchase orders</p>
         </div>
         <i class="bi bi-arrow-right text-muted pe-1 fs-8"></i>
       </a>
@@ -174,7 +174,7 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/invoice" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a href="javascript:void(0);" (click)="openModal('invoices')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 bg-warning text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-receipt fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Sales Invoicing</h6>
@@ -212,9 +212,14 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100 d-flex flex-column justify-content-between">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0" style="color: #1e293b;">Sales Overview</h6>
-          <select class="form-select form-select-sm w-auto fs-8 py-1 px-3 rounded-pill text-secondary fw-semibold">
-            <option>This Month</option>
-          </select>
+          <div class="d-flex align-items-center gap-2">
+            <select class="form-select form-select-sm w-auto fs-8 py-1 px-3 rounded-pill text-secondary fw-semibold border shadow-none cursor-pointer" (change)="onMonthChange($event)">
+              <option *ngFor="let m of monthsList" [value]="m.value" [selected]="m.value === selectedOverviewMonth">{{ m.label }}</option>
+            </select>
+            <select class="form-select form-select-sm w-auto fs-8 py-1 px-3 rounded-pill text-secondary fw-semibold border shadow-none cursor-pointer" (change)="onYearChange($event)">
+              <option *ngFor="let y of yearsList" [value]="y" [selected]="y === selectedOverviewYear">{{ y }}</option>
+            </select>
+          </div>
         </div>
         <div class="position-relative w-100" style="height: 250px;">
           <canvas id="salesOverviewChart"></canvas>
@@ -258,7 +263,7 @@
         </div>
 
         <div class="d-flex justify-content-end mt-2">
-          <button class="btn btn-light btn-sm fw-bold text-primary w-150 py-2 rounded-pill mt-2 border d-flex align-items-center gap-2" style="background-color: #f8fafc; font-size: 11px;">View Details <i class="bi bi-arrow-right"></i></button>
+          <button (click)="openModal('target')" class="btn btn-light btn-sm fw-bold text-primary w-150 py-2 rounded-pill mt-2 border d-flex align-items-center gap-2 cursor-pointer" style="background-color: #f8fafc; font-size: 11px;">View Details <i class="bi bi-arrow-right"></i></button>
         </div>
       </div>
     </div>
@@ -352,7 +357,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Orders</h6>
-          <a routerLink="/purchase-order" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
+          <a href="javascript:void(0);" (click)="openModal('orders')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -380,7 +385,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Quotations</h6>
-          <a routerLink="/quotation" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
+          <a href="javascript:void(0);" (click)="openModal('quotations')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -390,12 +395,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let q of quotations.slice(0, 5)">
+              <tr *ngFor="let q of approvedQuotations.slice(0, 5)">
                 <td class="text-primary fw-bold ps-0">{{ q.quotationNumber || 'QTN-'+q.id }}</td>
                 <td>{{ q.customerName || 'Unknown' }}</td>
                 <td>৳{{ q.totalPrice?.toLocaleString() || '0' }}</td>
                 <td><span class="badge {{ getStageBadgeClass(q.status) }} rounded-pill px-3">{{ q.status }}</span></td>
                 <td class="text-muted pe-0">{{ q.createdAt | date:'dd MMM yyyy' }}</td>
+              </tr>
+              <tr *ngIf="approvedQuotations.length === 0">
+                <td colspan="5" class="text-center text-muted py-3 fs-8">No approved quotations found</td>
               </tr>
             </tbody>
           </table>
@@ -408,7 +416,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Top Customers</h6>
-          <a routerLink="/customer" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
+          <a href="javascript:void(0);" (click)="openModal('customers')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -419,9 +427,15 @@
             </thead>
             <tbody>
               <tr *ngFor="let c of customers.slice(0, 5)">
-                <td class="fw-semibold text-dark ps-0">{{ c.name }}</td>
+                <td class="fw-semibold text-dark ps-0">
+                  <div>{{ c.name }}</div>
+                  <small *ngIf="c.email" class="text-muted font-monospace d-block fw-normal" style="font-size: 9px;">{{ c.email }}</small>
+                </td>
                 <td>৳{{ c.spent?.toLocaleString() || '0' }}</td>
                 <td [ngClass]="{'text-danger': c.due > 0, 'text-dark': c.due === 0}" class="fw-bold pe-0">৳{{ c.due?.toLocaleString() || '0' }}</td>
+              </tr>
+              <tr *ngIf="customers.length === 0">
+                <td colspan="3" class="text-center text-muted py-3 fs-8">No customer orders found</td>
               </tr>
             </tbody>
           </table>
@@ -481,7 +495,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Shipment Information</h6>
-          <a routerLink="/shipment" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
+          <a href="javascript:void(0);" (click)="openModal('shipments')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="table-responsive mt-1">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -491,7 +505,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let s of shipments">
+              <tr *ngFor="let s of shipments.slice(0, 4)">
                 <td class="text-primary fw-bold ps-0">{{ s.id }}</td>
                 <td class="text-truncate fw-semibold text-dark" style="max-width: 120px;">{{ s.destination }}</td>
                 <td class="text-muted pe-0">{{ s.eta }}</td>
@@ -507,10 +521,10 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Notifications</h6>
-          <a href="javascript:void(0);" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
+          <a href="javascript:void(0);" (click)="openModal('notifications')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="d-flex flex-column gap-3 mt-2" style="font-size: 11px;">
-          <div class="d-flex align-items-start justify-content-between" *ngFor="let n of notifications">
+          <div class="d-flex align-items-start justify-content-between" *ngFor="let n of notifications.slice(0, 4)">
             <div class="d-flex align-items-center gap-3">
               <span class="rounded-circle p-1 d-inline-block shadow-sm" style="width:10px; height:10px;" [ngClass]="n.type === 'SUCCESS' ? 'bg-success' : (n.type === 'WARNING' ? 'bg-warning' : 'bg-primary')"></span>
               <span class="fw-bold text-dark text-truncate" style="max-width: 180px;" [title]="n.message">{{ n.message }}</span>
@@ -522,4 +536,397 @@
     </div>
   </div>
 
+</div>
+
+<!-- View All Custom Modal Backdrop & Content -->
+<div *ngIf="activeModal" class="custom-modal-backdrop" (click)="closeModal()">
+  <div class="custom-modal-dialog" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="d-flex justify-content-between align-items-center p-3 px-4 border-bottom bg-light">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi" [ngClass]="{
+          'bi-cart-fill text-primary': activeModal === 'orders',
+          'bi-file-earmark-check-fill text-success': activeModal === 'quotations',
+          'bi-people-fill text-info': activeModal === 'customers',
+          'bi-truck text-warning': activeModal === 'shipments',
+          'bi-bell-fill text-danger': activeModal === 'notifications',
+          'bi-bullseye text-success': activeModal === 'target',
+          'bi-cart-check-fill text-primary': activeModal === 'purchase',
+          'bi-receipt text-warning': activeModal === 'invoices'
+        }"></i>
+        <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
+          <ng-container *ngIf="activeModal === 'orders'">All Customer Orders</ng-container>
+          <ng-container *ngIf="activeModal === 'quotations'">All Approved Quotations</ng-container>
+          <ng-container *ngIf="activeModal === 'customers'">All Top Customers</ng-container>
+          <ng-container *ngIf="activeModal === 'shipments'">All Shipment Details</ng-container>
+          <ng-container *ngIf="activeModal === 'notifications'">All System Notifications</ng-container>
+          <ng-container *ngIf="activeModal === 'target'">Monthly Sales Target Breakdown</ng-container>
+          <ng-container *ngIf="activeModal === 'purchase'">RECEIVED Purchase Orders</ng-container>
+          <ng-container *ngIf="activeModal === 'invoices'">ISSUED Sales Invoices</ng-container>
+        </h5>
+      </div>
+      <button type="button" class="btn-close" (click)="closeModal()"></button>
+    </div>
+
+    <!-- Modal Search Sub-header -->
+    <div class="p-3 px-4 bg-white border-bottom">
+      <div *ngIf="activeModal !== 'purchase' && activeModal !== 'invoices'" class="input-group input-group-sm">
+        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control bg-light border-start-0 shadow-none" placeholder="Search details..." [value]="modalSearchText" (input)="modalSearchText = $any($event.target).value">
+      </div>
+
+      <!-- Purchase Orders Specific Search Sub-header with Month and Date filters -->
+      <div *ngIf="activeModal === 'purchase'" class="row g-2 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control bg-light border-start-0 shadow-none" placeholder="Search PO No, Supplier..." [value]="modalSearchText" (input)="modalSearchText = $any($event.target).value">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex align-items-center gap-1">
+            <label class="form-label mb-0 fs-9 text-muted fw-bold flex-shrink-0">Month:</label>
+            <select class="form-select form-select-sm bg-light shadow-none fs-8" (change)="purchaseSelectedMonth = $any($event.target).value === 'ALL' ? 'ALL' : +$any($event.target).value">
+              <option value="ALL" [selected]="purchaseSelectedMonth === 'ALL'">All Months</option>
+              <option *ngFor="let m of monthsList" [value]="m.value" [selected]="m.value === purchaseSelectedMonth">{{ m.label }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="d-flex align-items-center gap-1">
+            <label class="form-label mb-0 fs-9 text-muted fw-bold flex-shrink-0">Date:</label>
+            <input type="date" class="form-control form-control-sm bg-light shadow-none fs-8" [value]="purchaseSelectedDate" (input)="purchaseSelectedDate = $any($event.target).value">
+            <button *ngIf="purchaseSelectedDate" type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 fs-9" (click)="purchaseSelectedDate = ''" title="Clear Date">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sales Invoices Specific Search Sub-header with Month and Date filters -->
+      <div *ngIf="activeModal === 'invoices'" class="row g-2 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control bg-light border-start-0 shadow-none" placeholder="Search Invoice No, Order No, Customer..." [value]="modalSearchText" (input)="modalSearchText = $any($event.target).value">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex align-items-center gap-1">
+            <label class="form-label mb-0 fs-9 text-muted fw-bold flex-shrink-0">Month:</label>
+            <select class="form-select form-select-sm bg-light shadow-none fs-8" (change)="invoiceSelectedMonth = $any($event.target).value === 'ALL' ? 'ALL' : +$any($event.target).value">
+              <option value="ALL" [selected]="invoiceSelectedMonth === 'ALL'">All Months</option>
+              <option *ngFor="let m of monthsList" [value]="m.value" [selected]="m.value === invoiceSelectedMonth">{{ m.label }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="d-flex align-items-center gap-1">
+            <label class="form-label mb-0 fs-9 text-muted fw-bold flex-shrink-0">Date:</label>
+            <input type="date" class="form-control form-control-sm bg-light shadow-none fs-8" [value]="invoiceSelectedDate" (input)="invoiceSelectedDate = $any($event.target).value">
+            <button *ngIf="invoiceSelectedDate" type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 fs-9" (click)="invoiceSelectedDate = ''" title="Clear Date">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-4 overflow-auto flex-grow-1" style="max-height: 60vh;">
+      
+      <!-- 1. Orders Modal Content -->
+      <div *ngIf="activeModal === 'orders'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>Order No</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Payment Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of filteredModalOrders">
+              <td class="fw-bold text-primary">{{ o.orderNumber || 'SO-'+o.id }}</td>
+              <td>
+                <div class="fw-semibold text-dark">{{ o.customerName || 'Customer' }}</div>
+                <small *ngIf="o.customerEmail" class="text-muted d-block font-monospace" style="font-size: 9px;">{{ o.customerEmail }}</small>
+              </td>
+              <td class="fw-bold text-dark">৳{{ (o.totalAmount || o.codAmount || 0) | number:'1.2-2' }}</td>
+              <td><span class="badge {{ getStageBadgeClass(o.status) }} rounded-pill px-3">{{ o.status }}</span></td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success': o.paymentStatus === 'PAID',
+                  'bg-warning-subtle text-warning': o.paymentStatus === 'PARTIALLY_PAID',
+                  'bg-danger-subtle text-danger': o.paymentStatus === 'UNPAID' || !o.paymentStatus
+                }">{{ o.paymentStatus || 'UNPAID' }}</span>
+              </td>
+              <td class="text-muted">{{ o.createdAt | date:'dd MMM yyyy, hh:mm a' }}</td>
+            </tr>
+            <tr *ngIf="filteredModalOrders.length === 0">
+              <td colspan="6" class="text-center text-muted py-4">No matching orders found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 2. Quotations Modal Content -->
+      <div *ngIf="activeModal === 'quotations'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>ID</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let q of filteredModalQuotations">
+              <td class="fw-bold text-primary">{{ q.quotationNumber || 'QTN-'+q.id }}</td>
+              <td>{{ q.customerName || 'Customer' }}</td>
+              <td class="fw-bold text-dark">৳{{ (q.totalPrice || 0) | number:'1.2-2' }}</td>
+              <td><span class="badge {{ getStageBadgeClass(q.status) }} rounded-pill px-3">{{ q.status }}</span></td>
+              <td class="text-muted">{{ q.createdAt | date:'dd MMM yyyy' }}</td>
+            </tr>
+            <tr *ngIf="filteredModalQuotations.length === 0">
+              <td colspan="5" class="text-center text-muted py-4">No matching approved quotations found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3. Customers Modal Content -->
+      <div *ngIf="activeModal === 'customers'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>Customer</th>
+              <th>Email</th>
+              <th>Total Purchase</th>
+              <th>Due Amount</th>
+              <th>Orders Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of filteredModalCustomers">
+              <td class="fw-semibold text-dark">{{ c.name }}</td>
+              <td class="font-monospace text-muted">{{ c.email || 'N/A' }}</td>
+              <td class="fw-bold text-dark">৳{{ c.spent | number:'1.2-2' }}</td>
+              <td [ngClass]="{'text-danger': c.due > 0, 'text-dark': c.due === 0}" class="fw-bold">৳{{ c.due | number:'1.2-2' }}</td>
+              <td><span class="badge bg-secondary rounded-pill px-2.5">{{ c.orderCount || 0 }} orders</span></td>
+            </tr>
+            <tr *ngIf="filteredModalCustomers.length === 0">
+              <td colspan="5" class="text-center text-muted py-4">No matching top customers found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 4. Shipments Modal Content -->
+      <div *ngIf="activeModal === 'shipments'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>Shipment No</th>
+              <th>Vehicle</th>
+              <th>Destination</th>
+              <th>ETA</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of filteredModalShipments">
+              <td class="fw-bold text-primary">{{ s.id }}</td>
+              <td><i class="bi bi-truck text-muted me-1"></i>{{ s.vehicle }}</td>
+              <td>{{ s.destination }}</td>
+              <td class="text-muted">{{ s.eta }}</td>
+            </tr>
+            <tr *ngIf="filteredModalShipments.length === 0">
+              <td colspan="4" class="text-center text-muted py-4">No matching shipments found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 5. Notifications Modal Content -->
+      <div *ngIf="activeModal === 'notifications'">
+        <div class="list-group list-group-flush">
+          <div *ngFor="let n of filteredModalNotifications" class="list-group-item p-3 d-flex align-items-start gap-3 border-bottom">
+            <i class="bi fs-5 mt-1" [ngClass]="getNotificationIcon(n.type)"></i>
+            <div class="flex-grow-1">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="fw-bold text-dark mb-0 fs-8">{{ n.title || 'System Notification' }}</h6>
+                <small class="text-muted" style="font-size: 10px;">{{ getTimeAgo(n.createdAt) }}</small>
+              </div>
+              <p class="text-secondary fs-8 mb-0">{{ n.message }}</p>
+            </div>
+          </div>
+          <div *ngIf="filteredModalNotifications.length === 0" class="text-center text-muted py-4">
+            No matching notifications found
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Target Modal Content -->
+      <div *ngIf="activeModal === 'target'">
+        <!-- Summary Stat Cards -->
+        <div class="row g-3 mb-4 text-center">
+          <div class="col-md-3 col-6">
+            <div class="p-3 rounded-3 bg-light border">
+              <small class="text-muted fw-semibold d-block fs-9">Target Goal</small>
+              <span class="fw-bold text-dark fs-7">৳{{ monthlyTarget | number:'1.0-0' }}</span>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+              <small class="text-success fw-semibold d-block fs-9">Total Achieved</small>
+              <span class="fw-bold text-success fs-7">৳{{ totalRevenue | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-3 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25">
+              <small class="text-danger fw-semibold d-block fs-9">Remaining</small>
+              <span class="fw-bold text-danger fs-7">৳{{ (monthlyTarget - totalRevenue > 0 ? monthlyTarget - totalRevenue : 0) | number:'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="col-md-3 col-6">
+            <div class="p-3 rounded-3 bg-primary bg-opacity-10 border border-primary border-opacity-25">
+              <small class="text-primary fw-semibold d-block fs-9">Completion Rate</small>
+              <span class="fw-bold text-primary fs-7">{{ targetProgress | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-1 fs-9 fw-semibold">
+            <span class="text-muted">Target Completion Progress</span>
+            <span class="text-primary fw-bold">{{ targetProgress | number:'1.1-1' }}%</span>
+          </div>
+          <div class="progress" style="height: 10px; border-radius: 6px;">
+            <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" [style.width.%]="targetProgress > 100 ? 100 : targetProgress"></div>
+          </div>
+        </div>
+
+        <h6 class="fw-bold text-dark mb-3 fs-8">Revenue Invoices Breakdown</h6>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle fs-8 mb-0">
+            <thead class="table-light text-uppercase text-muted fs-9">
+              <tr>
+                <th>Invoice No</th>
+                <th>Customer</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Issue Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of filteredModalTargetInvoices">
+                <td class="fw-bold text-primary">{{ inv.invoiceNumber || 'INV-'+inv.id }}</td>
+                <td>{{ inv.customerName || 'Customer' }}</td>
+                <td class="fw-bold text-dark">৳{{ (inv.totalAmount || 0) | number:'1.2-2' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="{
+                    'bg-success-subtle text-success': inv.invoiceStatus === 'PAID',
+                    'bg-primary-subtle text-primary': inv.invoiceStatus === 'ISSUED',
+                    'bg-danger-subtle text-danger': inv.invoiceStatus === 'OVERDUE'
+                  }">{{ inv.invoiceStatus || 'ISSUED' }}</span>
+                </td>
+                <td class="text-muted">{{ (inv.issueDate || inv.createdAt) | date:'dd MMM yyyy' }}</td>
+              </tr>
+              <tr *ngIf="filteredModalTargetInvoices.length === 0">
+                <td colspan="5" class="text-center text-muted py-4">No matching target invoices found</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 7. Purchase Orders Modal Content -->
+      <div *ngIf="activeModal === 'purchase'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>PO Number</th>
+              <th>Supplier</th>
+              <th>Quantity</th>
+              <th>Total Amount</th>
+              <th>Status</th>
+              <th>Expected Delivery</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let po of filteredModalPurchaseOrders">
+              <td class="fw-bold text-primary">{{ po.poNumber || 'PO-'+po.id }}</td>
+              <td>
+                <div class="fw-semibold text-dark">{{ po.supplierName || 'Supplier' }}</div>
+                <small *ngIf="po.supplierEmail" class="text-muted d-block font-monospace" style="font-size: 9px;">{{ po.supplierEmail }}</small>
+              </td>
+              <td>{{ po.quantity || 1 }}</td>
+              <td class="fw-bold text-dark">৳{{ (po.totalAmount || 0) | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">{{ po.status || 'RECEIVED' }}</span>
+              </td>
+              <td class="text-muted">{{ po.expectedDeliveryDate | date:'dd MMM yyyy' }}</td>
+              <td class="text-muted">{{ (po.createdAt || po.expectedDeliveryDate) | date:'dd MMM yyyy' }}</td>
+            </tr>
+            <tr *ngIf="filteredModalPurchaseOrders.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">No matching purchase orders found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 8. Sales Invoices Modal Content -->
+      <div *ngIf="activeModal === 'invoices'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>Invoice No</th>
+              <th>Customer Order No</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Payment Status</th>
+              <th>Invoice Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let inv of filteredModalInvoices">
+              <td class="fw-bold text-primary">{{ inv.invoiceNumber || 'INV-'+inv.id }}</td>
+              <td>
+                <span class="badge bg-light text-dark border font-monospace px-2.5 py-1.5">{{ getCustomerOrderNoForInvoice(inv) }}</span>
+              </td>
+              <td>
+                <div class="fw-semibold text-dark">{{ inv.issuedToName || inv.customerName || 'Customer' }}</div>
+                <small *ngIf="inv.customerEmail" class="text-muted d-block font-monospace" style="font-size: 9px;">{{ inv.customerEmail }}</small>
+              </td>
+              <td class="fw-bold text-dark">৳{{ (inv.totalAmount || 0) | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge" [ngClass]="{
+                  'bg-success-subtle text-success': inv.paymentStatus === 'PAID',
+                  'bg-warning-subtle text-warning': inv.paymentStatus === 'PARTIALLY_PAID',
+                  'bg-danger-subtle text-danger': inv.paymentStatus === 'UNPAID' || !inv.paymentStatus
+                }">{{ inv.paymentStatus || 'UNPAID' }}</span>
+              </td>
+              <td>
+                <span class="badge bg-warning-subtle text-warning rounded-pill px-3">{{ inv.invoiceStatus || 'ISSUED' }}</span>
+              </td>
+              <td class="text-muted">{{ (inv.issuedAt || inv.createdAt) | date:'dd MMM yyyy' }}</td>
+            </tr>
+            <tr *ngIf="filteredModalInvoices.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">No matching issued invoices found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-3 px-4 border-top bg-light text-end">
+      <button type="button" class="btn btn-sm btn-secondary rounded-3 px-4" (click)="closeModal()">Close</button>
+    </div>
+  </div>
 </div>
