@@ -20,7 +20,7 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<CustomerResponseDTO> create(
             @RequestPart("customer") CustomerRequestDTO dto,
@@ -33,7 +33,7 @@ public class CustomerController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerResponseDTO> update(
             @PathVariable Long id,
@@ -43,7 +43,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.update(id, dto, image));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<CustomerResponseDTO>> getAll() {
         List<CustomerResponseDTO> list = customerService.findAll();
@@ -56,7 +56,7 @@ public class CustomerController {
     }
 
     //  এখানে @customerSecurity.isSelf যোগ করা হলো, যাতে কাস্টমার শুধু নিজের আইডি দিয়ে দেখতে পারে
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER') or @customerSecurity.isSelf(#id, authentication)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER') or @customerSecurity.isSelf(#id, authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<CustomerResponseDTO> getById(@PathVariable Long id) {
         return customerService.getById(id)
@@ -64,14 +64,14 @@ public class CustomerController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         customerService.delete(id);
         return ResponseEntity.ok("Customer matrix index and associated auth account purged successfully.");
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'LOGISTICS_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<CustomerResponseDTO> getByUserId(@PathVariable Long id) {
         return customerService.findUserById(id)

@@ -6,11 +6,9 @@ import { QcInspectorService } from '../../../service/qc-inspactor.service';
 import { LoginResponse } from '../../../auth/Model/authModel';
 import { QcInspectionService } from '../../../service/qc-inspection.service';
 import { NotificationService } from '../../../system/service/notification.service';
-import { ActivityLogService } from '../../../service/activity.log.service';
 import { GoodRecivedNoteService } from '../../../service/good-recived-note.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogModel } from '../../../component/shared/model/ActivityLogModel';
 
 @Component({
   selector: 'app-qc-inspector-dashboard',
@@ -71,7 +69,6 @@ export class QCInspectorDashboardComponent implements OnInit {
   failedCount = 0;
 
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
 
   constructor(
     private storage: StorageService,
@@ -80,7 +77,6 @@ export class QCInspectorDashboardComponent implements OnInit {
     private qcInspectorService: QcInspectorService,
     private inspectionService: QcInspectionService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
     private grnService: GoodRecivedNoteService,
   ) {}
 
@@ -94,7 +90,6 @@ export class QCInspectorDashboardComponent implements OnInit {
     this.loadQcInspector();
     this.loadDashboardData();
     this.loadNotifications();
-    this.loadActivityLogs();
     this.loadPendingGRNs();
   }
 
@@ -196,23 +191,6 @@ export class QCInspectorDashboardComponent implements OnInit {
     });
   }
 
-  loadActivityLogs(): void {
-    this.activityLogService.findByModule('QC').subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 5);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.activityLogService.findAll().subscribe({
-          next: (data) => {
-            this.activities = (data || []).slice(0, 5);
-            this.cdr.markForCheck();
-          },
-          error: () => {},
-        });
-      },
-    });
-  }
 
   pass(batchId: string): void {
     const batch = this.queue.find((b) => b.batchId === batchId);

@@ -81,7 +81,7 @@ export class CustomerComponent implements OnInit {
         this.singleCustomerProfile = profile;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Failed to resolve profile matrix:', err),
+      error: (err: any) => console.error('Failed to resolve profile matrix:', err),
     });
   }
 
@@ -309,7 +309,7 @@ export class CustomerComponent implements OnInit {
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => this.handleBackendError(err),
+        error: (err: any) => this.handleBackendError(err),
       });
     } else {
       this.service.save(formData).subscribe({
@@ -318,7 +318,7 @@ export class CustomerComponent implements OnInit {
           this.closeDrawer();
           this.loadCustomers();
         },
-        error: (err) => this.handleBackendError(err),
+        error: (err: any) => this.handleBackendError(err),
       });
     }
   }
@@ -369,7 +369,7 @@ export class CustomerComponent implements OnInit {
           alert('Customer record successfully purged.');
           this.loadCustomers();
         },
-        error: (err) => alert('Delete operation encountered a system error.'),
+        error: (err: any) => alert('Delete operation encountered a system error.'),
       });
     }
   }

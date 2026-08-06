@@ -93,7 +93,7 @@ export class AddProductComponent implements OnInit {
         this.products = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleBackendError(err)
+      error: (err: any) => this.handleBackendError(err)
     });
   }
 
@@ -103,7 +103,7 @@ export class AddProductComponent implements OnInit {
         this.categories = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleBackendError(err)
+      error: (err: any) => this.handleBackendError(err)
     });
   }
 
@@ -122,7 +122,7 @@ export class AddProductComponent implements OnInit {
         next: () => {
           alert("Product successfully added to your Order Specification Allocations!");
         },
-        error: (err) => alert(err.error?.message || "Failed to add product to order allocations.")
+        error: (err: any) => alert(err.error?.message || "Failed to add product to order allocations.")
       });
       */
 
@@ -210,12 +210,12 @@ export class AddProductComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.product, this.selectedFile).subscribe({
         next: () => { alert("Product updated successfully!"); this.closeDrawer(); this.loadProducts(); },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.product, this.selectedFile).subscribe({
         next: () => { alert("Product registered successfully!"); this.closeDrawer(); this.loadProducts(); },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -234,7 +234,7 @@ export class AddProductComponent implements OnInit {
     if (confirm("Definitively purge this product item?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("Product deleted."); this.loadProducts(); },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }

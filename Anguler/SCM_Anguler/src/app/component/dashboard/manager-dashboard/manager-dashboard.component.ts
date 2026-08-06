@@ -103,7 +103,7 @@ export class ManagerDashboardComponent implements OnInit {
     this.isLoading = true;
     let completed = 0;
     // 🎯 টোটাল কল ৯ করা হলো (নতুন GRN মেথড সহ)
-    const totalCalls = 9;
+    const totalCalls = 10;
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -193,7 +193,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.cdr.markForCheck();
         if (done) done();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('SCM PO Matrix Stream Error:', err);
         if (done) done();
       }
@@ -208,7 +208,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.pendingPOs = this.pendingPOs.filter(po => po.id !== id);
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Authorization failed:', err);
         alert(err.error?.message || 'Failed to authorize Purchase Order.');
       }
@@ -354,7 +354,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.grnStatusSaving = null;
         this.loadGRNs(() => this.cdr.markForCheck());
       },
-      error: (err) => {
+      error: (err: any) => {
         this.grnStatusSaving = null;
         alert(err.error?.message || 'Status update failed.');
         this.cdr.markForCheck();
@@ -446,7 +446,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.kpis[1].value = `${this.pendingApprovalsCount}`;
         this.cdr.markForCheck();
       },
-      error: (err) => alert(err.error?.message || 'Approval failed'),
+      error: (err: any) => alert(err.error?.message || 'Approval failed'),
     });
   }
 
@@ -458,7 +458,7 @@ export class ManagerDashboardComponent implements OnInit {
         this.kpis[1].value = `${this.pendingApprovalsCount}`;
         this.cdr.markForCheck();
       },
-      error: (err) => alert(err.error?.message || 'Rejection failed'),
+      error: (err: any) => alert(err.error?.message || 'Rejection failed'),
     });
   }
 

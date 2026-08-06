@@ -8,13 +8,11 @@ import { LoginResponse } from '../../../auth/Model/authModel';
 import { ShipmentService } from '../../../service/shipment.service';
 import { WarehouseService } from '../../../service/warehouse.service';
 import { NotificationService } from '../../../system/service/notification.service';
-import { ActivityLogService } from '../../../service/activity.log.service';
 import { DeliveryTripService } from '../../../service/delivery-trip.service';
 import { InventoryService } from '../../../service/inventory.service';
 import { VehicleService } from '../../../service/vehicle.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 
 @Component({
   selector: 'app-logistics-dashboard',
@@ -63,12 +61,10 @@ export class LogisticsDashboardComponent implements OnInit {
   shipmentHistoryStats = { total: 0, delivered: 0, inTransit: 0, delayed: 0 };
 
   warehouses: any[] = [];
-  activities: ActivityLogModel[] = [];
   alerts: any[] = [];
   
   // Modal State
   showActivityModal = false;
-  allUserActivities: ActivityLogModel[] = [];
   loadingActivities = false;
   
   showWarehouseModal = false;
@@ -87,7 +83,6 @@ export class LogisticsDashboardComponent implements OnInit {
     private shipmentService: ShipmentService,
     private warehouseService: WarehouseService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
     private deliveryTripService: DeliveryTripService,
     private inventoryService: InventoryService,
     private vehicleService: VehicleService
@@ -102,7 +97,6 @@ export class LogisticsDashboardComponent implements OnInit {
     this.userId = user.userId;
     this.loadLogisticsOfficer();
     this.loadDashboardData();
-    this.loadActivityLogs();
   }
 
   loadDashboardData() {
@@ -214,16 +208,14 @@ export class LogisticsDashboardComponent implements OnInit {
     });
 
     // 4. Warehouses
-    this.warehouseService.getAll().subscribe({
-      next: (data) => {
+    this.warehouseService.getAll().subscribe({ next: (data) => {
         const all = data || [];
         const whNames = ['Warehouse A (Dhaka)', 'Warehouse B (Chattogram)', 'Warehouse C (Khulna)', 'Warehouse D (Rajshahi)'];
         this.warehouses = all.map((w: any, index: number) => ({
           id: w.id,
           name: w.name || whNames[index % whNames.length],
           capacity: w.capacity || 1000,
-          location: w.location || '',
-        }));
+          location: w.location || '' }));
         if(this.warehouses.length === 0) {
             this.warehouses = whNames.map((name, i) => ({ id: i, name, capacity: 1000 }));
         }
@@ -380,44 +372,8 @@ export class LogisticsDashboardComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  loadActivityLogs(): void {
-    this.activityLogService.findByModule('SHIPMENT').subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 5);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.activityLogService.findAll().subscribe({
-          next: (data) => {
-            this.activities = (data || []).slice(0, 5);
-            this.cdr.markForCheck();
-          },
-          error: () => {},
-        });
-      },
-    });
-  }
   
-  openActivityModal(): void {
-    this.showActivityModal = true;
-    this.loadingActivities = true;
-    this.activityLogService.findByUserId(this.userId.toString()).subscribe({
-      next: (data) => {
-        this.allUserActivities = data || [];
-        this.loadingActivities = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.allUserActivities = [];
-        this.loadingActivities = false;
-        this.cdr.markForCheck();
-      }
-    });
-  }
 
-  closeActivityModal(): void {
-    this.showActivityModal = false;
-  }
   
   openWarehouseModal(event: Event): void {
     event.preventDefault();

@@ -42,7 +42,7 @@ public class CustomerOrderController {
         CustomerOrderResponseDTO response = orderService.update(id, dto);
         return ResponseEntity.ok(response);
     }
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<CustomerOrderResponseDTO>> getAllOrders(Authentication authentication) {
         String currentUsername = authentication.getName();
@@ -75,7 +75,7 @@ public class CustomerOrderController {
 
 
     // 4. Find Single Order Context By ID (স্টাফ অথবা অর্ডারের নিজস্ব মালিক)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER') or @customerOrderSecurity.isOwner(#id, authentication)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER') or @customerOrderSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
         return orderService.getById(id)

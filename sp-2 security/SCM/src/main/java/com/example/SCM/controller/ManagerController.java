@@ -51,13 +51,13 @@ public class ManagerController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<ManagerResponseDTO>> findAll() {
         return ResponseEntity.ok(managerService.findAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<ManagerResponseDTO> getById(@PathVariable Long id) {
         return managerService.getById(id)
@@ -72,7 +72,7 @@ public class ManagerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
 //    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ManagerResponseDTO> getByUserId(@PathVariable Long id) {

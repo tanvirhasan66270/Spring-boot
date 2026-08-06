@@ -37,7 +37,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(purchaseOrderService.update(id, dto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/supplier/{supplierId}")
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getOrdersBySupplier(@PathVariable Long supplierId) {
         List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
@@ -52,7 +52,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(supplierOrders);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
         // ১. ডাটাবেজ থেকে সমস্ত PO তুলে আনা
@@ -101,7 +101,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(allOrders);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER','LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<PurchaseOrderResponseDTO> getById(@PathVariable Long id) {
         return purchaseOrderService.getById(id)
@@ -132,7 +132,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(response);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/email-issue")
     public ResponseEntity<String> emailIssueOrder(@RequestParam String token) {
         try {
@@ -156,7 +156,7 @@ public class PurchaseOrderController {
         return ResponseEntity.ok(html);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/email-receive")
     public ResponseEntity<String> emailReceiveOrder(@RequestParam String token) {
         try {

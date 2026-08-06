@@ -124,19 +124,19 @@ export class LetterOfCreditComponent implements OnInit {
       };
       this.service.amendLC(this.currentEditId, patchData).subscribe({
         next: () => { alert("Commercial LC Amendment applied successfully."); this.closeDrawer(); this.loadLCs(); },
-        error: (err) => this.handleErrorLog(err)
+        error: (err: any) => this.handleErrorLog(err)
       });
     } else if (this.isEdit && this.currentEditId !== null) {
       // 📝 PUT: মেটাডাটা আপডেট
       this.service.update(this.currentEditId, cleanedPayload, this.selectedFile).subscribe({
         next: () => { alert("Letter of Credit updated successfully."); this.closeDrawer(); this.loadLCs(); },
-        error: (err) => this.handleErrorLog(err)
+        error: (err: any) => this.handleErrorLog(err)
       });
     } else {
       // ➕ POST: নতুন এলসি রেজিস্টার
       this.service.save(cleanedPayload, this.selectedFile).subscribe({
         next: () => { alert("New Letter of Credit registered successfully into cluster registry."); this.closeDrawer(); this.loadLCs(); },
-        error: (err) => this.handleErrorLog(err)
+        error: (err: any) => this.handleErrorLog(err)
       });
     }
   }
@@ -180,7 +180,7 @@ export class LetterOfCreditComponent implements OnInit {
     if (confirm("Definitively purge this Letter of Credit mapping from the enterprise logistics grid?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("LC entry cleanly wiped from server."); this.loadLCs(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

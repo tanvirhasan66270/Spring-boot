@@ -55,7 +55,7 @@ export class Division implements OnInit {
         this.divisions = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading divisions:', err)
+      error: (err: any) => console.error('Error loading divisions:', err)
     });
   }
 
@@ -81,7 +81,7 @@ export class Division implements OnInit {
           this.closeDrawer();
           this.loadDivisions();
         },
-        error: (err) => console.error('Error updating division:', err)
+        error: (err: any) => console.error('Error updating division:', err)
       });
     } else {
       this.service.save(this.division).subscribe({
@@ -90,7 +90,7 @@ export class Division implements OnInit {
           this.closeDrawer();
           this.loadDivisions();
         },
-        error: (err) => console.error('Error saving division:', err)
+        error: (err: any) => console.error('Error saving division:', err)
       });
     }
   }
@@ -114,7 +114,7 @@ export class Division implements OnInit {
           alert("Deleted successfully");
           this.loadDivisions();
         },
-        error: (err) => console.error('Error deleting division:', err)
+        error: (err: any) => console.error('Error deleting division:', err)
       });
     }
   }

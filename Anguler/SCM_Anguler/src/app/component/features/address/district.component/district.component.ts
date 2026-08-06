@@ -55,7 +55,7 @@ export class DistrictComponent implements OnInit {
         this.districts = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading districts:', err)
+      error: (err: any) => console.error('Error loading districts:', err)
     });
   }
 
@@ -81,7 +81,7 @@ export class DistrictComponent implements OnInit {
           this.closeDrawer();
           this.loadDistricts();
         },
-        error: (err) => console.error('Error updating district:', err)
+        error: (err: any) => console.error('Error updating district:', err)
       });
     } else {
       this.service.save(this.district).subscribe({
@@ -90,7 +90,7 @@ export class DistrictComponent implements OnInit {
           this.closeDrawer();
           this.loadDistricts();
         },
-        error: (err) => console.error('Error saving district:', err)
+        error: (err: any) => console.error('Error saving district:', err)
       });
     }
   }
@@ -115,7 +115,7 @@ export class DistrictComponent implements OnInit {
           alert("Deleted successfully");
           this.loadDistricts();
         },
-        error: (err) => console.error('Error deleting district:', err)
+        error: (err: any) => console.error('Error deleting district:', err)
       });
     }
   }

@@ -86,7 +86,7 @@ export class DeliveryTripComponent implements OnInit {
         this.trips = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError(err),
+      error: (err: any) => this.handleError(err),
     });
   }
 
@@ -168,7 +168,7 @@ export class DeliveryTripComponent implements OnInit {
           this.closeDrawer();
           this.loadTrips();
         },
-        error: (err) => this.handleError(err),
+        error: (err: any) => this.handleError(err),
       });
     } else {
       this.service.create(payload).subscribe({
@@ -177,7 +177,7 @@ export class DeliveryTripComponent implements OnInit {
           this.closeDrawer();
           this.loadTrips();
         },
-        error: (err) => this.handleError(err),
+        error: (err: any) => this.handleError(err),
       });
     }
   }
@@ -220,7 +220,7 @@ export class DeliveryTripComponent implements OnInit {
           this.closeStatusModal();
           this.loadTrips();
         },
-        error: (err) => this.handleError(err),
+        error: (err: any) => this.handleError(err),
       });
   }
 
@@ -256,7 +256,7 @@ export class DeliveryTripComponent implements OnInit {
           this.closeUploadModal();
           this.loadTrips();
         },
-        error: (err) => this.handleError(err),
+        error: (err: any) => this.handleError(err),
       });
   }
 
@@ -298,7 +298,7 @@ export class DeliveryTripComponent implements OnInit {
           alert(msg);
           this.loadTrips();
         },
-        error: (err) => alert(err.error?.message || err.message),
+        error: (err: any) => alert(err.error?.message || err.message),
       });
     }
   }

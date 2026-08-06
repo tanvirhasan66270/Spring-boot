@@ -66,15 +66,14 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     }
 
     if (user && this.activeRole === 'SUPPLIER' && !this.currentSupplierId) {
-      this.supplierService.getSupplierByUserId(user.userId).subscribe({
-        next: (res) => {
+      this.supplierService.getSupplierByUserId(user.userId).subscribe({ next: (res) => {
           if (res) {
             this.currentSupplierId = res.id;
             this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: res.name });
             this.loadSecurePipelineData();
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Failed to resolve supplier identity:', err);
           this.loadSecurePipelineData();
         }
@@ -102,14 +101,12 @@ filteredLineItems: POLineItemResponseDTO[] = [];
 }
 
   loadLineItems() {
-    this.service.findAll().subscribe({
-      next: (data) => {
+    this.service.findAll().subscribe({ next: (data) => {
         const allItems = data || [];
         if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
           this.lineItems = allItems.filter((i: any) => {
             const sId = i.supplierId || (i.supplier ? i.supplier.id : null);
-            return sId === this.currentSupplierId;
-          });
+            return sId === this.currentSupplierId });
         } else {
           this.lineItems = allItems;
         }
@@ -119,14 +116,12 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   }
 
   loadPurchaseOrders() {
-    this.poService.findAll().subscribe({
-      next: (data) => {
+    this.poService.findAll().subscribe({ next: (data) => {
         const allPOs = data || [];
         if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
           this.purchaseOrders = allPOs.filter((po: any) => {
             const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
-            return sId === this.currentSupplierId;
-          });
+            return sId === this.currentSupplierId });
           
           this.extractProductsFromSupplierPOs();
         } else {
@@ -220,7 +215,7 @@ filteredLineItems: POLineItemResponseDTO[] = [];
       next: (res) => {
         alert(`Shipment Node Found!\nTracking: ${res.trackingNumber}\nStatus: ${res.status}\nMethod: ${res.shipmentMethod}`);
       },
-      error: (err) => alert(err.error?.message || "Invalid Tracking Vector Number.")
+      error: (err: any) => alert(err.error?.message || "Invalid Tracking Vector Number.")
     });
   }
 
@@ -235,12 +230,12 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.item).subscribe({
         next: () => { alert("PO Line Item properties updated successfully."); this.closeDrawer(); this.loadLineItems(); },
-        error: (err) => this.errorMessage = err.error?.message || "Warehouse stock or state machine validation fault."
+        error: (err: any) => this.errorMessage = err.error?.message || "Warehouse stock or state machine validation fault."
       });
     } else {
       this.service.save(this.item).subscribe({
         next: () => { alert("New PO Line Item logged. Inventory reserved successfully."); this.closeDrawer(); this.loadLineItems(); },
-        error: (err) => this.errorMessage = err.error?.message || "Insufficient warehouse stock vector."
+        error: (err: any) => this.errorMessage = err.error?.message || "Insufficient warehouse stock vector."
       });
     }
   }
@@ -269,7 +264,7 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     if (confirm("Wipe this item and release reserved inventory quantity allocations?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("Item pruned. Parent aggregates re-calculated."); this.loadLineItems(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

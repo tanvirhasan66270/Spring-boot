@@ -27,7 +27,7 @@ public class StockMovementController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<StockMovementResponseDTO>> findAll() {
         List<StockMovementResponseDTO> list = service.findAll();
@@ -38,7 +38,7 @@ public class StockMovementController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<StockMovementResponseDTO> getById(@PathVariable Long id) {
         return service.getById(id)

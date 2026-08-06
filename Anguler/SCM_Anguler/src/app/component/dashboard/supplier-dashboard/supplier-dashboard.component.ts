@@ -12,8 +12,6 @@ import { QuotationResponseModel } from '../../shared/model/quatationModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogService } from '../../../service/activity.log.service';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
@@ -43,7 +41,6 @@ export class SupplierDashboardComponent implements OnInit {
   receivedPOs: any[] = [];  
   rfqs: any[] = [];
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
   
   lcOpen = false;
   lettersOfCredit: any[] = [];
@@ -66,7 +63,6 @@ export class SupplierDashboardComponent implements OnInit {
     private poService: PurchaseOrderService,
     private quotationService: QuotationService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
     private invoiceService: InvoiceService,
     private prService: PurchaseRequisitionService
   ) {}
@@ -80,7 +76,6 @@ export class SupplierDashboardComponent implements OnInit {
     this.userId = user.userId;
     this.loadSupplier();
     this.loadNotifications();
-    this.loadActivities();
   }
 
   isChildRouteActive(): boolean {
@@ -107,7 +102,7 @@ export class SupplierDashboardComponent implements OnInit {
         }
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Profile verification failed:', err);
         this.loading = false;
         this.cdr.markForCheck();
@@ -118,13 +113,11 @@ export class SupplierDashboardComponent implements OnInit {
   loadDashboardData(supplierId: number) {
     this.loading = true;
 
-    this.poService.findAll().subscribe({
-      next: (data) => {
+    this.poService.findAll().subscribe({ next: (data) => {
         const all = data || [];
         const supplierSpecificOrders = all.filter((o: any) => {
           const sId = o.supplierId || (o.supplier ? o.supplier.id : null);
-          return sId === supplierId;
-        });
+          return sId === supplierId});
 
         const issuedOrders = supplierSpecificOrders.filter((o: PurchaseOrderResponseModel) => o.status === 'ISSUED');
         const delivered = supplierSpecificOrders.filter((o: PurchaseOrderResponseModel) => o.status === 'RECEIVED');
@@ -172,16 +165,14 @@ export class SupplierDashboardComponent implements OnInit {
 
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('PO Stream Load Error:', err),
+      error: (err: any) => console.error('PO Stream Load Error:', err),
     });
 
-    this.quotationService.findAll().subscribe({
-      next: (data) => {
+    this.quotationService.findAll().subscribe({ next: (data) => {
         const allRfqs = data || [];
         const supplierSpecificRfqs = allRfqs.filter((q: any) => {
           const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
-          return sId === supplierId;
-        });
+          return sId === supplierId});
 
         this.rfqs = supplierSpecificRfqs.slice(0, 3).map((q: QuotationResponseModel) => ({
           id: q.quotationNumber || `RFQ-${q.id}`,
@@ -191,14 +182,13 @@ export class SupplierDashboardComponent implements OnInit {
         }));
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
   console.error('Full Error Object:', err);
   console.error('Server Error Message:', err.error?.message || err.message);
 }
     });
 
-    this.prService.findAll().subscribe({
-      next: (data) => {
+    this.prService.findAll().subscribe({ next: (data) => {
         const allRequisitions = data || [];
         const approvedOnly = allRequisitions.filter(
           (pr: purchaseRequisitionResponseModel) => pr.approvalStatus === 'APPROVED'
@@ -211,21 +201,18 @@ export class SupplierDashboardComponent implements OnInit {
           quantity: pr.quantityRequired || 0,
           urgency: pr.urgencyLevel || 'LOW',
           deadline: pr.requiredByDate || 'N/A',
-          status: pr.approvalStatus || 'APPROVED'
-        }));
+          status: pr.approvalStatus || 'APPROVED'}));
         
         this.cdr.markForCheck(); 
       },
-      error: (err) => console.error('PR Load Error:', err)
+      error: (err: any) => console.error('PR Load Error:', err)
     });
 
-    this.invoiceService.findAll().subscribe({
-      next: (data) => {
+    this.invoiceService.findAll().subscribe({ next: (data) => {
         const invoices = data || [];
         const supplierSpecificInvoices = invoices.filter((inv: any) => {
           const sId = inv.supplierId || (inv.supplier ? inv.supplier.id : null);
-          return sId === supplierId;
-        });
+          return sId === supplierId});
 
         this.outstandingPayments = supplierSpecificInvoices.reduce(
           (sum: number, inv: InvoiceResponseModel) => sum + (inv.dueAmount || 0),
@@ -235,7 +222,7 @@ export class SupplierDashboardComponent implements OnInit {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Invoice Load Error:', err);
         this.loading = false;
         this.cdr.markForCheck();
@@ -257,7 +244,7 @@ export class SupplierDashboardComponent implements OnInit {
           this.loadDashboardData(this.supplier.id);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Failed to change PO status matrix:', err);
         alert(err.error?.message || 'Transaction failed.');
       },
@@ -282,7 +269,7 @@ export class SupplierDashboardComponent implements OnInit {
           this.loading = false;
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Supplier PO history pipeline missing:', err);
           this.loading = false;
           this.cdr.markForCheck();
@@ -297,19 +284,10 @@ export class SupplierDashboardComponent implements OnInit {
         this.notifications = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Notification Stream Error:', err),
+      error: (err: any) => console.error('Notification Stream Error:', err),
     });
   }
 
-  loadActivities(): void {
-    this.activityLogService.findByUserId(this.userId.toString()).subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 5);
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Activity Log Stream Error:', err),
-    });
-  }
 
   getActionIcon(action: string): string {
     const icons: Record<string, string> = {

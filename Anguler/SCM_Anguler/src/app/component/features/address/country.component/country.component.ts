@@ -50,7 +50,7 @@ export class CountryComponent implements OnInit {
         this.countries = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading countries:', err)
+      error: (err: any) => console.error('Error loading countries:', err)
     });
   }
 
@@ -62,7 +62,7 @@ export class CountryComponent implements OnInit {
           this.closeDrawer();
           this.loadCountries();
         },
-        error: (err) => console.error('Error updating country:', err)
+        error: (err: any) => console.error('Error updating country:', err)
       });
     } else {
       this.service.save(this.country).subscribe({
@@ -71,7 +71,7 @@ export class CountryComponent implements OnInit {
           this.closeDrawer();
           this.loadCountries();
         },
-        error: (err) => console.error('Error saving country:', err)
+        error: (err: any) => console.error('Error saving country:', err)
       });
     }
   }
@@ -95,7 +95,7 @@ export class CountryComponent implements OnInit {
           alert("Deleted successfully");
           this.loadCountries();
         },
-        error: (err) => console.error('Error deleting country:', err)
+        error: (err: any) => console.error('Error deleting country:', err)
       });
     }
   }

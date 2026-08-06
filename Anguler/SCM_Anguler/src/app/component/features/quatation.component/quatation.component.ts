@@ -88,8 +88,7 @@ export class QuatationComponent implements OnInit {
     }
 
     if (this.activeRole === 'SUPPLIER' && !this.currentSupplierId && user?.userId) {
-      this.supplierService.getSupplierByUserId(user.userId).subscribe({
-        next: (supplier) => {
+      this.supplierService.getSupplierByUserId(user.userId).subscribe({ next: (supplier) => {
           if (supplier && supplier.id) {
             this.currentSupplierId = supplier.id;
             this.currentSupplierName = supplier.name || this.currentSupplierName;
@@ -151,8 +150,7 @@ export class QuatationComponent implements OnInit {
   }
 
   loadQuotations(): void {
-    this.service.findAll().subscribe({
-      next: (data) => {
+    this.service.findAll().subscribe({ next: (data) => {
         const allRfqs = data || [];
 
         console.log(allRfqs);
@@ -161,8 +159,7 @@ export class QuatationComponent implements OnInit {
           if (this.currentSupplierId) {
             this.quotations = allRfqs.filter((q: any) => {
               const sId = q.supplierId || (q.supplier ? q.supplier.id : null);
-              return Number(sId) === Number(this.currentSupplierId);
-            });
+              return Number(sId) === Number(this.currentSupplierId) });
           } else {
             this.quotations = [];
           }
@@ -174,7 +171,7 @@ export class QuatationComponent implements OnInit {
         this.applyFilters(); 
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -254,7 +251,7 @@ export class QuatationComponent implements OnInit {
         alert("Status updated successfully.");
         this.loadQuotations();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error("Update failed", err);
         alert("Failed to update status. Please try again.");
         this.loadQuotations();
@@ -294,7 +291,7 @@ export class QuatationComponent implements OnInit {
         this.closeDrawer();
         this.loadQuotations();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -330,7 +327,7 @@ export class QuatationComponent implements OnInit {
         alert("Quotation envelope successfully purged.");
         this.loadQuotations();
       },
-      error: (err) => alert(err.error?.message || "Deletion failure.")
+      error: (err: any) => alert(err.error?.message || "Deletion failure.")
     });
   }
 

@@ -55,10 +55,25 @@
                 <td>
                   <div class="fw-semibold text-secondary">
                     <i class="bi bi-building me-1"></i>
-                    {{ log.movementType === 'TRANSFER' ? log.sourceWarehouseName : 'External Supply Chain' }}
+                    @if (log.movementType === 'TRANSFER') {
+                      {{ log.sourceWarehouseName }}
+                    } @else if (log.movementType === 'OUTWARD' || log.movementType === 'ADJUSTMENT') {
+                      {{ log.warehouseName }}
+                    } @else {
+                      External Vendor / Supply Chain
+                    }
                   </div>
                 </td>
-                <td><div class="fw-semibold text-dark"><i class="bi bi-building-fill text-primary me-1"></i>{{ log.warehouseName }}</div></td>
+                <td>
+                  <div class="fw-semibold text-dark">
+                    <i class="bi bi-building-fill text-primary me-1"></i>
+                    @if (log.movementType === 'OUTWARD') {
+                      External Customer
+                    } @else {
+                      {{ log.warehouseName }}
+                    }
+                  </div>
+                </td>
                 <td><b class="text-indigo font-monospace fs-6">{{ log.quantity }}</b></td>
                 <td>
                   <div class="font-monospace text-dark fw-bold">{{ log.referenceId }}</div>
@@ -139,10 +154,16 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold text-secondary text-uppercase fs-8">
-            {{ formModel.movementType === 'TRANSFER' ? 'Destination Warehouse Node (To)' : 'Target Warehouse Node' }}
+            @if (formModel.movementType === 'OUTWARD') {
+              External Destination
+            } @else if (formModel.movementType === 'TRANSFER') {
+              Destination Warehouse Node (To)
+            } @else {
+              Target Warehouse Node
+            }
           </label>
           
-          @if (formModel.movementType === 'TRANSFER') {
+          @if (formModel.movementType === 'TRANSFER' || formModel.movementType === 'INWARD' || formModel.movementType === 'ADJUSTMENT') {
             <select class="form-select fs-7" [(ngModel)]="formModel.warehouseId" name="warehouseId" required>
               <option [value]="0">-- Choose Destination Facility --</option>
               @for (w of warehouses; track w.id) {

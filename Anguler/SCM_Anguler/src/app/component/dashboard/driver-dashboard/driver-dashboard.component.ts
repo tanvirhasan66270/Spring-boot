@@ -10,8 +10,6 @@ import { VehicleService } from '../../../service/vehicle.service';
 import { VehicleResponseModel } from '../../shared/model/vehicleModel';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogService } from '../../../service/activity.log.service';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 
 @Component({
@@ -41,7 +39,6 @@ export class DriverDashboardComponent implements OnInit {
   vehicle: VehicleResponseModel | null = null;
 
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
 
   kpis = [
     { label: 'Total Trips', value: '0', trend: 0, icon: 'bi-geo-alt', color: 'primary' },
@@ -67,7 +64,6 @@ export class DriverDashboardComponent implements OnInit {
     private tripService: DeliveryTripService,
     private vehicleService: VehicleService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
   ) {}
 
   ngOnInit(): void {
@@ -81,8 +77,7 @@ export class DriverDashboardComponent implements OnInit {
     this.loadTrips();
     this.loadVehicle();
     this.loadNotifications();
-    this.loadActivities();
-  }
+      }
 
   loadTrips() {
     this.tripService.findAll().subscribe({
@@ -189,23 +184,6 @@ export class DriverDashboardComponent implements OnInit {
     });
   }
 
-  loadActivities(): void {
-    this.activityLogService.findByUserId(this.userId.toString()).subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 5);
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.activityLogService.findAll().subscribe({
-          next: (data) => {
-            this.activities = (data || []).slice(0, 5);
-            this.cdr.markForCheck();
-          },
-          error: () => {},
-        });
-      },
-    });
-  }
 
   getStatusClass(status: string): string {
     switch (status) {

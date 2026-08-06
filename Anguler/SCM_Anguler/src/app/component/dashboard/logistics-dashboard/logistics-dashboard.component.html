@@ -507,74 +507,7 @@
       </div>
     </div>
 
-    <!-- Recent Activity -->
-    <div class="col-lg-3">
-      <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h6 class="fw-bold text-dark mb-0">Recent Activity</h6>
-          <button class="btn btn-link text-primary p-0 text-decoration-none fw-semibold fs-7" (click)="openActivityModal()">View All</button>
-        </div>
-        <div class="timeline-container position-relative">
-          <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-2 border-start border-2 border-light"></div>
-          
-          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
-            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-              <i class="bi bi-truck fs-8"></i>
-            </div>
-            <div>
-              <div class="small fw-bold text-dark">02:10 PM</div>
-              <div class="fs-7 fw-semibold text-dark mt-1">Shipment #1257 dispatched</div>
-              <div class="text-muted" style="font-size: 0.7rem;">Driver: Karim Hossain</div>
-            </div>
-          </div>
-          
-          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
-            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-              <i class="bi bi-box-seam fs-8"></i>
-            </div>
-            <div>
-              <div class="small fw-bold text-dark">01:45 PM</div>
-              <div class="fs-7 fw-semibold text-dark mt-1">Warehouse B inventory updated</div>
-              <div class="text-muted" style="font-size: 0.7rem;">SKU: PRD-2234</div>
-            </div>
-          </div>
 
-          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
-            <div class="bg-success-subtle text-success rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-              <i class="bi bi-check-circle fs-8"></i>
-            </div>
-            <div>
-              <div class="small fw-bold text-dark">01:20 PM</div>
-              <div class="fs-7 fw-semibold text-dark mt-1">Delivery completed</div>
-              <div class="text-muted" style="font-size: 0.7rem;">Shipment #1258</div>
-            </div>
-          </div>
-
-          <div class="timeline-item d-flex gap-3 mb-4 position-relative">
-            <div class="bg-danger-subtle text-danger rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-              <i class="bi bi-tools fs-8"></i>
-            </div>
-            <div>
-              <div class="small fw-bold text-dark">12:55 PM</div>
-              <div class="fs-7 fw-semibold text-dark mt-1">Vehicle TR-03 entered maintenance</div>
-              <div class="text-muted" style="font-size: 0.7rem;">Reason: Routine Check</div>
-            </div>
-          </div>
-
-          <div class="timeline-item d-flex gap-3 position-relative">
-            <div class="bg-primary-subtle text-primary rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-              <i class="bi bi-calendar-event fs-8"></i>
-            </div>
-            <div>
-              <div class="small fw-bold text-dark">12:30 PM</div>
-              <div class="fs-7 fw-semibold text-dark mt-1">New delivery trip scheduled</div>
-              <div class="text-muted" style="font-size: 0.7rem;">Trip: TR-02</div>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ───────────────── FOOTER ALERTS ───────────────── -->
@@ -593,45 +526,6 @@
           </div>
         </div>
         <div class="text-muted fw-semibold" style="font-size: 0.7rem;">{{ alert.time }}</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ───────────────── ACTIVITY MODAL ───────────────── -->
-  <div class="modal fade" [class.show]="showActivityModal" [style.display]="showActivityModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content border-0 shadow rounded-4">
-        <div class="modal-header border-bottom-0 pb-0">
-          <h5 class="modal-title fw-bold text-dark">Logistics Officer Activity</h5>
-          <button type="button" class="btn-close" (click)="closeActivityModal()"></button>
-        </div>
-        <div class="modal-body">
-          @if (loadingActivities) {
-            <div class="text-center py-4">
-              <div class="spinner-border text-primary spinner-border-sm" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-          } @else if (allUserActivities.length === 0) {
-            <div class="text-center py-4 text-muted">
-              No activity logs found.
-            </div>
-          } @else {
-            <div class="position-relative ps-2">
-              <div class="timeline-line position-absolute top-0 bottom-0 start-0 ms-2 border-start border-2 border-light"></div>
-              <div class="timeline-item d-flex gap-3 mb-4 position-relative" *ngFor="let act of allUserActivities">
-                <div class="bg-light text-secondary rounded-2 d-flex justify-content-center align-items-center" style="width: 24px; height: 24px; z-index: 2; margin-left: -6px;">
-                  <i class="bi bi-clock-history fs-8"></i>
-                </div>
-                <div>
-                  <div class="small fw-bold text-dark">{{ formatDate(act.performedAt) }}</div>
-                  <div class="fs-7 fw-semibold text-dark mt-1">{{ act.action }}</div>
-                  <div class="text-muted" style="font-size: 0.7rem;">{{ act.module }} - {{ act.description || 'System log' }}</div>
-                </div>
-              </div>
-            </div>
-          }
-        </div>
       </div>
     </div>
   </div>

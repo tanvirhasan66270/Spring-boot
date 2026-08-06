@@ -276,7 +276,7 @@ export class DriverComponent implements OnInit {
           this.closeDrawer();
           this.loadDrivers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.driver, this.selectedFile).subscribe({
@@ -285,7 +285,7 @@ export class DriverComponent implements OnInit {
           this.closeDrawer();
           this.loadDrivers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -351,7 +351,7 @@ export class DriverComponent implements OnInit {
         next: () => {
           this.loadDrivers();
         },
-        error: (err) => alert('Delete operation failed.')
+        error: (err: any) => alert('Delete operation failed.')
       });
     }
   }

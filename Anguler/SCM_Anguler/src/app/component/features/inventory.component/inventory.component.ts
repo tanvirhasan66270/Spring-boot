@@ -57,7 +57,7 @@ export class InventoryComponent implements OnInit {
   loadInventoryMatrix() {
     this.service.findAll().subscribe({ 
       next: (data) => { this.inventories = data || []; this.cdr.markForCheck(); },
-      error: (err) => this.handleErrorLog(err)
+      error: (err: any) => this.handleErrorLog(err)
     });
   }
 
@@ -95,12 +95,12 @@ export class InventoryComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, payload).subscribe({
         next: () => { alert("Inventory Stock metrics updated successfully."); this.closeDrawer(); this.loadInventoryMatrix(); },
-        error: (err) => this.handleErrorLog(err)
+        error: (err: any) => this.handleErrorLog(err)
       });
     } else {
       this.service.save(payload).subscribe({
         next: () => { alert("New Stock record localized inside the repository."); this.closeDrawer(); this.loadInventoryMatrix(); },
-        error: (err) => this.handleErrorLog(err)
+        error: (err: any) => this.handleErrorLog(err)
       });
     }
   }
@@ -126,7 +126,7 @@ export class InventoryComponent implements OnInit {
     if (confirm("Are you sure you want to completely purge this inventory record from the SCM storage maps?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("Stock node successfully destroyed."); this.loadInventoryMatrix(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }
@@ -165,7 +165,7 @@ export class InventoryComponent implements OnInit {
         this.closeStatusEdit();
         this.loadInventoryMatrix();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.statusSaving = false;
         this.handleErrorLog(err);
         this.closeStatusEdit();

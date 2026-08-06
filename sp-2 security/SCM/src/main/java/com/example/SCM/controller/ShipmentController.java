@@ -26,7 +26,8 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
     private final SupplierRepository supplierRepository;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> create(
             @RequestPart("shipment") String shipmentJson,
@@ -37,7 +38,8 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
             @PathVariable Long id,
@@ -49,14 +51,14 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.update(id, dto, file));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER এবং SUPPLIER যুক্ত করা হলো (যাতে ফিল্ডারে কোনো সমস্যা না হয়)
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<ShipmentResponseDTO> list = shipmentService.findAll();
 
         if (principal instanceof User currentUser) {
-            // ইউজার রোল SUPPLIER হলে শুধুমাত্র তার নিজস্ব শিপমেন্ট ম্যাট্রিক্স ফিল্টার হবে
             if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
                 return supplierRepository.findByUserId(currentUser.getId())
                         .map(supplier -> {
@@ -75,7 +77,8 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)
@@ -83,7 +86,8 @@ public class ShipmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         shipmentService.delete(id);

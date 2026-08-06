@@ -43,7 +43,7 @@ export class LcbankComponent implements OnInit {
         this.banks = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         if (err.status !== 204) {
           this.errorMessage = "Failed to load LC Bank data clusters.";
         }
@@ -81,7 +81,7 @@ export class LcbankComponent implements OnInit {
           this.closeDrawer();
           this.loadBanks();
         },
-        error: (err) => this.errorMessage = err.error?.message || "Operational layout modification failure."
+        error: (err: any) => this.errorMessage = err.error?.message || "Operational layout modification failure."
       });
     } else {
       this.service.save(this.bank).subscribe({
@@ -90,7 +90,7 @@ export class LcbankComponent implements OnInit {
           this.closeDrawer();
           this.loadBanks();
         },
-        error: (err) => this.errorMessage = err.error?.message || "Banking structure integration exception."
+        error: (err: any) => this.errorMessage = err.error?.message || "Banking structure integration exception."
       });
     }
   }
@@ -118,7 +118,7 @@ export class LcbankComponent implements OnInit {
           alert("LC Bank profile pruned from cluster.");
           this.loadBanks();
         },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

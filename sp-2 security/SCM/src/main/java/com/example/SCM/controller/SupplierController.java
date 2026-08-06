@@ -24,7 +24,7 @@ public class SupplierController {
     private final SupplierService supplierService;
     private final ObjectMapper objectMapper;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> save(
             @RequestPart("suppliers") String supplierJson,
@@ -37,7 +37,7 @@ public class SupplierController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
     @PutMapping(value = "/{id}", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> update(
             @PathVariable Long id,
@@ -51,7 +51,7 @@ public class SupplierController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
 //    @PreAuthorize("hasRole('ADMIN') or @supplierSecurity.isSelfUser(#id, authentication)")
 
@@ -63,7 +63,7 @@ public class SupplierController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<SupplierResponseDTO> getById(@PathVariable Long id) {
         return supplierService.getById(id)
@@ -78,7 +78,7 @@ public class SupplierController {
         return ResponseEntity.ok("Supplier profile and associated auth account deleted successfully!");
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<SupplierResponseDTO> getByUserId(@PathVariable Long id) {
         return supplierService.findUserById(id)

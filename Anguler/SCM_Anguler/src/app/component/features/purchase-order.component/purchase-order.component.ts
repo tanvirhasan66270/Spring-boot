@@ -73,8 +73,7 @@ export class PurchaseOrderComponent implements OnInit {
     }
 
     if (this.activeRole === 'SUPPLIER' && !this.currentSupplierId && currentUser?.userId) {
-      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({
-        next: (supplier: any) => {
+      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({ next: (supplier: any) => {
           if (supplier && supplier.id) {
             this.currentSupplierId = supplier.id;
             this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: supplier.name });
@@ -120,7 +119,7 @@ export class PurchaseOrderComponent implements OnInit {
         this.orders = data || [];
         this.applyDataIsolationAndFilters();
       },
-      error: (err) => console.error('PO Load Error:', err)
+      error: (err: any) => console.error('PO Load Error:', err)
     });
   }
 
@@ -212,12 +211,12 @@ export class PurchaseOrderComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.order).subscribe({
         next: () => { alert("Purchase Order updated successfully."); this.closeDrawer(); this.loadOrders(); },
-        error: (err) => this.errorMessage = err.error?.message || "Modification matrix locked."
+        error: (err: any) => this.errorMessage = err.error?.message || "Modification matrix locked."
       });
     } else {
       this.service.save(this.order).subscribe({
         next: () => { alert("New Purchase Order created as DRAFT. Approval mail dispatched to manager."); this.closeDrawer(); this.loadOrders(); },
-        error: (err) => this.errorMessage = err.error?.message || "Deployment pipeline fault."
+        error: (err: any) => this.errorMessage = err.error?.message || "Deployment pipeline fault."
       });
     }
   }
@@ -251,7 +250,7 @@ export class PurchaseOrderComponent implements OnInit {
     if (confirm("Definitively purge this Purchase Order record from active directories?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("PO instance wiped successfully."); this.loadOrders(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

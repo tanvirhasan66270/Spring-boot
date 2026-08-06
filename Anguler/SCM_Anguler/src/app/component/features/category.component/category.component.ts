@@ -77,7 +77,7 @@ export class CategoryComponent implements OnInit {
           this.closeDrawer();
           this.loadCategories();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Category update failed:', err);
           alert(err.error?.message || 'Category update failed. Verify server data rules.');
         }
@@ -89,7 +89,7 @@ export class CategoryComponent implements OnInit {
           this.closeDrawer();
           this.loadCategories();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Category configuration failed:', err);
           alert(err.error?.message || 'Category deployment configuration failed.');
         }
@@ -117,7 +117,7 @@ export class CategoryComponent implements OnInit {
           alert("Category node removed successfully.");
           this.loadCategories();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Category deletion failed:', err);
           alert('Failed to remove category record.');
         }

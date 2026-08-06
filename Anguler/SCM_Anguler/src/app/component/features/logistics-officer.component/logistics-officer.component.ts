@@ -246,7 +246,7 @@ export class LogisticsOfficerComponent implements OnInit {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.officer, this.selectedFile).subscribe({
@@ -255,7 +255,7 @@ export class LogisticsOfficerComponent implements OnInit {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -321,7 +321,7 @@ export class LogisticsOfficerComponent implements OnInit {
           alert("Logistics Officer node successfully purged.");
           this.loadOfficers();
         },
-        error: (err) => alert('Transaction aborted during delete operation.')
+        error: (err: any) => alert('Transaction aborted during delete operation.')
       });
     }
   }

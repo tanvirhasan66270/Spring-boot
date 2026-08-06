@@ -11,9 +11,7 @@ import { AddProductService } from '../../../service/add-product.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { InvoiceService } from '../../../service/invoice.service';
 import { NotificationService } from '../../../system/service/notification.service';
-import { ActivityLogService } from '../../../service/activity.log.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 
@@ -76,7 +74,6 @@ export class ProcurementDashboardComponent implements OnInit {
   rfqs: any[] = [];
   shortages: any[] = [];
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
   recentPOs: PurchaseOrderResponseModel[] = [];
 
   loading = true;
@@ -92,7 +89,6 @@ export class ProcurementDashboardComponent implements OnInit {
     private poService: PurchaseOrderService,
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
   ) {}
 
   ngOnInit(): void {
@@ -105,7 +101,6 @@ export class ProcurementDashboardComponent implements OnInit {
     this.loadProcurement();
     this.loadDashboardData();
     this.loadNotifications();
-    this.loadActivityLog();
   }
 
   loadDashboardData() {
@@ -259,15 +254,6 @@ export class ProcurementDashboardComponent implements OnInit {
     });
   }
 
-  loadActivityLog(): void {
-    this.activityLogService.findAll().subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 6);
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
-  }
 
   loadProcurement(): void {
     this.procurementService.getProcurementByUserId(this.userId).subscribe({

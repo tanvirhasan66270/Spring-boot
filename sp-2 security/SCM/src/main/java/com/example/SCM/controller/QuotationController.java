@@ -28,7 +28,7 @@ public class QuotationController {
     private final SupplierRepository supplierRepository;
 
     // 1. Create New Quotation (POST Multipart)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<QuotationResponseDTO> createQuotation(
             @RequestPart("quotation") String quotationJson,
@@ -44,7 +44,7 @@ public class QuotationController {
     }
 
     // 2. Get Quotation By ID (GET)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<QuotationResponseDTO> getQuotationById(@PathVariable Long id) {
         return quotationService.getById(id)
@@ -53,7 +53,7 @@ public class QuotationController {
     }
 
     // 3. Get All Quotations (GET)
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<QuotationResponseDTO>> getAllQuotations() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

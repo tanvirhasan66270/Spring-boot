@@ -208,45 +208,7 @@
     </div>
 
     <!-- ACTIVITY LOG -->
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-        <h6 class="fw-bold text-dark mb-3">
-          <i class="bi bi-activity text-warning me-2"></i> Recent Activity Log
-        </h6>
-        <div class="d-flex flex-column gap-2">
-          <div
-            *ngFor="let act of activities"
-            class="activity-item p-2 rounded-3 d-flex align-items-start gap-2"
-          >
-            <div class="activity-icon mt-1">
-              <i class="bi" [ngClass]="getActionIcon(act.action)"></i>
-            </div>
-            <div class="flex-grow-1">
-              <div class="small fw-semibold text-dark">
-                {{ act.description || act.action + ' on ' + act.module }}
-              </div>
-              <small class="text-muted">
-                <span class="font-monospace">{{ act.referenceId }}</span> &middot;
-                {{ act.performedAt | date: 'short' }}
-              </small>
-            </div>
-            <span
-              class="badge rounded"
-              [ngClass]="{
-                'bg-success-subtle text-success': act.actionStatus === 'SUCCESS',
-                'bg-danger-subtle text-danger': act.actionStatus === 'FAILED',
-              }"
-            >
-              {{ act.actionStatus }}
-            </span>
-          </div>
-          <div *ngIf="activities.length === 0" class="text-center text-muted py-4">
-            <i class="bi bi-clock-history fs-4 d-block mb-2"></i>
-            No recent activity
-          </div>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- NOTIFICATIONS -->

@@ -424,40 +424,7 @@
           </div>
         </div>
 
-        <div class="col-md-6">
-          <div class="card border-0 shadow-sm p-4 bg-white rounded-4 h-100">
-            <h6 class="fw-bold text-dark mb-3">
-              <i class="bi bi-activity text-danger me-2"></i> Recent Activity Log
-            </h6>
-            <div *ngIf="activities.length > 0; else emptyActivities">
-              <div *ngFor="let a of activities" class="activity-item d-flex align-items-start gap-3 p-2 rounded-3 mb-2">
-                <div class="activity-icon flex-shrink-0">
-                  <i class="bi" [ngClass]="getActionIcon(a.action)"></i>
-                </div>
-                <div class="flex-grow-1 min-width-0">
-                  <div class="fw-semibold text-dark small">
-                    {{ a.description || a.action + ' on ' + a.module }}
-                  </div>
-                  <div class="text-muted" style="font-size: 0.75rem">
-                    <span class="badge me-1" [ngClass]="{
-                        'bg-success-subtle text-success': a.actionStatus === 'SUCCESS',
-                        'bg-danger-subtle text-danger': a.actionStatus === 'FAILED'
-                      }">
-                      {{ a.actionStatus }}
-                    </span>
-                    {{ a.performedAt | date: 'short' }}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <ng-template #emptyActivities>
-              <div class="text-center text-muted py-3">
-                <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
-                No activity recorded yet
-              </div>
-            </ng-template>
-          </div>
-        </div>
+        
       </div>
 
     </div>

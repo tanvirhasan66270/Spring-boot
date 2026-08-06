@@ -20,9 +20,9 @@ public class InvoiceController {
 
     // 1. Create New Invoice Ledger Node (POST)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'PROCUREMENT')")
     public ResponseEntity<InvoiceResponseDTO> create(@RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -30,18 +30,18 @@ public class InvoiceController {
 
     //Mutate/Update Existing Invoice State Matrix (PUT)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'PROCUREMENT')")
     public ResponseEntity<InvoiceResponseDTO> update(@PathVariable Long id, @RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.update(id, dto);
         return ResponseEntity.ok(response);
     }
     // Fetch All Invoices Register Dataset (GET)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT')")
     public ResponseEntity<List<InvoiceResponseDTO>> findAll() {
         List<InvoiceResponseDTO> list = service.findAll();
         if (list.isEmpty()) {
@@ -52,7 +52,7 @@ public class InvoiceController {
 
     // Fetch Invoice Instance Details By Unique Record ID (GET)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/{id}")
 
     public ResponseEntity<InvoiceResponseDTO> getById(@PathVariable Long id) {
@@ -61,9 +61,15 @@ public class InvoiceController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
+    @GetMapping("/by-order/{orderId}")
+    public ResponseEntity<InvoiceResponseDTO> getByOrderId(@PathVariable Long id) {
+        InvoiceResponseDTO response = service.getByOrderNumberOrId(id);
+        return ResponseEntity.ok(response);
+    }
     // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

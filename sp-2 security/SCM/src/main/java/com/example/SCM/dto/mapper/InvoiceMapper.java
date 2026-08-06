@@ -1,12 +1,14 @@
 package com.example.SCM.dto.mapper;
 
 import com.example.SCM.dto.request.InvoiceRequestDTO;
+import com.example.SCM.dto.response.InvoiceHistoryResponseDTO;
 import com.example.SCM.dto.response.InvoiceResponseDTO;
 import com.example.SCM.entity.Invoice;
 import com.example.SCM.enumClass.InvoiceStatus;
 import com.example.SCM.enumClass.PaymentMethod;
 import org.springframework.stereotype.Component;
 import java.time.LocalDate;
+import java.util.stream.Collectors;
 
 @Component
 public class InvoiceMapper {
@@ -73,6 +75,25 @@ public class InvoiceMapper {
         if (entity.getPaymentMethod() != null) {
             dto.setPaymentMethod(entity.getPaymentMethod().name());
         }
+
+        //  Map Invoice History Logs list to Response DTO
+        if (entity.getHistoryLogs() != null && !entity.getHistoryLogs().isEmpty()) {
+            dto.setHistoryLogs(entity.getHistoryLogs().stream().map(h -> {
+                InvoiceHistoryResponseDTO hDto = new InvoiceHistoryResponseDTO();
+                hDto.setId(h.getId());
+                hDto.setInvoiceId(h.getInvoiceId());
+                hDto.setInvoiceNumber(h.getInvoiceNumber());
+                hDto.setTotalAmount(h.getTotalAmount());
+                hDto.setPaidAmount(h.getPaidAmount());
+                hDto.setDueAmount(h.getDueAmount());
+                hDto.setPaymentStatus(h.getPaymentStatus());
+                hDto.setInvoiceStatus(h.getInvoiceStatus());
+                hDto.setNotes(h.getNotes());
+                hDto.setModifiedAt(h.getModifiedAt());
+                return hDto;
+            }).collect(Collectors.toList()));
+        }
+
         return dto;
     }
 

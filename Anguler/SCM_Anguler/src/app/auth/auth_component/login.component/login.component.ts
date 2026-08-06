@@ -83,7 +83,7 @@ export class LoginComponent {
             this.navigateAndReload('/dashboard');
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
         this.errorMessage =
           err.status === 401

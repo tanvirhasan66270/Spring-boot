@@ -244,7 +244,7 @@ export class SalesOfficerComponent implements OnInit {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.officer, this.selectedFile).subscribe({
@@ -253,7 +253,7 @@ export class SalesOfficerComponent implements OnInit {
           this.closeDrawer();
           this.loadOfficers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -316,7 +316,7 @@ export class SalesOfficerComponent implements OnInit {
           alert("Sales Officer profile successfully cleared.");
           this.loadOfficers();
         },
-        error: (err) => alert('Transaction mutation fault abort.')
+        error: (err: any) => alert('Transaction mutation fault abort.')
       });
     }
   }

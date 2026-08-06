@@ -3,6 +3,7 @@ package com.example.SCM.dto.response;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class InvoiceResponseDTO {
@@ -34,4 +35,6 @@ public class InvoiceResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime cancelledAt;
+
+    private List<InvoiceHistoryResponseDTO> historyLogs;
 }

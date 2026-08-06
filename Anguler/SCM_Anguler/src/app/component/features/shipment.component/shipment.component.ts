@@ -87,8 +87,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     }
 
     if (this.userRole === 'SUPPLIER' && !this.currentSupplierId && user?.userId) {
-      this.supplierService.getSupplierByUserId(user.userId).subscribe({
-        next: (supplier) => {
+      this.supplierService.getSupplierByUserId(user.userId).subscribe({ next: (supplier) => {
           if (supplier && supplier.id) {
             this.currentSupplierId = supplier.id;
             this.currentSupplierName = supplier.name || this.currentSupplierName;
@@ -110,16 +109,14 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
   }
 
   loadShipments() {
-    this.service.findAll().subscribe({
-      next: (data) => {
+    this.service.findAll().subscribe({ next: (data) => {
         const allShipments = data || [];
 
         if (this.userRole === 'SUPPLIER') {
           if (this.currentSupplierId) {
             this.shipments = allShipments.filter((s: any) => {
               const sId = s.supplierId || (s.supplier ? s.supplier.id : null);
-              return Number(sId) === Number(this.currentSupplierId);
-            });
+              return Number(sId) === Number(this.currentSupplierId) });
           } else {
             this.shipments = [];
           }
@@ -131,7 +128,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
         this.applyDoubleSearch();
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error("Shipment Load Error:", err);
       }
     });
@@ -154,20 +151,18 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
   }
 
   loadPurchaseOrders() {
-    this.poService.findAll().subscribe({ 
-      next: (data) => {
+    this.poService.findAll().subscribe({ next: (data) => {
         const allPOs = data || [];
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.purchaseOrders = allPOs.filter((po: any) => {
             const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
-            return Number(sId) === Number(this.currentSupplierId);
-          });
+            return Number(sId) === Number(this.currentSupplierId) });
         } else {
           this.purchaseOrders = allPOs;
         }
         this.cdr.markForCheck();
       },
-      error: (err) => console.error("PO Load Error:", err)
+      error: (err: any) => console.error("PO Load Error:", err)
     });
   }
 
@@ -219,7 +214,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Update error:', err);
           this.errorMessage = err.error?.message || err.message || 'Modification matrix deployment failure.';
         },
@@ -231,7 +226,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
           this.closeDrawer();
           this.loadShipments();
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error('Save error:', err);
           this.errorMessage = err.error?.message || err.message || 'Logistics initialization exception.';
         },
@@ -266,7 +261,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
           alert('Shipment record successfully pruned.');
           this.loadShipments();
         },
-        error: (err) => alert(err.error?.message || err.message),
+        error: (err: any) => alert(err.error?.message || err.message),
       });
     }
   }

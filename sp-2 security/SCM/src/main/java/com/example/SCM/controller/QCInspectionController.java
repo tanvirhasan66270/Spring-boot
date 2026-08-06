@@ -44,14 +44,14 @@ public class QCInspectionController {
         return ResponseEntity.ok(qcInspectionService.update(id, dto, file));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<QCInspectionResponseDTO>> getAll() {
         List<QCInspectionResponseDTO> list = qcInspectionService.findAll();
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<QCInspectionResponseDTO> getById(@PathVariable Long id) {
         return qcInspectionService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

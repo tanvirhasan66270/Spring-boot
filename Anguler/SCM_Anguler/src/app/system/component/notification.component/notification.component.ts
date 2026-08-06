@@ -35,7 +35,7 @@ export class NotificationComponent implements OnInit {
       // 🎯 ফোর্সফুলি চেঞ্জ ডিটেকশন পুশ করা হলো যাতে অ্যাসিনক্রোনাস ডাটা আসার সাথে সাথে UI রেন্ডার হয়
       this.cdr.detectChanges(); 
     },
-    error: (err) => this.handleError(err)
+    error: (err: any) => this.handleError(err)
   });
 }
 
@@ -49,7 +49,7 @@ export class NotificationComponent implements OnInit {
         this.unreadCount = count;
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -65,7 +65,7 @@ export class NotificationComponent implements OnInit {
         this.updateUnreadCount(); // কাউন্টার রি-ফ্রেশ
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -82,7 +82,7 @@ export class NotificationComponent implements OnInit {
         this.cdr.markForCheck();
         alert("All notifications marked as read.");
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 

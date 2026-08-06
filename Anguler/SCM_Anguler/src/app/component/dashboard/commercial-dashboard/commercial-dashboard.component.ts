@@ -11,8 +11,6 @@ import { ShipmentService } from '../../../service/shipment.service';
 import { ShipmentResponseModel } from '../../shared/model/shipmentModel';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogService } from '../../../service/activity.log.service';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
@@ -52,7 +50,6 @@ export class CommercialDashboardComponent implements OnInit {
   lcs: LetterOfCreditResponseModel[] = [];
   documents: { name: string; type: string; date: string; status: string; url: string }[] = [];
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
   invoices: InvoiceResponseModel[] = [];
 
   totalLCValue = 0;
@@ -71,7 +68,6 @@ export class CommercialDashboardComponent implements OnInit {
     private lcService: LetterOfCreditService,
     private shipmentService: ShipmentService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
     private invoiceService: InvoiceService,
   ) {}
 
@@ -85,7 +81,6 @@ export class CommercialDashboardComponent implements OnInit {
     this.loadCommercialOfficer();
     this.loadDashboardData();
     this.loadNotifications();
-    this.loadActivityLogs();
     this.loadInvoices();
   }
 
@@ -167,14 +162,6 @@ export class CommercialDashboardComponent implements OnInit {
     });
   }
 
-  loadActivityLogs() {
-    this.activityLogService.findAll().subscribe({
-      next: (data) => {
-        this.activities = (data || []).slice(0, 8);
-        this.cdr.markForCheck();
-      },
-    });
-  }
 
   loadCommercialOfficer(): void {
     this.commercialOfficerService.getCommercialOfficerByUserId(this.userId).subscribe({

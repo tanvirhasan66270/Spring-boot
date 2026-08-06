@@ -69,7 +69,7 @@ export class SupplierProfileComponent implements OnInit {
           this.calculateCompletion();
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.supplierData = cachedSupplier;
           this.syncFormModel();
           this.calculateCompletion();
@@ -167,7 +167,7 @@ export class SupplierProfileComponent implements OnInit {
         this.calculateCompletion();
         this.cdr.markForCheck();
       },
-      error: (err) => this.errorMessage = err.error?.message || "Avatar synchronization failure."
+      error: (err: any) => this.errorMessage = err.error?.message || "Avatar synchronization failure."
     });
   }
 
@@ -185,7 +185,7 @@ export class SupplierProfileComponent implements OnInit {
         this.calculateCompletion();
         this.cdr.markForCheck();
       },
-      error: (err) => this.errorMessage = err.error?.message || "Profile info mutation error."
+      error: (err: any) => this.errorMessage = err.error?.message || "Profile info mutation error."
     });
   }
 }

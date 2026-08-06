@@ -40,7 +40,7 @@ export class ActivityLogComponent implements OnInit {
         this.logs = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -49,7 +49,7 @@ export class ActivityLogComponent implements OnInit {
     this.resetFilters(false, 'module');
     this.service.findByModule(this.filterModule).subscribe({
       next: (data) => { this.logs = data || []; this.cdr.markForCheck(); },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -58,7 +58,7 @@ export class ActivityLogComponent implements OnInit {
     this.resetFilters(false, 'user');
     this.service.findByUserId(this.searchUserId.trim()).subscribe({
       next: (data) => { this.logs = data || []; this.cdr.markForCheck(); },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -67,7 +67,7 @@ export class ActivityLogComponent implements OnInit {
     this.resetFilters(false, 'status');
     this.service.findByStatus(this.filterStatus).subscribe({
       next: (data) => { this.logs = data || []; this.cdr.markForCheck(); },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 

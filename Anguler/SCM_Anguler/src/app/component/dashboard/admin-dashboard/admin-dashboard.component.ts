@@ -721,80 +721,70 @@ export class AdminDashboardComponent implements OnInit {
       }
     };
 
-    this.customerService.getAll().subscribe({
-      next: (data) => {
+    this.customerService.getAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'CUSTOMER', _roleColor: 'primary' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.supplierService.findAll().subscribe({
-      next: (data) => {
+    this.supplierService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'SUPPLIER', _roleColor: 'success' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.driverService.findAll().subscribe({
-      next: (data) => {
+    this.driverService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'DRIVER', _roleColor: 'danger' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.managerService.findAll().subscribe({
-      next: (data) => {
+    this.managerService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'MANAGER', _roleColor: 'warning' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.logisticsOfficerService.findAll().subscribe({
-      next: (data) => {
+    this.logisticsOfficerService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'LOGISTICS_OFFICER', _roleColor: 'info' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.commercialOfficerService.findAll().subscribe({
-      next: (data) => {
+    this.commercialOfficerService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'COMMERCIAL_OFFICER', _roleColor: 'purple' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.salesOfficerService.findAll().subscribe({
-      next: (data) => {
+    this.salesOfficerService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'SALES_OFFICER', _roleColor: 'dark' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.qcInspectorService.findAll().subscribe({
-      next: (data) => {
+    this.qcInspectorService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'QC_INSPECTOR', _roleColor: 'secondary' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.procurementService.findAll().subscribe({
-      next: (data) => {
+    this.procurementService.findAll().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'PROCUREMENT', _roleColor: 'info' }));
         checkDone();
       },
       error: () => checkDone(),
     });
 
-    this.adminService.getAllAdmins().subscribe({
-      next: (data) => {
+    this.adminService.getAllAdmins().subscribe({ next: (data) => {
         (data || []).forEach((u: any) => allData.push({ ...u, _roleLabel: 'ADMIN', _roleColor: 'danger' }));
         checkDone();
       },
@@ -823,13 +813,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
-    service.subscribe({
-      next: (data) => {
+    service.subscribe({ next: (data) => {
         this.allUsers = (data || []).map((u: any) => ({
           ...u,
           _roleLabel: role,
-          _roleColor: this.getRoleColor(role),
-        }));
+          _roleColor: this.getRoleColor(role) }));
         this.applySearchFilter();
         this.isLoadingUsers = false;
         this.cdr.markForCheck();

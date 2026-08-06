@@ -52,7 +52,7 @@ export class ResetPasswordComponent {
         this.success = true;
         setTimeout(() => this.router.navigate(['/login']), 3000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
         this.errorMessage =
           err.status === 400

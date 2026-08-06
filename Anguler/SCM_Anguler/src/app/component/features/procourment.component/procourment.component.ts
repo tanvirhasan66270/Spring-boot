@@ -277,7 +277,7 @@ readonly imageBaseUrl = environment.imgUrl + "procurement/";
           this.closeDrawer();
           this.loadProcurements();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.procurement, this.selectedFile).subscribe({
@@ -286,7 +286,7 @@ readonly imageBaseUrl = environment.imgUrl + "procurement/";
           this.closeDrawer();
           this.loadProcurements();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -345,7 +345,7 @@ readonly imageBaseUrl = environment.imgUrl + "procurement/";
           alert("Procurement workstation signature safely cleared.");
           this.loadProcurements();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }

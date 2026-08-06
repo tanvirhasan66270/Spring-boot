@@ -53,13 +53,12 @@ export class QuoteFormComponent implements OnInit {
 
     const payload: QuoteRequestModel = this.quoteForm.value;
 
-    this.quoteService.submitRequest(payload).subscribe({
-      next: (response) => {
+    this.quoteService.submitRequest(payload).subscribe({ next: (response) => {
         this.isSubmitting = false;
         this.isSuccess = true;
         this.quoteForm.reset({ requestType: '' }); 
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting = false;
         this.isError = true;
         this.errorMessage = err.error?.message || 'Matrix Transmission Failure. Please try again.';

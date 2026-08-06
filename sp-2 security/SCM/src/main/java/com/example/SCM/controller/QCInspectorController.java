@@ -45,7 +45,7 @@ public class QCInspectorController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<QCInspectorResponseDTO>> getAll() {
         List<QCInspectorResponseDTO> inspectors = qcInspectorService.findAll();
@@ -57,7 +57,7 @@ public class QCInspectorController {
         return ResponseEntity.ok(inspectors);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<QCInspectorResponseDTO> getById(@PathVariable Long id) {
         return qcInspectorService.getById(id)
@@ -72,7 +72,7 @@ public class QCInspectorController {
         return ResponseEntity.ok("Deleted successfully");
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<QCInspectorResponseDTO> getByUserId(@PathVariable Long id) {
         return qcInspectorService.findUserById(id)

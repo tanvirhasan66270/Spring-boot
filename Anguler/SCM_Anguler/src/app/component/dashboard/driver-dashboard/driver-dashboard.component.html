@@ -283,52 +283,7 @@
     </div>
 
     <!-- Activity Log -->
-    <div class="col-lg-6">
-      <div
-        class="card border-0 shadow-sm rounded-4 overflow-hidden border-top border-success border-4"
-      >
-        <div
-          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
-        >
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-activity text-success me-2"></i> Activity Log
-          </h6>
-        </div>
-        <div class="card-body p-0">
-          <div *ngIf="activities.length === 0" class="text-center py-4">
-            <i class="bi bi-clock-history text-muted fs-3"></i>
-            <p class="text-muted small mt-2 mb-0">No recent activity</p>
-          </div>
-          <div *ngIf="activities.length > 0" class="activity-list">
-            <div
-              *ngFor="let a of activities"
-              class="activity-item d-flex align-items-start p-3 border-bottom"
-            >
-              <div class="activity-icon me-3 mt-1">
-                <i class="bi {{ getActivityIcon(a.action) }}"></i>
-              </div>
-              <div class="flex-grow-1">
-                <div class="fw-semibold text-dark small">{{ a.action }} on {{ a.module }}</div>
-                <div class="text-muted small" *ngIf="a.description">{{ a.description }}</div>
-                <div class="text-muted mt-1" style="font-size: 0.7rem">
-                  Ref: {{ a.referenceId }} &middot; {{ getTimeAgo(a.performedAt) }}
-                </div>
-              </div>
-              <span
-                class="badge rounded-pill"
-                [ngClass]="{
-                  'bg-success': a.actionStatus === 'SUCCESS',
-                  'bg-danger': a.actionStatus === 'FAILED',
-                }"
-                style="font-size: 0.65rem"
-              >
-                {{ a.actionStatus }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- SETTINGS PANEL -->

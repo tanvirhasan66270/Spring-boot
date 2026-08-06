@@ -46,13 +46,29 @@ export class VehicleComponent implements OnInit {
     private cdr: ChangeDetectorRef
   ) { }
 
+  actualDriverId: number | null = null;
+
   ngOnInit() {
     const user = this.storage.getUser();
     if (user) {
       this.currentUserId = user.userId ;
       this.userRole = user.role;
     }
-    this.loadVehicles();
+    
+    if (this.userRole === 'DRIVER') {
+      this.driverService.getDriverByUserId(this.currentUserId).subscribe({
+        next: (driver) => {
+          this.actualDriverId = driver.id;
+          this.loadVehicles();
+        },
+        error: (err) => {
+          console.error('Failed to load driver profile', err);
+          this.loadVehicles();
+        }
+      });
+    } else {
+      this.loadVehicles();
+    }
     this.loadDrivers();
   }
 
@@ -63,7 +79,7 @@ export class VehicleComponent implements OnInit {
         
         if (this.userRole === 'DRIVER') {
           this.vehicles = allVehicles.filter((v: any) => 
-            v.driverId === this.currentUserId || v.driver?.id === this.currentUserId
+            v.driverId === this.actualDriverId || v.driver?.id === this.actualDriverId
           );
         } else {
           this.vehicles = allVehicles;
@@ -71,7 +87,7 @@ export class VehicleComponent implements OnInit {
 
         this.cdr.markForCheck(); 
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -101,12 +117,12 @@ export class VehicleComponent implements OnInit {
     if (this.isEdit && this.currentVehicleId) {
       this.service.update(this.currentVehicleId, payload).subscribe({
         next: () => { alert("Fleet vehicle parameters updated successfully."); this.closeDrawer(); this.loadVehicles(); },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     } else {
       this.service.create(payload).subscribe({
         next: () => { alert("New vehicle asset logged into logistics database."); this.closeDrawer(); this.loadVehicles(); },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     }
   }
@@ -145,7 +161,7 @@ export class VehicleComponent implements OnInit {
         this.closeStatusModal();
         this.loadVehicles();
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -169,7 +185,7 @@ export class VehicleComponent implements OnInit {
     if (confirm("Are you sure you want to decommission this vehicle asset?")) {
       this.service.delete(id).subscribe({
         next: (msg) => { alert(msg); this.loadVehicles(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

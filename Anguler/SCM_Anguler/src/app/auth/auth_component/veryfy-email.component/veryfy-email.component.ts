@@ -39,7 +39,7 @@ export class VeryfyEmailComponent {
         this.state = 'success';
         this.startCountdown();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.state = 'error';
         this.errorMessage =
           err.status === 400 || err.status === 409

@@ -116,20 +116,16 @@ export class GoodRecivedNoteComponent implements OnInit {
     const managers$ = this.managerService.findAll();
     const inspectors$ = this.qcInspectorService.findAll();
 
-    managers$.subscribe({
-      next: (managers) => {
+    managers$.subscribe({ next: (managers) => {
         const managerUsers = (managers || []).map((m: any) => ({
           id: m.userId || m.id,
           name: m.name || m.managerName,
-          role: 'WAREHOUSE_MANAGER',
-        }));
-        inspectors$.subscribe({
-          next: (inspectors) => {
+          role: 'WAREHOUSE_MANAGER' }));
+        inspectors$.subscribe({ next: (inspectors) => {
             const inspectorUsers = (inspectors || []).map((i: any) => ({
               id: i.userId || i.id,
               name: i.name || i.inspectorName,
-              role: 'QUALITY_INSPECTOR',
-            }));
+              role: 'QUALITY_INSPECTOR' }));
             this.users = [...managerUsers, ...inspectorUsers];
             this.cdr.markForCheck();
           },
@@ -140,13 +136,11 @@ export class GoodRecivedNoteComponent implements OnInit {
         });
       },
       error: () => {
-        inspectors$.subscribe({
-          next: (inspectors) => {
+        inspectors$.subscribe({ next: (inspectors) => {
             this.users = (inspectors || []).map((i: any) => ({
               id: i.userId || i.id,
               name: i.name || i.inspectorName,
-              role: 'QUALITY_INSPECTOR',
-            }));
+              role: 'QUALITY_INSPECTOR' }));
             this.cdr.markForCheck();
           },
           error: () => {
@@ -264,7 +258,7 @@ export class GoodRecivedNoteComponent implements OnInit {
           this.closeDrawer();
           this.loadGRNs();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.errorMessage = err.error?.message || 'Operational layout modification failure.';
           this.cdr.markForCheck();
         },
@@ -276,7 +270,7 @@ export class GoodRecivedNoteComponent implements OnInit {
           this.closeDrawer();
           this.loadGRNs();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.errorMessage = err.error?.message || 'Inventory integration exception.';
           this.cdr.markForCheck();
         },
@@ -317,7 +311,7 @@ export class GoodRecivedNoteComponent implements OnInit {
           alert('GRN ledger node cleanly removed.');
           this.loadGRNs();
         },
-        error: (err) => alert(err.error?.message || err.message),
+        error: (err: any) => alert(err.error?.message || err.message),
       });
     }
   }
@@ -379,7 +373,7 @@ export class GoodRecivedNoteComponent implements OnInit {
         this.closeStatusEdit();
         this.loadGRNs();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.statusSaving = false;
         this.errorMessage = err.error?.message || 'Status update failed.';
         this.closeStatusEdit();

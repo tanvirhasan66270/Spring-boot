@@ -88,13 +88,11 @@ export class QcInspectionComponent implements OnInit {
   }
 
   loadInspectors() {
-    this.qcInspectorService.findAll().subscribe({
-      next: (data) => {
+    this.qcInspectorService.findAll().subscribe({ next: (data) => {
         this.inspectors = (data || []).map((i: any) => ({
           id: i.userId || i.id,
           name: i.name || i.inspectorName,
-          designation: i.designation || 'QC Inspector',
-        }));
+          designation: i.designation || 'QC Inspector' }));
         this.cdr.markForCheck();
       },
       error: () => {
@@ -194,7 +192,7 @@ export class QcInspectionComponent implements OnInit {
           this.closeDrawer();
           this.loadInspections();
         },
-        error: (err) => this.handleErrorLog(err),
+        error: (err: any) => this.handleErrorLog(err),
       });
     } else {
       this.service.save(payload, this.selectedFile).subscribe({
@@ -203,7 +201,7 @@ export class QcInspectionComponent implements OnInit {
           this.closeDrawer();
           this.loadInspections();
         },
-        error: (err) => this.handleErrorLog(err),
+        error: (err: any) => this.handleErrorLog(err),
       });
     }
   }
@@ -250,7 +248,7 @@ export class QcInspectionComponent implements OnInit {
           alert('QC Matrix node successfully pruned.');
           this.loadInspections();
         },
-        error: (err) => alert(err.error?.message || err.message),
+        error: (err: any) => alert(err.error?.message || err.message),
       });
     }
   }

@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "invoices")
@@ -60,7 +62,7 @@ public class Invoice {
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @Enumerated(EnumType.STRING)
-      private PaymentMethod paymentMethod;
+    private PaymentMethod paymentMethod;
 
     private String transactionReference;
 
@@ -90,6 +92,11 @@ public class Invoice {
 
     private LocalDateTime cancelledAt;
 
+    //  Invoice Update History Logs Relationship
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "invoice_id")
+    private List<InvoiceHistory> historyLogs = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -115,7 +122,7 @@ public class Invoice {
     }
 
     private void calculateFinancials() {
-       if (this.discountPercentage > 0) {
+        if (this.discountPercentage > 0) {
             this.discountAmount = this.subtotal * (this.discountPercentage / 100.0);
         }
 

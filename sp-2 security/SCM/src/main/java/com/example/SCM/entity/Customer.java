@@ -31,7 +31,7 @@ public class Customer {
 
     private String phone;
 
-    @Temporal(TemporalType.DATE)
+    @org.hibernate.annotations.JdbcTypeCode(java.sql.Types.DATE)
     private Date dob;
 
     private String image;

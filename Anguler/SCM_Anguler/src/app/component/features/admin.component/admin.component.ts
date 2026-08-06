@@ -33,10 +33,8 @@ export class AdminComponent implements OnInit {
   }
 
   loadAdmins(): void {
-    this.adminService.getAllAdmins().subscribe({
-      next: (data) => (this.admins = data),
-      error: (err) => (this.errorMessage = 'Failed to load admins data.')
-    });
+    this.adminService.getAllAdmins().subscribe({ next: (data) => (this.admins = data),
+      error: (err: any) => (this.errorMessage = 'Failed to load admins data.') });
   }
 
   saveAdmin(): void {
@@ -47,7 +45,7 @@ export class AdminComponent implements OnInit {
           this.resetForm();
           this.loadAdmins();
         },
-        error: (err) => (this.errorMessage = err.error?.message || 'Update failed.')
+        error: (err: any) => (this.errorMessage = err.error?.message || 'Update failed.')
       });
     } else {
       this.adminService.createAdmin(this.adminForm).subscribe({
@@ -56,7 +54,7 @@ export class AdminComponent implements OnInit {
           this.resetForm();
           this.loadAdmins();
         },
-        error: (err) => (this.errorMessage = err.error?.message || 'Creation failed.')
+        error: (err: any) => (this.errorMessage = err.error?.message || 'Creation failed.')
       });
     }
   }
@@ -79,7 +77,7 @@ export class AdminComponent implements OnInit {
   //         alert('Admin deleted successfully.');
   //         this.loadAdmins();
   //       },
-  //       error: (err) => alert('Delete failed.')
+  //       error: (err: any) => alert('Delete failed.')
   //     });
   //   }
   // }

@@ -49,7 +49,7 @@ export class MassageComponent implements OnInit, OnDestroy {
         this.loadingContacts = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.errorMessage = err.error?.message || 'Unable to retrieve chat list connections.';
         this.loadingContacts = false;
         this.cdr.markForCheck();
@@ -110,7 +110,7 @@ export class MassageComponent implements OnInit, OnDestroy {
       next: () => {
         this.loadChatHistory();
       },
-      error: (err) => {
+      error: (err: any) => {
         alert(err.error?.message || 'Failed to deliver message.');
         this.messageText = textToSend; // Restore text in case of failure
         this.cdr.markForCheck();

@@ -275,61 +275,7 @@
     </div>
 
     <!-- Activity Log -->
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
-        <div
-          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
-        >
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-activity text-info me-2"></i> Recent Activity
-          </h6>
-          <span class="badge bg-info-subtle text-info rounded-pill">{{ activities.length }}</span>
-        </div>
-        <div class="card-body p-0">
-          <div *ngIf="activities.length === 0" class="text-center py-4">
-            <i class="bi bi-clock-history fs-2 text-muted d-block mb-2"></i>
-            <p class="text-muted small mb-0">No activity logs found</p>
-          </div>
-          <div class="activity-list">
-            <div *ngFor="let a of activities" class="activity-item px-4 py-3 border-bottom">
-              <div class="d-flex align-items-start gap-3">
-                <i
-                  class="bi {{ getActionIcon(a.action) }} {{ getActionColor(a.action) }} fs-5 mt-1"
-                ></i>
-                <div class="flex-grow-1">
-                  <div class="fw-semibold text-dark small">
-                    {{ a.action }}
-                    <span class="badge bg-light text-secondary ms-1">{{ a.module }}</span>
-                  </div>
-                  <div class="text-muted small text-truncate">
-                    {{ a.description || 'No description' }}
-                  </div>
-                  <div class="text-muted small mt-1">
-                    <i class="bi bi-clock me-1"></i>{{ formatDate(a.performedAt) }}
-                    <span
-                      *ngIf="a.actionStatus"
-                      class="ms-2"
-                      [ngClass]="{
-                        'text-success': a.actionStatus === 'SUCCESS',
-                        'text-danger': a.actionStatus === 'FAILED',
-                      }"
-                    >
-                      <i
-                        class="bi"
-                        [ngClass]="
-                          a.actionStatus === 'SUCCESS' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'
-                        "
-                      ></i>
-                      {{ a.actionStatus }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- ───────────────── SETTINGS PANEL ───────────────── -->

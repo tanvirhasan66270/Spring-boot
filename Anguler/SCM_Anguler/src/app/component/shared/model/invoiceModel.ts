@@ -1,4 +1,15 @@
-
+export interface InvoiceHistoryModel {
+  id: number;
+  invoiceId: number;
+  invoiceNumber: string;
+  totalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  paymentStatus: string;
+  invoiceStatus: string;
+  notes?: string | null;
+  modifiedAt: string;
+}
 
 export interface InvoiceRequestModel {
   customerOrderId?: number | null;
@@ -56,4 +67,6 @@ export interface InvoiceResponseModel {
   createdAt: string;
   updatedAt: string;
   cancelledAt?: string | null;
+
+  historyLogs?: InvoiceHistoryModel[];
 }

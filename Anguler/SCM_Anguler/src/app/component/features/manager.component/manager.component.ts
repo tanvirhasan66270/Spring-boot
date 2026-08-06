@@ -246,7 +246,7 @@ export class ManagerComponent implements OnInit {
           this.closeDrawer();
           this.loadManagers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.manager, this.selectedFile).subscribe({
@@ -255,7 +255,7 @@ export class ManagerComponent implements OnInit {
           this.closeDrawer();
           this.loadManagers();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -320,7 +320,7 @@ export class ManagerComponent implements OnInit {
           alert("Manager node successfully purged.");
           this.loadManagers();
         },
-        error: (err) => alert('Relational transactional mutation constraint broken on target entity.')
+        error: (err: any) => alert('Relational transactional mutation constraint broken on target entity.')
       });
     }
   }

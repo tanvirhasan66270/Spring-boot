@@ -55,7 +55,7 @@ export class PoliceStationComponent implements OnInit {
         this.stations = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading stations:', err)
+      error: (err: any) => console.error('Error loading stations:', err)
     });
   }
 
@@ -81,7 +81,7 @@ export class PoliceStationComponent implements OnInit {
           this.closeDrawer();
           this.loadStations();
         },
-        error: (err) => console.error('Error updating station:', err)
+        error: (err: any) => console.error('Error updating station:', err)
       });
     } else {
       this.service.save(this.station).subscribe({
@@ -90,7 +90,7 @@ export class PoliceStationComponent implements OnInit {
           this.closeDrawer();
           this.loadStations();
         },
-        error: (err) => console.error('Error saving station:', err)
+        error: (err: any) => console.error('Error saving station:', err)
       });
     }
   }
@@ -115,7 +115,7 @@ export class PoliceStationComponent implements OnInit {
           alert("Deleted successfully");
           this.loadStations();
         },
-        error: (err) => console.error('Error deleting station:', err)
+        error: (err: any) => console.error('Error deleting station:', err)
       });
     }
   }

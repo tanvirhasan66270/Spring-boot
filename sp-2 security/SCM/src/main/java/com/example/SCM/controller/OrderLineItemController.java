@@ -19,7 +19,7 @@ public class OrderLineItemController {
     //  Get All Items Under a Specific Order ID
     // URL: GET http://localhost:8080/api/order-items/order/{orderId}
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/order/{orderId}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
 //            "or @customerOrderSecurity.isOwner(#orderId, authentication)")
@@ -30,7 +30,7 @@ public class OrderLineItemController {
 
     //Get Single Line Item Specifications By ID
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'LOGISTICS_OFFICER') " +
 //            "or @orderLineItemSecurity.isOwner(#id, authentication)")

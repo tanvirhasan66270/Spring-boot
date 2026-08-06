@@ -44,7 +44,7 @@ countries: any[] = [];
         this.countries = data;
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error loading countries:', err)
+      error: (err: any) => console.error('Error loading countries:', err)
     });
   }
 

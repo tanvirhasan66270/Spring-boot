@@ -38,7 +38,7 @@ public class QCChecklistController {
     // 3. Get Checklist Items By Master Inspection ID (GET)
      //  ফ্রন্টএন্ড UI-তে একটি নির্দিষ্ট ইন্সেপশনের গ্রিড ডিটেইলস পপুলেট করার জন্য এটি ব্যবহৃত হবে।
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/inspection/{inspectionId}")
     public ResponseEntity<List<QCChecklistResponseDTO>> getByInspectionId(@PathVariable Long inspectionId) {
         List<QCChecklistResponseDTO> list = qcChecklistService.findByInspectionId(inspectionId);
@@ -46,7 +46,7 @@ public class QCChecklistController {
     }
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<QCChecklistResponseDTO> getById(@PathVariable Long id) {
         return qcChecklistService.getById(id)

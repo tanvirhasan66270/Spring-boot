@@ -4,6 +4,8 @@ import com.example.SCM.Util.TrakingCode.TrackingCodeGenerator;
 import com.example.SCM.enumClass.LcStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,19 +27,22 @@ public class LetterOfCredit {
     private String lcNumber;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "purchase_order_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private PurchaseOrder purchaseOrder;
 
     private String poNumber;
 
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "supplier_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private Supplier supplier;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "issuing_bank", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private LCBank issuingBank;
 
     @Column(nullable = false)

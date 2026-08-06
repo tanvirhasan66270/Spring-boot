@@ -19,7 +19,9 @@ export class InvoiceService {
   getById(id: number): Observable<InvoiceResponseModel> {
     return this.http.get<InvoiceResponseModel>(`${this.apiUrl}/${id}`);
   }
-
+   getByOrderId(orderId: number): Observable<InvoiceResponseModel> {
+  return this.http.get<InvoiceResponseModel>(`${this.apiUrl}/by-order/${orderId}`);
+}
   create(invoice: InvoiceRequestModel): Observable<InvoiceResponseModel> {
     return this.http.post<InvoiceResponseModel>(this.apiUrl, invoice);
   }

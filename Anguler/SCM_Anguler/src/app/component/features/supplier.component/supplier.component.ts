@@ -253,7 +253,7 @@ export class SupplierComponent implements OnInit {
               this.cdr.markForCheck();
 
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.supplier, this.selectedFile).subscribe({
@@ -264,7 +264,7 @@ export class SupplierComponent implements OnInit {
            this.cdr.markForCheck();
 
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -328,7 +328,7 @@ export class SupplierComponent implements OnInit {
           this.loadSuppliers();
           this.cdr.markForCheck();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }

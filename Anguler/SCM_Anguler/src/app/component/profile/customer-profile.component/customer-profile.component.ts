@@ -62,7 +62,7 @@ export class CustomerProfileComponent implements OnInit {
           this.calculateCompletion();
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.customerData = cachedCustomer;
           this.syncFormModel();
           this.calculateCompletion();
@@ -81,7 +81,7 @@ export class CustomerProfileComponent implements OnInit {
           }
           this.cdr.markForCheck();
         },
-        error: (err) => {
+        error: (err: any) => {
           this.errorMessage = err.error?.message || "Failed to load customer profile.";
           this.cdr.markForCheck();
         }
@@ -169,7 +169,7 @@ export class CustomerProfileComponent implements OnInit {
         this.calculateCompletion();
         this.cdr.markForCheck();
       },
-      error: (err) => this.errorMessage = err.error?.message || "Avatar synchronization failure."
+      error: (err: any) => this.errorMessage = err.error?.message || "Avatar synchronization failure."
     });
   }
 
@@ -192,7 +192,7 @@ export class CustomerProfileComponent implements OnInit {
         this.calculateCompletion();
         this.cdr.markForCheck();
       },
-      error: (err) => this.errorMessage = err.error?.message || "Profile info mutation error."
+      error: (err: any) => this.errorMessage = err.error?.message || "Profile info mutation error."
     });
   }
 }

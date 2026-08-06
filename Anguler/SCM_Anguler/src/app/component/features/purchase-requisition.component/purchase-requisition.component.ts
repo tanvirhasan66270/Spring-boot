@@ -69,8 +69,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     }
 
     if (this.userRole === 'SUPPLIER' && !this.currentSupplierId && currentUser?.userId) {
-      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({
-        next: (supplier) => {
+      this.supplierService.getSupplierByUserId(currentUser.userId).subscribe({ next: (supplier) => {
           if (supplier && supplier.id) {
             this.currentSupplierId = supplier.id;
             this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: supplier.name });
@@ -93,16 +92,14 @@ export class PurchaseRequisitionComponent implements OnInit {
   }
 
   loadRequisitions() { 
-    this.service.findAll().subscribe({
-      next: (data) => {
+    this.service.findAll().subscribe({ next: (data) => {
         const allRequisitions = data || [];
 
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.requisitions = allRequisitions.filter((pr: any) => {
             const hasSupplier = pr.supplierIds?.includes(this.currentSupplierId) || 
                                 (pr.suppliers && pr.suppliers.some((s: any) => s.id === this.currentSupplierId));
-            return hasSupplier && pr.approvalStatus === 'APPROVED';
-          });
+            return hasSupplier && pr.approvalStatus === 'APPROVED' });
         } else {
           // ADMIN/MANAGER/PROCUREMENT 
           this.requisitions = allRequisitions;
@@ -112,7 +109,7 @@ export class PurchaseRequisitionComponent implements OnInit {
         this.applyDoubleSearch(); 
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.errorMessage = err.error?.message || "Failed to sync cluster directories.";
         this.cdr.markForCheck();
       }
@@ -191,7 +188,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (confirm("Verify and AUTHORIZE this procurement requisition vector?")) {
       this.service.approve(id).subscribe({
         next: () => { alert("Requisition APPROVED successfully."); this.loadRequisitions(); },
-        error: (err) => alert(err.error?.message || "Authorization exception.")
+        error: (err: any) => alert(err.error?.message || "Authorization exception.")
       });
     }
   }
@@ -200,7 +197,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (confirm(`Definitively register ${action} state on this requisition sheet?`)) {
       this.service.rejectOrCancel(id, action).subscribe({
         next: () => { alert(`Requisition state set to ${action} successfully.`); this.loadRequisitions(); },
-        error: (err) => alert(err.error?.message || "Status mutation failure.")
+        error: (err: any) => alert(err.error?.message || "Status mutation failure.")
       });
     }
   }
@@ -215,12 +212,12 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.requisition).subscribe({
         next: () => { alert("Requisition updated successfully!"); this.closeDrawer(); this.loadRequisitions(); },
-        error: (err) => this.errorMessage = err.error?.message || "Update failed."
+        error: (err: any) => this.errorMessage = err.error?.message || "Update failed."
       });
     } else {
       this.service.save(this.requisition).subscribe({
         next: () => { alert("Requisition logged successfully!"); this.closeDrawer(); this.loadRequisitions(); },
-        error: (err) => this.errorMessage = err.error?.message || "Creation error."
+        error: (err: any) => this.errorMessage = err.error?.message || "Creation error."
       });
     }
   }
@@ -247,7 +244,7 @@ export class PurchaseRequisitionComponent implements OnInit {
     if (confirm("Are you sure you want to permanently delete this procurement requisition record?")) {
       this.service.delete(id).subscribe({
         next: () => { alert("Purged successfully."); this.loadRequisitions(); },
-        error: (err) => alert(err.error?.message || err.message)
+        error: (err: any) => alert(err.error?.message || err.message)
       });
     }
   }

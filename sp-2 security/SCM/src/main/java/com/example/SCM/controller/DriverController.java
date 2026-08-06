@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/drivers")
 @RequiredArgsConstructor
-//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
 public class DriverController {
 
     private final DriverService driverService;
@@ -58,13 +58,13 @@ public class DriverController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
     public ResponseEntity<List<DriverResponseDTO>> findAll() {
         return ResponseEntity.ok(driverService.findAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<DriverResponseDTO> getById(@PathVariable Long id) {
         return driverService.getById(id)
@@ -79,9 +79,9 @@ public class DriverController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @driverSecurity.isSelf(#id, authentication)")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER') or @driverSecurity.isSelf(#id, authentication)")
     public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {
         return driverService.findUserById(id)
                 .map(ResponseEntity::ok)

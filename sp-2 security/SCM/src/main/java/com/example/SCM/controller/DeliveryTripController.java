@@ -20,9 +20,9 @@ public class DeliveryTripController {
 
     private final DeliveryTripService tripService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> create(@RequestBody DeliveryTripRequestDTO dto) {
         return new ResponseEntity<>(
                 tripService.save(dto),
@@ -30,9 +30,9 @@ public class DeliveryTripController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> update(
             @PathVariable Long id,
             @RequestBody DeliveryTripRequestDTO dto
@@ -40,9 +40,9 @@ public class DeliveryTripController {
         return ResponseEntity.ok(tripService.update(id, dto));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     @PatchMapping(value = "/{id}/status", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> changeStatus(
             @PathVariable Long id,
             @RequestParam("status") String status,
@@ -53,9 +53,9 @@ public class DeliveryTripController {
         return ResponseEntity.ok(tripService.updateTripStatus(id, status, signature, photo));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<List<DeliveryTripResponseDTO>> getAll() {
         List<DeliveryTripResponseDTO> list = tripService.findAll();
 
@@ -66,18 +66,18 @@ public class DeliveryTripController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     public ResponseEntity<DeliveryTripResponseDTO> getById(@PathVariable Long id) {
         return tripService.getById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         tripService.delete(id);
         return ResponseEntity.ok("Delivery trip cluster index cleared successfully from control matrix.");

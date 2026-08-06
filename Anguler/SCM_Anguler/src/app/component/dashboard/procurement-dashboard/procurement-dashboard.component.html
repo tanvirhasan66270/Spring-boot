@@ -285,59 +285,7 @@
       </div>
     </div>
 
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm rounded-4 h-100">
-        <div
-          class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center"
-        >
-          <h6 class="mb-0 fw-bold text-dark text-uppercase">
-            <i class="bi bi-activity text-info me-2"></i> Activity Log
-          </h6>
-          <span class="badge bg-info-subtle text-info">{{ activities.length }}</span>
-        </div>
-        <div class="card-body p-0">
-          <div *ngIf="activities.length === 0" class="text-center text-muted py-4">
-            <i class="bi bi-clock-history fs-3 d-block mb-1"></i>
-            <small>No activity recorded</small>
-          </div>
-          <div class="activity-list" *ngIf="activities.length > 0">
-            <div class="activity-item px-4 py-3 border-bottom" *ngFor="let a of activities">
-              <div class="d-flex align-items-start gap-3">
-                <i class="bi {{ getActionIcon(a.action) }} mt-1"></i>
-                <div class="flex-grow-1">
-                  <div class="small">
-                    <span class="fw-bold text-dark">{{ a.userEmail || 'System' }}</span>
-                    <span class="text-muted mx-1">{{ a.action.toLowerCase() }}</span>
-                    <span class="fw-semibold text-primary">{{ a.module }}</span>
-                    <span class="text-muted mx-1">#{{ a.referenceId }}</span>
-                  </div>
-                  <div *ngIf="a.description" class="text-muted" style="font-size: 0.72rem">
-                    {{ a.description }}
-                  </div>
-                </div>
-                <div class="text-end">
-                  <span
-                    class="badge"
-                    [ngClass]="
-                      a.actionStatus === 'SUCCESS'
-                        ? 'bg-success-subtle text-success'
-                        : 'bg-danger-subtle text-danger'
-                    "
-                  >
-                    {{ a.actionStatus }}
-                  </span>
-                  <small
-                    class="d-block text-muted font-monospace mt-1"
-                    style="font-size: 0.68rem"
-                    >{{ formatTime(a.performedAt) }}</small
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    
   </div>
 
   <!-- ───────────────── LOADING STATE ───────────────── -->

@@ -13,8 +13,6 @@ import { ProductResponseModel } from '../../shared/model/addProduct';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { ActivityLogService } from '../../../service/activity.log.service';
-import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { environment } from '../../../../environment/environment';
@@ -43,7 +41,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   readonly imageBaseUrl = environment.imgUrl + "product/";
 
   notifications: NotificationModel[] = [];
-  activities: ActivityLogModel[] = [];
 
   showSettings = false;
   loading = true;
@@ -54,7 +51,13 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   trackedResult: CustomerOrderResponseModel | null = null;
   trackSearched = false;
 
-  // 🌟 Place New Order Inline Form States
+  // Invoice History & Statement States
+  isStatementCardOpen: boolean = false;
+  searchStatementOrderId: string = ''; // 🌟 ইনপুটের সাথে মিল রেখে আপডেট করা হলো
+  statementData: any = null;
+  statementError: string | null = null;
+
+  // Place New Order Inline Form States
   showOrderFormOnly = false;
   products: any[] = [];
   currentProduct: any = null;
@@ -105,7 +108,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     private cutomerService: CustomerService,
     private productService: AddProductService,
     private notificationService: NotificationService,
-    private activityLogService: ActivityLogService,
     private cdr: ChangeDetectorRef,
     private router: Router,
     private route: ActivatedRoute,
@@ -123,7 +125,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.loadDashboardData();
     this.loadRecommendations();
     this.loadNotifications();
-    // this.loadActivities();
 
     this.route.queryParams.subscribe(params => {
       if (params['track'] === 'true') {
@@ -192,6 +193,35 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  toggleStatementCard(): void {
+    this.isStatementCardOpen = !this.isStatementCardOpen;
+    this.statementData = null;
+    this.searchStatementOrderId = '';
+    this.statementError = null;
+    this.cdr.markForCheck();
+  }
+
+  // 🌟 নতুন স্টেটমেন্ট রেকর্ড সার্চ মেথড যা এইচটিএমএল ফাইলের সাথে যুক্ত করা হয়েছে
+  searchStatementRecord(): void {
+    if (!this.searchStatementOrderId || this.searchStatementOrderId.trim() === '') {
+      this.statementError = 'Please enter a valid Customer Order ID.';
+      return;
+    }
+    
+    this.statementError = null;
+    this.invoiceService.getByOrderId(Number(this.searchStatementOrderId)).subscribe({
+      next: (res) => {
+        this.statementData = res;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.statementData = null;
+        this.statementError = 'No invoice history found for Order ID #' + this.searchStatementOrderId;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   searchBilling(): void {
     this.billingSearched = true;
     if (!this.searchBillingCode || this.searchBillingCode.trim() === '') {
@@ -251,7 +281,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // 🌟 Place New Order Inline View Methods
   openOrderFormView(): void {
     this.resetOrderForm();
     if (this.customer && this.customer.id) {
@@ -358,7 +387,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     return this.products.find(p => p.id == productId)?.name || 'Unknown Item';
   }
 
-  // Financial Calculators
   calculateItemSubtotal(): number {
     let subtotal = 0;
     for (let item of this.order.items) {
@@ -413,7 +441,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
         this.closeOrderFormView();
         this.loadDashboardData();
       },
-      error: (err) => {
+      error: (err: any) => {
         alert(err.error?.message || "Failed to dispatch order.");
       }
     });
@@ -439,7 +467,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
         this.storage.saveData(KEYS.CUSTOMER, res);
         this.cdr.markForCheck();
       },
-      error: (err) => console.log(err),
+      error: (err: any) => console.log(err),
     });
   }
 
@@ -483,35 +511,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
           this.cancelledPercent = Math.round((cancelledCount / totalOrders) * 100);
         }
 
-        const total = 282;
-        const dDelivered = Math.round((this.deliveredPercent / 100) * total);
-        const dProcessing = Math.round((this.processingPercent / 100) * total);
-        const dCancelled = total - dDelivered - dProcessing;
-        this.donutDelivered = `${dDelivered} ${total}`;
-        this.donutProcessing = `${dProcessing} ${total}`;
-        this.donutCancelled = `${dCancelled} ${total}`;
-        this.donutOffsetProcessing = -dDelivered;
-        this.donutOffsetCancelled = -(dDelivered + dProcessing);
-
-        const now = new Date();
-        const shortMonths = [
-          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-        ];
-        this.monthlyExpenses = [];
-        this.monthLabels = [];
-        for (let i = 5; i >= 0; i--) {
-          const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-          const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
-          const monthTotal = this.customerOrders
-            .filter((o) => o.createdAt && o.createdAt.startsWith(monthStr))
-            .reduce((sum, o) => sum + (o.codAmount || 0), 0);
-          this.monthlyExpenses.push(monthTotal);
-          this.monthLabels.push(shortMonths[month.getMonth()]);
-        }
-
-        this.computeChartPath();
-
         this.recentOrders = [...this.customerOrders]
           .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 5);
@@ -519,7 +518,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Customer metrics fetching failed:', err);
         this.loading = false;
         this.cdr.markForCheck();
@@ -527,41 +526,8 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  computeChartPath(): void {
-    const data = this.monthlyExpenses;
-    if (!data.length) return;
-
-    this.chartMaxY = Math.max(...data, 1);
-
-    const svgW = 460;
-    const svgH = 160;
-    const padX = 40;
-    const padY = 20;
-    const usableW = svgW - padX * 2;
-    const usableH = svgH - padY * 2;
-
-    this.chartDots = data.map((val, i) => {
-      const x = padX + (i / (data.length - 1 || 1)) * usableW;
-      const y = padY + usableH - (val / this.chartMaxY) * usableH;
-      return { x, y };
-    });
-
-    if (this.chartDots.length < 2) return;
-
-    let path = `M ${this.chartDots[0].x} ${this.chartDots[0].y}`;
-    for (let i = 1; i < this.chartDots.length; i++) {
-      const prev = this.chartDots[i - 1];
-      const curr = this.chartDots[i];
-      const cpx1 = prev.x + (curr.x - prev.x) * 0.4;
-      const cpx2 = curr.x - (curr.x - prev.x) * 0.4;
-      path += ` C ${cpx1} ${prev.y}, ${cpx2} ${curr.y}, ${curr.x} ${curr.y}`;
-    }
-    this.chartPath = path;
-  }
-
   loadRecommendations(): void {
-    this.productService.findAll().subscribe({
-      next: (data) => {
+    this.productService.findAll().subscribe({ next: (data) => {
         this.recommendations = (data || []).slice(0, 5).map((p: ProductResponseModel) => ({
           name: p.name || 'Product',
           price: p.sellingPrice || 0,
@@ -569,8 +535,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
             Math.round(((p.sellingPrice || 0) / Math.max(p.unitCost || 1, 1)) * 10) / 10 > 5
               ? 5
               : Math.round(((p.sellingPrice || 0) / Math.max(p.unitCost || 1, 1)) * 10) / 10 || 4.0,
-          image: p.image || null,
-        }));
+          image: p.image || null }));
         this.cdr.markForCheck();
       },
     });
@@ -595,16 +560,6 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // loadActivities(): void {
-  //   this.activityLogService.findByUserId(this.userId.toString()).subscribe({
-  //     next: (data) => {
-  //       this.activities = (data || []).slice(0, 5);
-  //       this.cdr.markForCheck();
-  //     },
-  //     error: () => {},
-  //   });
-  // }
-
   getActionIcon(action: string): string {
     const icons: Record<string, string> = {
       CREATE: 'bi-plus-circle text-success',
@@ -622,6 +577,10 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   onEditProfileTriggered(): void {
     this.showSettings = false;
     this.router.navigate(['customer_profile'], { relativeTo: this.route });
+  }
+
+  downloadStatementPdf(): void {
+    window.print(); 
   }
 
   logout(): void {

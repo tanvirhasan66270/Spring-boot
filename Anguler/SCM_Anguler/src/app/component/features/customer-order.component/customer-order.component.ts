@@ -195,7 +195,7 @@ export class CustomerOrderComponent implements OnInit {
         this.closeStatusModal();
         this.loadOrders();
       },
-      error: (err) => {
+      error: (err: any) => {
         alert(err.error?.message || "Failed to update status.");
       }
     });
@@ -367,7 +367,7 @@ export class CustomerOrderComponent implements OnInit {
           this.closeDrawer();
           this.loadOrders();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.order).subscribe({
@@ -376,7 +376,7 @@ export class CustomerOrderComponent implements OnInit {
           this.closeDrawer();
           this.loadOrders();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -416,7 +416,7 @@ export class CustomerOrderComponent implements OnInit {
           alert("Order instance completely wiped.");
           this.loadOrders();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }

@@ -7,8 +7,10 @@ import com.example.SCM.dto.request.InvoiceRequestDTO;
 import com.example.SCM.dto.response.InvoiceResponseDTO;
 import com.example.SCM.entity.CustomerOrder;
 import com.example.SCM.entity.Invoice;
+import com.example.SCM.entity.InvoiceHistory;
 import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.InvoiceStatus;
+import com.example.SCM.repository.InvoiceHistoryRepository;
 import com.example.SCM.repository.InvoiceRepository;
 import com.example.SCM.repository.CustomerOrderRepository;
 import com.example.SCM.service.ActivityLogService;
@@ -20,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,6 +32,7 @@ import java.util.stream.Collectors;
 public class InvoiceServiceImp implements InvoiceService {
 
     private final InvoiceRepository repository;
+    private final InvoiceHistoryRepository historyRepository; // 🌟 হিস্ট্রি রিপোজিটরি যুক্ত করা হয়েছে
     private final CustomerOrderRepository orderRepository;
     private final InvoiceMapper mapper;
     private final TrackingCodeGenerator codeGenerator;
@@ -39,7 +43,6 @@ public class InvoiceServiceImp implements InvoiceService {
     private final HttpServletRequest request;
 
     // Dynamically resolves current active user or system actor
-
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
         if (userId != null && !userId.isBlank()) {
@@ -101,13 +104,28 @@ public class InvoiceServiceImp implements InvoiceService {
         Invoice invoice = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice dataset node not found at ID: " + id));
 
+        // 🌟 ১. ইনভয়েস আপডেট হওয়ার সাথে সাথে বর্তমান ডেটা হিস্ট্রি টেবিলে নতুন রো হিসেবে যুক্ত করা
+        InvoiceHistory history = new InvoiceHistory();
+        history.setInvoiceId(invoice.getId());
+        history.setInvoiceNumber(invoice.getInvoiceNumber());
+        history.setTotalAmount(invoice.getTotalAmount());
+        history.setPaidAmount(invoice.getPaidAmount());
+        history.setDueAmount(invoice.getDueAmount());
+        history.setPaymentStatus(invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "N/A");
+        history.setInvoiceStatus(invoice.getInvoiceStatus() != null ? invoice.getInvoiceStatus().name() : "N/A");
+        history.setNotes(invoice.getNotes());
+        history.setModifiedAt(LocalDateTime.now());
+
+        // মূল ইনভয়েসের হিস্ট্রি কালেকশনে অ্যাড করা
+        invoice.getHistoryLogs().add(history);
+
         double oldTotalAmount = invoice.getTotalAmount();
         String oldPaymentStatus = invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "N/A";
         String oldInvoiceStatus = invoice.getInvoiceStatus() != null ? invoice.getInvoiceStatus().name() : "N/A";
 
         mapper.updateEntityFromDTO(dto, invoice);
 
-        // customer repository method vereficasion
+        // customer repository method verification
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order node structural integrity broken."));
 
@@ -121,7 +139,7 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice updatedInvoice = repository.save(invoice);
 
-        // if ISSUE realtime mail notification is treggred
+        // if ISSUE realtime mail notification is triggered
         if (updatedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !updatedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(updatedInvoice, updatedInvoice.getCustomerEmail());
         }
@@ -133,7 +151,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 "UPDATE",
                 "INVOICE",
                 updatedInvoice.getId().toString(),
-                "Invoice financial metadata updated for Invoice Number: " + updatedInvoice.getInvoiceNumber(),
+                "Invoice financial metadata updated & history row logged for Invoice Number: " + updatedInvoice.getInvoiceNumber(),
                 "{\"totalAmount\":" + oldTotalAmount + ", \"paymentStatus\":\"" + oldPaymentStatus + "\", \"invoiceStatus\":\"" + oldInvoiceStatus + "\"}",
                 "{\"totalAmount\":" + updatedInvoice.getTotalAmount() + ", \"paymentStatus\":\"" + updatedInvoice.getPaymentStatus() + "\", \"invoiceStatus\":\"" + updatedInvoice.getInvoiceStatus() + "\"}",
                 ActionStatus.SUCCESS,
@@ -149,14 +167,14 @@ public class InvoiceServiceImp implements InvoiceService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isCustomer = authentication != null && authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CUSTOMER"));
-                
+
         List<Invoice> invoices;
         if (isCustomer) {
             invoices = repository.findByCustomerEmail(authentication.getName());
         } else {
             invoices = repository.findAll();
         }
-        
+
         return invoices.stream()
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
@@ -207,6 +225,13 @@ public class InvoiceServiceImp implements InvoiceService {
         );
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public InvoiceResponseDTO getByOrderNumberOrId(Long customerOrderId) {
+        Invoice invoice = repository.findByCustomerOrderId(customerOrderId)
+                .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order ID: " + customerOrderId));
+        return mapper.toResponseDTO(invoice);
+    }
     private void sendInvoiceEmail(Invoice invoice, String customerEmail) {
         String subject = "SCM Official Invoice Bill - " + invoice.getInvoiceNumber();
 

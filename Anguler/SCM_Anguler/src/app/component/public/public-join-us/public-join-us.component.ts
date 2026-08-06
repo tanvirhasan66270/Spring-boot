@@ -222,7 +222,7 @@ export class PublicJoinUsComponent implements OnInit {
         this.isSubmitting = false;
         this.cdr.markForCheck();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting = false;
         const errorContext = err.error?.message || err.message || '';
         if (errorContext.includes('Duplicate entry')) {

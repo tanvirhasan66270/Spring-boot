@@ -66,7 +66,7 @@ export class StockMovementComponent implements OnInit {
         this.movements = data || [];
         this.cdr.markForCheck();
       },
-      error: (err) => this.handleErrorLog(err),
+      error: (err: any) => this.handleErrorLog(err),
     });
   }
 
@@ -193,7 +193,7 @@ export class StockMovementComponent implements OnInit {
         this.closeDrawer();
         this.loadMovements();
       },
-      error: (err) => this.handleErrorLog(err),
+      error: (err: any) => this.handleErrorLog(err),
     });
   }
 
@@ -208,7 +208,7 @@ export class StockMovementComponent implements OnInit {
           alert('Ledger item removed.');
           this.loadMovements();
         },
-        error: (err) => alert(err.error?.message || err.message),
+        error: (err: any) => alert(err.error?.message || err.message),
       });
     }
   }

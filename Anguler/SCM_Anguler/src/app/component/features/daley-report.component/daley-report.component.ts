@@ -52,7 +52,7 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
         this.reports = data || []; 
         this.cdr.markForCheck(); 
       },
-      error: (err) => this.handleError(err)
+      error: (err: any) => this.handleError(err)
     });
   }
 
@@ -142,7 +142,7 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
           this.closeDrawer(); 
           this.loadReports(); 
         },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     } else {
       this.service.create(formData).subscribe({
@@ -151,7 +151,7 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
           this.closeDrawer(); 
           this.loadReports(); 
         },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     }
   }
@@ -163,7 +163,7 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
           alert("Report stamped and locked as APPROVED.");
           this.loadReports();
         },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     }
   }
@@ -199,7 +199,7 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
           this.loadReports();
           this.cdr.markForCheck();
         },
-        error: (err) => this.handleError(err)
+        error: (err: any) => this.handleError(err)
       });
     }
   }

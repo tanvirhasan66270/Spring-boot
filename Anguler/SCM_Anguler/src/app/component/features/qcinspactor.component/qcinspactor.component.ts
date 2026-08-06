@@ -246,7 +246,7 @@ export class QcinspactorComponent implements OnInit {
           this.closeDrawer();
           this.loadInspectors();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     } else {
       this.service.save(this.inspector, this.selectedFile).subscribe({
@@ -255,7 +255,7 @@ export class QcinspactorComponent implements OnInit {
           this.closeDrawer();
           this.loadInspectors();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }
@@ -321,7 +321,7 @@ export class QcinspactorComponent implements OnInit {
           alert("QC Matrix node safely cleared.");
           this.loadInspectors();
         },
-        error: (err) => this.handleBackendError(err)
+        error: (err: any) => this.handleBackendError(err)
       });
     }
   }

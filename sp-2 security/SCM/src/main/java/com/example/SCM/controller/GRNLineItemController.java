@@ -43,7 +43,7 @@ public class GRNLineItemController {
 
     // আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GRNLineItemResponseDTO>> getAll() {
@@ -58,7 +58,7 @@ public class GRNLineItemController {
 
     // 4. Get GRN Line Item By ID (GET)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
