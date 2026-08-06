@@ -14,8 +14,11 @@ import { NotificationModel } from '../../../system/NotificationModel';
 import { ShipmentService } from '../../../service/shipment.service';
 import Chart from 'chart.js/auto';
 import { AddProductService } from '../../../service/add-product.service';
+<<<<<<< Updated upstream
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
+=======
+>>>>>>> Stashed changes
 
 @Component({
   selector: 'app-sales-dashboard',
@@ -59,8 +62,11 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   private targetChart: any;
 
   targetProgress: number = 0;
+<<<<<<< Updated upstream
 
   purchaseOrders: PurchaseOrderResponseModel[] = [];
+=======
+>>>>>>> Stashed changes
 
   constructor(
     private storage: StorageService,
@@ -73,8 +79,12 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
     private shipmentService: ShipmentService,
+<<<<<<< Updated upstream
     private productService: AddProductService,
     private purchaseOrderService: PurchaseOrderService
+=======
+    private productService: AddProductService
+>>>>>>> Stashed changes
   ) {}
 
   ngOnInit(): void {
@@ -95,7 +105,11 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
+<<<<<<< Updated upstream
     const totalCalls = 8; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products, PurchaseOrders
+=======
+    const totalCalls = 7; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products
+>>>>>>> Stashed changes
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -114,6 +128,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.loadCustomers(checkDone);
     this.loadShipments(checkDone);
     this.loadProducts(checkDone);
+<<<<<<< Updated upstream
     this.loadPurchaseOrders(checkDone);
   }
 
@@ -128,6 +143,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         if (done) done();
       }
     });
+=======
+>>>>>>> Stashed changes
   }
 
   loadOrders(done: () => void): void {
@@ -191,7 +208,11 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadNotifications(done: () => void): void {
     this.notificationService.findAll().subscribe({
       next: (data) => {
+<<<<<<< Updated upstream
         this.notifications = data || [];
+=======
+        this.notifications = (data || []).slice(0, 4);
+>>>>>>> Stashed changes
         done();
       },
       error: () => done(),
@@ -201,7 +222,11 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadShipments(done: () => void): void {
     this.shipmentService.findAll().subscribe({
       next: (data) => {
+<<<<<<< Updated upstream
         this.shipments = (data || []).map((s: any) => ({
+=======
+        this.shipments = (data || []).slice(0, 4).map((s: any) => ({
+>>>>>>> Stashed changes
            id: s.shipmentNumber || s.id,
            vehicle: s.vehicleNumber || 'Unassigned',
            destination: s.sendByAddress || 'Warehouse',
@@ -212,6 +237,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       error: () => done(),
     });
   }
+<<<<<<< Updated upstream
 
   activeModal: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | null = null;
   modalSearchText = '';
@@ -416,6 +442,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       (inv.invoiceStatus && String(inv.invoiceStatus).toLowerCase().includes(q))
     );
   }
+=======
+>>>>>>> Stashed changes
   
   loadProducts(done: () => void): void {
     this.productService.findAll().subscribe({
@@ -434,7 +462,10 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         this.customers = (data || []).map((c: any) => ({
           id: c.userId || c.id,
           name: c.name || 'Customer',
+<<<<<<< Updated upstream
           email: c.email || '',
+=======
+>>>>>>> Stashed changes
           spent: 0,
           due: 0
         }));
@@ -445,6 +476,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
+<<<<<<< Updated upstream
   private getOrderDueAmount(o: any): number {
     if (!o || o.status === 'CANCELLED' || o.paymentStatus === 'PAID') return 0;
     if (o.dueAmount != null && Number(o.dueAmount) > 0) {
@@ -502,6 +534,22 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.customers = Array.from(customerMap.values())
       .filter((c: any) => c.spent > 0 || c.due > 0)
       .sort((a: any, b: any) => b.spent - a.spent);
+=======
+  buildCustomerStats(): void {
+    if (!this.customersLoaded || !this.ordersLoaded) return;
+    
+    this.customers.forEach((c: any) => {
+      const customerOrders = this.orders.filter((o: any) => Number(o.customerId) === Number(c.id));
+      if (customerOrders.length > 0) {
+        c.spent = customerOrders.reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || Number(o.codAmount) || 0), 0);
+        c.due = customerOrders.filter((o:any)=>o.status !== 'DELIVERED' && o.status !== 'PAID' && o.paymentStatus !== 'PAID')
+                              .reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || 0), 0);
+      }
+    });
+    // Remove customers with 0 spent to make the table cleaner if we have more than 5
+    // this.customers = this.customers.filter((c: any) => c.spent > 0);
+    this.customers.sort((a: any, b: any) => b.spent - a.spent);
+>>>>>>> Stashed changes
   }
 
   buildDynamicTasks(): void {
@@ -588,6 +636,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.router.navigate(['']);
   }
 
+<<<<<<< Updated upstream
   selectedOverviewMonth: number | 'ALL' = 7; // Default August
   selectedOverviewYear: number = 2026;
 
@@ -620,6 +669,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.updateChartsWithDynamicData();
   }
 
+=======
+>>>>>>> Stashed changes
   // ---- Chart.js Dynamic Implementations ---- //
   initCharts() {
     const ctxOverview = document.getElementById('salesOverviewChart') as HTMLCanvasElement;
@@ -634,6 +685,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10, weight: 'bold', family: "'Inter', sans-serif" }, color: '#1e293b' } } },
           scales: {
+<<<<<<< Updated upstream
             y: {
               type: 'linear',
               position: 'left',
@@ -656,6 +708,9 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
               grid: { display: false },
               ticks: { precision: 0, font: { size: 10 } }
             },
+=======
+            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { callback: function(val) { return '৳' + (Number(val) / 1000) + 'K'; }, font: { size: 10 } } },
+>>>>>>> Stashed changes
             x: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
         }
@@ -685,6 +740,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     }
     if (!this.overviewChart || !this.productsChart || !this.targetChart) return;
 
+<<<<<<< Updated upstream
     // 1. Overview Chart filtering based on Month & Year selection
     const labels: string[] = [];
     const revenueData: number[] = [];
@@ -725,10 +781,30 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         revenueData.push(rev);
         ordersData.push(dayOrders.length);
       }
+=======
+    // 1. Overview Chart (Last 6 Days)
+    const labels = [];
+    const revenueData = [];
+    const ordersData = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayStr = d.toISOString().split('T')[0];
+      const displayDay = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      
+      labels.push(displayDay);
+      const dayOrders = this.orders.filter(o => o.createdAt?.startsWith(dayStr));
+      revenueData.push(dayOrders.reduce((sum, o) => sum + (o.totalAmount || o.codAmount || 0), 0));
+      // for visuals, we multiply order count so the line isn't flat near zero on a revenue scale, 
+      // or we can just use a secondary Y axis. For simplicity, we just plot raw count.
+      ordersData.push(dayOrders.length * 5000); // Visual scalar so it shows up on the chart
+>>>>>>> Stashed changes
     }
 
     this.overviewChart.data.labels = labels;
     this.overviewChart.data.datasets = [
+<<<<<<< Updated upstream
       {
         label: 'Revenue',
         data: revenueData,
@@ -751,6 +827,10 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         pointBackgroundColor: '#00c853',
         yAxisID: 'y1'
       }
+=======
+      { label: 'Revenue', data: revenueData, borderColor: '#2962ff', backgroundColor: 'rgba(41, 98, 255, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#2962ff' },
+      { label: 'Orders', data: ordersData, borderColor: '#00c853', backgroundColor: 'rgba(0, 200, 83, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#00c853' }
+>>>>>>> Stashed changes
     ];
     this.overviewChart.update();
 
