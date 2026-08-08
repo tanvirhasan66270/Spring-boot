@@ -62,9 +62,9 @@ public class InvoiceController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
-    @GetMapping("/by-order/{orderId}")
-    public ResponseEntity<InvoiceResponseDTO> getByOrderId(@PathVariable Long id) {
-        InvoiceResponseDTO response = service.getByOrderNumberOrId(id);
+    @GetMapping("/by-order/{query}")
+    public ResponseEntity<InvoiceResponseDTO> getByOrderId(@PathVariable String query) {
+        InvoiceResponseDTO response = service.getByOrderNumberOrId(query);
         return ResponseEntity.ok(response);
     }
     // Wipe/Drop Invoice Lifecycle Instance Pointer (DELETE)

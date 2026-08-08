@@ -10,6 +10,7 @@ import { WarehouseService } from '../../../service/warehouse.service';
 import { NotificationService } from '../../../system/service/notification.service';
 import { DeliveryTripService } from '../../../service/delivery-trip.service';
 import { InventoryService } from '../../../service/inventory.service';
+import { StockMovementService } from '../../../service/stock-movement.service';
 import { VehicleService } from '../../../service/vehicle.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
@@ -44,6 +45,12 @@ export class LogisticsDashboardComponent implements OnInit {
   
   totalMovements = 0;
   movementsToday = 0;
+  inventoryTrend = 0;
+  
+  shipmentsTrend = 0;
+  delayedTrend = 0;
+  tripsTrend = 0;
+  warehouseTrend = 0;
 
   // Grid Data
   dispatchSchedule: any[] = [];
@@ -59,6 +66,17 @@ export class LogisticsDashboardComponent implements OnInit {
   shipmentPerformanceFill = "M 0 140 L 500 140 Z";
   shipmentDataPoints: any[] = [];
   shipmentHistoryStats = { total: 0, delivered: 0, inTransit: 0, delayed: 0 };
+  chartLabels: { x: number, text: string }[] = [];
+  
+  monthsList = [
+    { value: 0, label: 'January' }, { value: 1, label: 'February' }, { value: 2, label: 'March' },
+    { value: 3, label: 'April' }, { value: 4, label: 'May' }, { value: 5, label: 'June' },
+    { value: 6, label: 'July' }, { value: 7, label: 'August' }, { value: 8, label: 'September' },
+    { value: 9, label: 'October' }, { value: 10, label: 'November' }, { value: 11, label: 'December' }
+  ];
+  selectedPerformanceMonth = new Date().getMonth();
+  selectedPerformanceYear = new Date().getFullYear();
+  allShipments: any[] = [];
 
   warehouses: any[] = [];
   alerts: any[] = [];
@@ -85,7 +103,8 @@ export class LogisticsDashboardComponent implements OnInit {
     private notificationService: NotificationService,
     private deliveryTripService: DeliveryTripService,
     private inventoryService: InventoryService,
-    private vehicleService: VehicleService
+    private vehicleService: VehicleService,
+    private stockMovementService: StockMovementService
   ) {}
 
   ngOnInit(): void {
@@ -104,6 +123,7 @@ export class LogisticsDashboardComponent implements OnInit {
     this.shipmentService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
+        this.allShipments = all;
         this.totalShipments = all.length;
         
         const active = all.filter((s: any) => s.status === 'IN_TRANSIT' || s.status === 'DISPATCHING' || s.status === 'PENDING');
@@ -111,6 +131,33 @@ export class LogisticsDashboardComponent implements OnInit {
         
         const delayed = all.filter((s: any) => s.status === 'DELAYED');
         this.delayedShipments = delayed.length || 0;
+        
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const shipmentsToday = all.filter((s: any) => {
+            if (!s.createdAt) return false;
+            const d = new Date(s.createdAt);
+            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+        });
+        const shipmentsYesterday = all.filter((s: any) => {
+            if (!s.createdAt) return false;
+            const d = new Date(s.createdAt);
+            return d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear();
+        });
+        
+        if (shipmentsYesterday.length > 0) {
+            this.shipmentsTrend = Math.round(((shipmentsToday.length - shipmentsYesterday.length) / shipmentsYesterday.length) * 100);
+        } else if (shipmentsToday.length > 0) {
+            this.shipmentsTrend = 100;
+        } else {
+            this.shipmentsTrend = 0;
+        }
+        
+        const delayedToday = shipmentsToday.filter((s: any) => s.status === 'DELAYED').length;
+        const delayedYesterday = shipmentsYesterday.filter((s: any) => s.status === 'DELAYED').length;
+        this.delayedTrend = delayedToday - delayedYesterday;
         
         // Build Dispatch Queue
         this.dispatchQueue = all.slice(0, 5).map((s: any, index: number) => ({
@@ -125,15 +172,40 @@ export class LogisticsDashboardComponent implements OnInit {
         }));
 
         // Build Live Timeline dynamically
-        this.liveTimeline = all.slice(0, 4).map((s: any) => {
+        this.liveTimeline = all.slice(0, 4).map((s: any, index: number) => {
             const colors: any = { 'PENDING': 'warning', 'DISPATCHING': 'primary', 'IN_TRANSIT': 'primary', 'DELIVERED': 'success', 'DELAYED': 'danger' };
             const statusLabel: any = { 'PENDING': 'Processing', 'DISPATCHING': 'Dispatching', 'IN_TRANSIT': 'In Transit', 'DELIVERED': 'Delivered', 'DELAYED': 'Delayed' };
+            
+            const currentStatus = s.status || 'PENDING';
+            let etaText = 'ETA: 4h';
+            let timeStr = '10:30 AM';
+            
+            if (s.estimatedDelivery) {
+              const d = new Date(s.estimatedDelivery);
+              if (!isNaN(d.getTime())) {
+                const now = new Date();
+                const diffMs = d.getTime() - now.getTime();
+                if (diffMs > 0) {
+                   const hours = Math.round(diffMs / (1000 * 60 * 60));
+                   etaText = `ETA: ${hours}h`;
+                }
+                timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+              }
+            } else if (s.createdAt) {
+               const d = new Date(s.createdAt);
+               if (!isNaN(d.getTime())) {
+                  timeStr = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+               }
+            }
+
+            const orderNum = s.shipmentNumber || s.poId || s.id || (index + 1);
+
             return {
-                order: `#${s.id || '100' + Math.floor(Math.random() * 99)}`,
-                status: statusLabel[s.status] || 'Processing',
-                time: s.status === 'DELIVERED' ? 'Completed' : 'ETA: 4h',
-                time2: '10:30 AM',
-                color: colors[s.status] || 'success'
+                order: `#${orderNum}`,
+                status: statusLabel[currentStatus] || 'Processing',
+                time: currentStatus === 'DELIVERED' ? 'Completed' : etaText,
+                time2: timeStr,
+                color: colors[currentStatus] || 'success'
             };
         });
         
@@ -156,10 +228,33 @@ export class LogisticsDashboardComponent implements OnInit {
     this.deliveryTripService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
-        this.totalTrips = all.length || 8;
+        this.totalTrips = all.length || 0; // Removing fallback logic to make dynamic
         
         const active = all.filter((t: any) => t.status === 'IN_TRANSIT' || t.status === 'PENDING');
-        this.activeTrips = active.length || 8;
+        this.activeTrips = active.length || 0; // Removing fallback
+
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const tripsToday = all.filter((t: any) => {
+            if (!t.createdAt && !t.estimatedArrival) return false;
+            const d = new Date(t.createdAt || t.estimatedArrival);
+            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+        });
+        const tripsYesterday = all.filter((t: any) => {
+            if (!t.createdAt && !t.estimatedArrival) return false;
+            const d = new Date(t.createdAt || t.estimatedArrival);
+            return d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear();
+        });
+        
+        if (tripsYesterday.length > 0) {
+            this.tripsTrend = Math.round(((tripsToday.length - tripsYesterday.length) / tripsYesterday.length) * 100);
+        } else if (tripsToday.length > 0) {
+            this.tripsTrend = 100;
+        } else {
+            this.tripsTrend = 0;
+        }
 
         this.dispatchSchedule = all.slice(0, 5).map((t: any) => ({
           tripId: t.tripNumber || `TR-${t.id || '01'}`,
@@ -184,26 +279,22 @@ export class LogisticsDashboardComponent implements OnInit {
     this.vehicleService.findAll().subscribe({
         next: (data) => {
             const all = data || [];
-            this.totalVehicles = all.length || 16; // mock if 0
+            this.totalVehicles = all.length;
             
             const available = all.filter((v: any) => v.status === 'AVAILABLE').length;
             const onRoute = all.filter((v: any) => v.status === 'IN_TRANSIT' || v.status === 'ON_ROUTE').length;
             const maintenance = all.filter((v: any) => v.status === 'MAINTENANCE').length;
             const offline = all.filter((v: any) => v.status === 'OFFLINE' || v.status === 'INACTIVE').length;
             
+            this.availableVehicles = available;
             if (all.length > 0) {
-                this.availableVehicles = available;
                 this.calculateFleetDonut(available, onRoute, maintenance, offline, all.length);
-            } else {
-                this.availableVehicles = 5;
-                this.calculateFleetDonut(5, 8, 2, 1, 16);
             }
             this.cdr.markForCheck();
         },
         error: () => {
-            this.totalVehicles = 16;
-            this.availableVehicles = 5;
-            this.calculateFleetDonut(5, 8, 2, 1, 16);
+            this.totalVehicles = 0;
+            this.availableVehicles = 0;
         }
     });
 
@@ -225,27 +316,56 @@ export class LogisticsDashboardComponent implements OnInit {
       error: () => {},
     });
 
-    // 5. Inventory
+    // 5. Inventory (Only for warehouse capacity)
     this.inventoryService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
-        this.totalMovements = all.length || 28;
-        this.movementsToday = Math.floor(this.totalMovements * 0.3) || 28;
-        
-        // Calculate Inventory Donut
-        let inCount = 0, outCount = 0, transferCount = 0;
-        // Mock data logic for realistic visualization
-        if (all.length === 0) {
-            inCount = 16; outCount = 9; transferCount = 3;
-        } else {
-            // Count based on your actual model properties if they exist
-            inCount = Math.floor(all.length * 0.57);
-            outCount = Math.floor(all.length * 0.32);
-            transferCount = all.length - inCount - outCount;
-        }
-        this.calculateInventoryDonut(inCount, outCount, transferCount, inCount + outCount + transferCount);
-
         this.computeWarehouseCapacity(all);
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+
+    // 5.5 Stock Movements (For Today's Inventory Movement Donut)
+    this.stockMovementService.findAll().subscribe({
+      next: (data) => {
+        const all = data || [];
+        
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        const movementsTodayList = all.filter((m: any) => {
+            if (!m.movedAt) return false;
+            const d = new Date(m.movedAt);
+            return d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+        });
+
+        const movementsYesterdayList = all.filter((m: any) => {
+            if (!m.movedAt) return false;
+            const d = new Date(m.movedAt);
+            return d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear();
+        });
+        
+        this.totalMovements = movementsTodayList.length;
+        
+        let inCount = 0, outCount = 0, transferCount = 0;
+        movementsTodayList.forEach((m: any) => {
+            if (m.movementType === 'INWARD') inCount++;
+            else if (m.movementType === 'OUTWARD') outCount++;
+            else transferCount++; // TRANSFER, ADJUSTMENT, etc
+        });
+        
+        this.calculateInventoryDonut(inCount, outCount, transferCount, this.totalMovements);
+
+        if (movementsYesterdayList.length > 0) {
+            this.inventoryTrend = Math.round(((this.totalMovements - movementsYesterdayList.length) / movementsYesterdayList.length) * 100);
+        } else if (this.totalMovements > 0) {
+            this.inventoryTrend = 100;
+        } else {
+            this.inventoryTrend = 0;
+        }
+
         this.cdr.markForCheck();
       },
       error: () => {},
@@ -255,12 +375,42 @@ export class LogisticsDashboardComponent implements OnInit {
     this.notificationService.findAll().subscribe({
       next: (data) => {
         const all = data || [];
-        this.alerts = [
-          { type: 'danger', message: 'Warehouse C capacity is 95%', time: '2 mins ago', icon: 'bi-exclamation-triangle-fill' },
-          { type: 'warning', message: 'Shipment #1259 delayed (Heavy rain)', time: '15 mins ago', icon: 'bi-clock-history' },
-          { type: 'warning', message: 'Vehicle TR-06 maintenance due', time: '1 hour ago', icon: 'bi-tools' },
-          { type: 'info', message: 'New delivery trip assigned: TR-02', time: '2 hours ago', icon: 'bi-calendar-check' }
-        ];
+        
+        this.alerts = all.slice(0, 4).map((n: any) => {
+            let bsType = 'info';
+            let icon = 'bi-info-circle';
+            
+            if (n.type === 'SHIPMENT') { bsType = 'warning'; icon = 'bi-box-seam'; }
+            else if (n.type === 'TRIP_ALERT') { bsType = 'danger'; icon = 'bi-exclamation-triangle-fill'; }
+            else if (n.type === 'REPORT_APPROVED') { bsType = 'success'; icon = 'bi-check-circle-fill'; }
+            else if (n.title?.toLowerCase().includes('capacity')) { bsType = 'danger'; icon = 'bi-exclamation-triangle-fill'; }
+            else if (n.title?.toLowerCase().includes('delayed')) { bsType = 'warning'; icon = 'bi-clock-history'; }
+            else if (n.title?.toLowerCase().includes('maintenance')) { bsType = 'warning'; icon = 'bi-tools'; }
+            else if (n.title?.toLowerCase().includes('assigned')) { bsType = 'info'; icon = 'bi-calendar-check'; }
+            
+            let timeStr = 'Just now';
+            if (n.createdAt) {
+                const diffMs = new Date().getTime() - new Date(n.createdAt).getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                if (diffMins === 0) timeStr = 'Just now';
+                else if (diffMins < 60) timeStr = `${diffMins} mins ago`;
+                else if (diffMins < 1440) timeStr = `${Math.floor(diffMins/60)} hours ago`;
+                else timeStr = `${Math.floor(diffMins/1440)} days ago`;
+            }
+            
+            let displayMessage = n.title || 'System Notification';
+            if (n.message && n.message !== n.title) {
+                displayMessage += ` (${n.message})`;
+            }
+
+            return {
+                type: bsType,
+                message: displayMessage,
+                time: timeStr,
+                icon: icon
+            };
+        });
+
         this.cdr.markForCheck();
       },
       error: () => {},
@@ -306,19 +456,59 @@ export class LogisticsDashboardComponent implements OnInit {
       };
   }
 
+  onPerformanceMonthChange(event: any) {
+      this.selectedPerformanceMonth = +event.target.value;
+      this.generatePerformanceChartData(this.allShipments);
+  }
+
   private generatePerformanceChartData(shipments: any[]) {
-      // Dynamic line chart calculation
       const xSpacing = 500 / 5; // 5 segments for 6 points
       const yMax = 120; // max height (lower is higher on SVG)
       
-      // Mock data points that roughly map to the design's curve
-      const vals = [75, 45, 60, 35, 55, 20];
+      const year = this.selectedPerformanceYear;
+      const month = this.selectedPerformanceMonth;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const monthShort = new Date(year, month, 1).toLocaleString('default', { month: 'short' });
+      
+      const days = [1, Math.floor(daysInMonth*0.2), Math.floor(daysInMonth*0.4), Math.floor(daysInMonth*0.6), Math.floor(daysInMonth*0.8), daysInMonth];
+      
+      this.chartLabels = days.map((day, i) => {
+          let x = i * xSpacing;
+          if (i === 5) x = 465; // adjust last label to fit SVG
+          return { x, text: `${monthShort} ${day.toString().padStart(2, '0')}` };
+      });
+
+      const vals = [0, 0, 0, 0, 0, 0];
+      const currentMonthShipments = shipments.filter(s => {
+          if (!s.createdAt) return false;
+          const d = new Date(s.createdAt);
+          return d.getMonth() === month && d.getFullYear() === year;
+      });
+
+      if (currentMonthShipments.length > 0) {
+          currentMonthShipments.forEach(s => {
+              const d = new Date(s.createdAt);
+              const day = d.getDate();
+              let closestIdx = 0;
+              let minDiff = daysInMonth + 1;
+              days.forEach((bDay, idx) => {
+                  const diff = Math.abs(day - bDay);
+                  if (diff < minDiff) {
+                      minDiff = diff;
+                      closestIdx = idx;
+                  }
+              });
+              vals[closestIdx]++;
+          });
+      }
+      
+      const maxVal = Math.max(...vals, 1);
+      
       this.shipmentDataPoints = vals.map((val, i) => ({
           x: i * xSpacing,
-          y: val
+          y: yMax - ((val / maxVal) * (yMax - 20))
       }));
 
-      // Generate bezier curve path
       let path = `M 0 140 L 0 ${this.shipmentDataPoints[0].y}`;
       let fillPath = `M 0 140 L 0 ${this.shipmentDataPoints[0].y}`;
       
@@ -335,10 +525,10 @@ export class LogisticsDashboardComponent implements OnInit {
       this.shipmentPerformanceFill = fillPath + ` L 500 140 Z`;
       
       this.shipmentHistoryStats = {
-          total: shipments.length || 128,
-          delivered: shipments.filter((s:any)=>s.status==='DELIVERED').length || 102,
-          inTransit: shipments.filter((s:any)=>s.status==='IN_TRANSIT').length || 18,
-          delayed: shipments.filter((s:any)=>s.status==='DELAYED').length || 8
+          total: shipments.length,
+          delivered: shipments.filter((s:any)=>s.status==='DELIVERED').length,
+          inTransit: shipments.filter((s:any)=>s.status==='IN_TRANSIT').length,
+          delayed: shipments.filter((s:any)=>s.status==='DELAYED').length
       };
   }
 
@@ -360,15 +550,12 @@ export class LogisticsDashboardComponent implements OnInit {
       totalCap += w.capacity || 0;
       let used = usedByWarehouse[w.id] || 0;
       let usedPercent = w.capacity > 0 ? Math.min(100, Math.round((used / w.capacity) * 100)) : 0;
-      if (inventories.length === 0) {
-          usedPercent = mockPercents[i % mockPercents.length];
-          used = Math.round((usedPercent / 100) * w.capacity);
-      }
+      
       totalUsed += used;
       return { ...w, used, usedPercent };
     });
 
-    this.warehouseCapacityPercent = totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 72;
+    this.warehouseCapacityPercent = totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 0;
     this.cdr.markForCheck();
   }
 
@@ -422,10 +609,8 @@ export class LogisticsDashboardComponent implements OnInit {
   
   generateDummyTimeline() {
       this.liveTimeline = [
-          { order: '#1256', status: 'Processing', time: 'ETA: 4h', time2: '10:30 AM', color: 'success' },
-          { order: '#1257', status: 'In Transit', time: 'GPS Live', time2: '11:05 AM', color: 'primary' },
-          { order: '#1258', status: 'Delivered', time: 'Completed', time2: '12:20 PM', color: 'success' },
-          { order: '#1259', status: 'Delayed', time: 'Weather Delay', time2: '01:15 PM', color: 'danger' }
+          { order: '#1', status: 'Processing', time: 'ETA: 4h', time2: '10:30 AM', color: 'success' },
+          { order: '#2', status: 'Processing', time: 'ETA: 4h', time2: '10:30 AM', color: 'success' }
       ];
   }
 

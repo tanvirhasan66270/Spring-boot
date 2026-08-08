@@ -74,7 +74,6 @@
 .badge-soft-secondary {
   background-color: rgba(108, 117, 125, 0.15) !important;
   color: #6c757d !important;
-<<<<<<< Updated upstream
 }
 
 /* Custom Modal Backdrop & Dialog */
@@ -119,6 +118,5 @@
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
-=======
->>>>>>> Stashed changes
+
 }

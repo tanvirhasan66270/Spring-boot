@@ -162,23 +162,31 @@ public class AuthService {
             throw new RuntimeException("Invalid or expired reset link");
         }
 
-        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 8) {
-            throw new RuntimeException("Password must be at least 8 characters");
-        }
-        if (!dto.getNewPassword().matches(".*[A-Z].*")) {
-            throw new RuntimeException("Password must contain at least one uppercase letter");
-        }
-        if (!dto.getNewPassword().matches(".*[a-z].*")) {
-            throw new RuntimeException("Password must contain at least one lowercase letter");
-        }
-        if (!dto.getNewPassword().matches(".*\\d.*")) {
-            throw new RuntimeException("Password must contain at least one digit");
+        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 6 || dto.getNewPassword().length() > 20) {
+            throw new RuntimeException("Password must be between 6 and 20 characters");
         }
 
         String email = jwtUtil.extractEmail(dto.getToken());
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(String userId, com.example.SCM.dto.request.ChangePasswordRequestDTO dto) {
+        User user = userRepository.findById(Long.parseLong(userId))
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Current password is incorrect");
+        }
+
+        if (dto.getNewPassword() == null || dto.getNewPassword().length() < 6 || dto.getNewPassword().length() > 20) {
+            throw new RuntimeException("Password must be between 6 and 20 characters");
+        }
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         userRepository.save(user);

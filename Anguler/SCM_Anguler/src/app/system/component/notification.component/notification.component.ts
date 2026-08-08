@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { NotificationModel } from '../../NotificationModel';
 import { NotificationService } from '../../service/notification.service';
 
 @Component({
   selector: 'app-notification',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './notification.component.html',
   styleUrl: './notification.component.css',
 })
@@ -15,6 +16,17 @@ export class NotificationComponent implements OnInit {
   notifications: NotificationModel[] = [];
   unreadCount = 0;
   errorMessage: string | null = null;
+  searchQuery: string = '';
+
+  get filteredNotifications(): NotificationModel[] {
+    if (!this.searchQuery) return this.notifications;
+    const lowerQuery = this.searchQuery.toLowerCase();
+    return this.notifications.filter(n => 
+      (n.title && n.title.toLowerCase().includes(lowerQuery)) || 
+      (n.message && n.message.toLowerCase().includes(lowerQuery)) ||
+      (n.type && n.type.toLowerCase().includes(lowerQuery))
+    );
+  }
 
   constructor(
     private service: NotificationService,

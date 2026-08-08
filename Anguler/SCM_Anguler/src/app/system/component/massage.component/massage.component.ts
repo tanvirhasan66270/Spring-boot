@@ -119,10 +119,18 @@ export class MassageComponent implements OnInit, OnDestroy {
   }
 
   filteredContacts() {
-    if (!this.searchQuery.trim()) {
-      return this.contacts;
+    let allowedContacts = this.contacts;
+    
+    if (this.currentUser?.role === 'DRIVER') {
+      const allowedRoles = ['DRIVER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'CUSTOMER'];
+      allowedContacts = this.contacts.filter(c => allowedRoles.includes(c.role));
     }
-    return this.contacts.filter(c =>
+
+    if (!this.searchQuery.trim()) {
+      return allowedContacts;
+    }
+    
+    return allowedContacts.filter(c =>
       c.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
       c.role.toLowerCase().includes(this.searchQuery.toLowerCase())
     );
@@ -135,6 +143,8 @@ export class MassageComponent implements OnInit, OnDestroy {
       return 'Choose a Sales Officer from the chat list sidebar to pull credentials and retrieve message records.';
     } else if (this.currentUser?.role === 'SALES_OFFICER') {
       return 'Choose a Customer from the chat list sidebar to pull credentials and retrieve message records.';
+    } else if (this.currentUser?.role === 'DRIVER') {
+      return 'Choose a Driver, Logistics Officer, Sales Officer, or Customer from the sidebar to chat.';
     } else {
       return 'Choose a contact from the chat list sidebar to pull credentials and retrieve message records.';
     }
@@ -147,6 +157,8 @@ export class MassageComponent implements OnInit, OnDestroy {
       return 'Only connected Sales Officer roles are linked in this portal.';
     } else if (this.currentUser?.role === 'SALES_OFFICER') {
       return 'Only connected Customer roles are linked in this portal.';
+    } else if (this.currentUser?.role === 'DRIVER') {
+      return 'Drivers can only communicate with Logistics, Sales, Customers, and other Drivers.';
     } else {
       return 'Only connected contact roles are linked in this portal.';
     }
@@ -164,11 +176,14 @@ export class MassageComponent implements OnInit, OnDestroy {
 
   getInitials(name: string): string {
     if (!name) return 'U';
-    const parts = name.split(' ');
-    if (parts.length > 1) {
+    const parts = name.trim().split(/\s+/);
+    if (parts.length > 1 && parts[1].length > 0) {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
-    return parts[0][0].toUpperCase();
+    if (parts[0].length > 0) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'U';
   }
 
   private clearPolling() {

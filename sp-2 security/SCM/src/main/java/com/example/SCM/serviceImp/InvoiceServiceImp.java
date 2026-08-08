@@ -56,6 +56,15 @@ public class InvoiceServiceImp implements InvoiceService {
         return "SYSTEM_AUTOMATION";
     }
 
+    private InvoiceResponseDTO enrichWithOrderNumber(Invoice invoice) {
+        InvoiceResponseDTO dto = mapper.toResponseDTO(invoice);
+        if (invoice.getCustomerOrderId() != null) {
+            orderRepository.findById(invoice.getCustomerOrderId())
+                    .ifPresent(order -> dto.setCustomerOrderNumber(order.getOrderNumber()));
+        }
+        return dto;
+    }
+
     @Override
     @Transactional
     public InvoiceResponseDTO save(InvoiceRequestDTO dto) {
@@ -95,7 +104,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 request.getRemoteAddr()
         );
 
-        return mapper.toResponseDTO(savedInvoice);
+        return enrichWithOrderNumber(savedInvoice);
     }
 
     @Override
@@ -103,21 +112,6 @@ public class InvoiceServiceImp implements InvoiceService {
     public InvoiceResponseDTO update(Long id, InvoiceRequestDTO dto) {
         Invoice invoice = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Invoice dataset node not found at ID: " + id));
-
-        // 🌟 ১. ইনভয়েস আপডেট হওয়ার সাথে সাথে বর্তমান ডেটা হিস্ট্রি টেবিলে নতুন রো হিসেবে যুক্ত করা
-        InvoiceHistory history = new InvoiceHistory();
-        history.setInvoiceId(invoice.getId());
-        history.setInvoiceNumber(invoice.getInvoiceNumber());
-        history.setTotalAmount(invoice.getTotalAmount());
-        history.setPaidAmount(invoice.getPaidAmount());
-        history.setDueAmount(invoice.getDueAmount());
-        history.setPaymentStatus(invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "N/A");
-        history.setInvoiceStatus(invoice.getInvoiceStatus() != null ? invoice.getInvoiceStatus().name() : "N/A");
-        history.setNotes(invoice.getNotes());
-        history.setModifiedAt(LocalDateTime.now());
-
-        // মূল ইনভয়েসের হিস্ট্রি কালেকশনে অ্যাড করা
-        invoice.getHistoryLogs().add(history);
 
         double oldTotalAmount = invoice.getTotalAmount();
         String oldPaymentStatus = invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "N/A";
@@ -139,6 +133,22 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice updatedInvoice = repository.save(invoice);
 
+        // 🌟 ১. ইনভয়েস আপডেট হওয়ার পর নতুন ডেটা হিস্ট্রি টেবিলে নতুন রো হিসেবে যুক্ত করা
+        InvoiceHistory history = new InvoiceHistory();
+        history.setInvoiceId(updatedInvoice.getId());
+        history.setInvoiceNumber(updatedInvoice.getInvoiceNumber());
+        history.setTotalAmount(updatedInvoice.getTotalAmount());
+        history.setPaidAmount(updatedInvoice.getPaidAmount());
+        history.setDueAmount(updatedInvoice.getDueAmount());
+        history.setPaymentStatus(updatedInvoice.getPaymentStatus() != null ? updatedInvoice.getPaymentStatus().name() : "N/A");
+        history.setInvoiceStatus(updatedInvoice.getInvoiceStatus() != null ? updatedInvoice.getInvoiceStatus().name() : "N/A");
+        history.setNotes(updatedInvoice.getNotes());
+        history.setModifiedAt(LocalDateTime.now());
+
+        // Save history row directly to DB and add to current entity for DTO mapping
+        historyRepository.save(history);
+        updatedInvoice.getHistoryLogs().add(history);
+
         // if ISSUE realtime mail notification is triggered
         if (updatedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !updatedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(updatedInvoice, updatedInvoice.getCustomerEmail());
@@ -158,7 +168,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 request.getRemoteAddr()
         );
 
-        return mapper.toResponseDTO(updatedInvoice);
+        return enrichWithOrderNumber(updatedInvoice);
     }
 
     @Override
@@ -176,7 +186,7 @@ public class InvoiceServiceImp implements InvoiceService {
         }
 
         return invoices.stream()
-                .map(mapper::toResponseDTO)
+                .map(this::enrichWithOrderNumber)
                 .collect(Collectors.toList());
     }
 
@@ -196,7 +206,7 @@ public class InvoiceServiceImp implements InvoiceService {
             }
         }
 
-        return invoiceOpt.map(mapper::toResponseDTO);
+        return invoiceOpt.map(this::enrichWithOrderNumber);
     }
 
     @Override
@@ -227,10 +237,19 @@ public class InvoiceServiceImp implements InvoiceService {
 
     @Override
     @Transactional(readOnly = true)
-    public InvoiceResponseDTO getByOrderNumberOrId(Long customerOrderId) {
-        Invoice invoice = repository.findByCustomerOrderId(customerOrderId)
-                .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order ID: " + customerOrderId));
-        return mapper.toResponseDTO(invoice);
+    public InvoiceResponseDTO getByOrderNumberOrId(String query) {
+        Invoice invoice;
+        try {
+            Long customerOrderId = Long.parseLong(query);
+            invoice = repository.findByCustomerOrderId(customerOrderId)
+                    .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order ID: " + customerOrderId));
+        } catch (NumberFormatException e) {
+            CustomerOrder order = orderRepository.findByOrderNumberWithDetails(query)
+                    .orElseThrow(() -> new RuntimeException("No customer order found with number: " + query));
+            invoice = repository.findByCustomerOrderId(order.getId())
+                    .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order Number: " + query));
+        }
+        return enrichWithOrderNumber(invoice);
     }
     private void sendInvoiceEmail(Invoice invoice, String customerEmail) {
         String subject = "SCM Official Invoice Bill - " + invoice.getInvoiceNumber();

@@ -10,12 +10,17 @@
       </h4>
       <p class="text-muted mb-0 small">Monitor automated fleet system responses, active node triggers, and warehouse document approvals.</p>
     </div>
-    
-    @if (unreadCount > 0) {
-      <button class="btn btn-indigo-outline btn-sm fw-bold text-uppercase fs-8 px-3 py-2 shadow-sm d-flex align-items-center gap-1" (click)="clearAllUnread()">
-        <i class="bi bi-check2-all fs-6"></i> Mark All As Read
-      </button>
-    }
+    <div class="d-flex gap-2 align-items-center">
+      <div class="position-relative">
+        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted" style="font-size: 0.8rem;"></i>
+        <input type="text" class="form-control form-control-sm ps-4 rounded-pill shadow-sm" placeholder="Search alerts..." [(ngModel)]="searchQuery" style="width: 200px;">
+      </div>
+      @if (unreadCount > 0) {
+        <button class="btn btn-indigo-outline btn-sm fw-bold text-uppercase fs-8 px-3 py-2 shadow-sm d-flex align-items-center gap-1" (click)="clearAllUnread()">
+          <i class="bi bi-check2-all fs-6"></i> Mark All As Read
+        </button>
+      }
+    </div>
   </div>
 
   <!-- Global Gateway Exception Notification Matrix -->
@@ -30,7 +35,7 @@
        ========================================== -->
   <div class="d-flex flex-column gap-3">
     
-    @for (n of notifications; track n.id) {
+    @for (n of filteredNotifications; track n.id) {
       <div class="alert-card p-3 rounded bg-white border d-flex align-items-start justify-content-between gap-3 transition-all"
            [class.unread-state]="!n.isRead"
            (click)="toggleRead(n)">

@@ -41,13 +41,31 @@ public class AuthController {
         return ResponseEntity.ok("Password reset successful. You can now log in with your new password.");
     }
 
-
-
-
-
-
-
-    //    @GetMapping("/verify-email")
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.example.SCM.entity.User currentUser,
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId,
+            @RequestBody com.example.SCM.dto.request.ChangePasswordRequestDTO dto) {
+        
+        String userId = null;
+        if (currentUser != null && currentUser.getId() != null) {
+            userId = currentUser.getId().toString();
+            if (backupUserId != null && !backupUserId.isEmpty() && !"null".equalsIgnoreCase(backupUserId)) {
+                if (!userId.equals(backupUserId)) {
+                    return ResponseEntity.status(403).body("Error: You can only change your own password.");
+                }
+            }
+        } else if (backupUserId != null && !backupUserId.isEmpty() && !"null".equalsIgnoreCase(backupUserId)) {
+            userId = backupUserId;
+        }
+        
+        if (userId == null) {
+            return ResponseEntity.badRequest().body("User ID is missing");
+        }
+        
+        authService.changePassword(userId, dto);
+        return ResponseEntity.ok("Password changed successfully.");
+    }    //    @GetMapping("/verify-email")
 //    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
 //        String result = customerService.verifyEmailToken(token);
 //        return ResponseEntity.ok(result);

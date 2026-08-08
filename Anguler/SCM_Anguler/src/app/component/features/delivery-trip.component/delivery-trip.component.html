@@ -82,10 +82,10 @@
                       <i class="bi bi-file-earmark-pdf-fill"></i>
                     </button>
 
-                    <button class="btn btn-icon btn-light text-success" *ngIf="canViewStatusActions()" title="Patch Transit Nodes" (click)="openStatusModal(trip)">
+                    <button class="btn btn-icon btn-light text-success" *ngIf="canViewStatusActions() && trip.status !== 'DELIVERED'" title="Patch Transit Nodes" (click)="openStatusModal(trip)">
                       <i class="bi bi-shield-check"></i>
                     </button>
-                    <button class="btn btn-icon btn-light text-warning" *ngIf="canViewConsoleActions()" title="Edit Manifest" (click)="edit(trip)">
+                    <button class="btn btn-icon btn-light text-warning" *ngIf="canViewConsoleActions() && trip.status !== 'DELIVERED'" title="Edit Manifest" (click)="edit(trip)">
                       <i class="bi bi-pencil-fill"></i>
                     </button>
                     <button class="btn btn-icon btn-light text-danger" *ngIf="canViewConsoleActions()" title="Terminate Pointer" (click)="deleteTrip(trip.id)">

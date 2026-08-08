@@ -13,6 +13,6 @@ public interface InvoiceService {
     List<InvoiceResponseDTO> findAll();
     Optional<InvoiceResponseDTO> getById(Long id);
     void delete(Long id);
-    InvoiceResponseDTO getByOrderNumberOrId(Long customerOrderId);
+    InvoiceResponseDTO getByOrderNumberOrId(String query);
 
 }

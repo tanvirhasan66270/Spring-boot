@@ -144,11 +144,7 @@
   <!-- 3. Quick Action Cards Row -->
   <div class="row g-3 mb-4">
     <div class="col-xl-2 col-md-4 col-sm-6">
-<<<<<<< Updated upstream
       <a href="javascript:void(0);" (click)="openModal('quotations')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
-=======
-      <a routerLink="/quotation" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
->>>>>>> Stashed changes
         <div class="rounded-3 bg-success text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-plus-lg fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Issue Quotation</h6>
@@ -158,25 +154,17 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-<<<<<<< Updated upstream
       <a href="javascript:void(0);" (click)="openModal('purchase')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-cart-plus fs-6"></i></div>
         <div class="flex-grow-1">
-          <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">View Purchase </h6>
+          <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">View Purchase</h6>
           <p class="text-muted" style="font-size: 9px; margin:0; line-height: 1;">View monthly purchase orders</p>
-=======
-      <a routerLink="/purchase-order" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
-        <div class="rounded-3 bg-primary text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-cart-plus fs-6"></i></div>
-        <div class="flex-grow-1">
-          <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Create Sales Order</h6>
-          <p class="text-muted" style="font-size: 9px; margin:0; line-height: 1;">Create a new sales order</p>
->>>>>>> Stashed changes
         </div>
         <i class="bi bi-arrow-right text-muted pe-1 fs-8"></i>
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/customer" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a routerLink="/customer" [queryParams]="{action: 'add'}" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
         <div class="rounded-3 bg-info text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-person-plus fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Add Customer</h6>
@@ -186,11 +174,7 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-<<<<<<< Updated upstream
       <a href="javascript:void(0);" (click)="openModal('invoices')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
-=======
-      <a routerLink="/invoice" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
->>>>>>> Stashed changes
         <div class="rounded-3 bg-warning text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px;"><i class="bi bi-receipt fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Sales Invoicing</h6>
@@ -200,7 +184,7 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/payment" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a href="javascript:void(0);" (click)="openModal('payments')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: #00bfa5;"><i class="bi bi-wallet2 fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Receive Payment</h6>
@@ -210,7 +194,7 @@
       </a>
     </div>
     <div class="col-xl-2 col-md-4 col-sm-6">
-      <a routerLink="/customer" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2">
+      <a href="javascript:void(0);" (click)="openModal('directory')" class="card border-0 shadow-sm px-2 py-2 rounded-4 bg-white text-decoration-none h-100 d-flex flex-row align-items-center gap-2 cursor-pointer">
         <div class="rounded-3 text-white d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: #651fff;"><i class="bi bi-people fs-6"></i></div>
         <div class="flex-grow-1">
           <h6 class="fw-bold text-dark fs-8 mb-0 text-truncate" style="max-width:100px;">Customer Directory</h6>
@@ -228,7 +212,6 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100 d-flex flex-column justify-content-between">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0" style="color: #1e293b;">Sales Overview</h6>
-<<<<<<< Updated upstream
           <div class="d-flex align-items-center gap-2">
             <select class="form-select form-select-sm w-auto fs-8 py-1 px-3 rounded-pill text-secondary fw-semibold border shadow-none cursor-pointer" (change)="onMonthChange($event)">
               <option *ngFor="let m of monthsList" [value]="m.value" [selected]="m.value === selectedOverviewMonth">{{ m.label }}</option>
@@ -237,11 +220,6 @@
               <option *ngFor="let y of yearsList" [value]="y" [selected]="y === selectedOverviewYear">{{ y }}</option>
             </select>
           </div>
-=======
-          <select class="form-select form-select-sm w-auto fs-8 py-1 px-3 rounded-pill text-secondary fw-semibold">
-            <option>This Month</option>
-          </select>
->>>>>>> Stashed changes
         </div>
         <div class="position-relative w-100" style="height: 250px;">
           <canvas id="salesOverviewChart"></canvas>
@@ -285,11 +263,7 @@
         </div>
 
         <div class="d-flex justify-content-end mt-2">
-<<<<<<< Updated upstream
           <button (click)="openModal('target')" class="btn btn-light btn-sm fw-bold text-primary w-150 py-2 rounded-pill mt-2 border d-flex align-items-center gap-2 cursor-pointer" style="background-color: #f8fafc; font-size: 11px;">View Details <i class="bi bi-arrow-right"></i></button>
-=======
-          <button class="btn btn-light btn-sm fw-bold text-primary w-150 py-2 rounded-pill mt-2 border d-flex align-items-center gap-2" style="background-color: #f8fafc; font-size: 11px;">View Details <i class="bi bi-arrow-right"></i></button>
->>>>>>> Stashed changes
         </div>
       </div>
     </div>
@@ -326,7 +300,7 @@
       </div>
     </div>
 
-    <!-- Pending Tasks (List matching the image mockup) -->
+    <!-- Pending Tasks -->
     <div class="col-lg-6 col-md-12">
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-3" style="color: #1e293b;">Pending Tasks</h6>
@@ -383,11 +357,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Orders</h6>
-<<<<<<< Updated upstream
           <a href="javascript:void(0);" (click)="openModal('orders')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
-=======
-          <a routerLink="/purchase-order" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
->>>>>>> Stashed changes
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -415,11 +385,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Quotations</h6>
-<<<<<<< Updated upstream
           <a href="javascript:void(0);" (click)="openModal('quotations')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
-=======
-          <a routerLink="/quotation" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
->>>>>>> Stashed changes
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -429,23 +395,16 @@
               </tr>
             </thead>
             <tbody>
-<<<<<<< Updated upstream
               <tr *ngFor="let q of approvedQuotations.slice(0, 5)">
-=======
-              <tr *ngFor="let q of quotations.slice(0, 5)">
->>>>>>> Stashed changes
                 <td class="text-primary fw-bold ps-0">{{ q.quotationNumber || 'QTN-'+q.id }}</td>
                 <td>{{ q.customerName || 'Unknown' }}</td>
                 <td>৳{{ q.totalPrice?.toLocaleString() || '0' }}</td>
                 <td><span class="badge {{ getStageBadgeClass(q.status) }} rounded-pill px-3">{{ q.status }}</span></td>
                 <td class="text-muted pe-0">{{ q.createdAt | date:'dd MMM yyyy' }}</td>
               </tr>
-<<<<<<< Updated upstream
               <tr *ngIf="approvedQuotations.length === 0">
                 <td colspan="5" class="text-center text-muted py-3 fs-8">No approved quotations found</td>
               </tr>
-=======
->>>>>>> Stashed changes
             </tbody>
           </table>
         </div>
@@ -457,11 +416,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Top Customers</h6>
-<<<<<<< Updated upstream
           <a href="javascript:void(0);" (click)="openModal('customers')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
-=======
-          <a routerLink="/customer" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
->>>>>>> Stashed changes
         </div>
         <div class="table-responsive">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -472,7 +427,6 @@
             </thead>
             <tbody>
               <tr *ngFor="let c of customers.slice(0, 5)">
-<<<<<<< Updated upstream
                 <td class="fw-semibold text-dark ps-0">
                   <div>{{ c.name }}</div>
                   <small *ngIf="c.email" class="text-muted font-monospace d-block fw-normal" style="font-size: 9px;">{{ c.email }}</small>
@@ -483,12 +437,6 @@
               <tr *ngIf="customers.length === 0">
                 <td colspan="3" class="text-center text-muted py-3 fs-8">No customer orders found</td>
               </tr>
-=======
-                <td class="fw-semibold text-dark ps-0">{{ c.name }}</td>
-                <td>৳{{ c.spent?.toLocaleString() || '0' }}</td>
-                <td [ngClass]="{'text-danger': c.due > 0, 'text-dark': c.due === 0}" class="fw-bold pe-0">৳{{ c.due?.toLocaleString() || '0' }}</td>
-              </tr>
->>>>>>> Stashed changes
             </tbody>
           </table>
         </div>
@@ -547,11 +495,7 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Shipment Information</h6>
-<<<<<<< Updated upstream
           <a href="javascript:void(0);" (click)="openModal('shipments')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
-=======
-          <a routerLink="/shipment" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
->>>>>>> Stashed changes
         </div>
         <div class="table-responsive mt-1">
           <table class="table table-borderless align-middle mb-0" style="font-size: 11px;">
@@ -561,11 +505,7 @@
               </tr>
             </thead>
             <tbody>
-<<<<<<< Updated upstream
               <tr *ngFor="let s of shipments.slice(0, 4)">
-=======
-              <tr *ngFor="let s of shipments">
->>>>>>> Stashed changes
                 <td class="text-primary fw-bold ps-0">{{ s.id }}</td>
                 <td class="text-truncate fw-semibold text-dark" style="max-width: 120px;">{{ s.destination }}</td>
                 <td class="text-muted pe-0">{{ s.eta }}</td>
@@ -581,17 +521,10 @@
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Notifications</h6>
-<<<<<<< Updated upstream
           <a href="javascript:void(0);" (click)="openModal('notifications')" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1 cursor-pointer">View all <i class="bi bi-chevron-right fs-9"></i></a>
         </div>
         <div class="d-flex flex-column gap-3 mt-2" style="font-size: 11px;">
           <div class="d-flex align-items-start justify-content-between" *ngFor="let n of notifications.slice(0, 4)">
-=======
-          <a href="javascript:void(0);" class="text-primary text-decoration-none fw-bold fs-8 d-flex align-items-center gap-1">View all <i class="bi bi-chevron-right fs-9"></i></a>
-        </div>
-        <div class="d-flex flex-column gap-3 mt-2" style="font-size: 11px;">
-          <div class="d-flex align-items-start justify-content-between" *ngFor="let n of notifications">
->>>>>>> Stashed changes
             <div class="d-flex align-items-center gap-3">
               <span class="rounded-circle p-1 d-inline-block shadow-sm" style="width:10px; height:10px;" [ngClass]="n.type === 'SUCCESS' ? 'bg-success' : (n.type === 'WARNING' ? 'bg-warning' : 'bg-primary')"></span>
               <span class="fw-bold text-dark text-truncate" style="max-width: 180px;" [title]="n.message">{{ n.message }}</span>
@@ -603,7 +536,6 @@
     </div>
   </div>
 
-<<<<<<< Updated upstream
 </div>
 
 <!-- View All Custom Modal Backdrop & Content -->
@@ -620,7 +552,9 @@
           'bi-bell-fill text-danger': activeModal === 'notifications',
           'bi-bullseye text-success': activeModal === 'target',
           'bi-cart-check-fill text-primary': activeModal === 'purchase',
-          'bi-receipt text-warning': activeModal === 'invoices'
+          'bi-receipt text-warning': activeModal === 'invoices',
+          'bi-wallet2 text-success': activeModal === 'payments',
+          'bi-journal-richtext text-primary': activeModal === 'directory'
         }"></i>
         <h5 class="fw-bold mb-0 text-dark" style="font-size: 1.05rem;">
           <ng-container *ngIf="activeModal === 'orders'">All Customer Orders</ng-container>
@@ -631,6 +565,8 @@
           <ng-container *ngIf="activeModal === 'target'">Monthly Sales Target Breakdown</ng-container>
           <ng-container *ngIf="activeModal === 'purchase'">RECEIVED Purchase Orders</ng-container>
           <ng-container *ngIf="activeModal === 'invoices'">ISSUED Sales Invoices</ng-container>
+          <ng-container *ngIf="activeModal === 'payments'">Receive Payment</ng-container>
+          <ng-container *ngIf="activeModal === 'directory'">Customer Directory</ng-container>
         </h5>
       </div>
       <button type="button" class="btn-close" (click)="closeModal()"></button>
@@ -643,7 +579,7 @@
         <input type="text" class="form-control bg-light border-start-0 shadow-none" placeholder="Search details..." [value]="modalSearchText" (input)="modalSearchText = $any($event.target).value">
       </div>
 
-      <!-- Purchase Orders Specific Search Sub-header with Month and Date filters -->
+      <!-- Purchase Orders Specific Search Sub-header -->
       <div *ngIf="activeModal === 'purchase'" class="row g-2 align-items-center">
         <div class="col-md-5">
           <div class="input-group input-group-sm">
@@ -669,7 +605,7 @@
         </div>
       </div>
 
-      <!-- Sales Invoices Specific Search Sub-header with Month and Date filters -->
+      <!-- Sales Invoices Specific Search Sub-header -->
       <div *ngIf="activeModal === 'invoices'" class="row g-2 align-items-center">
         <div class="col-md-5">
           <div class="input-group input-group-sm">
@@ -837,7 +773,6 @@
 
       <!-- 6. Target Modal Content -->
       <div *ngIf="activeModal === 'target'">
-        <!-- Summary Stat Cards -->
         <div class="row g-3 mb-4 text-center">
           <div class="col-md-3 col-6">
             <div class="p-3 rounded-3 bg-light border">
@@ -865,7 +800,6 @@
           </div>
         </div>
 
-        <!-- Progress Bar -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-1 fs-9 fw-semibold">
             <span class="text-muted">Target Completion Progress</span>
@@ -990,6 +924,76 @@
         </table>
       </div>
 
+      <!-- 9. Payments Modal Content -->
+      <div *ngIf="activeModal === 'payments'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>Order No</th>
+              <th>Customer</th>
+              <th>Total Amount</th>
+              <th>Paid Amount (COD)</th>
+              <th>Due Payment</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of filteredModalPayments">
+              <td class="fw-bold text-primary">{{ o.orderNumber || 'SO-'+o.id }}</td>
+              <td>
+                <div class="fw-semibold text-dark">{{ o.customerName || 'Customer' }}</div>
+              </td>
+              <td class="fw-bold text-dark">৳{{ (o.totalAmount || o.codAmount || 0) | number:'1.2-2' }}</td>
+              <td class="fw-bold text-success">৳{{ (o.paidAmount || 0) | number:'1.2-2' }}</td>
+              <td class="fw-bold text-danger">৳{{ getOrderDueAmount(o) | number:'1.2-2' }}</td>
+              <td><span class="badge {{ getStageBadgeClass(o.status) }} rounded-pill px-3">{{ o.status }}</span></td>
+              <td>
+                <a [routerLink]="['/payment']" [queryParams]="{ orderId: o.id }" (click)="closeModal()" class="btn btn-sm btn-outline-primary py-0 px-2 fs-9">Receive</a>
+              </td>
+            </tr>
+            <tr *ngIf="filteredModalPayments.length === 0">
+              <td colspan="7" class="text-center text-muted py-4">No matching orders found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 10. Customer Directory Modal Content -->
+      <div *ngIf="activeModal === 'directory'" class="table-responsive">
+        <table class="table table-hover align-middle fs-8 mb-0">
+          <thead class="table-light text-uppercase text-muted fs-9">
+            <tr>
+              <th>ID</th>
+              <th>Customer Name</th>
+              <th>Email</th>
+              <th>Phone Number</th>
+              <th>NID</th>
+              <th>Gender</th>
+              <th>DOB</th>
+              <th>Address</th>
+              <th>Registered</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of filteredModalDirectory">
+              <td class="fw-bold text-primary">{{ c.id }}</td>
+              <td class="fw-semibold text-dark">{{ c.name }}</td>
+              <td class="font-monospace text-muted">{{ c.email || 'N/A' }}</td>
+              <td class="font-monospace text-muted">{{ c.phone || 'N/A' }}</td>
+              <td class="font-monospace text-muted">{{ c.nid || 'N/A' }}</td>
+              <td class="text-muted">{{ c.gender || 'N/A' }}</td>
+              <td class="text-muted">{{ c.dob ? (c.dob | date:'MMM dd, yyyy') : 'N/A' }}</td>
+              <td class="text-muted text-truncate" style="max-width: 150px;" [title]="c.address || 'N/A'">{{ c.address || 'N/A' }}</td>
+              <td class="text-muted">{{ c.createdAt ? (c.createdAt | date:'MMM dd, yyyy') : 'N/A' }}</td>
+            </tr>
+            <tr *ngIf="filteredModalDirectory.length === 0">
+              <td colspan="9" class="text-center text-muted py-4">No matching customers found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
     <!-- Modal Footer -->
@@ -997,6 +1001,4 @@
       <button type="button" class="btn btn-sm btn-secondary rounded-3 px-4" (click)="closeModal()">Close</button>
     </div>
   </div>
-=======
->>>>>>> Stashed changes
 </div>

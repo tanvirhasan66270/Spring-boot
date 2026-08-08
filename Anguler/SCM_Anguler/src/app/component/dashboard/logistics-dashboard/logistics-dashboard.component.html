@@ -35,13 +35,15 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Outbound Shipments</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ totalShipments || 12 }}</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalShipments }}</span>
               <span class="badge bg-primary-subtle text-primary rounded-pill px-2">Active</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold text-success mt-auto">
-          <i class="bi bi-arrow-up-short"></i> 20% vs yesterday
+        <div class="small fw-semibold mt-auto"
+             [ngClass]="{'text-success': shipmentsTrend > 0, 'text-danger': shipmentsTrend < 0, 'text-secondary': shipmentsTrend === 0}">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': shipmentsTrend > 0, 'bi-arrow-down-short': shipmentsTrend < 0}"></i>
+          {{ shipmentsTrend > 0 ? shipmentsTrend : (shipmentsTrend < 0 ? -shipmentsTrend : 0) }}% vs yesterday
         </div>
       </div>
     </div>
@@ -56,13 +58,15 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Delivery Trips</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips || 8 }}</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips }}</span>
               <span class="badge bg-success-subtle text-success rounded-pill px-2">Active</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold text-success mt-auto">
-          <i class="bi bi-arrow-up-short"></i> 14% vs yesterday
+        <div class="small fw-semibold mt-auto"
+             [ngClass]="{'text-success': tripsTrend > 0, 'text-danger': tripsTrend < 0, 'text-secondary': tripsTrend === 0}">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': tripsTrend > 0, 'bi-arrow-down-short': tripsTrend < 0}"></i>
+          {{ tripsTrend > 0 ? tripsTrend : (tripsTrend < 0 ? -tripsTrend : 0) }}% vs yesterday
         </div>
       </div>
     </div>
@@ -77,13 +81,13 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Active Vehicles</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles || 15 }}</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles }}</span>
               <span class="badge rounded-pill px-2" style="background-color: #e0e7ff; color: #4338ca;">Total</span>
             </div>
           </div>
         </div>
         <div class="small fw-semibold mt-auto" style="color: #4f46e5;">
-          {{ availableVehicles || 5 }} Available
+          {{ availableVehicles }} Available
         </div>
       </div>
     </div>
@@ -98,13 +102,15 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Warehouse Capacity</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ warehouseCapacityPercent || 72 }}%</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ warehouseCapacityPercent }}%</span>
               <span class="badge rounded-pill px-2" style="background-color: #fef3c7; color: #d97706;">Utilized</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold text-success mt-auto">
-          <i class="bi bi-arrow-up-short"></i> 12% vs yesterday
+        <div class="small fw-semibold mt-auto"
+             [ngClass]="{'text-success': warehouseTrend > 0, 'text-danger': warehouseTrend < 0, 'text-secondary': warehouseTrend === 0}">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': warehouseTrend > 0, 'bi-arrow-down-short': warehouseTrend < 0}"></i>
+          {{ warehouseTrend > 0 ? warehouseTrend : (warehouseTrend < 0 ? -warehouseTrend : 0) }}% vs yesterday
         </div>
       </div>
     </div>
@@ -119,13 +125,15 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Inventory Movements</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ totalMovements || 28 }}</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalMovements }}</span>
               <span class="badge rounded-pill px-2" style="background-color: #cffafe; color: #0891b2;">Today</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold text-success mt-auto">
-          <i class="bi bi-arrow-up-short"></i> 30% vs yesterday
+        <div class="small fw-semibold mt-auto"
+             [ngClass]="{'text-success': inventoryTrend > 0, 'text-danger': inventoryTrend < 0, 'text-secondary': inventoryTrend === 0}">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': inventoryTrend > 0, 'bi-arrow-down-short': inventoryTrend < 0}"></i>
+          {{ inventoryTrend > 0 ? inventoryTrend : (inventoryTrend < 0 ? -inventoryTrend : 0) }}% vs yesterday
         </div>
       </div>
     </div>
@@ -140,13 +148,15 @@
           <div class="d-flex flex-column justify-content-center w-100">
             <div class="text-secondary small fw-semibold lh-1 mb-2">Delayed Shipments</div>
             <div class="d-flex align-items-center justify-content-between">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ delayedShipments || 2 }}</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ delayedShipments }}</span>
               <span class="badge bg-danger-subtle text-danger rounded-pill px-2">Delayed</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold text-danger mt-auto">
-          <i class="bi bi-arrow-down-short"></i> 1 vs yesterday
+        <div class="small fw-semibold mt-auto"
+             [ngClass]="{'text-success': delayedTrend < 0, 'text-danger': delayedTrend > 0, 'text-secondary': delayedTrend === 0}">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': delayedTrend > 0, 'bi-arrow-down-short': delayedTrend < 0}"></i>
+          {{ delayedTrend > 0 ? delayedTrend : (delayedTrend < 0 ? -delayedTrend : 0) }} vs yesterday
         </div>
       </div>
     </div>
@@ -268,9 +278,9 @@
     <div class="col-lg-5">
       <div class="card border-0 shadow-sm rounded-4 h-100 bg-white p-3 d-flex flex-column">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="fw-bold text-dark mb-0">Shipment Performance (This Month)</h6>
-          <select class="form-select form-select-sm w-auto border-0 bg-light rounded-pill px-3 fw-semibold text-secondary">
-            <option>This Month</option>
+          <h6 class="fw-bold text-dark mb-0">Shipment Performance <span class="fs-8 text-secondary">({{ monthsList[selectedPerformanceMonth].label }})</span></h6>
+          <select class="form-select form-select-sm w-auto border-0 bg-light rounded-pill px-3 fw-semibold text-secondary cursor-pointer" (change)="onPerformanceMonthChange($event)">
+            <option *ngFor="let m of monthsList" [value]="m.value" [selected]="m.value === selectedPerformanceMonth">{{ m.label }}</option>
           </select>
         </div>
         <div class="flex-grow-1 position-relative" style="min-height: 150px;">
@@ -297,13 +307,8 @@
             <!-- Points (using dynamic data) -->
             <circle *ngFor="let pt of shipmentDataPoints" [attr.cx]="pt.x" [attr.cy]="pt.y" r="4" fill="#ffffff" stroke="#3b82f6" stroke-width="2" />
             
-            <!-- X Axis Labels -->
-            <text x="0" y="150" font-size="10" fill="#94a3b8">Jul 01</text>
-            <text x="90" y="150" font-size="10" fill="#94a3b8">Jul 07</text>
-            <text x="180" y="150" font-size="10" fill="#94a3b8">Jul 14</text>
-            <text x="280" y="150" font-size="10" fill="#94a3b8">Jul 21</text>
-            <text x="380" y="150" font-size="10" fill="#94a3b8">Jul 28</text>
-            <text x="470" y="150" font-size="10" fill="#94a3b8">Jul 31</text>
+            <!-- X Axis Labels (Dynamic) -->
+            <text *ngFor="let lbl of chartLabels" [attr.x]="lbl.x" y="150" font-size="10" fill="#94a3b8">{{ lbl.text }}</text>
           </svg>
         </div>
         <div class="row g-3 mt-3 border-top pt-3">
@@ -395,7 +400,12 @@
         </div>
         <div class="d-flex justify-content-between align-items-center mt-4 border-top pt-3">
           <span class="text-muted small">Total Movements</span>
-          <span class="fw-bold fs-5 text-dark">{{ totalMovements }} <span class="fs-8 text-success fw-normal ms-1"><i class="bi bi-arrow-up-short"></i>30% vs yesterday</span></span>
+          <span class="fw-bold fs-5 text-dark">
+            {{ totalMovements }} 
+            <span *ngIf="inventoryTrend > 0" class="fs-8 text-success fw-normal ms-1"><i class="bi bi-arrow-up-short"></i>{{ inventoryTrend }}% vs yesterday</span>
+            <span *ngIf="inventoryTrend < 0" class="fs-8 text-danger fw-normal ms-1"><i class="bi bi-arrow-down-short"></i>{{ -inventoryTrend }}% vs yesterday</span>
+            <span *ngIf="inventoryTrend === 0" class="fs-8 text-secondary fw-normal ms-1">0% vs yesterday</span>
+          </span>
         </div>
       </div>
     </div>
@@ -459,7 +469,7 @@
     </div>
 
     <!-- Live Tracking Map Placeholder -->
-    <div class="col-lg-3">
+    <div class="col-lg-6">
       <div class="card border-0 shadow-sm rounded-4 h-100 bg-white">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark">Live Tracking Map</h6>

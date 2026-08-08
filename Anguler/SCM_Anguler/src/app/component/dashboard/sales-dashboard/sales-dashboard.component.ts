@@ -14,11 +14,8 @@ import { NotificationModel } from '../../../system/NotificationModel';
 import { ShipmentService } from '../../../service/shipment.service';
 import Chart from 'chart.js/auto';
 import { AddProductService } from '../../../service/add-product.service';
-<<<<<<< Updated upstream
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
-=======
->>>>>>> Stashed changes
 
 @Component({
   selector: 'app-sales-dashboard',
@@ -37,10 +34,12 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   orders: any[] = [];
   quotations: any[] = [];
   customers: any[] = [];
+  allCustomers: any[] = [];
   invoices: any[] = [];
   notifications: NotificationModel[] = [];
   shipments: any[] = [];
   products: any[] = [];
+  purchaseOrders: PurchaseOrderResponseModel[] = [];
 
   totalRevenue = 0;
   todaysSales = 0;
@@ -62,11 +61,33 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   private targetChart: any;
 
   targetProgress: number = 0;
-<<<<<<< Updated upstream
 
-  purchaseOrders: PurchaseOrderResponseModel[] = [];
-=======
->>>>>>> Stashed changes
+  activeModal: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | 'payments' | 'directory' | null = null;
+  modalSearchText = '';
+  purchaseSelectedMonth: number | 'ALL' = 'ALL';
+  purchaseSelectedDate: string = '';
+  invoiceSelectedMonth: number | 'ALL' = 'ALL';
+  invoiceSelectedDate: string = '';
+
+  selectedOverviewMonth: number | 'ALL' = 7; // Default August
+  selectedOverviewYear: number = 2026;
+
+  yearsList: number[] = [2026, 2025, 2024, 2023];
+  monthsList = [
+    { value: 'ALL', label: 'All Months' },
+    { value: 0, label: 'January' },
+    { value: 1, label: 'February' },
+    { value: 2, label: 'March' },
+    { value: 3, label: 'April' },
+    { value: 4, label: 'May' },
+    { value: 5, label: 'June' },
+    { value: 6, label: 'July' },
+    { value: 7, label: 'August' },
+    { value: 8, label: 'September' },
+    { value: 9, label: 'October' },
+    { value: 10, label: 'November' },
+    { value: 11, label: 'December' }
+  ];
 
   constructor(
     private storage: StorageService,
@@ -79,12 +100,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
     private shipmentService: ShipmentService,
-<<<<<<< Updated upstream
     private productService: AddProductService,
     private purchaseOrderService: PurchaseOrderService
-=======
-    private productService: AddProductService
->>>>>>> Stashed changes
   ) {}
 
   ngOnInit(): void {
@@ -98,18 +115,13 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initCharts();
-    // After initializing charts, update them with any data that has already loaded
     this.updateChartsWithDynamicData();
   }
 
   loadAllData(): void {
     this.isLoading = true;
     let completed = 0;
-<<<<<<< Updated upstream
     const totalCalls = 8; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products, PurchaseOrders
-=======
-    const totalCalls = 7; // Orders, Quotes, Invoices, Notifs, Customers, Shipments, Products
->>>>>>> Stashed changes
     const checkDone = () => {
       completed++;
       if (completed >= totalCalls) {
@@ -128,7 +140,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.loadCustomers(checkDone);
     this.loadShipments(checkDone);
     this.loadProducts(checkDone);
-<<<<<<< Updated upstream
     this.loadPurchaseOrders(checkDone);
   }
 
@@ -143,8 +154,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         if (done) done();
       }
     });
-=======
->>>>>>> Stashed changes
   }
 
   loadOrders(done: () => void): void {
@@ -208,11 +217,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadNotifications(done: () => void): void {
     this.notificationService.findAll().subscribe({
       next: (data) => {
-<<<<<<< Updated upstream
         this.notifications = data || [];
-=======
-        this.notifications = (data || []).slice(0, 4);
->>>>>>> Stashed changes
         done();
       },
       error: () => done(),
@@ -222,11 +227,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadShipments(done: () => void): void {
     this.shipmentService.findAll().subscribe({
       next: (data) => {
-<<<<<<< Updated upstream
         this.shipments = (data || []).map((s: any) => ({
-=======
-        this.shipments = (data || []).slice(0, 4).map((s: any) => ({
->>>>>>> Stashed changes
            id: s.shipmentNumber || s.id,
            vehicle: s.vehicleNumber || 'Unassigned',
            destination: s.sendByAddress || 'Warehouse',
@@ -237,16 +238,8 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       error: () => done(),
     });
   }
-<<<<<<< Updated upstream
 
-  activeModal: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | null = null;
-  modalSearchText = '';
-  purchaseSelectedMonth: number | 'ALL' = 'ALL';
-  purchaseSelectedDate: string = '';
-  invoiceSelectedMonth: number | 'ALL' = 'ALL';
-  invoiceSelectedDate: string = '';
-
-  openModal(modalType: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices'): void {
+  openModal(modalType: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | 'payments' | 'directory'): void {
     this.activeModal = modalType;
     this.modalSearchText = '';
     this.purchaseSelectedMonth = 'ALL';
@@ -265,55 +258,35 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
   get filteredModalInvoices(): any[] {
     let list = this.issuedInvoices;
-
     if (list.length === 0 && this.invoices.length > 0) {
       list = this.invoices;
     }
 
-    // 1. Text Search (Invoice Number, Order Number, Customer Name/Email)
     if (this.modalSearchText) {
       const q = this.modalSearchText.toLowerCase();
       list = list.filter((inv: any) => {
         const invNum = inv.invoiceNumber ? String(inv.invoiceNumber).toLowerCase() : '';
         if (invNum.includes(q)) return true;
-
-        const orderIdStr = inv.customerOrderId ? String(inv.customerOrderId).toLowerCase() : '';
-        const orderFormatted = inv.customerOrderId ? `so-${inv.customerOrderId}` : '';
-        if (orderIdStr.includes(q) || orderFormatted.includes(q)) return true;
-
-        if (inv.customerOrderId && this.orders.length > 0) {
-          const matchingOrder = this.orders.find((o: any) => Number(o.id) === Number(inv.customerOrderId));
-          if (matchingOrder && matchingOrder.orderNumber && String(matchingOrder.orderNumber).toLowerCase().includes(q)) {
-            return true;
-          }
-        }
-
         const custName = (inv.issuedToName || inv.customerName || '').toLowerCase();
         const custEmail = (inv.customerEmail || '').toLowerCase();
-        if (custName.includes(q) || custEmail.includes(q)) return true;
-
-        return false;
+        return custName.includes(q) || custEmail.includes(q);
       });
     }
 
-    // 2. Month Filter
     if (this.invoiceSelectedMonth !== 'ALL') {
       const monthIndex = Number(this.invoiceSelectedMonth);
       list = list.filter((inv: any) => {
         const dateStr = inv.issuedAt || inv.createdAt || inv.deliveryDate;
         if (!dateStr) return false;
-        const d = new Date(dateStr);
-        return d.getMonth() === monthIndex;
+        return new Date(dateStr).getMonth() === monthIndex;
       });
     }
 
-    // 3. Date Filter (YYYY-MM-DD)
     if (this.invoiceSelectedDate) {
-      const targetDateStr = this.invoiceSelectedDate;
       list = list.filter((inv: any) => {
         const dateStr = inv.issuedAt || inv.createdAt || inv.deliveryDate;
         if (!dateStr) return false;
-        return dateStr.startsWith(targetDateStr);
+        return dateStr.startsWith(this.invoiceSelectedDate);
       });
     }
 
@@ -345,7 +318,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
   get filteredModalPurchaseOrders(): PurchaseOrderResponseModel[] {
     let list = this.receivedPurchaseOrders;
-    
     if (list.length === 0 && this.purchaseOrders.length > 0) {
       list = this.purchaseOrders;
     }
@@ -354,31 +326,9 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       const q = this.modalSearchText.toLowerCase();
       list = list.filter(po => 
         (po.poNumber && String(po.poNumber).toLowerCase().includes(q)) ||
-        (po.supplierName && String(po.supplierName).toLowerCase().includes(q)) ||
-        (po.supplierEmail && String(po.supplierEmail).toLowerCase().includes(q)) ||
-        (po.status && String(po.status).toLowerCase().includes(q))
+        (po.supplierName && String(po.supplierName).toLowerCase().includes(q))
       );
     }
-
-    if (this.purchaseSelectedMonth !== 'ALL') {
-      const monthIndex = Number(this.purchaseSelectedMonth);
-      list = list.filter(po => {
-        const dateStr = po.createdAt || po.expectedDeliveryDate;
-        if (!dateStr) return false;
-        const d = new Date(dateStr);
-        return d.getMonth() === monthIndex;
-      });
-    }
-
-    if (this.purchaseSelectedDate) {
-      const targetDateStr = this.purchaseSelectedDate;
-      list = list.filter(po => {
-        const dateStr = po.createdAt || po.expectedDeliveryDate;
-        if (!dateStr) return false;
-        return dateStr.startsWith(targetDateStr);
-      });
-    }
-
     return list;
   }
 
@@ -387,9 +337,17 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     const q = this.modalSearchText.toLowerCase();
     return this.orders.filter((o: any) => 
       (o.orderNumber && String(o.orderNumber).toLowerCase().includes(q)) ||
-      (o.customerName && String(o.customerName).toLowerCase().includes(q)) ||
-      (o.customerEmail && String(o.customerEmail).toLowerCase().includes(q)) ||
-      (o.status && String(o.status).toLowerCase().includes(q))
+      (o.customerName && String(o.customerName).toLowerCase().includes(q))
+    );
+  }
+
+  get filteredModalPayments(): any[] {
+    if (!this.modalSearchText) return this.orders;
+    const q = this.modalSearchText.toLowerCase();
+    return this.orders.filter((o: any) => 
+      (o.orderNumber && String(o.orderNumber).toLowerCase().includes(q)) ||
+      (String(o.id).toLowerCase().includes(q)) ||
+      (o.customerName && String(o.customerName).toLowerCase().includes(q))
     );
   }
 
@@ -399,8 +357,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     const q = this.modalSearchText.toLowerCase();
     return approved.filter((item: any) => 
       (item.quotationNumber && String(item.quotationNumber).toLowerCase().includes(q)) ||
-      (item.customerName && String(item.customerName).toLowerCase().includes(q)) ||
-      (item.status && String(item.status).toLowerCase().includes(q))
+      (item.customerName && String(item.customerName).toLowerCase().includes(q))
     );
   }
 
@@ -413,13 +370,24 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     );
   }
 
+  get filteredModalDirectory(): any[] {
+    if (!this.modalSearchText) return this.allCustomers;
+    const q = this.modalSearchText.toLowerCase();
+    return this.allCustomers.filter((c: any) => 
+      (c.name && String(c.name).toLowerCase().includes(q)) ||
+      (c.email && String(c.email).toLowerCase().includes(q)) ||
+      (c.phone && String(c.phone).toLowerCase().includes(q)) ||
+      (c.nid && String(c.nid).toLowerCase().includes(q)) ||
+      (c.id && String(c.id).toLowerCase().includes(q))
+    );
+  }
+
   get filteredModalShipments(): any[] {
     if (!this.modalSearchText) return this.shipments;
     const q = this.modalSearchText.toLowerCase();
     return this.shipments.filter((s: any) => 
       (s.id && String(s.id).toLowerCase().includes(q)) ||
-      (s.vehicle && String(s.vehicle).toLowerCase().includes(q)) ||
-      (s.destination && String(s.destination).toLowerCase().includes(q))
+      (s.vehicle && String(s.vehicle).toLowerCase().includes(q))
     );
   }
 
@@ -428,8 +396,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     const q = this.modalSearchText.toLowerCase();
     return this.notifications.filter((n: any) => 
       (n.title && String(n.title).toLowerCase().includes(q)) ||
-      (n.message && String(n.message).toLowerCase().includes(q)) ||
-      (n.type && String(n.type).toLowerCase().includes(q))
+      (n.message && String(n.message).toLowerCase().includes(q))
     );
   }
 
@@ -442,13 +409,10 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       (inv.invoiceStatus && String(inv.invoiceStatus).toLowerCase().includes(q))
     );
   }
-=======
->>>>>>> Stashed changes
-  
+
   loadProducts(done: () => void): void {
     this.productService.findAll().subscribe({
       next: (data) => {
-        // Just for pie chart representation
         this.products = (data || []).sort((a: any, b: any) => (b.unitPrice || 0) - (a.unitPrice || 0)).slice(0, 5);
         done();
       },
@@ -459,13 +423,21 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   loadCustomers(done: () => void): void {
     this.customerService.getAll().subscribe({
       next: (data) => {
+        this.allCustomers = (data || []).map((c: any) => ({
+          id: c.userId || c.id || '',
+          name: c.name || 'Customer',
+          email: c.email || '',
+          phone: c.phone || c.contactNumber || '',
+          nid: c.nidNumber || c.nid || c.nationalId || '',
+          gender: c.gender || '',
+          dob: c.dob || '',
+          address: c.address || '',
+          createdAt: c.createdAt || ''
+        }));
         this.customers = (data || []).map((c: any) => ({
           id: c.userId || c.id,
           name: c.name || 'Customer',
-<<<<<<< Updated upstream
           email: c.email || '',
-=======
->>>>>>> Stashed changes
           spent: 0,
           due: 0
         }));
@@ -476,16 +448,13 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     });
   }
 
-<<<<<<< Updated upstream
-  private getOrderDueAmount(o: any): number {
+  getOrderDueAmount(o: any): number {
     if (!o || o.status === 'CANCELLED' || o.paymentStatus === 'PAID') return 0;
     if (o.dueAmount != null && Number(o.dueAmount) > 0) {
       return Number(o.dueAmount);
     }
     const total = Number(o.totalAmount) || Number(o.codAmount) || 0;
     const paid = Number(o.paidAmount) || 0;
-    if (o.paymentStatus === 'UNPAID') return total;
-    if (o.paymentStatus === 'PARTIALLY_PAID') return Math.max(0, total - paid);
     return Math.max(0, total - paid);
   }
 
@@ -496,7 +465,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
     this.orders.forEach((o: any) => {
       const email = (o.customerEmail || '').trim().toLowerCase();
-      
       let key = email;
       if (!key) {
         key = o.customerId ? `id_${o.customerId}` : (o.customerName ? `name_${o.customerName.trim().toLowerCase()}` : '');
@@ -534,22 +502,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.customers = Array.from(customerMap.values())
       .filter((c: any) => c.spent > 0 || c.due > 0)
       .sort((a: any, b: any) => b.spent - a.spent);
-=======
-  buildCustomerStats(): void {
-    if (!this.customersLoaded || !this.ordersLoaded) return;
-    
-    this.customers.forEach((c: any) => {
-      const customerOrders = this.orders.filter((o: any) => Number(o.customerId) === Number(c.id));
-      if (customerOrders.length > 0) {
-        c.spent = customerOrders.reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || Number(o.codAmount) || 0), 0);
-        c.due = customerOrders.filter((o:any)=>o.status !== 'DELIVERED' && o.status !== 'PAID' && o.paymentStatus !== 'PAID')
-                              .reduce((sum: number, o: any) => sum + (Number(o.totalAmount) || 0), 0);
-      }
-    });
-    // Remove customers with 0 spent to make the table cleaner if we have more than 5
-    // this.customers = this.customers.filter((c: any) => c.spent > 0);
-    this.customers.sort((a: any, b: any) => b.spent - a.spent);
->>>>>>> Stashed changes
   }
 
   buildDynamicTasks(): void {
@@ -562,7 +514,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       this.pendingTasks.push({ icon: 'bi-cart', color: 'text-warning', text: `${pendingOrders} Pending Orders` });
     }
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayShipments = this.shipments.filter(s => s.dispatchDate?.startsWith(todayStr)).length;
+    const todayShipments = this.shipments.filter(s => s.eta?.startsWith(todayStr)).length;
     if (todayShipments > 0) {
       this.pendingTasks.push({ icon: 'bi-truck', color: 'text-success', text: `${todayShipments} Deliveries Today` });
     }
@@ -636,27 +588,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.router.navigate(['']);
   }
 
-<<<<<<< Updated upstream
-  selectedOverviewMonth: number | 'ALL' = 7; // Default August
-  selectedOverviewYear: number = 2026;
-
-  yearsList: number[] = [2026, 2025, 2024, 2023];
-  monthsList = [
-    { value: 'ALL', label: 'All Months' },
-    { value: 0, label: 'January' },
-    { value: 1, label: 'February' },
-    { value: 2, label: 'March' },
-    { value: 3, label: 'April' },
-    { value: 4, label: 'May' },
-    { value: 5, label: 'June' },
-    { value: 6, label: 'July' },
-    { value: 7, label: 'August' },
-    { value: 8, label: 'September' },
-    { value: 9, label: 'October' },
-    { value: 10, label: 'November' },
-    { value: 11, label: 'December' }
-  ];
-
   onMonthChange(event: Event): void {
     const val = (event.target as HTMLSelectElement).value;
     this.selectedOverviewMonth = val === 'ALL' ? 'ALL' : Number(val);
@@ -669,9 +600,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     this.updateChartsWithDynamicData();
   }
 
-=======
->>>>>>> Stashed changes
-  // ---- Chart.js Dynamic Implementations ---- //
   initCharts() {
     const ctxOverview = document.getElementById('salesOverviewChart') as HTMLCanvasElement;
     const ctxProducts = document.getElementById('topProductsChart') as HTMLCanvasElement;
@@ -685,7 +613,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { position: 'top', align: 'end', labels: { usePointStyle: true, boxWidth: 6, font: { size: 10, weight: 'bold', family: "'Inter', sans-serif" }, color: '#1e293b' } } },
           scales: {
-<<<<<<< Updated upstream
             y: {
               type: 'linear',
               position: 'left',
@@ -708,9 +635,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
               grid: { display: false },
               ticks: { precision: 0, font: { size: 10 } }
             },
-=======
-            y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { callback: function(val) { return '৳' + (Number(val) / 1000) + 'K'; }, font: { size: 10 } } },
->>>>>>> Stashed changes
             x: { grid: { display: false }, ticks: { font: { size: 10 } } }
           }
         }
@@ -740,8 +664,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     }
     if (!this.overviewChart || !this.productsChart || !this.targetChart) return;
 
-<<<<<<< Updated upstream
-    // 1. Overview Chart filtering based on Month & Year selection
     const labels: string[] = [];
     const revenueData: number[] = [];
     const ordersData: number[] = [];
@@ -781,30 +703,10 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         revenueData.push(rev);
         ordersData.push(dayOrders.length);
       }
-=======
-    // 1. Overview Chart (Last 6 Days)
-    const labels = [];
-    const revenueData = [];
-    const ordersData = [];
-    
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dayStr = d.toISOString().split('T')[0];
-      const displayDay = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-      
-      labels.push(displayDay);
-      const dayOrders = this.orders.filter(o => o.createdAt?.startsWith(dayStr));
-      revenueData.push(dayOrders.reduce((sum, o) => sum + (o.totalAmount || o.codAmount || 0), 0));
-      // for visuals, we multiply order count so the line isn't flat near zero on a revenue scale, 
-      // or we can just use a secondary Y axis. For simplicity, we just plot raw count.
-      ordersData.push(dayOrders.length * 5000); // Visual scalar so it shows up on the chart
->>>>>>> Stashed changes
     }
 
     this.overviewChart.data.labels = labels;
     this.overviewChart.data.datasets = [
-<<<<<<< Updated upstream
       {
         label: 'Revenue',
         data: revenueData,
@@ -827,14 +729,9 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
         pointBackgroundColor: '#00c853',
         yAxisID: 'y1'
       }
-=======
-      { label: 'Revenue', data: revenueData, borderColor: '#2962ff', backgroundColor: 'rgba(41, 98, 255, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#2962ff' },
-      { label: 'Orders', data: ordersData, borderColor: '#00c853', backgroundColor: 'rgba(0, 200, 83, 0.1)', tension: 0.4, fill: true, borderWidth: 2, pointBackgroundColor: '#00c853' }
->>>>>>> Stashed changes
     ];
     this.overviewChart.update();
 
-    // 2. Top Products Doughnut Chart
     const pLabels = this.products.map(p => p.name.substring(0, 15) + '...');
     const defaultData = [32, 28, 20, 12, 8];
     const pData = this.products.length > 0 ? this.products.map((p, i) => defaultData[i] || 1) : [100];
@@ -848,7 +745,6 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
     }];
     this.productsChart.update();
 
-    // 3. Monthly Target Progress
     let achieved = this.totalRevenue;
     if(achieved > this.monthlyTarget) achieved = this.monthlyTarget;
     let remain = this.monthlyTarget - achieved;

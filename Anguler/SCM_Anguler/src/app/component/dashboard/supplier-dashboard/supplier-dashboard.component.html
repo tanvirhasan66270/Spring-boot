@@ -1,5 +1,9 @@
 <div class="supplier-dashboard px-3 py-4">
-  <!-- ───────────────── LOADING SKELETON ───────────────── -->
+  <!-- =========================================================================
+       1. LOADING SKELETON
+       When the page is fetching data from the server, 'loading' is true.
+       *ngIf="loading" tells Angular to only show this section when loading is true.
+       ========================================================================= -->
   <div *ngIf="loading">
     <div class="skeleton skeleton-card h-100 mb-4" style="height: 100px"></div>
     <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
@@ -20,7 +24,11 @@
     </div>
   </div>
 
-  <!-- ───────────────── DASHBOARD MAIN WRAPPER ───────────────── -->
+  <!-- =========================================================================
+       2. DASHBOARD MAIN CONTENT
+       When the data is fully loaded, 'loading' becomes false.
+       *ngIf="!loading" tells Angular to show the real dashboard now.
+       ========================================================================= -->
   <div *ngIf="!loading">
     
     <!-- ─── TOP BAR (উভয় মোডেই টপবার ফিক্সড থাকবে) ─── -->
@@ -42,65 +50,245 @@
     </div>
 
     <!-- =========================================================================
-         CONDITION 1: চাইল্ড রুট একটিভ না থাকলে মূল ড্যাশবোর্ড কন্টেন্ট দেখাবে
+         3. MAIN DASHBOARD PANELS (Cards & KPIs)
+         CONDITION: isChildRouteActive() checks if the user is looking at their profile.
+         If they are NOT looking at their profile (!isChildRouteActive), show the dashboard.
          ========================================================================= -->
     <div *ngIf="!isChildRouteActive()" class="animate-fade">
       
-      <!-- KPI GRID -->
-      <div class="row row-cols-1 row-cols-md-4 g-3 mb-4">
+      <!-- ---------------------------------------------------------
+           A. KPI (Key Performance Indicator) GRID
+           *ngFor="let kpi of kpis" loops through the 'kpis' array in our TS file
+           and creates one card for every item in the array.
+           --------------------------------------------------------- -->
+      <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
         <div class="col" *ngFor="let kpi of kpis">
-          <div class="card border-0 shadow-sm p-3.5 rounded-4 bg-white border-start border-5 border-{{ kpi.color }} h-100">
-            <div class="text-secondary small text-uppercase fw-bold mb-2">{{ kpi.label }}</div>
-            <div class="fs-4 fw-bold text-dark font-monospace mb-1">{{ kpi.value }}</div>
-            <div class="small font-monospace">
-              <span class="text-muted small">Real-time status</span>
+          <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100 hover-elevate transition-all position-relative overflow-hidden">
+            <!-- Modern Accent Border -->
+            <div class="position-absolute top-0 start-0 h-100 bg-{{ kpi.color }}" style="width: 4px;"></div>
+            
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h6 class="text-muted fw-bold text-uppercase mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">{{ kpi.label }}</h6>
+                <div class="fs-3 fw-bolder text-dark lh-1">{{ kpi.value }}</div>
+              </div>
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ kpi.color }}-subtle text-{{ kpi.color }} flex-shrink-0" style="width: 48px; height: 48px;">
+                <i class="bi {{ kpi.icon }} fs-4"></i>
+              </div>
+            </div>
+            
+            <div class="d-flex align-items-center mt-auto pt-2 border-top border-light">
+              <span class="badge rounded-pill fw-semibold px-2 py-1" 
+                    [ngClass]="kpi.trend > 0 ? 'bg-success-subtle text-success border border-success-subtle' : (kpi.trend < 0 ? 'bg-danger-subtle text-danger border border-danger-subtle' : 'bg-secondary-subtle text-secondary border border-secondary-subtle')">
+                <i class="bi" [ngClass]="kpi.trend > 0 ? 'bi-graph-up-arrow' : (kpi.trend < 0 ? 'bi-graph-down-arrow' : 'bi-dash-lg')"></i>
+                {{ kpi.trend > 0 ? '+' : '' }}{{ kpi.trend }}%
+              </span>
+              <span class="text-muted small ms-2 fw-medium" style="font-size: 0.8rem;">vs last month</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- QUICK ACTIONS -->
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
+        <h6 class="fw-bold text-dark mb-3">
+          <i class="bi bi-lightning-charge text-warning me-2"></i> Supplier Quick Shortcuts
+        </h6>
+        <div class="row g-3">
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div (click)="showShortcut('SHORTCUT_PO', $event)" 
+                 [class.border-primary]="activeShortcutModal === 'SHORTCUT_PO'" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-inboxes fs-2 text-primary"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Purchase Order</strong>
+                <small class="text-muted fw-semibold">{{ allSupplierPOs.length }} Requests</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div (click)="showShortcut('SHORTCUT_RFQ', $event)"
+                 [class.border-success]="activeShortcutModal === 'SHORTCUT_RFQ'" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-file-earmark-arrow-up fs-2 text-success"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Quotation</strong>
+                <small class="text-muted fw-semibold">{{ rfqs.length }} Active Bids</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div (click)="showShortcut('SHORTCUT_LC', $event)" 
+                 [class.border-warning]="activeShortcutModal === 'SHORTCUT_LC'" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-receipt fs-2 text-warning"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Letter Of Credit</strong>
+                <small class="text-muted fw-semibold">{{ lettersOfCredit.length }} Open LCs</small>
+              </div>
+            </div>
+          </div>
+          <!-- New Shortcuts -->
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div (click)="showShortcut('SHORTCUT_SHIPMENT', $event)" 
+                 [class.border-info]="activeShortcutModal === 'SHORTCUT_SHIPMENT'" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-truck fs-2 text-info"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Shipment</strong>
+                <small class="text-muted fw-semibold">Manage</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div (click)="showShortcut('SHORTCUT_POLINE', $event)" 
+                 [class.border-teal]="activeShortcutModal === 'SHORTCUT_POLINE'" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-text-indent-left fs-2 text-teal" style="color: #20c997 !important;"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">PO Line Item</strong>
+                <small class="text-muted fw-semibold">Active</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-2 col-lg-4 col-md-6">
+            <div routerLink="/messages" 
+                 class="action-card p-3 rounded-3 border d-flex align-items-center gap-2 text-decoration-none shadow-sm hover-elevate transition-all bg-white h-100" 
+                 style="cursor: pointer;">
+              <i class="bi bi-chat-dots fs-2 text-purple" style="color: #6f42c1 !important;"></i>
+              <div class="text-truncate">
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Message</strong>
+                <small class="text-muted fw-semibold">{{ notifications.length > 0 ? notifications.length + ' Unread' : 'Communicate' }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------------
+           B. QUICK SHORTCUTS ROW
+           These buttons let the user open different modals.
+           Notice the (click)="showShortcut('...')" event bindings!
+           --------------------------------------------------------- -->
       <div class="row g-3 mb-4">
-        <div class="col-md-4">
-          <a href="javascript:void(0)" 
-             (click)="togglePurchaseOrderRegistry($event)" 
-             class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
-             [class.border-primary]="poRegistryOpen"
-             [class.border-2]="poRegistryOpen"
-             style="cursor: pointer;">
-            <i class="bi bi-inboxes fs-2 text-primary mb-1 d-block"></i>
-            <strong class="text-dark d-block">Purchase Orders</strong>
-            <small class="text-muted">View all your historical purchase requests</small>
-          </a>
+        <!-- Issued POs -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'ISSUED_POS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'ISSUED_POS'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-primary">
+                <i class="bi bi-bell-fill"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">Issued POs</div>
+                <div class="text-muted small">{{ pos.length }} Awaiting</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-md-4">
-          <a routerLink="quotation" class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none">
-            <i class="bi bi-file-earmark-arrow-up fs-2 text-success mb-1 d-block"></i>
-            <strong class="text-dark d-block">Submit Quotations</strong>
-            <small class="text-muted">Propose pricing bids on active RFQs</small>
-          </a>
+
+        <!-- Received POs -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'RECEIVED_POS' ? 'border-success bg-success-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'RECEIVED_POS'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-success">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">Received POs</div>
+                <div class="text-muted small">{{ receivedPOs.length }} Delivered</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="col-md-4">
-          <a href="javascript:void(0)" 
-             (click)="toggleBillingLCSection($event)" 
-             class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none border"
-             [class.border-warning]="lcOpen"
-             [class.border-2]="lcOpen"
-             style="cursor: pointer;">
-            <i class="bi bi-receipt fs-2 text-warning mb-1 d-block"></i>
-            <strong class="text-dark d-block">Billing Ledger</strong>
-            <small class="text-muted">Manage corporate Letters of Credit (LC)</small>
-          </a>
+
+        <!-- RFQ Invitations -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'RFQ_BIDS' ? 'border-info bg-info-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'RFQ_BIDS'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-info">
+                <i class="bi bi-clock-history"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">Quotation Bids</div>
+                <div class="text-muted small">{{ rfqs.length }} Active</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Demands & PRs -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'DEMANDS' ? 'border-teal bg-teal-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'DEMANDS'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-teal">
+                <i class="bi bi-file-earmark-ruled"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">Requisitions</div>
+                <div class="text-muted small">{{ requisitions.length }} Pipeline</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LC Status -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'LC' ? 'border-warning bg-warning-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'LC'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-warning">
+                <i class="bi bi-bank"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">LC Status</div>
+                <div class="text-muted small">{{ lettersOfCredit.length }} Open</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PO Archive -->
+        <div class="col-xl-2 col-lg-4 col-md-6">
+          <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+               [ngClass]="activeTableTab === 'PO_ARCHIVE' ? 'border-secondary bg-secondary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+               (click)="activeTableTab = 'PO_ARCHIVE'">
+            <div class="d-flex align-items-center">
+              <div class="me-3 fs-3 text-secondary">
+                <i class="bi bi-journal-check"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-dark fs-6 lh-sm mb-1">PO Archive</div>
+                <div class="text-muted small">{{ allSupplierPOs.length }} Records</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- SUPPLIER HISTORICAL PO LEDGER -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4" *ngIf="poRegistryOpen">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4" *ngIf="activeTableTab === 'PO_ARCHIVE'">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-journal-check text-primary me-2"></i> Vendor Full Purchase Order Ledger Archive
           </h6>
-          <span class="badge bg-primary text-white fw-bold">Supplier Secured Node</span>
+          <div>
+            <span class="badge bg-primary text-white fw-bold me-2">Supplier Secured Node</span>
+            <a routerLink="purchase-order" class="btn btn-sm btn-outline-primary fw-semibold">View All</a>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -138,12 +326,15 @@
       </div>
 
       <!-- DYNAMIC LETTER OF CREDIT (LC) PANEL -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-warning border-4" *ngIf="lcOpen">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-warning border-4" *ngIf="activeTableTab === 'LC'">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-bank text-warning me-2"></i> Associated Letters of Credit (LC Status)
           </h6>
-          <span class="badge bg-warning text-dark fw-bold">Commercial Node</span>
+          <div>
+            <span class="badge bg-warning text-dark fw-bold me-2">Commercial Node</span>
+            <a routerLink="letter-of-credit" class="btn btn-sm btn-outline-warning fw-semibold">View All</a>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -177,7 +368,7 @@
       </div>
 
       <!-- ACTIVE ISSUED POs GRID -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4" *ngIf="activeTableTab === 'ISSUED_POS'">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-bell-fill text-primary me-2"></i> Open Sourcing / Issued Purchase Orders
@@ -240,11 +431,12 @@
       </div>
 
       <!-- RECEIVED ORDERS GRID -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4">
-        <div class="card-header bg-white py-3 border-0">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4" *ngIf="activeTableTab === 'RECEIVED_POS'">
+        <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-check-circle-fill text-success me-2"></i> Received Purchase Orders (POs)
           </h6>
+          <a routerLink="purchase-order" class="btn btn-sm btn-outline-success fw-semibold">View All</a>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -282,7 +474,7 @@
       </div>
 
       <!-- RFQ BIDDING PORTAL -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" *ngIf="activeTableTab === 'RFQ_BIDS'">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-clock-history text-success me-2"></i> Open Sourcing RFQ Bidding Invitations
@@ -323,7 +515,7 @@
       </div>
 
       <!-- CENTRAL PR DEMAND MATRIX -->
-      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-teal border-4">
+      <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-teal border-4" *ngIf="activeTableTab === 'DEMANDS'">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-file-earmark-ruled text-teal me-2"></i> Corporate Demand Slips & Purchase Requisitions
@@ -427,6 +619,9 @@
         
       </div>
 
+
+
+
     </div>
 
     <!-- =========================================================================
@@ -446,4 +641,143 @@
     (close)="showSettings = false"
     (onEditProfile)="onEditProfileTriggered()">
   </app-dashboard-settings>
+
+  <!-- ─── SHORTCUT MODAL OVERLAY ─── -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background-color: rgba(0,0,0,0.5); z-index: 1050;" *ngIf="activeShortcutModal">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="z-index: 1055; max-width: 900px;">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <!-- Header -->
+        <div class="modal-header border-bottom-0 pb-2 px-4 pt-4">
+          <h5 class="modal-title fw-bold text-dark d-flex align-items-center">
+            <ng-container [ngSwitch]="activeShortcutModal">
+              <i *ngSwitchCase="'SHORTCUT_PO'" class="bi bi-inboxes text-primary me-2"></i>
+              <i *ngSwitchCase="'SHORTCUT_RFQ'" class="bi bi-file-earmark-arrow-up text-success me-2"></i>
+              <i *ngSwitchCase="'SHORTCUT_LC'" class="bi bi-receipt text-warning me-2"></i>
+              <i *ngSwitchCase="'SHORTCUT_SHIPMENT'" class="bi bi-truck text-info me-2"></i>
+              <i *ngSwitchCase="'SHORTCUT_POLINE'" class="bi bi-text-indent-left text-teal me-2"></i>
+            </ng-container>
+            <ng-container [ngSwitch]="activeShortcutModal">
+              <span *ngSwitchCase="'SHORTCUT_PO'">Purchase Orders (Last 30 Days)</span>
+              <span *ngSwitchCase="'SHORTCUT_RFQ'">Quotations (Last 30 Days)</span>
+              <span *ngSwitchCase="'SHORTCUT_LC'">Letters Of Credit (Last 30 Days)</span>
+              <span *ngSwitchCase="'SHORTCUT_SHIPMENT'">Shipments (Last 30 Days)</span>
+              <span *ngSwitchCase="'SHORTCUT_POLINE'">PO Line Items (Last 30 Days)</span>
+            </ng-container>
+          </h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="closeShortcutModal()"></button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="px-4 pb-3">
+          <div class="input-group">
+            <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0" placeholder="Search details..." [(ngModel)]="modalSearchText" (keyup)="cdr.markForCheck()">
+          </div>
+        </div>
+
+        <!-- Body / Table -->
+        <div class="modal-body p-0" style="max-height: 50vh; overflow-y: auto;">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 fs-8">
+              
+              <!-- HEADERS -->
+              <thead class="table-light text-uppercase sticky-top" style="z-index: 1;">
+                <tr [ngSwitch]="activeShortcutModal">
+                  <!-- PO -->
+                  <ng-container *ngSwitchCase="'SHORTCUT_PO'">
+                    <th class="ps-4">PO Reference</th>
+                    <th>Creation Date</th>
+                    <th>Aggregate Value</th>
+                    <th>Status</th>
+                  </ng-container>
+                  <!-- RFQ -->
+                  <ng-container *ngSwitchCase="'SHORTCUT_RFQ'">
+                    <th class="ps-4">Quotation Ref</th>
+                    <th>Product Name</th>
+                    <th>Valid Until</th>
+                    <th>Status</th>
+                  </ng-container>
+                  <!-- LC -->
+                  <ng-container *ngSwitchCase="'SHORTCUT_LC'">
+                    <th class="ps-4">LC Number</th>
+                    <th>Created Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </ng-container>
+                  <!-- SHIPMENT -->
+                  <ng-container *ngSwitchCase="'SHORTCUT_SHIPMENT'">
+                    <th class="ps-4">Shipment #</th>
+                    <th>Origin</th>
+                    <th>Est. Delivery</th>
+                    <th>Created Date</th>
+                  </ng-container>
+                  <!-- PO LINE ITEM -->
+                  <ng-container *ngSwitchCase="'SHORTCUT_POLINE'">
+                    <th class="ps-4">PO Ref</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                  </ng-container>
+                </tr>
+              </thead>
+
+              <!-- BODY -->
+              <tbody>
+                <ng-container *ngFor="let item of filteredShortcutData">
+                  <tr [ngSwitch]="activeShortcutModal">
+                    <!-- PO -->
+                    <ng-container *ngSwitchCase="'SHORTCUT_PO'">
+                      <td class="ps-4 font-monospace fw-bold text-primary">{{ item?.poNumber }}</td>
+                      <td class="text-muted">{{ item?.createdAt | date: 'mediumDate' }}</td>
+                      <td class="font-monospace fw-bold text-success">৳{{ item?.totalAmount | number: '1.2-2' }}</td>
+                      <td><span class="badge text-uppercase px-2.5 py-1 bg-primary">{{ item?.status }}</span></td>
+                    </ng-container>
+                    <!-- RFQ -->
+                    <ng-container *ngSwitchCase="'SHORTCUT_RFQ'">
+                      <td class="ps-4 font-monospace fw-bold text-success">{{ item?.quotationNumber || 'RFQ-'+item.id }}</td>
+                      <td class="text-muted">{{ item?.productName }}</td>
+                      <td class="text-muted">{{ item?.validUntil | date: 'mediumDate' }}</td>
+                      <td><span class="badge text-uppercase px-2.5 py-1 bg-success">{{ item?.status }}</span></td>
+                    </ng-container>
+                    <!-- LC -->
+                    <ng-container *ngSwitchCase="'SHORTCUT_LC'">
+                      <td class="ps-4 font-monospace fw-bold text-warning">{{ item?.lcNumber }}</td>
+                      <td class="text-muted">{{ item?.createdAt | date: 'mediumDate' }}</td>
+                      <td class="font-monospace fw-bold text-success">৳{{ item?.amount | number: '1.2-2' }}</td>
+                      <td><span class="badge text-uppercase px-2.5 py-1 bg-warning">{{ item?.status }}</span></td>
+                    </ng-container>
+                    <!-- SHIPMENT -->
+                    <ng-container *ngSwitchCase="'SHORTCUT_SHIPMENT'">
+                      <td class="ps-4 font-monospace fw-bold text-info">{{ item?.shipmentNumber }}</td>
+                      <td class="text-muted">{{ item?.origin }}</td>
+                      <td class="text-muted">{{ item?.estimatedDelivery | date: 'mediumDate' }}</td>
+                      <td class="text-muted">{{ item?.createdAt | date: 'mediumDate' }}</td>
+                    </ng-container>
+                    <!-- PO LINE ITEM -->
+                    <ng-container *ngSwitchCase="'SHORTCUT_POLINE'">
+                      <td class="ps-4 font-monospace fw-bold text-teal">{{ item?.poNumber }}</td>
+                      <td class="text-muted">{{ item?.productName }}</td>
+                      <td class="text-muted">{{ item?.quantity }}</td>
+                      <td class="font-monospace fw-bold text-success">৳{{ item?.lineTotal || item?.totalAmount | number: '1.2-2' }}</td>
+                      <td><span class="badge text-uppercase px-2.5 py-1 bg-teal">{{ item?.status }}</span></td>
+                    </ng-container>
+                  </tr>
+                </ng-container>
+                <tr *ngIf="filteredShortcutData.length === 0">
+                  <td colspan="5" class="text-center py-4 text-muted font-monospace">No records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer border-top-0 px-4 pb-4 pt-2">
+          <button type="button" class="btn btn-secondary" style="border-radius: 8px;" (click)="closeShortcutModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

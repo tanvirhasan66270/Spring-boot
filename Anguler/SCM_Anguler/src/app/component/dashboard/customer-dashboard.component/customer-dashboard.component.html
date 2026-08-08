@@ -258,7 +258,7 @@
             @if (statementData) {
               <div class="mt-4 p-4 border rounded-3 bg-light">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="fw-bold text-dark mb-0">Statement Found: Invoice #{{ statementData.invoiceNumber }}</h6>
+                  <h6 class="fw-bold text-dark mb-0">Statement Found: Invoice #{{ statementData.invoiceNumber }} <span class="text-secondary fw-normal fs-8 ms-2">| Order: {{ statementData.customerOrderNumber || 'N/A' }}</span></h6>
                   <button class="btn btn-success btn-sm fw-bold" (click)="downloadStatementPdf()">
                     <i class="bi bi-download me-1"></i> Download / Print PDF
                   </button>

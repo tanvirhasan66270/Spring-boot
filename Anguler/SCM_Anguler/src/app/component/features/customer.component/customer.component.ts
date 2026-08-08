@@ -9,6 +9,7 @@ import { PoliceStationService } from '../../../service/police-station.service';
 import { environment } from '../../../../environment/environment';
 import { CustomerResponseModel, CustomerRequestModel } from '../../shared/model/customerModel';
 import { LoginResponse } from '../../../auth/Model/authModel';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-customer',
@@ -50,6 +51,7 @@ export class CustomerComponent implements OnInit {
   isEdit = false;
   currentEditId: number | null = null;
   isDrawerOpen = false;
+  currentStep: number = 1;
 
   userId!: number;
   singleCustomerProfile: CustomerResponseModel | null = null;
@@ -64,6 +66,8 @@ export class CustomerComponent implements OnInit {
     private districtService: DistrictService,
     private stationService: PoliceStationService,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -73,6 +77,19 @@ export class CustomerComponent implements OnInit {
     if (this.userId) {
       this.loadCustomerByUserId(this.userId);
     }
+
+    this.route.queryParams.subscribe(params => {
+      if (params['action'] === 'add') {
+        this.openDrawer();
+        
+        // Remove the query param so refreshing doesn't keep opening the modal
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { action: null },
+          queryParamsHandling: 'merge'
+        });
+      }
+    });
   }
 
   loadCustomerByUserId(id: number): void {
@@ -89,6 +106,7 @@ export class CustomerComponent implements OnInit {
     this.reset();
     this.isEdit = false;
     this.isDrawerOpen = true;
+    this.currentStep = 1;
     this.cdr.markForCheck();
   }
 
@@ -96,6 +114,39 @@ export class CustomerComponent implements OnInit {
     this.isDrawerOpen = false;
     this.reset();
     this.cdr.markForCheck();
+  }
+
+  setStep(step: number) {
+    this.currentStep = step;
+    this.cdr.markForCheck();
+  }
+
+  nextStep() {
+    if (this.currentStep < 3) {
+      this.currentStep++;
+      this.cdr.markForCheck();
+    }
+  }
+
+  prevStep() {
+    if (this.currentStep > 1) {
+      this.currentStep--;
+      this.cdr.markForCheck();
+    }
+  }
+
+  isStep1Complete(): boolean {
+    const p = this.customer;
+    const isPasswordValid = this.isEdit || (p.password && p.password.length >= 6 && p.password === this.confirmPassword);
+    return !!(p.name && p.email && p.phone && p.gender && p.dob && p.nidNumber && isPasswordValid);
+  }
+
+  isStep2Complete(): boolean {
+    return !!(this.selectedCountryId && this.selectedDivisionId && this.selectedDistrictId && this.customer.policeStationId != 0 && this.streetAddress);
+  }
+
+  isStep3Complete(): boolean {
+    return !!(this.selectedFile || this.imagePreview);
   }
 
   loadCustomers() {
@@ -399,5 +450,6 @@ export class CustomerComponent implements OnInit {
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;
+    this.currentStep = 1;
   }
 }

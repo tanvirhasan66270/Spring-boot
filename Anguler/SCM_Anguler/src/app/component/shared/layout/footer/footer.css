@@ -12,7 +12,7 @@
 .footer-inner {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 0.5rem;
   font-size: var(--font-size-xs);
   color: var(--gray-400);

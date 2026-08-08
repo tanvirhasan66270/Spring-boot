@@ -33,6 +33,7 @@ export class CustomerProfileComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreviewUrl: string | null = null;
   errorMessage: string | null = null;
+  imageLoadError: boolean = false;
 
   profileCompletion: number = 0;
   hasGeneralInfo: boolean = false;
@@ -124,13 +125,23 @@ export class CustomerProfileComponent implements OnInit {
     if (this.imagePreviewUrl) {
       return this.imagePreviewUrl;
     }
-    if (this.customerData && this.customerData.image) {
+    if (this.customerData && this.customerData.image && !this.imageLoadError) {
       const cleanName = this.customerData.image.includes('/')
         ? this.customerData.image.substring(this.customerData.image.lastIndexOf('/') + 1)
         : this.customerData.image;
       return this.imageBaseUrl + cleanName;
     }
-    return 'assets/no-image.png';
+    return '';
+  }
+
+  onImageError(): void {
+    this.imageLoadError = true;
+    this.cdr.markForCheck();
+  }
+
+  getInitials(): string {
+    if (!this.customerData || !this.customerData.name) return 'C';
+    return this.customerData.name.charAt(0).toUpperCase();
   }
 
   onFileChange(event: any): void {

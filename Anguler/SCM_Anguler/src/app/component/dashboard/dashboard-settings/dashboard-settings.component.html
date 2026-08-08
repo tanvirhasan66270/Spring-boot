@@ -45,13 +45,7 @@
             <span class="tab-badge">{{ unreadCount }}</span>
           }
         </button>
-        <button
-          class="tab-btn"
-          [class.active]="activeTab === 'application'"
-          (click)="setTab('application')"
-        >
-          <i class="bi bi-app-indicator"></i> Application
-        </button>
+      
       </div>
 
       <!-- Content -->
@@ -71,7 +65,7 @@
               </div>
             </div>
 
-            <!-- 🎯 সম্পূর্ণ রিড-অনলি লেআউট, কোনো এডিটেবল কন্ডিশন ও ইনপুট ফিল্ড এখানে নেই -->
+            <!--  সম্পূর্ণ রিড-অনলি লেআউট, কোনো এডিটেবল কন্ডিশন ও ইনপুট ফিল্ড এখানে নেই -->
             <div class="detail-list">
               <div class="detail-item">
                 <span class="detail-label">Full Name</span>
@@ -120,23 +114,26 @@
             </div>
 
             @if (changePasswordMode) {
-              <div class="password-form">
+              <form class="password-form" autocomplete="off" (submit)="changePassword(); $event.preventDefault()">
                 <div class="form-group">
                   <label>Current Password</label>
-                  <input type="password" class="form-control" [(ngModel)]="currentPassword" />
+                  <input type="password" class="form-control" [(ngModel)]="currentPassword" name="currentPwd" autocomplete="new-password" [class.is-invalid]="currentPasswordError" />
+                  @if (currentPasswordError) {
+                    <div class="text-danger small mt-1">{{ currentPasswordError }}</div>
+                  }
                 </div>
                 <div class="form-group">
                   <label>New Password</label>
-                  <input type="password" class="form-control" [(ngModel)]="newPassword" />
+                  <input type="password" class="form-control" [(ngModel)]="newPassword" name="newPwd" autocomplete="new-password" />
                 </div>
                 <div class="form-group">
                   <label>Confirm Password</label>
-                  <input type="password" class="form-control" [(ngModel)]="confirmPassword" />
+                  <input type="password" class="form-control" [(ngModel)]="confirmPassword" name="confirmPwd" autocomplete="new-password" />
                 </div>
-                <button class="settings-btn primary" (click)="changePassword()">
+                <button type="submit" class="settings-btn primary">
                   Update Password
                 </button>
-              </div>
+              </form>
             }
 
             <div class="setting-item">
@@ -147,22 +144,7 @@
                   <small class="text-muted">{{ user?.email }}</small>
                 </div>
               </div>
-              <button class="settings-btn outline">Update</button>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-info">
-                <i class="bi bi-key text-warning"></i>
-                <div>
-                  <div class="fw-semibold">Two-Factor Authentication</div>
-                  <small class="text-muted">Add an extra layer of security</small>
-                </div>
-              </div>
-              <div class="toggle-switch">
-                <input type="checkbox" id="2fa" />
-                <label for="2fa"></label>
-              </div>
-            </div>
+           </div>           
           </div>
         }
 
@@ -190,43 +172,7 @@
               </div>
             </div>
 
-            <div class="setting-item">
-              <div class="setting-info">
-                <i class="bi bi-layout-sidebar text-primary"></i>
-                <div>
-                  <div class="fw-semibold">Collapsed Sidebar</div>
-                  <small class="text-muted">Minimize sidebar by default</small>
-                </div>
-              </div>
-              <div class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="sidebar"
-                  [(ngModel)]="sidebarCollapsed"
-                  (change)="onSettingsChange()"
-                />
-                <label for="sidebar"></label>
-              </div>
-            </div>
 
-            <div class="setting-item">
-              <div class="setting-info">
-                <i class="bi bi-grid-1x2 text-success"></i>
-                <div>
-                  <div class="fw-semibold">Show Dashboard Widgets</div>
-                  <small class="text-muted">Display charts and statistics cards</small>
-                </div>
-              </div>
-              <div class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="widgets"
-                  [(ngModel)]="showWidgets"
-                  (change)="onSettingsChange()"
-                />
-                <label for="widgets"></label>
-              </div>
-            </div>
           </div>
         }
 
@@ -322,49 +268,6 @@
           </div>
         }
 
-        <!-- Application Tab -->
-        @if (activeTab === 'application') {
-          <div class="settings-section">
-            <h6 class="section-title">Application Preferences</h6>
-
-            <div class="form-group">
-              <label>Language</label>
-              <select class="form-control" [(ngModel)]="language" (change)="onSettingsChange()">
-                <option value="en">English</option>
-                <option value="bn">বাংলা (Bengali)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Date Format</label>
-              <select class="form-control" [(ngModel)]="dateFormat" (change)="onSettingsChange()">
-                <option value="MM/dd/yyyy">MM/DD/YYYY</option>
-                <option value="dd/MM/yyyy">DD/MM/YYYY</option>
-                <option value="yyyy-MM-dd">YYYY-MM-DD</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Time Zone</label>
-              <select class="form-control" [(ngModel)]="timeZone" (change)="onSettingsChange()">
-                <option value="Asia/Dhaka">Asia/Dhaka (GMT+6)</option>
-                <option value="UTC">UTC (GMT+0)</option>
-                <option value="America/New_York">America/New_York (EST)</option>
-                <option value="Europe/London">Europe/London (GMT)</option>
-              </select>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-info">
-                <i class="bi bi-info-circle text-info"></i>
-                <div>
-                  <div class="fw-semibold">Application Version</div>
-                  <small class="text-muted">SCM Enterprise v2.0.0</small>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
       </div>
     </div>
   </div>

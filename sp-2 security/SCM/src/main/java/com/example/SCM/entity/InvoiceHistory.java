@@ -16,7 +16,6 @@ public class InvoiceHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🌟 সঠিক নিয়মে invoice_id কলাম ম্যাপিং (insertable এবং updatable বাদ দেওয়া হয়েছে)
     @Column(name = "invoice_id", nullable = false)
     private Long invoiceId;
 

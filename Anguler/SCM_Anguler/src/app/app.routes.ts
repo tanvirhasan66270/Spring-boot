@@ -63,6 +63,7 @@ import { PublicContactComponent } from './component/public/public-contact/public
 import { PublicJoinUsComponent } from './component/public/public-join-us/public-join-us.component';
 import { SupplierProfileComponent } from './component/profile/supplier-profile.component/supplier-profile.component';
 import { CustomerProfileComponent } from './component/profile/customer-profile.component/customer-profile.component';
+import { DriverProfileComponent } from './component/profile/driver-profile.component/driver-profile.component';
 import { AdminComponent } from './component/features/admin.component/admin.component';
 
 const ALL_ROLES = [
@@ -171,7 +172,13 @@ export const routes: Routes = [
       { path: 'dashboard/logistics', component: LogisticsDashboardComponent },
       { path: 'dashboard/commercial', component: CommercialDashboardComponent },
       { path: 'dashboard/sales', component: SalesDashboardComponent },
-      { path: 'dashboard/driver', component: DriverDashboardComponent },
+      {
+        path: 'dashboard/driver',
+        component: DriverDashboardComponent,
+        children: [
+          { path: 'driver_profile', component: DriverProfileComponent }
+        ]
+      },
      {
     path: 'dashboard/supplier', 
     component: SupplierDashboardComponent, 

@@ -49,11 +49,21 @@ export class AuthService {
   }
  
 
-    // ── Reset Password ───────────────────────────────────
+   // ── Reset Password ───────────────────────────────────
 
   resetPassword(dto: ResetPasswordRequest): Observable<string> {
     return this.http.post(
       `${this.apiUrl}/reset-password`,
+      dto,
+      { responseType: 'text' }
+    );
+  }
+
+   // ── Change Password ──────────────────────────────────
+
+  changePassword(dto: any): Observable<string> {
+    return this.http.post(
+      `${this.apiUrl}/change-password`,
       dto,
       { responseType: 'text' }
     );

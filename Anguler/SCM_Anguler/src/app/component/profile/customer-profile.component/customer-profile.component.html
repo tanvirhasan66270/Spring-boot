@@ -31,10 +31,18 @@
       
       <!-- Avatar Box Frame -->
       <div class="position-relative d-inline-block mx-auto mb-3">
-        <img [src]="getProfileImage()" 
-             alt="Customer Identity" 
-             class="rounded-circle border shadow-sm img-thumbnail"
-             style="width: 140px; height: 140px; object-fit: cover;">
+        <ng-container *ngIf="getProfileImage(); else noImage">
+          <img [src]="getProfileImage()" 
+               alt="Customer Identity" 
+               (error)="onImageError()"
+               class="rounded-circle border shadow-sm img-thumbnail"
+               style="width: 140px; height: 140px; object-fit: cover;">
+        </ng-container>
+        <ng-template #noImage>
+          <div class="rounded-circle shadow-sm d-flex justify-content-center align-items-center bg-primary text-white mx-auto" style="width: 140px; height: 140px; font-size: 3.5rem; font-weight: bold;">
+            {{ getInitials() }}
+          </div>
+        </ng-template>
       </div>
 
       <!-- Dynamic Basic Meta -->

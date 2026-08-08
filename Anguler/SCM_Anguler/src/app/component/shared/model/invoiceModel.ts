@@ -34,6 +34,7 @@ export interface InvoiceResponseModel {
   id: number;
   invoiceNumber: string; // অটো-জেনারেটেড ইউনিক ইনভয়েস কোড
   customerOrderId?: number | null;
+  customerOrderNumber?: string; // Loaded dynamically via customerOrderId
   customerEmail: string; // অটো-জেনারেটেড ইমেইল ফিল্ড রেসপন্স নোড
   salesOfficerId?: number | null;
   issuedToName: string;

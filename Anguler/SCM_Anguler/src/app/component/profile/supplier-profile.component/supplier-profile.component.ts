@@ -39,6 +39,7 @@ export class SupplierProfileComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreviewUrl: string | null = null;
   errorMessage: string | null = null;
+  imageLoadError: boolean = false;
 
   // 📊 ডাইনামিক কমপ্লিশন ভ্যারিয়েবলস
   profileCompletion: number = 0;
@@ -132,10 +133,20 @@ export class SupplierProfileComponent implements OnInit {
     if (this.imagePreviewUrl) {
       return this.imagePreviewUrl;
     }
-    if (this.supplierData && this.supplierData.image) {
+    if (this.supplierData && this.supplierData.image && !this.imageLoadError) {
       return this.imageBaseUrl + this.supplierData.image;
     }
-    return 'assets/no-image.png';
+    return '';
+  }
+
+  onImageError(): void {
+    this.imageLoadError = true;
+    this.cdr.markForCheck();
+  }
+
+  getInitials(): string {
+    if (!this.supplierData || !this.supplierData.name) return 'S';
+    return this.supplierData.name.charAt(0).toUpperCase();
   }
 
   onFileChange(event: any): void {

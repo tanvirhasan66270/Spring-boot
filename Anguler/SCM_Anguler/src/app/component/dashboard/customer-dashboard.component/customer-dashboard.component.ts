@@ -53,7 +53,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
   // Invoice History & Statement States
   isStatementCardOpen: boolean = false;
-  searchStatementOrderId: string = ''; // 🌟 ইনপুটের সাথে মিল রেখে আপডেট করা হলো
+  searchStatementOrderId: string = ''; 
   statementData: any = null;
   statementError: string | null = null;
 
@@ -201,7 +201,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // 🌟 নতুন স্টেটমেন্ট রেকর্ড সার্চ মেথড যা এইচটিএমএল ফাইলের সাথে যুক্ত করা হয়েছে
+  // নতুন স্টেটমেন্ট রেকর্ড সার্চ মেথড যা এইচটিএমএল ফাইলের সাথে যুক্ত করা হয়েছে
   searchStatementRecord(): void {
     if (!this.searchStatementOrderId || this.searchStatementOrderId.trim() === '') {
       this.statementError = 'Please enter a valid Customer Order ID.';
@@ -209,7 +209,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     }
     
     this.statementError = null;
-    this.invoiceService.getByOrderId(Number(this.searchStatementOrderId)).subscribe({
+    this.invoiceService.getByOrderId(this.searchStatementOrderId.trim()).subscribe({
       next: (res) => {
         this.statementData = res;
         this.cdr.markForCheck();

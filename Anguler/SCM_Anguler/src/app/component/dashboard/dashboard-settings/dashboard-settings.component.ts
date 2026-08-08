@@ -8,6 +8,8 @@ import { NotificationService } from '../../../system/service/notification.servic
 import { NotificationModel } from '../../../system/NotificationModel';
 import { environment } from '../../../../environment/environment';
 
+import { AuthService } from '../../../auth/auth_service/auth-service';
+
 @Component({
   selector: 'app-dashboard-settings',
   standalone: true,
@@ -25,7 +27,7 @@ export class DashboardSettingsComponent implements OnInit {
   isDarkMode = false;
   sidebarCollapsed = false;
   notificationsEnabled = true;
-  emailNotifications = false;
+  emailNotifications = true;
   showWidgets = true;
   language = 'en';
   dateFormat = 'MM/dd/yyyy';
@@ -47,6 +49,7 @@ export class DashboardSettingsComponent implements OnInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private notificationService: NotificationService,
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +64,7 @@ export class DashboardSettingsComponent implements OnInit {
     if (settings) {
       this.sidebarCollapsed = settings.sidebarCollapsed ?? false;
       this.notificationsEnabled = settings.notificationsEnabled ?? true;
-      this.emailNotifications = settings.emailNotifications ?? false;
+      this.emailNotifications = settings.emailNotifications ?? true;
       this.showWidgets = settings.showWidgets ?? true;
       this.language = settings.language ?? 'en';
       this.dateFormat = settings.dateFormat ?? 'MM/dd/yyyy';
@@ -134,21 +137,51 @@ export class DashboardSettingsComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // 🎯 "Edit Profile" বাটনে ক্লিক করলে প্যারেন্টকে সিগন্যাল পাঠানোর মেথড
+  // "Edit Profile" বাটনে ক্লিক করলে প্যারেন্টকে সিগন্যাল পাঠানোর মেথড
   triggerEditProfileRouting(): void {
     this.onEditProfile.emit();
   }
 
+  currentPasswordError: string | null = null;
+
   changePassword(): void {
+    this.currentPasswordError = null; // reset error
+
     if (this.newPassword !== this.confirmPassword) {
       alert('Passwords do not match');
       return;
     }
-    this.changePasswordMode = false;
-    this.currentPassword = '';
-    this.newPassword = '';
-    this.confirmPassword = '';
-    this.cdr.markForCheck();
+
+    if (this.newPassword.length < 6 || this.newPassword.length > 20) {
+      alert('Password must be between 6 and 20 characters');
+      return;
+    }
+
+    const dto = {
+      currentPassword: this.currentPassword,
+      newPassword: this.newPassword
+    };
+
+    this.authService.changePassword(dto).subscribe({
+      next: (res) => {
+        alert(res || 'Password changed successfully.');
+        this.changePasswordMode = false;
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error(err);
+        const errorMsg = err.error || '';
+        if (errorMsg.includes('Current password is incorrect')) {
+          this.currentPasswordError = 'wrong password';
+          this.cdr.markForCheck();
+        } else {
+          alert(errorMsg || 'Failed to change password. Please check your current password.');
+        }
+      }
+    });
   }
 
   getRoleDisplayName(role: string): string {
