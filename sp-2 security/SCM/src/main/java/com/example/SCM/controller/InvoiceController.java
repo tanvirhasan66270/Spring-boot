@@ -22,7 +22,6 @@ public class InvoiceController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'PROCUREMENT')")
     public ResponseEntity<InvoiceResponseDTO> create(@RequestBody InvoiceRequestDTO dto) {
         InvoiceResponseDTO response = service.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
