@@ -1,15 +1,4 @@
-export interface InvoiceHistoryModel {
-  id: number;
-  invoiceId: number;
-  invoiceNumber: string;
-  totalAmount: number;
-  paidAmount: number;
-  dueAmount: number;
-  paymentStatus: string;
-  invoiceStatus: string;
-  notes?: string | null;
-  modifiedAt: string;
-}
+
 
 export interface InvoiceRequestModel {
   customerOrderId?: number | null;
@@ -34,7 +23,6 @@ export interface InvoiceResponseModel {
   id: number;
   invoiceNumber: string; // অটো-জেনারেটেড ইউনিক ইনভয়েস কোড
   customerOrderId?: number | null;
-  customerOrderNumber?: string; // Loaded dynamically via customerOrderId
   customerEmail: string; // অটো-জেনারেটেড ইমেইল ফিল্ড রেসপন্স নোড
   salesOfficerId?: number | null;
   issuedToName: string;
@@ -68,6 +56,4 @@ export interface InvoiceResponseModel {
   createdAt: string;
   updatedAt: string;
   cancelledAt?: string | null;
-
-  historyLogs?: InvoiceHistoryModel[];
 }

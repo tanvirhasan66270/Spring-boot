@@ -13,6 +13,8 @@ public class CustomerOrderRequestDTO {
     private String currency;          // BDT, USD
     private double codAmount;
     private String paymentMethod;     // CASH, BANK, BKASH, NAGAD, ROCKET
+    private String customerAccountNumber;
+    private String paymentCheckImage;
     private String status;            // PENDING, CONFIRMED
     private String remarks;
 

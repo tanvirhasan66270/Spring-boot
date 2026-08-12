@@ -7,10 +7,8 @@ import com.example.SCM.dto.request.InvoiceRequestDTO;
 import com.example.SCM.dto.response.InvoiceResponseDTO;
 import com.example.SCM.entity.CustomerOrder;
 import com.example.SCM.entity.Invoice;
-import com.example.SCM.entity.InvoiceHistory;
 import com.example.SCM.enumClass.ActionStatus;
 import com.example.SCM.enumClass.InvoiceStatus;
-import com.example.SCM.repository.InvoiceHistoryRepository;
 import com.example.SCM.repository.InvoiceRepository;
 import com.example.SCM.repository.CustomerOrderRepository;
 import com.example.SCM.service.ActivityLogService;
@@ -22,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,7 +29,6 @@ import java.util.stream.Collectors;
 public class InvoiceServiceImp implements InvoiceService {
 
     private final InvoiceRepository repository;
-    private final InvoiceHistoryRepository historyRepository; // 🌟 হিস্ট্রি রিপোজিটরি যুক্ত করা হয়েছে
     private final CustomerOrderRepository orderRepository;
     private final InvoiceMapper mapper;
     private final TrackingCodeGenerator codeGenerator;
@@ -43,6 +39,7 @@ public class InvoiceServiceImp implements InvoiceService {
     private final HttpServletRequest request;
 
     // Dynamically resolves current active user or system actor
+
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
         if (userId != null && !userId.isBlank()) {
@@ -54,15 +51,6 @@ public class InvoiceServiceImp implements InvoiceService {
             return authentication.getName();
         }
         return "SYSTEM_AUTOMATION";
-    }
-
-    private InvoiceResponseDTO enrichWithOrderNumber(Invoice invoice) {
-        InvoiceResponseDTO dto = mapper.toResponseDTO(invoice);
-        if (invoice.getCustomerOrderId() != null) {
-            orderRepository.findById(invoice.getCustomerOrderId())
-                    .ifPresent(order -> dto.setCustomerOrderNumber(order.getOrderNumber()));
-        }
-        return dto;
     }
 
     @Override
@@ -104,7 +92,7 @@ public class InvoiceServiceImp implements InvoiceService {
                 request.getRemoteAddr()
         );
 
-        return enrichWithOrderNumber(savedInvoice);
+        return mapper.toResponseDTO(savedInvoice);
     }
 
     @Override
@@ -119,7 +107,7 @@ public class InvoiceServiceImp implements InvoiceService {
 
         mapper.updateEntityFromDTO(dto, invoice);
 
-        // customer repository method verification
+        // customer repository method vereficasion
         CustomerOrder order = orderRepository.findByIdWithDetails(dto.getCustomerOrderId())
                 .orElseThrow(() -> new RuntimeException("Customer Order node structural integrity broken."));
 
@@ -133,23 +121,7 @@ public class InvoiceServiceImp implements InvoiceService {
 
         Invoice updatedInvoice = repository.save(invoice);
 
-        // 🌟 ১. ইনভয়েস আপডেট হওয়ার পর নতুন ডেটা হিস্ট্রি টেবিলে নতুন রো হিসেবে যুক্ত করা
-        InvoiceHistory history = new InvoiceHistory();
-        history.setInvoiceId(updatedInvoice.getId());
-        history.setInvoiceNumber(updatedInvoice.getInvoiceNumber());
-        history.setTotalAmount(updatedInvoice.getTotalAmount());
-        history.setPaidAmount(updatedInvoice.getPaidAmount());
-        history.setDueAmount(updatedInvoice.getDueAmount());
-        history.setPaymentStatus(updatedInvoice.getPaymentStatus() != null ? updatedInvoice.getPaymentStatus().name() : "N/A");
-        history.setInvoiceStatus(updatedInvoice.getInvoiceStatus() != null ? updatedInvoice.getInvoiceStatus().name() : "N/A");
-        history.setNotes(updatedInvoice.getNotes());
-        history.setModifiedAt(LocalDateTime.now());
-
-        // Save history row directly to DB and add to current entity for DTO mapping
-        historyRepository.save(history);
-        updatedInvoice.getHistoryLogs().add(history);
-
-        // if ISSUE realtime mail notification is triggered
+        // if ISSUE realtime mail notification is treggred
         if (updatedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !updatedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(updatedInvoice, updatedInvoice.getCustomerEmail());
         }
@@ -161,14 +133,14 @@ public class InvoiceServiceImp implements InvoiceService {
                 "UPDATE",
                 "INVOICE",
                 updatedInvoice.getId().toString(),
-                "Invoice financial metadata updated & history row logged for Invoice Number: " + updatedInvoice.getInvoiceNumber(),
+                "Invoice financial metadata updated for Invoice Number: " + updatedInvoice.getInvoiceNumber(),
                 "{\"totalAmount\":" + oldTotalAmount + ", \"paymentStatus\":\"" + oldPaymentStatus + "\", \"invoiceStatus\":\"" + oldInvoiceStatus + "\"}",
                 "{\"totalAmount\":" + updatedInvoice.getTotalAmount() + ", \"paymentStatus\":\"" + updatedInvoice.getPaymentStatus() + "\", \"invoiceStatus\":\"" + updatedInvoice.getInvoiceStatus() + "\"}",
                 ActionStatus.SUCCESS,
                 request.getRemoteAddr()
         );
 
-        return enrichWithOrderNumber(updatedInvoice);
+        return mapper.toResponseDTO(updatedInvoice);
     }
 
     @Override
@@ -186,7 +158,7 @@ public class InvoiceServiceImp implements InvoiceService {
         }
 
         return invoices.stream()
-                .map(this::enrichWithOrderNumber)
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
@@ -206,7 +178,7 @@ public class InvoiceServiceImp implements InvoiceService {
             }
         }
 
-        return invoiceOpt.map(this::enrichWithOrderNumber);
+        return invoiceOpt.map(mapper::toResponseDTO);
     }
 
     @Override
@@ -235,22 +207,6 @@ public class InvoiceServiceImp implements InvoiceService {
         );
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public InvoiceResponseDTO getByOrderNumberOrId(String query) {
-        Invoice invoice;
-        try {
-            Long customerOrderId = Long.parseLong(query);
-            invoice = repository.findByCustomerOrderId(customerOrderId)
-                    .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order ID: " + customerOrderId));
-        } catch (NumberFormatException e) {
-            CustomerOrder order = orderRepository.findByOrderNumberWithDetails(query)
-                    .orElseThrow(() -> new RuntimeException("No customer order found with number: " + query));
-            invoice = repository.findByCustomerOrderId(order.getId())
-                    .orElseThrow(() -> new RuntimeException("No invoice found for Customer Order Number: " + query));
-        }
-        return enrichWithOrderNumber(invoice);
-    }
     private void sendInvoiceEmail(Invoice invoice, String customerEmail) {
         String subject = "SCM Official Invoice Bill - " + invoice.getInvoiceNumber();
 

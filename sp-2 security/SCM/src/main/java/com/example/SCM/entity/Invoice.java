@@ -7,8 +7,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "invoices")
@@ -91,11 +89,6 @@ public class Invoice {
     private LocalDateTime updatedAt;
 
     private LocalDateTime cancelledAt;
-
-    //  Invoice Update History Logs Relationship
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "invoice_id")
-    private List<InvoiceHistory> historyLogs = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

@@ -3,15 +3,13 @@ package com.example.SCM.dto.response;
 import lombok.Data;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 public class InvoiceResponseDTO {
     private Long id;
     private String invoiceNumber;
-    private Long customerOrderId;
-    private String customerOrderNumber;
-    private String customerEmail;
+    private Long customerOrderId;      // TS: CustomerOrderId
+    private String customerEmail;      // অটো-জেনারেটেড ইমেইল ফিল্ড রেসপন্স নোড
     private Long salesOfficerId;
     private String issuedToName;
     private String currency;
@@ -36,6 +34,4 @@ public class InvoiceResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime cancelledAt;
-
-    private List<InvoiceHistoryResponseDTO> historyLogs;
 }

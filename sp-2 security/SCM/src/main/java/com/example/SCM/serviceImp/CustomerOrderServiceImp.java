@@ -19,6 +19,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.multipart.MultipartFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 import java.time.LocalDate;
 import java.time.Year;
 import java.util.List;
@@ -37,6 +44,9 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
     private final HttpServletRequest request;
     private final CustomerRepository customerRepository;
 
+    @Value("${image.upload.dir}")
+    private String uploadDir;
+
     // Dynamically resolves current active user or system actor
 
     private String resolveCurrentUserId() {
@@ -54,7 +64,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
     @Transactional
     @Override
-    public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto) {
+    public CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto, MultipartFile image) {
         Customer customerProfile = customerRepository.findById(dto.getCustomerId())
                 .orElseThrow(() -> new RuntimeException("Target customer profile missing! ID: " + dto.getCustomerId()));
 
@@ -69,6 +79,11 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         double inputPaid = dto.getCodAmount();
         if (inputPaid > order.getTotalAmount()) {
             throw new IllegalArgumentException("Error: Provided amount cannot be greater than Total Order Value (" + order.getTotalAmount() + " BDT)!");
+        }
+
+        if (image != null && !image.isEmpty()) {
+            String uploadedFileName = uploadImage(image, order.getOrderNumber());
+            order.setPaymentCheckImage(uploadedFileName);
         }
 
         CustomerOrder savedOrder = orderRepository.save(order);
@@ -133,7 +148,7 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
 
     @Transactional
     @Override
-    public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto) {
+    public CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto, MultipartFile image) {
         CustomerOrder order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Customer order row missing for ID: " + id));
 
@@ -145,6 +160,11 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
         if (dto.getEstimatedDelivery() != null) order.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         if (dto.getServiceType() != null) order.setServiceType(ServiceType.valueOf(dto.getServiceType().toUpperCase()));
         order.setCodAmount(dto.getCodAmount());
+
+        if (image != null && !image.isEmpty()) {
+            String uploadedFileName = uploadImage(image, order.getOrderNumber());
+            order.setPaymentCheckImage(uploadedFileName);
+        }
 
         if (dto.getItems() != null && !dto.getItems().isEmpty()) {
             order.getLineItems().clear();
@@ -408,6 +428,34 @@ public class CustomerOrderServiceImp implements CustomerOrderService {
             mailService.senderGeneralMail(order.getCustomerEmail(), subject, mailText);
         } catch (Exception e) {
             System.err.println("Final Mail Error: " + e.getMessage());
+        }
+    }
+
+    private String uploadImage(MultipartFile file, String orderNumber) {
+        try {
+            Path path = Paths.get(uploadDir, "customer_orders");
+
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+
+            String ext = "";
+            String original = file.getOriginalFilename();
+            if (original != null && original.contains(".")) {
+                ext = original.substring(original.lastIndexOf("."));
+            }
+
+            String cleanedName = (orderNumber != null ? orderNumber : "order")
+                    .trim()
+                    .replaceAll("[\\\\/:*?\"<>|]", "_")
+                    .replaceAll("\\s+", "_");
+            String fileName = cleanedName + "_" + UUID.randomUUID() + ext;
+
+            Files.copy(file.getInputStream(), path.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+            return fileName;
+
+        } catch (Exception e) {
+            throw new RuntimeException("Order payment check image upload failed: " + e.getMessage());
         }
     }
 }

@@ -1,10 +1,7 @@
 package com.example.SCM.entity;
 
 import com.example.SCM.Util.ExecuteCalculations;
-import com.example.SCM.enumClass.CustomerOrderStatus;
-import com.example.SCM.enumClass.PaymentMethod;
-import com.example.SCM.enumClass.PaymentStatus;
-import com.example.SCM.enumClass.ServiceType;
+import com.example.SCM.enumClass.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -56,6 +53,10 @@ public class CustomerOrder {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 
+    private String customerAccountNumber;
+
+    private String paymentCheckImage;
+
     @Enumerated(EnumType.STRING)
     private CustomerOrderStatus status = CustomerOrderStatus.PENDING;
 
@@ -81,6 +82,10 @@ public class CustomerOrder {
 
     @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderLineItem> lineItems = new ArrayList<>();
+
+    // List of payment statements to track multiple payments
+    @OneToMany(mappedBy = "customerOrder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PaymentStatement> paymentStatements = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -112,32 +117,35 @@ public class CustomerOrder {
         // 2. Calculate the total weight of all line items
         this.weight = ExecuteCalculations.calculateTotalOrderWeight(this.lineItems);
 
-        // 3. Calculate delivery charge based on the total weight, service type, and COD amount
+        // 3. Calculate delivery charge
         this.deliveryCharge = ExecuteCalculations.calculateDeliveryCharge(this.weight, this.serviceType, this.codAmount);
 
-        // 4. Grand Total: Subtotal + Delivery Charge
+        // 4. Grand Total
         this.totalAmount = this.itemSubtotal + this.deliveryCharge;
 
-        // 5. Set the codAmount as the paidAmount
-        this.paidAmount = String.valueOf(this.codAmount);
-
-        double paid = 0.0;
-        try {
-            paid = Double.parseDouble(this.paidAmount);
-        } catch (Exception e) {
-            paid = 0.0;
+        // 5. Calculate total paid amount ONLY from CONFIRMED_BY_OFFICER payments
+        double totalPaid = 0.0;
+        if (this.paymentStatements != null) {
+            totalPaid = this.paymentStatements.stream()
+                    .filter(ps -> ps.getIssueStatus() == PaymentIssueStatus.CONFIRMED_BY_OFFICER)
+                    .mapToDouble(PaymentStatement::getPaidAmount)
+                    .sum();
         }
 
-        // 6. Correct Due Amount: Subtract the paid amount from the total amount
-        double due = this.totalAmount - paid;
+        // COD amount is usually considered pre-paid or confirmed upon delivery,
+        // so we keep it if you still use it as initial paid amount
+        double finalPaid = totalPaid + this.codAmount;
+
+        this.paidAmount = String.valueOf(finalPaid);
+
+        // 6. Due Amount: Total - Paid
+        double due = this.totalAmount - finalPaid;
         this.dueAmount = String.valueOf(due < 0 ? 0.0 : due);
 
-        // Payment condition and business rules mechanism
-        if (this.paymentMethod == PaymentMethod.CASH) {
-            this.paymentStatus = PaymentStatus.UNPAID;
-        } else if (paid >= this.totalAmount && this.totalAmount > 0) {
+        // Payment Status Logic
+        if (finalPaid >= this.totalAmount && this.totalAmount > 0) {
             this.paymentStatus = PaymentStatus.PAID;
-        } else if (paid > 0 && paid < this.totalAmount) {
+        } else if (finalPaid > 0 && finalPaid < this.totalAmount) {
             this.paymentStatus = PaymentStatus.PARTIALLY_PAID;
         } else {
             this.paymentStatus = PaymentStatus.UNPAID;
@@ -148,6 +156,15 @@ public class CustomerOrder {
         if (item != null) {
             lineItems.add(item);
             item.setCustomerOrder(this);
+        }
+    }
+
+    // Helper method to add a payment statement and refresh calculations
+    public void addPaymentStatement(PaymentStatement statement) {
+        if (statement != null) {
+            paymentStatements.add(statement);
+            statement.setCustomerOrder(this);
+            executeCalculations();
         }
     }
 

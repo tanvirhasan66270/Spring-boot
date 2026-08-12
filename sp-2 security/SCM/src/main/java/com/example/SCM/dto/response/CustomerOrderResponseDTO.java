@@ -22,6 +22,8 @@ public class CustomerOrderResponseDTO {
     private String dueAmount;
     private String paymentStatus;
     private String paymentMethod;     // CASH, BANK, BKASH, ইত্যাদি
+    private String customerAccountNumber;
+    private String paymentCheckImage;
     private String status;            // PENDING, CONFIRMED, SHIPPED, DELIVERED
     private String deliveryAddress;
     private String deliveryPhone;

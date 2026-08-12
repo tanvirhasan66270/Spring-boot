@@ -15,6 +15,8 @@ import { NotificationService } from '../../../system/service/notification.servic
 import { NotificationModel } from '../../../system/NotificationModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
+import { PaymentStatementService } from '../../../service/payment-statement.service';
+import { PaymentStatementResponse } from '../../shared/model/PaymentStatementModel';
 import { environment } from '../../../../environment/environment';
 
 @Component({
@@ -39,6 +41,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   monthLabels: string[] = [];
   recommendations: any[] = [];
   readonly imageBaseUrl = environment.imgUrl + "product/";
+  readonly imgUrl = environment.imgUrl;
 
   notifications: NotificationModel[] = [];
 
@@ -55,7 +58,17 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   isStatementCardOpen: boolean = false;
   searchStatementOrderId: string = ''; 
   statementData: any = null;
+  statementPayments: PaymentStatementResponse[] = [];
   statementError: string | null = null;
+
+  // Add Payment Modal States
+  isPaymentModalOpen = false;
+  paymentSearchOrderNumber = '';
+  paymentOrderDetails: CustomerOrderResponseModel | null = null;
+  paymentAmount = 0;
+  paymentMethod = 'CASH';
+  paymentFile: File | null = null;
+  paymentErrorMessage: string | null = null;
 
   // Place New Order Inline Form States
   showOrderFormOnly = false;
@@ -63,6 +76,8 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   currentProduct: any = null;
   currentQuantity: number = 1;
   currentRemarks: string = '';
+  orderImageFile: File | null = null;
+  orderImagePreview: string | null = null;
 
   order: CustomerOrderRequestModel = {
     customerId: 0,
@@ -112,6 +127,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private invoiceService: InvoiceService,
+    private paymentService: PaymentStatementService
   ) {}
 
   ngOnInit(): void {
@@ -196,6 +212,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   toggleStatementCard(): void {
     this.isStatementCardOpen = !this.isStatementCardOpen;
     this.statementData = null;
+    this.statementPayments = [];
     this.searchStatementOrderId = '';
     this.statementError = null;
     this.cdr.markForCheck();
@@ -204,19 +221,24 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   // নতুন স্টেটমেন্ট রেকর্ড সার্চ মেথড যা এইচটিএমএল ফাইলের সাথে যুক্ত করা হয়েছে
   searchStatementRecord(): void {
     if (!this.searchStatementOrderId || this.searchStatementOrderId.trim() === '') {
-      this.statementError = 'Please enter a valid Customer Order ID.';
+      this.statementError = 'Please enter a valid Customer Order Number.';
       return;
     }
     
     this.statementError = null;
-    this.invoiceService.getByOrderId(this.searchStatementOrderId.trim()).subscribe({
+    const orderNumber = this.searchStatementOrderId.trim();
+
+    this.paymentService.getPaymentsByOrderNumber(orderNumber).subscribe({
       next: (res) => {
-        this.statementData = res;
+        this.statementPayments = res || [];
+        if (this.statementPayments.length === 0) {
+          this.statementError = 'No payment statements found for Order Number #' + orderNumber;
+        }
         this.cdr.markForCheck();
       },
       error: () => {
-        this.statementData = null;
-        this.statementError = 'No invoice history found for Order ID #' + this.searchStatementOrderId;
+        this.statementPayments = [];
+        this.statementError = 'Error fetching payment statements for Order Number #' + orderNumber;
         this.cdr.markForCheck();
       }
     });
@@ -317,6 +339,8 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.currentProduct = null;
     this.currentQuantity = 1;
     this.currentRemarks = '';
+    this.orderImageFile = null;
+    this.orderImagePreview = null;
   }
 
   loadCustomerForOrder(): void {
@@ -425,6 +449,21 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     return due < 0 ? 0 : due;
   }
 
+  onOrderImageChange(event: any): void {
+    const fileList: FileList = event.target.files;
+    if (fileList.length > 0) {
+      this.orderImageFile = fileList[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.orderImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(this.orderImageFile);
+    } else {
+      this.orderImagePreview = null;
+      this.orderImageFile = null;
+    }
+  }
+
   saveFormOrder(): void {
     if (!this.order.deliveryPhone || this.order.deliveryPhone.trim() === '') {
       alert("Delivery phone number is required!");
@@ -435,7 +474,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.orderService.save(this.order).subscribe({
+    this.orderService.save(this.order, this.orderImageFile || undefined).subscribe({
       next: () => {
         alert("🚀 New customer purchase order dispatched and authorized!");
         this.closeOrderFormView();
@@ -492,7 +531,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
 
         this.walletBalance = this.customerOrders
           .filter((o) => o.paymentStatus === 'PAID')
-          .reduce((sum, o) => sum + (o.codAmount || 0), 0);
+          .reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
 
         this.dueAmountTotal = this.customerOrders
           .filter((o) => o.paymentStatus !== 'PAID')
@@ -586,5 +625,112 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   logout(): void {
     this.storage.clearSession();
     this.router.navigate(['']);
+  }
+
+  // Add Payment Logic
+  paymentImagePreview: string | null = null;
+  paymentCustomerAccountNumber: string = '';
+  
+  openPaymentModal() {
+    this.isPaymentModalOpen = true;
+    this.resetPaymentState();
+    this.cdr.markForCheck();
+  }
+
+  closePaymentModal() {
+    this.isPaymentModalOpen = false;
+    this.resetPaymentState();
+    this.cdr.markForCheck();
+  }
+
+  resetPaymentState() {
+    this.paymentSearchOrderNumber = '';
+    this.paymentOrderDetails = null;
+    this.paymentAmount = 0;
+    this.paymentMethod = 'CASH';
+    this.paymentFile = null;
+    this.paymentImagePreview = null;
+    this.paymentCustomerAccountNumber = '';
+    this.paymentErrorMessage = null;
+  }
+
+  searchOrderForPayment() {
+    this.paymentErrorMessage = null;
+    if (!this.paymentSearchOrderNumber) return;
+
+    this.orderService.trackOrder(this.paymentSearchOrderNumber).subscribe({
+      next: (order) => {
+        // Only allow if order belongs to the customer
+        if (order.customerId !== this.userId) {
+          this.paymentOrderDetails = null;
+          this.paymentErrorMessage = "Order not found or invalid order number.";
+          this.cdr.markForCheck();
+          return;
+        }
+
+        this.paymentOrderDetails = order;
+        if (order.dueAmount) {
+          this.paymentAmount = Number(order.dueAmount);
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.paymentOrderDetails = null;
+        this.paymentErrorMessage = "Order not found or invalid order number.";
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onPaymentFileChange(event: any) {
+    const fileList: FileList = event.target.files;
+    if (fileList.length > 0) {
+      this.paymentFile = fileList[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.paymentImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(this.paymentFile);
+    } else {
+      this.paymentImagePreview = null;
+      this.paymentFile = null;
+    }
+  }
+
+  submitPayment() {
+    this.paymentErrorMessage = null;
+    if (!this.paymentOrderDetails) return;
+    if (this.paymentAmount <= 0) {
+      this.paymentErrorMessage = "Amount must be greater than zero.";
+      return;
+    }
+
+    const payload = {
+      customerOrderId: this.paymentOrderDetails.id,
+      paidAmount: this.paymentAmount,
+      paymentMethod: this.paymentMethod,
+      customerAccountNumber: this.paymentCustomerAccountNumber
+    };
+
+    const formData = new FormData();
+    formData.append('payment', new Blob([JSON.stringify(payload)], { type: 'application/json' }));
+    
+    if (this.paymentFile) {
+      formData.append('image', this.paymentFile);
+    } else {
+      formData.append('image', new Blob([], { type: 'application/octet-stream' }), 'empty.png');
+    }
+
+    this.paymentService.addPayment(formData).subscribe({
+      next: () => {
+        alert("Payment submitted successfully. It will be verified by an officer soon.");
+        this.closePaymentModal();
+        this.loadDashboardData();
+      },
+      error: (err) => {
+        this.paymentErrorMessage = err.error?.message || err.message || "Failed to add payment.";
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

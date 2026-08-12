@@ -53,6 +53,8 @@ export class CustomerOrderComponent implements OnInit {
   currentProduct: any = null;
   currentQuantity: number = 1;
   currentRemarks: string = '';
+  selectedImage: File | null = null;
+  imagePreview: string | null = null;
 
   order: CustomerOrderRequestModel = {
     customerId: 0,
@@ -64,6 +66,7 @@ export class CustomerOrderComponent implements OnInit {
     currency: 'BDT',
     codAmount: 0,
     paymentMethod: 'CASH',
+    customerAccountNumber: '',
     status: 'PENDING',
     remarks: '',
     items: []
@@ -361,7 +364,7 @@ export class CustomerOrderComponent implements OnInit {
     }
 
     if (this.isEdit && this.currentEditId !== null) {
-      this.service.update(this.currentEditId, this.order).subscribe({
+      this.service.update(this.currentEditId, this.order, this.selectedImage || undefined).subscribe({
         next: () => {
           alert("Customer purchase ledger instance mutated successfully!");
           this.closeDrawer();
@@ -370,7 +373,7 @@ export class CustomerOrderComponent implements OnInit {
         error: (err: any) => this.handleBackendError(err)
       });
     } else {
-      this.service.save(this.order).subscribe({
+      this.service.save(this.order, this.selectedImage || undefined).subscribe({
         next: () => {
           alert("New customer purchase order dispatched and authorized!");
           this.closeDrawer();
@@ -396,6 +399,7 @@ export class CustomerOrderComponent implements OnInit {
       currency: o.currency || 'BDT',
       codAmount: Number(o.codAmount) || 0,
       paymentMethod: o.paymentMethod || 'CASH',
+      customerAccountNumber: o.customerAccountNumber || '',
       status: o.status,
       remarks: o.remarks || '',
       items: o.lineItems.map(item => ({
@@ -432,6 +436,7 @@ export class CustomerOrderComponent implements OnInit {
       currency: 'BDT',
       codAmount: 0,
       paymentMethod: 'CASH',
+      customerAccountNumber: '',
       status: 'PENDING',
       remarks: '',
       items: []
@@ -444,11 +449,28 @@ export class CustomerOrderComponent implements OnInit {
       }
     }
 
+    this.selectedImage = null;
+    this.imagePreview = null;
     this.currentProduct = null;
     this.currentQuantity = 1;
     this.currentRemarks = '';
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;
+  }
+
+  onImageSelected(event: any): void {
+    const fileList: FileList = event.target.files;
+    if (fileList.length > 0) {
+      this.selectedImage = fileList[0];
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(this.selectedImage);
+    } else {
+      this.selectedImage = null;
+      this.imagePreview = null;
+    }
   }
 }

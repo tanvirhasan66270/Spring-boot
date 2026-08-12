@@ -14,6 +14,9 @@ import { NotificationModel } from '../../../system/NotificationModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
+import { PaymentStatementService } from '../../../service/payment-statement.service';
+import { PaymentStatementResponse } from '../../shared/model/PaymentStatementModel';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-commercial-dashboard',
@@ -60,6 +63,11 @@ export class CommercialDashboardComponent implements OnInit {
   commercialOfficer: CommercialOfficerResponseModel | null = null;
   user: LoginResponse | null = null;
 
+  isPaymentModalOpen = false;
+  pendingPayments: PaymentStatementResponse[] = [];
+  paymentStatusMessage: string | null = null;
+  imgUrl = environment.imgUrl;
+
   constructor(
     private storage: StorageService,
     private commercialOfficerService: CommercialOfficerService,
@@ -69,6 +77,7 @@ export class CommercialDashboardComponent implements OnInit {
     private shipmentService: ShipmentService,
     private notificationService: NotificationService,
     private invoiceService: InvoiceService,
+    private paymentStatementService: PaymentStatementService,
   ) {}
 
   ngOnInit(): void {
@@ -146,7 +155,7 @@ export class CommercialDashboardComponent implements OnInit {
 
   loadInvoices() {
     this.invoiceService.findAll().subscribe({
-      next: (data) => {
+      next: (data: InvoiceResponseModel[]) => {
         this.invoices = (data || []).slice(0, 5);
         this.cdr.markForCheck();
       },
@@ -233,5 +242,45 @@ export class CommercialDashboardComponent implements OnInit {
     this.storage.clearSession();
     this.router.navigate(['']);
     this.cdr.markForCheck();
+  }
+
+  // Payment Verification Modal Methods
+  openPaymentModal(): void {
+    this.isPaymentModalOpen = true;
+    this.paymentStatusMessage = null;
+    this.loadPendingPayments();
+    this.cdr.markForCheck();
+  }
+
+  closePaymentModal(): void {
+    this.isPaymentModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  loadPendingPayments(): void {
+    this.paymentStatementService.getPaymentsByStatus('PENDING_VERIFICATION').subscribe({
+      next: (data) => {
+        this.pendingPayments = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.pendingPayments = [];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  updatePaymentStatus(id: number, status: string): void {
+    this.paymentStatusMessage = null;
+    this.paymentStatementService.updatePaymentStatus(id, status).subscribe({
+      next: () => {
+        this.paymentStatusMessage = `Payment has been successfully ${status === 'CONFIRMED_BY_OFFICER' ? 'Confirmed' : 'Rejected'}.`;
+        this.loadPendingPayments();
+      },
+      error: (err) => {
+        this.paymentStatusMessage = err.error?.message || 'Failed to update payment status.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 }

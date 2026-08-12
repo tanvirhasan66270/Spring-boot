@@ -48,6 +48,7 @@ import { QcInspectionComponent } from './component/features/qc-inspection.compon
 import { InventoryComponent } from './component/features/inventory.component/inventory.component';
 import { StockMovementComponent } from './component/features/stock-movement.component/stock-movement.component';
 import { InvoiceComponent } from './component/features/invoice.component/invoice.component';
+import { PaymentStatementComponent } from './component/features/payment-statement.component/payment-statement.component';
 import { DeliveryTripComponent } from './component/features/delivery-trip.component/delivery-trip.component';
 import { VehicleComponent } from './component/features/vehicle.component/vehicle.component';
 import { DailyReportComponent } from './component/features/daley-report.component/daley-report.component';
@@ -208,6 +209,7 @@ export const routes: Routes = [
       { path: 'inventory', component: InventoryComponent },
       { path: 'stock-movement', component: StockMovementComponent },
       { path: 'invoice', component: InvoiceComponent },
+      { path: 'payment-statement', component: PaymentStatementComponent },
       { path: 'delivery-trip', component: DeliveryTripComponent },
       { path: 'vehicles', component: VehicleComponent },
       { path: 'daily-report', component: DailyReportComponent },

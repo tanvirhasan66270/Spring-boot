@@ -8,13 +8,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
-    List<Invoice> findByCustomerEmail(String customerEmail);
 
+
+    List<Invoice> findByCustomerEmail(String customerEmail);
 
     // 5. Custom JPQL Query: Fetch pending due invoices
     @Query("SELECT i FROM Invoice i WHERE i.dueAmount > 0 AND i.invoiceStatus = com.example.SCM.enumClass.InvoiceStatus.ISSUED")
@@ -24,6 +24,4 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     // 💡 ডাটাবেজে আপনার কলামের নাম 'due_amount' এবং 'invoice_status' এর সাথে ১০০% সিঙ্ক করা হয়েছে
     @Query(value = "SELECT SUM(i.due_amount) FROM invoices i WHERE i.invoice_status = 'ISSUED'", nativeQuery = true)
     Double calculateTotalOutstandingRevenue();
-    Optional<Invoice> findByInvoiceNumber(String invoiceNumber);
-    Optional<Invoice> findByCustomerOrderId(Long customerOrderId);
 }

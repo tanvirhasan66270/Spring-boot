@@ -25,12 +25,22 @@ getByCustomerEmail(): Observable<CustomerOrderResponseModel[]> {
     return this.http.get<CustomerOrderResponseModel>(`${this.apiUrl}/${id}`);
   }
 
-  save(order: CustomerOrderRequestModel): Observable<CustomerOrderResponseModel> {
-    return this.http.post<CustomerOrderResponseModel>(this.apiUrl, order);
+  save(order: CustomerOrderRequestModel, image?: File): Observable<CustomerOrderResponseModel> {
+    const formData = new FormData();
+    formData.append('order', new Blob([JSON.stringify(order)], { type: 'application/json' }));
+    if (image) {
+      formData.append('image', image);
+    }
+    return this.http.post<CustomerOrderResponseModel>(this.apiUrl, formData);
   }
 
-  update(id: number, order: CustomerOrderRequestModel): Observable<CustomerOrderResponseModel> {
-    return this.http.put<CustomerOrderResponseModel>(`${this.apiUrl}/${id}`, order);
+  update(id: number, order: CustomerOrderRequestModel, image?: File): Observable<CustomerOrderResponseModel> {
+    const formData = new FormData();
+    formData.append('order', new Blob([JSON.stringify(order)], { type: 'application/json' }));
+    if (image) {
+      formData.append('image', image);
+    }
+    return this.http.put<CustomerOrderResponseModel>(`${this.apiUrl}/${id}`, formData);
   }
 
   updateStatus(id: number, status: string): Observable<CustomerOrderResponseModel> {

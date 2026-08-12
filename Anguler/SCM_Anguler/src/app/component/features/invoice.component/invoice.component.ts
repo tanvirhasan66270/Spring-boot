@@ -69,7 +69,7 @@ export class InvoiceComponent implements OnInit {
   loadInvoices() {
     this.service.findAll().subscribe({
       next: (data) => { this.invoices = data || []; this.cdr.markForCheck(); },
-      error: (err: any) => this.handleErrorLog(err)
+      error: (err) => this.handleErrorLog(err)
     });
   }
 
@@ -116,12 +116,12 @@ export class InvoiceComponent implements OnInit {
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, payload).subscribe({
         next: () => { alert("Invoice record matrix updated successfully."); this.closeDrawer(); this.loadInvoices(); },
-        error: (err: any) => this.handleErrorLog(err)
+        error: (err) => this.handleErrorLog(err)
       });
     } else {
       this.service.create(payload).subscribe({
         next: () => { alert("New commercial invoice ledger localized inside the datastore."); this.closeDrawer(); this.loadInvoices(); },
-        error: (err: any) => this.handleErrorLog(err)
+        error: (err) => this.handleErrorLog(err)
       });
     }
   }
@@ -196,7 +196,7 @@ export class InvoiceComponent implements OnInit {
     if (confirm("Are you sure you want to drop this invoice dataset node? This action is irreversible.")) {
       this.service.delete(id).subscribe({
         next: () => { alert("Invoice lifecycle terminated successfully."); this.loadInvoices(); },
-        error: (err: any) => alert(err.error?.message || err.message)
+        error: (err) => alert(err.error?.message || err.message)
       });
     }
   }

@@ -3,12 +3,13 @@ package com.example.SCM.service;
 import com.example.SCM.dto.request.CustomerOrderRequestDTO;
 import com.example.SCM.dto.response.CustomerOrderResponseDTO;
 
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Optional;
 
 public interface CustomerOrderService {
-    CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto);
-    CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto);
+    CustomerOrderResponseDTO save(CustomerOrderRequestDTO dto, MultipartFile image);
+    CustomerOrderResponseDTO update(Long id, CustomerOrderRequestDTO dto, MultipartFile image);
 
     // 🌟 স্ট্যাটাস আপডেট মেথড সিগনেচার
     CustomerOrderResponseDTO updateOrderStatus(Long id, String status);

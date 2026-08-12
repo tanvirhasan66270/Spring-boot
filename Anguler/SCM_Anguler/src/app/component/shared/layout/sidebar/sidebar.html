@@ -104,7 +104,7 @@
     </div>
 
     <!-- Products & Orders -->
-    <div class="nav-section" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'CUSTOMER'])">
+    <div class="nav-section" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'CUSTOMER', 'COMMERCIAL_OFFICER'])">
       <div class="nav-section-label">Products & Orders</div>
       <a routerLink="/category" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['SALES_OFFICER', 'MANAGER'])">
         <i class="bi bi-tag"></i>
@@ -121,6 +121,10 @@
       <a routerLink="/invoice" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['CUSTOMER'])">
         <i class="bi bi-receipt"></i>
         <span>Billing</span>
+      </a>
+      <a routerLink="/payment-statement" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER'])">
+        <i class="bi bi-wallet2"></i>
+        <span>Payment Statement</span>
       </a>
     </div>
 

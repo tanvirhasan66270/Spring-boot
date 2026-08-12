@@ -167,6 +167,15 @@
               <h6 class="fw-bold text-dark mb-0 fs-7.5">Place New Order</h6>
             </div>
           </div>
+          <!-- Add Payment -->
+          <div class="col">
+            <div class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center" (click)="openPaymentModal()" style="cursor: pointer;">
+              <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-warning bg-warning bg-opacity-10" style="width: 48px; height: 48px;">
+                <i class="bi bi-cash-coin fs-5"></i>
+              </div>
+              <h6 class="fw-bold text-dark mb-0 fs-7.5">Add Payment</h6>
+            </div>
+          </div>
           <!-- Track Product -->
           <div class="col">
             <div class="quick-action-card p-3 rounded-4 bg-light border text-center h-100 d-flex flex-column align-items-center justify-content-center" (click)="openTrackModal()" style="cursor: pointer;">
@@ -224,12 +233,12 @@
         </div>
       </div>
         
-      <!-- INVOICE HISTORY STATEMENT LOOKUP CARD -->
+      <!-- PAYMENT STATEMENT CARD -->
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4 border-start border-primary border-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h5 class="fw-bold text-dark mb-1"><i class="bi bi-file-earmark-medical text-primary me-2"></i>Invoice History & Statement Lookup</h5>
-            <p class="text-muted small mb-0">Search full financial breakdown and modification update logs by customer order ID.</p>
+            <h5 class="fw-bold text-dark mb-1"><i class="bi bi-wallet2 text-primary me-2"></i>Payment Statement</h5>
+            <p class="text-muted small mb-0">Search all payment statements for a specific Customer Order Number.</p>
           </div>
           <button class="btn btn-outline-primary fw-bold px-3 py-2 shadow-sm fs-8" (click)="toggleStatementCard()">
             <i class="bi bi-search me-1"></i> {{ isStatementCardOpen ? 'Close Statement Panel' : 'Open Statement Search' }}
@@ -240,7 +249,7 @@
           <div class="mt-3 pt-3 border-top animate-fade-in">
             <div class="row g-2 align-items-center mb-3">
               <div class="col-md-9">
-                <input type="text" class="form-control font-monospace fs-7" [(ngModel)]="searchStatementOrderId" placeholder="Enter Customer Order ID (e.g., 88 or ORD-...)" />
+                <input type="text" class="form-control font-monospace fs-7" [(ngModel)]="searchStatementOrderId" placeholder="Enter Customer Order Number" />
               </div>
               <div class="col-md-3">
                 <button class="btn btn-primary w-100 fw-bold fs-7" (click)="searchStatementRecord()">
@@ -255,54 +264,57 @@
               </div>
             }
 
-            @if (statementData) {
+            @if (statementData && statementPayments && statementPayments.length > 0) {
               <div class="mt-4 p-4 border rounded-3 bg-light">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="fw-bold text-dark mb-0">Statement Found: Invoice #{{ statementData.invoiceNumber }} <span class="text-secondary fw-normal fs-8 ms-2">| Order: {{ statementData.customerOrderNumber || 'N/A' }}</span></h6>
+                  <h6 class="fw-bold text-dark mb-0">Payment Statements for Order #{{ searchStatementOrderId }}</h6>
                   <button class="btn btn-success btn-sm fw-bold" (click)="downloadStatementPdf()">
                     <i class="bi bi-download me-1"></i> Download / Print PDF
                   </button>
                 </div>
 
-                <div class="row fs-7 mb-3">
-                  <div class="col-md-3"><strong>Total:</strong> ৳{{ statementData.totalAmount | number:'1.2-2' }}</div>
-                  <div class="col-md-3"><strong>Paid:</strong> ৳{{ statementData.paidAmount | number:'1.2-2' }}</div>
-                  <div class="col-md-3"><strong>Due:</strong> ৳{{ statementData.dueAmount | number:'1.2-2' }}</div>
-                  <div class="col-md-3"><strong>Status:</strong> <span class="badge bg-secondary">{{ statementData.paymentStatus }}</span></div>
-                </div>
-
-                <!-- Update History Logs Table -->
-                <h6 class="fw-bold text-secondary text-uppercase fs-8 mt-4 mb-2">
-                  <i class="bi bi-clock-history me-1"></i> Modification & Update Audit Trail (History Rows)
-                </h6>
+                <!-- Payment Statements Table -->
                 <div class="table-responsive bg-white rounded border">
                   <table class="table table-bordered table-sm fs-8 mb-0 align-middle">
                     <thead class="table-light text-secondary">
                       <tr>
-                        <th>Timestamp</th>
-                        <th>Invoice Number</th>
-                        <th>Total</th>
-                        <th>Paid</th>
-                        <th>Due</th>
-                        <th>Payment Status</th>
-                        <th>Matrix Status</th>
+                        <th>Date</th>
+                        <th>Method</th>
+                        <th>Paid Amount</th>
+                        <th>Status</th>
+                        <th>Proof of Payment</th>
                       </tr>
                     </thead>
                     <tbody>
-                      @for (log of statementData.historyLogs; track log.id) {
+                      @for (payment of statementPayments; track payment.id) {
                         <tr>
-                          <td class="font-monospace">{{ log.modifiedAt | date:'yyyy-MM-dd HH:mm:ss' }}</td>
-                          <td class="fw-bold">{{ log.invoiceNumber }}</td>
-                          <td class="font-monospace">{{ log.totalAmount | number:'1.2-2' }}</td>
-                          <td class="font-monospace text-success">{{ log.paidAmount | number:'1.2-2' }}</td>
-                          <td class="font-monospace text-danger">{{ log.dueAmount | number:'1.2-2' }}</td>
-                          <td><span class="badge bg-secondary text-uppercase">{{ log.paymentStatus }}</span></td>
-                          <td><span class="badge bg-dark text-uppercase">{{ log.invoiceStatus }}</span></td>
+                          <td class="font-monospace">{{ payment.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+                          <td class="fw-bold">{{ payment.paymentMethod }}</td>
+                          <td class="font-monospace text-success">৳{{ payment.paidAmount | number:'1.2-2' }}</td>
+                          <td>
+                            <span class="badge" 
+                                  [ngClass]="{
+                                    'bg-warning text-dark': payment.issueStatus === 'PENDING_VERIFICATION',
+                                    'bg-success': payment.issueStatus === 'CONFIRMED_BY_OFFICER',
+                                    'bg-danger': payment.issueStatus === 'FAILED_OR_REJECTED'
+                                  }">
+                              {{ payment.issueStatus }}
+                            </span>
+                          </td>
+                          <td class="text-center">
+                            @if (payment.paymentCheckImage) {
+                              <a [href]="imgUrl + payment.paymentCheckImage" target="_blank" class="text-primary text-decoration-none">
+                                <i class="bi bi-image me-1"></i> View Image
+                              </a>
+                            } @else {
+                              <span class="text-muted"><i class="bi bi-x-circle me-1"></i> No Image</span>
+                            }
+                          </td>
                         </tr>
                       }
                       @empty {
                         <tr>
-                          <td colspan="7" class="text-center text-muted py-3">No modification history recorded yet for this invoice.</td>
+                          <td colspan="5" class="text-center text-muted py-3">No payments recorded for this order yet.</td>
                         </tr>
                       }
                     </tbody>
@@ -537,6 +549,8 @@
             <option value="ROCKET">ROCKET DBBL Node</option>
           </select>
         </div>
+
+
         
         <div *ngIf="order.paymentMethod === 'BANK'" class="alert alert-info border border-primary bg-white shadow-sm p-3 mb-3 rounded-4">
           <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
@@ -544,10 +558,19 @@
             <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Pay using this company account:</div>
             <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
             <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
           </div>
           <div class="form-group">
             <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index</label>
-            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" placeholder="e.g. 10214300982341" name="bankNodeAcc">
+            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="order.customerAccountNumber" placeholder="e.g. 10214300982341" name="customerAccountNumberBank">
+          </div>
+          
+          <div class="form-group mt-3 pt-3 border-top border-primary-subtle">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Check Image (Optional)</label>
+            <input type="file" class="form-control form-control-sm fs-7 rounded-3" accept="image/*" (change)="onOrderImageChange($event)">
+            <div *ngIf="orderImagePreview" class="mt-2 text-center">
+              <img [src]="orderImagePreview" alt="Preview" class="img-fluid rounded-3 border shadow-sm" style="max-height: 150px;">
+            </div>
           </div>
         </div>
 
@@ -556,10 +579,19 @@
           <div class="mb-2 p-2.5 bg-light rounded border border-danger-subtle fs-8 font-monospace text-dark">
             <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-danger me-1"></i> Send money to this company number:</div>
             <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span class="text-danger fw-bold">01712-345678</span></div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
           </div>
           <div class="form-group mb-2">
             <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number</label>
-            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="order.deliveryPhone" name="mfsNodePhone" placeholder="01XXXXXXXXX">
+            <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="order.customerAccountNumber" name="customerAccountNumberMfs" placeholder="01XXXXXXXXX">
+          </div>
+          
+          <div class="form-group mt-3 pt-3 border-top border-danger-subtle">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Screenshot (Optional)</label>
+            <input type="file" class="form-control form-control-sm fs-7 rounded-3" accept="image/*" (change)="onOrderImageChange($event)">
+            <div *ngIf="orderImagePreview" class="mt-2 text-center">
+              <img [src]="orderImagePreview" alt="Preview" class="img-fluid rounded-3 border shadow-sm" style="max-height: 150px;">
+            </div>
           </div>
         </div>
 
@@ -974,4 +1006,137 @@
 
   <!-- SETTINGS PANEL -->
   <app-dashboard-settings [isOpen]="showSettings" (close)="showSettings = false" (onEditProfile)="onEditProfileTriggered()"></app-dashboard-settings>
+
+  <!-- Add Payment Quick Action Modal -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isPaymentModalOpen">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+        
+        <div class="modal-header bg-success text-white px-4 py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-wallet2 me-2"></i> Quick Add Payment
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-light">
+          @if (paymentErrorMessage) {
+          <div class="alert alert-danger alert-dismissible fade show fs-7 py-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i> {{ paymentErrorMessage }}
+            <button type="button" class="btn-close btn-sm py-2" (click)="paymentErrorMessage = null" aria-label="Close"></button>
+          </div>
+          }
+
+          <!-- Search Order -->
+          <div class="mb-4">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Customer Order Number</label>
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+              <input type="text" class="form-control fw-bold font-monospace" placeholder="Enter Order Number (e.g., ORD-123...)" [(ngModel)]="paymentSearchOrderNumber" (keyup.enter)="searchOrderForPayment()">
+              <button class="btn btn-primary fw-bold px-3" type="button" (click)="searchOrderForPayment()">Find</button>
+            </div>
+            <small class="text-muted d-block mt-1">Search by order number to load payment details.</small>
+          </div>
+
+          <!-- Payment Form Card View -->
+          @if (paymentOrderDetails) {
+          <div class="card border-success border-2 shadow-sm rounded-3 mt-3">
+            <div class="card-header bg-success-subtle text-success fw-bold">
+              Order Found: {{ paymentOrderDetails.orderNumber }}
+            </div>
+            <div class="card-body p-3">
+              <div class="row mb-3">
+                <div class="col-6">
+                  <small class="text-uppercase text-muted fw-bold d-block">Customer</small>
+                  <span class="fw-bold">{{ paymentOrderDetails.customerName }}</span>
+                </div>
+                <div class="col-6 text-end">
+                  <small class="text-uppercase text-muted fw-bold d-block">Total Amount</small>
+                  <span class="fw-bold text-dark">৳{{ paymentOrderDetails.totalAmount | number:'1.2-2' }}</span>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-6">
+                  <small class="text-uppercase text-muted fw-bold d-block">Paid</small>
+                  <span class="fw-bold text-success">৳{{ paymentOrderDetails.paidAmount | number:'1.2-2' }}</span>
+                </div>
+                <div class="col-6 text-end">
+                  <small class="text-uppercase text-muted fw-bold d-block">Due Amount</small>
+                  <span class="fw-bold text-danger">৳{{ paymentOrderDetails.dueAmount | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <hr>
+
+              <form #quickPaymentForm="ngForm" (ngSubmit)="quickPaymentForm.valid && submitPayment()">
+                <div class="mb-3">
+                  <label class="form-label fw-bold small text-uppercase text-secondary">Amount to Pay</label>
+                  <input type="number" class="form-control fs-5 font-monospace fw-bold text-success border-success" [(ngModel)]="paymentAmount" name="paymentAmount" required min="1" placeholder="0.00">
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label fw-bold small text-uppercase text-secondary">Payment Method</label>
+                  <select class="form-select" [(ngModel)]="paymentMethod" name="paymentMethod" required>
+                    <option value="CASH">CASH Payment</option>
+                    <option value="BANK">BANK Transfer</option>
+                    <option value="BKASH">BKASH Transfer</option>
+                    <option value="NAGAD">NAGAD Transfer</option>
+                    <option value="ROCKET">ROCKET Transfer</option>
+                  </select>
+                </div>
+
+                <div *ngIf="paymentMethod === 'BANK'" class="alert alert-info border border-primary bg-white shadow-sm p-3 mb-4 rounded-4">
+                  <h6 class="fw-bold text-primary mb-2 small text-uppercase"><i class="bi bi-bank me-2"></i>Secure Bank Gateway Information</h6>
+                  <div class="mb-2 p-2.5 bg-light rounded border border-info-subtle fs-8 font-monospace text-dark">
+                    <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-primary me-1"></i> Pay using this company account:</div>
+                    <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
+                    <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
+                    <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index</label>
+                    <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="paymentCustomerAccountNumber" placeholder="e.g. 10214300982341" name="paymentBankNodeAcc">
+                  </div>
+                  <div class="form-group mt-3 pt-3 border-top border-primary-subtle">
+                    <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Check Image (Optional)</label>
+                    <input type="file" class="form-control form-control-sm fs-7 rounded-3" accept="image/*" (change)="onPaymentFileChange($event)">
+                    <div *ngIf="paymentImagePreview" class="mt-2 text-center">
+                      <img [src]="paymentImagePreview" alt="Preview" class="img-fluid rounded-3 border shadow-sm" style="max-height: 150px;">
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="['BKASH', 'NAGAD', 'ROCKET'].includes(paymentMethod)" class="alert alert-danger border border-danger bg-white shadow-sm p-3 mb-4 rounded-4">
+                  <h6 class="fw-bold text-danger mb-2 small text-uppercase"><i class="bi bi-phone-vibrate me-2"></i>MFS Wallet Engine Verification</h6>
+                  <div class="mb-2 p-2.5 bg-light rounded border border-danger-subtle fs-8 font-monospace text-dark">
+                    <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill text-danger me-1"></i> Send money to this company number:</div>
+                    <div><b>{{ paymentMethod }} Merchant/Personal:</b> <span class="text-danger fw-bold">01712-345678</span></div>
+                    <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label class="small fw-semibold text-secondary mb-1">Authorized Gateway Wallet Number</label>
+                    <input type="text" class="form-control form-control-sm font-monospace fs-7 rounded-3" [(ngModel)]="paymentCustomerAccountNumber" name="paymentMfsNodePhone" placeholder="01XXXXXXXXX">
+                  </div>
+                  <div class="form-group mt-3 pt-3 border-top border-danger-subtle">
+                    <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Screenshot (Optional)</label>
+                    <input type="file" class="form-control form-control-sm fs-7 rounded-3" accept="image/*" (change)="onPaymentFileChange($event)">
+                    <div *ngIf="paymentImagePreview" class="mt-2 text-center">
+                      <img [src]="paymentImagePreview" alt="Preview" class="img-fluid rounded-3 border shadow-sm" style="max-height: 150px;">
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-success w-100 fw-bold py-2 shadow-sm d-flex justify-content-center align-items-center gap-2" type="submit">
+                  <i class="bi bi-check-circle-fill"></i> Confirm Payment
+                </button>
+              </form>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show" *ngIf="isPaymentModalOpen"></div>
+
 </div>

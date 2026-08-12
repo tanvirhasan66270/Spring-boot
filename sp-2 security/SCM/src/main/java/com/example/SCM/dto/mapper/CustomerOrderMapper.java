@@ -37,6 +37,8 @@ public class CustomerOrderMapper {
                 ServiceType.valueOf(dto.getServiceType().toUpperCase()) : ServiceType.STANDARD);
         order.setPaymentMethod(dto.getPaymentMethod() != null && !dto.getPaymentMethod().isBlank() ?
                 PaymentMethod.valueOf(dto.getPaymentMethod().toUpperCase()) : null);
+        order.setCustomerAccountNumber(dto.getCustomerAccountNumber());
+        order.setPaymentCheckImage(dto.getPaymentCheckImage());
         order.setStatus(dto.getStatus() != null && !dto.getStatus().isBlank() ?
                 CustomerOrderStatus.valueOf(dto.getStatus().toUpperCase()) : CustomerOrderStatus.PENDING);
         order.setEstimatedDelivery(dto.getEstimatedDelivery() != null && !dto.getEstimatedDelivery().isBlank() ?
@@ -77,6 +79,8 @@ public class CustomerOrderMapper {
         dto.setDueAmount(entity.getDueAmount());
         dto.setPaymentStatus(entity.getPaymentStatus() != null ? entity.getPaymentStatus().name() : null);
         dto.setPaymentMethod(entity.getPaymentMethod() != null ? entity.getPaymentMethod().name() : null);
+        dto.setCustomerAccountNumber(entity.getCustomerAccountNumber());
+        dto.setPaymentCheckImage(entity.getPaymentCheckImage());
         dto.setCurrency(entity.getCurrency());
         dto.setStatus(entity.getStatus() != null ? entity.getStatus().name() : null);
         dto.setDeliveryAddress(entity.getDeliveryAddress());

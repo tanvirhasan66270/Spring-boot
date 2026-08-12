@@ -7,10 +7,12 @@ import com.example.SCM.repository.CustomerOrderRepository;
 import com.example.SCM.service.CustomerOrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,20 +28,24 @@ public class CustomerOrderController {
 
     // 1. Place a New Order
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CUSTOMER')")
-    @PostMapping
-    public ResponseEntity<CustomerOrderResponseDTO> createOrder(@RequestBody CustomerOrderRequestDTO dto) {
-        CustomerOrderResponseDTO response = orderService.save(dto);
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<CustomerOrderResponseDTO> createOrder(
+            @RequestPart("order") CustomerOrderRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        CustomerOrderResponseDTO response = orderService.save(dto, image);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     // 2. General Update Order Metadata (এডমিন/ম্যানেজার অথবা অর্ডারের প্রকৃত মালিক)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @customerOrderSecurity.isOwner(#id, authentication)")
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,
-            @RequestBody CustomerOrderRequestDTO dto
+            @RequestPart("order") CustomerOrderRequestDTO dto,
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        CustomerOrderResponseDTO response = orderService.update(id, dto);
+        CustomerOrderResponseDTO response = orderService.update(id, dto, image);
         return ResponseEntity.ok(response);
     }
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")

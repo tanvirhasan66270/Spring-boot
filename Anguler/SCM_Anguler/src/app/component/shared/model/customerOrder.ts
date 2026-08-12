@@ -26,6 +26,8 @@ export interface CustomerOrderRequestModel {
   currency: string;
   codAmount: number;
   paymentMethod: 'CASH' | 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | string;  // CASH, BANK, BKASH, NAGAD, ROCKET
+  customerAccountNumber?: string;
+  paymentCheckImage?: string;
   status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' |'DELIVERED' |'CANCELLED' | string;
   remarks: string;
   items: OrderLineItemRequestModel[];
@@ -45,10 +47,12 @@ export interface CustomerOrderResponseModel {
   codAmount: number;
   deliveryCharge: number;
   totalAmount: number;
-  paidAmount: number;
-  dueAmount: number;
+  paidAmount: number | string;
+  dueAmount: number | string;
   paymentStatus:  'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'REFUNDED' | string;
   paymentMethod: 'CASH' | 'BANK' | 'BKASH' | 'NAGAD' | 'ROCKET' | string;
+  customerAccountNumber?: string;
+  paymentCheckImage?: string;
   status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'OUT_FOR_DELIVERY' |'DELIVERED' |'CANCELLED' | string;
   deliveryAddress: string;
   deliveryPhone: string;
