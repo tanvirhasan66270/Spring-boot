@@ -1,4 +1,4 @@
-<nav class="sidebar" *ngIf="activeRole !== 'CUSTOMER' && activeRole !== 'DRIVER'">
+<nav class="sidebar">
  <div class="sidebar-brand">
   <div class="brand-logo-wrapper">
     <div class="brand-title">
@@ -243,15 +243,7 @@
 </nav>
 
 <nav class="sidebar customer-sidebar" *ngIf="activeRole === 'CUSTOMER'">
-  <div class="sidebar-brand d-flex align-items-center gap-2.5 py-4 px-3.5">
-    <div class="brand-logo bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; min-width: 36px; background-color: #2563eb !important;">
-      <i class="bi bi-box-seam-fill fs-5"></i>
-    </div>
-    <div class="text-start">
-      <h6 class="fw-bold mb-0 text-dark font-sans tracking-wide" style="font-size: 0.95rem; line-height: 1.2;">SCM <span style="color: #2563eb;">PRO</span></h6>
-      <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.62rem; letter-spacing: 0.05em;">Supply Chain Management</small>
-    </div>
-  </div>
+ 
 
   <div class="sidebar-nav py-2">
     <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item rounded-3 mb-1 px-3 py-2.5">
@@ -291,19 +283,7 @@
 
 <!-- DRIVER SIDEBAR -->
 <nav class="sidebar" *ngIf="activeRole === 'DRIVER'" style="background-color: #f8fafc; border-right: 1px solid #f1f5f9;">
-  <div class="sidebar-brand text-center p-3">
-    <!-- Styled to match uploaded image (SCM ENTERPRISE in rounded shadow box) -->
-    <div class="bg-white rounded-4 shadow-sm p-3 mb-2 d-flex flex-column align-items-center justify-content-center mx-auto" style="border: 1px solid #f1f5f9;">
-      <div class="brand-title d-flex align-items-center justify-content-center" style="font-size: 2.2rem; font-weight: 900; line-height: 1;">
-        <span style="color: #0f172a;">S</span><span style="color: #84cc16;">C</span><span style="color: #0f172a;">M</span>
-      </div>
-      <div class="brand-subtitle d-flex align-items-center justify-content-center gap-2 mt-2 w-100">
-        <span class="line flex-grow-1" style="height: 2px; background: linear-gradient(90deg, transparent, #84cc16);"></span>
-        <span class="text fw-bold" style="color: #0f172a; font-size: 0.65rem; letter-spacing: 0.25em;">ENTERPRISE</span>
-        <span class="line flex-grow-1" style="height: 2px; background: linear-gradient(-90deg, transparent, #84cc16);"></span>
-      </div>
-    </div>
-  </div>
+ 
 
   <div class="sidebar-nav py-3 px-3">
     <!-- MAIN -->
