@@ -96,7 +96,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     @Override
     @Transactional
     public LetterOfCreditResponseDTO update(Long id, LetterOfCreditRequestDTO dto, MultipartFile file) {
-        LetterOfCredit lc = lcRepository.findById(id)
+        LetterOfCredit lc = lcRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Letter of credit index matrix missing for ID: " + id));
 
         String oldBankName = (lc.getIssuingBank() != null) ? lc.getIssuingBank().getName() : "NONE";
@@ -149,7 +149,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     @Override
     @Transactional
     public LetterOfCreditResponseDTO amendLC(Long id, LetterOfCreditRequestDTO dto) {
-        LetterOfCredit lc = lcRepository.findById(id)
+        LetterOfCredit lc = lcRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("LC Record Not Found! ID: " + id));
 
         double oldAmount = lc.getAmount();
@@ -182,7 +182,7 @@ public class LetterOfCreditServiceImp implements LetterOfCreditService {
     @Override
     @Transactional
     public void delete(Long id) {
-        LetterOfCredit lc = lcRepository.findById(id)
+        LetterOfCredit lc = lcRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new RuntimeException("Target LC matrix log node missing"));
 
         String deletedLcNumber = lc.getLcNumber();

@@ -109,9 +109,9 @@
           <div class="mb-3">
             <label class="form-label fw-bold small text-uppercase text-secondary">Target Corporate Purchase Order</label>
             <select class="form-select fs-7" [(ngModel)]="lc.purchaseOrderId" name="purchaseOrderId" required [disabled]="isEdit">
-              <option [value]="0">-- Select Firm Purchase Order Node --</option>
+              <option [ngValue]="0">-- Select Firm Purchase Order Node --</option>
               @for (po of purchaseOrders; track po.id) {
-                <option [value]="po.id">PO: {{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
+                <option [ngValue]="po.id">PO: {{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
               }
             </select>
           </div>
@@ -119,9 +119,9 @@
           <div class="mb-3">
             <label class="form-label fw-bold small text-uppercase text-secondary">Credit Beneficiary (Supplier)</label>
             <select class="form-select fs-7" [(ngModel)]="lc.supplierId" name="supplierId" required [disabled]="isEdit">
-              <option [value]="0">-- Select Vendor Beneficiary --</option>
+              <option [ngValue]="0">-- Select Vendor Beneficiary --</option>
               @for (s of suppliers; track s.id) {
-                <option [value]="s.id">{{ s.name }} (Email: {{ s.email || 'N/A' }})</option>
+                <option [ngValue]="s.id">{{ s.name }} (Email: {{ s.email || 'N/A' }})</option>
               }
             </select>
           </div>
@@ -129,9 +129,9 @@
           <div class="mb-3">
             <label class="form-label fw-bold small text-uppercase text-secondary">Issuing Financial Institution (Bank)</label>
             <select class="form-select fs-7" [(ngModel)]="lc.issuingBankId" name="issuingBankId" required>
-              <option [value]="0">-- Select SWIFT Banking Terminal --</option>
+              <option [ngValue]="0">-- Select SWIFT Banking Terminal --</option>
               @for (b of banks; track b.id) {
-                <option [value]="b.id">{{ b.name }} (Swift: {{ b.swiftCode }})</option>
+                <option [ngValue]="b.id">{{ b.name }} (Swift: {{ b.swiftCode }})</option>
               }
             </select>
           </div>

@@ -11,10 +11,10 @@ import java.util.Optional;
 @Repository
 public interface LetterOfCreditRepository extends JpaRepository<LetterOfCredit, Long> {
 
-    @Query("SELECT l FROM LetterOfCredit l LEFT JOIN FETCH l.purchaseOrder WHERE l.id = :id")
+    @Query("SELECT l FROM LetterOfCredit l LEFT JOIN FETCH l.purchaseOrder LEFT JOIN FETCH l.supplier LEFT JOIN FETCH l.issuingBank WHERE l.id = :id")
     Optional<LetterOfCredit> findByIdWithDetails(@Param("id") Long id);
 
-    @Query("SELECT l FROM LetterOfCredit l LEFT JOIN FETCH l.purchaseOrder")
+    @Query("SELECT l FROM LetterOfCredit l LEFT JOIN FETCH l.purchaseOrder LEFT JOIN FETCH l.supplier LEFT JOIN FETCH l.issuingBank")
     List<LetterOfCredit> findAllWithDetails();
 
     Optional<LetterOfCredit> findByLcNumber(String lcNumber);
