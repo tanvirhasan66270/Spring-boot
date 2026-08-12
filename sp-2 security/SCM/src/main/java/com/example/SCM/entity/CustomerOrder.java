@@ -106,19 +106,19 @@ public class CustomerOrder {
     }
 
     public void executeCalculations() {
-        // ১. সব লাইন আইটেমের মোট সাবটোটাল বের করা
+        // 1. Calculate the subtotal for all line items
         this.itemSubtotal = ExecuteCalculations.calculateItemSubtotal(this.lineItems);
 
-        // ২. সব লাইন আইটেমের মোট ওজন বের করা
+        // 2. Calculate the total weight of all line items
         this.weight = ExecuteCalculations.calculateTotalOrderWeight(this.lineItems);
 
-        // ৩. মোট ওজনের ওপর ভিত্তি করে ডেলিভারি চার্জ হিসাব করা
+        // 3. Calculate delivery charge based on the total weight, service type, and COD amount
         this.deliveryCharge = ExecuteCalculations.calculateDeliveryCharge(this.weight, this.serviceType, this.codAmount);
 
-        // ৪. গ্র্যান্ড টোটাল: সাবটোটাল + ডেলিভারি চার্জ
+        // 4. Grand Total: Subtotal + Delivery Charge
         this.totalAmount = this.itemSubtotal + this.deliveryCharge;
 
-        //  ৫. পরিশোধিত টাকা (Paid Amount) হিসেবে codAmount কে সেট করা হলো
+        // 5. Set the codAmount as the paidAmount
         this.paidAmount = String.valueOf(this.codAmount);
 
         double paid = 0.0;
@@ -128,11 +128,11 @@ public class CustomerOrder {
             paid = 0.0;
         }
 
-        //  ৬. সঠিক ডিউ (Due Amount): মোট টাকা থেকে পরিশোধিত টাকা বিয়োগ করা
+        // 6. Correct Due Amount: Subtract the paid amount from the total amount
         double due = this.totalAmount - paid;
         this.dueAmount = String.valueOf(due < 0 ? 0.0 : due);
 
-        // পেমেন্ট কন্ডিশন ও বিজনেস রুলস মেকানিজম
+        // Payment condition and business rules mechanism
         if (this.paymentMethod == PaymentMethod.CASH) {
             this.paymentStatus = PaymentStatus.UNPAID;
         } else if (paid >= this.totalAmount && this.totalAmount > 0) {
