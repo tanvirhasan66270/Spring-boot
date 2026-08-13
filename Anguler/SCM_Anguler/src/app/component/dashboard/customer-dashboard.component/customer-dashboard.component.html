@@ -233,98 +233,7 @@
         </div>
       </div>
         
-      <!-- PAYMENT STATEMENT CARD -->
-      <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4 border-start border-primary border-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h5 class="fw-bold text-dark mb-1"><i class="bi bi-wallet2 text-primary me-2"></i>Payment Statement</h5>
-            <p class="text-muted small mb-0">Search all payment statements for a specific Customer Order Number.</p>
-          </div>
-          <button class="btn btn-outline-primary fw-bold px-3 py-2 shadow-sm fs-8" (click)="toggleStatementCard()">
-            <i class="bi bi-search me-1"></i> {{ isStatementCardOpen ? 'Close Statement Panel' : 'Open Statement Search' }}
-          </button>
-        </div>
 
-        @if (isStatementCardOpen) {
-          <div class="mt-3 pt-3 border-top animate-fade-in">
-            <div class="row g-2 align-items-center mb-3">
-              <div class="col-md-9">
-                <input type="text" class="form-control font-monospace fs-7" [(ngModel)]="searchStatementOrderId" placeholder="Enter Customer Order Number" />
-              </div>
-              <div class="col-md-3">
-                <button class="btn btn-primary w-100 fw-bold fs-7" (click)="searchStatementRecord()">
-                  <i class="bi bi-search me-1"></i> Fetch Statement
-                </button>
-              </div>
-            </div>
-
-            @if (statementError) {
-              <div class="alert alert-danger mt-3 mb-0 fs-7 py-2">
-                <i class="bi bi-exclamation-triangle me-1"></i> {{ statementError }}
-              </div>
-            }
-
-            @if (statementData && statementPayments && statementPayments.length > 0) {
-              <div class="mt-4 p-4 border rounded-3 bg-light">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h6 class="fw-bold text-dark mb-0">Payment Statements for Order #{{ searchStatementOrderId }}</h6>
-                  <button class="btn btn-success btn-sm fw-bold" (click)="downloadStatementPdf()">
-                    <i class="bi bi-download me-1"></i> Download / Print PDF
-                  </button>
-                </div>
-
-                <!-- Payment Statements Table -->
-                <div class="table-responsive bg-white rounded border">
-                  <table class="table table-bordered table-sm fs-8 mb-0 align-middle">
-                    <thead class="table-light text-secondary">
-                      <tr>
-                        <th>Date</th>
-                        <th>Method</th>
-                        <th>Paid Amount</th>
-                        <th>Status</th>
-                        <th>Proof of Payment</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (payment of statementPayments; track payment.id) {
-                        <tr>
-                          <td class="font-monospace">{{ payment.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
-                          <td class="fw-bold">{{ payment.paymentMethod }}</td>
-                          <td class="font-monospace text-success">৳{{ payment.paidAmount | number:'1.2-2' }}</td>
-                          <td>
-                            <span class="badge" 
-                                  [ngClass]="{
-                                    'bg-warning text-dark': payment.issueStatus === 'PENDING_VERIFICATION',
-                                    'bg-success': payment.issueStatus === 'CONFIRMED_BY_OFFICER',
-                                    'bg-danger': payment.issueStatus === 'FAILED_OR_REJECTED'
-                                  }">
-                              {{ payment.issueStatus }}
-                            </span>
-                          </td>
-                          <td class="text-center">
-                            @if (payment.paymentCheckImage) {
-                              <a [href]="imgUrl + payment.paymentCheckImage" target="_blank" class="text-primary text-decoration-none">
-                                <i class="bi bi-image me-1"></i> View Image
-                              </a>
-                            } @else {
-                              <span class="text-muted"><i class="bi bi-x-circle me-1"></i> No Image</span>
-                            }
-                          </td>
-                        </tr>
-                      }
-                      @empty {
-                        <tr>
-                          <td colspan="5" class="text-center text-muted py-3">No payments recorded for this order yet.</td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            }
-          </div>
-        }
-      </div>
 
       <!-- ACTIVE ORDER PIPELINE (Full width table) -->
       <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 bg-white">
@@ -838,140 +747,243 @@
     </div>
   </div>
 
-  <!-- Billing Ledger Modal -->
-  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px);" *ngIf="isBillingModalOpen">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+  <!-- Billing Ledger / Payment Statement Modal -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px);" *ngIf="isBillingModalOpen">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 850px;">
       <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
         
-        <div class="modal-header bg-primary text-white px-4 py-3.5 border-0 d-flex justify-content-between align-items-center" style="background-color: #2563eb !important;">
+        <!-- Header -->
+        <div class="modal-header px-4 py-3.5 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #1e40af 0%, #2563eb 60%, #3b82f6 100%);">
           <div class="d-flex align-items-center gap-3">
-            <div style="width: 20px; height: 36px; background-color: #ffffff; border-radius: 8px;"></div>
+            <div class="p-2.5 rounded-3 bg-white bg-opacity-20 backdrop-blur shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+              <i class="bi bi-wallet2 fs-4 text-white"></i>
+            </div>
             <div>
-              <h5 class="modal-title fw-bold mb-0">Billing Ledger Lookup</h5>
-              <p class="text-white-50 small mb-0 fs-8">Search billing statements and invoice details by order reference number</p>
+              <h5 class="modal-title fw-bold mb-0 text-white" style="letter-spacing: -0.01em;">Payment Statement</h5>
+              <p class="text-white-50 small mb-0 fs-8">Search all payment statements for a specific Customer Order Number.</p>
             </div>
           </div>
-          <i class="bi bi-x fs-1 text-white-50" style="cursor: pointer; line-height: 1; transition: color 0.2s;" (click)="closeBillingModal()" onmouseover="this.style.color='#ffffff'" onmouseout="this.style.color='rgba(255,255,255,0.5)'"></i>
+          <button type="button" class="btn-close btn-close-white opacity-75 opacity-100-hover" (click)="closeBillingModal()"></button>
         </div>
 
+        <!-- Body -->
         <div class="modal-body p-4 bg-light">
-          <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white" style="border: 1px solid #e2e8f0 !important; background-color: #fafbfc !important;">
-            <label class="form-label fw-bold text-uppercase text-secondary mb-3" style="font-size: 0.72rem; letter-spacing: 0.05em; color: #64748b !important;">ORDER REFERENCE NUMBER</label>
-            <div class="input-group border rounded-3 overflow-hidden bg-white p-1" style="box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-              <span class="input-group-text bg-white border-0 text-muted"><i class="bi bi-receipt fs-5"></i></span>
-              <input type="text" class="form-control border-0 bg-white fs-6 py-2" [(ngModel)]="searchBillingCode" placeholder="Enter order number (e.g., ORD-1782838721455)" style="outline: none; box-shadow: none;" />
-              <button class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2 rounded-2" type="button" (click)="searchBilling()" style="background-color: #2563eb !important; border-color: #2563eb !important;">
-                <i class="bi bi-search"></i> Retrieve Billing
+          
+          <!-- Search Bar Box -->
+          <div class="card border-0 shadow-sm rounded-4 p-3.5 mb-4 bg-white">
+            <label class="form-label fw-bold text-uppercase text-secondary mb-2" style="font-size: 0.7rem; letter-spacing: 0.06em;">
+              <i class="bi bi-search text-primary me-1"></i> Customer Order Number
+            </label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0 text-muted ps-3"><i class="bi bi-upc-scan fs-6"></i></span>
+              <input type="text" class="form-control font-monospace border-start-0 bg-light fs-6 fw-semibold py-2.5" [(ngModel)]="searchBillingCode" (keyup.enter)="searchBilling()" placeholder="e.g. ORD-1785668605191" style="outline: none; box-shadow: none;" />
+              <button class="btn btn-primary px-4 fw-bold d-flex align-items-center gap-2 rounded-end" type="button" (click)="searchBilling()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: 0;">
+                <i class="bi bi-search"></i> Search Statement
               </button>
             </div>
           </div>
 
-          @if (billingSearchResult) {
+          <!-- Statement Content -->
+          @if (billingSearchResult || (statementPayments && statementPayments.length > 0)) {
             <div class="card border-0 shadow-sm rounded-4 bg-white p-4 animate-fade-in">
               
+              <!-- Order Header & Status Pill -->
               <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
                 <div>
-                  <span class="text-uppercase text-muted fs-8 fw-bold d-block">Invoice Reference</span>
-                  <h4 class="font-monospace fw-bold text-primary mb-0">{{ billingSearchResult.invoiceNumber }}</h4>
+                  <span class="text-uppercase text-muted fs-8 fw-bold d-block" style="letter-spacing: 0.05em;">Order Reference</span>
+                  <h4 class="font-monospace fw-bold text-primary mb-0" style="letter-spacing: -0.02em;">{{ searchBillingCode }}</h4>
                 </div>
                 <div class="text-end">
-                  <span class="badge px-3 py-2 fs-8 text-uppercase fw-bold rounded-pill" [ngClass]="{
-                    'bg-success-subtle text-success border border-success': billingSearchResult.paymentStatus === 'PAID',
-                    'bg-warning-subtle text-warning border border-warning': billingSearchResult.paymentStatus === 'PARTIALLY_PAID',
-                    'bg-danger-subtle text-danger border border-danger': billingSearchResult.paymentStatus === 'UNPAID',
-                    'bg-secondary-subtle text-secondary border border-secondary': billingSearchResult.paymentStatus === 'REFUNDED'
+                  <span class="badge px-3 py-2 fs-8.5 text-uppercase fw-bold rounded-pill shadow-xs d-inline-flex align-items-center gap-1.5" [ngClass]="{
+                    'bg-success-subtle text-success border border-success-subtle': billingSearchResult?.paymentStatus === 'PAID',
+                    'bg-warning-subtle text-warning border border-warning-subtle': billingSearchResult?.paymentStatus === 'PARTIALLY_PAID' || billingSearchResult?.paymentStatus === 'UNPAID',
+                    'bg-danger-subtle text-danger border border-danger-subtle': billingSearchResult?.paymentStatus === 'FAILED'
                   }">
-                    <i class="bi bi-circle-fill small me-1"></i> {{ billingSearchResult.paymentStatus }}
+                    <i class="bi bi-circle-fill" style="font-size: 0.45rem;"></i> {{ billingSearchResult?.paymentStatus || 'RECORD FOUND' }}
                   </span>
                 </div>
               </div>
 
-              <!-- General Meta Grid -->
-              <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded-4">
-                <div class="col-6 col-md-4">
-                  <span class="text-muted small d-block mb-0.5">Invoice ID</span>
-                  <strong class="text-dark font-monospace">#{{ billingSearchResult.id }}</strong>
+              <!-- General Meta Info Cards -->
+              <div class="row g-3 mb-4" *ngIf="billingSearchResult">
+                <div class="col-md-4">
+                  <div class="p-3 bg-light rounded-3 border-0">
+                    <span class="text-muted fs-8 fw-bold d-block text-uppercase mb-1" style="letter-spacing: 0.04em;">Invoice Reference</span>
+                    <strong class="text-dark font-monospace fs-7.5">{{ billingSearchResult.invoiceNumber || 'N/A' }}</strong>
+                  </div>
                 </div>
-                <div class="col-6 col-md-4">
-                  <span class="text-muted small d-block mb-0.5">Customer Order ID</span>
-                  <strong class="text-dark font-monospace">#{{ billingSearchResult.customerOrderId || 'N/A' }}</strong>
+                <div class="col-md-4">
+                  <div class="p-3 bg-light rounded-3 border-0">
+                    <span class="text-muted fs-8 fw-bold d-block text-uppercase mb-1" style="letter-spacing: 0.04em;">Issued To Name</span>
+                    <strong class="text-dark fs-7.5">{{ billingSearchResult.issuedToName || userName }}</strong>
+                  </div>
                 </div>
-                <div class="col-6 col-md-4">
-                  <span class="text-muted small d-block mb-0.5">Currency</span>
-                  <span class="badge bg-dark-subtle text-dark font-monospace">{{ billingSearchResult.currency || 'BDT' }}</span>
-                </div>
-                <div class="col-12 col-md-6 mt-2">
-                  <span class="text-muted small d-block mb-0.5">Issued To Name</span>
-                  <strong class="text-dark">{{ billingSearchResult.issuedToName }}</strong>
-                </div>
-                <div class="col-12 col-md-6 mt-2">
-                  <span class="text-muted small d-block mb-0.5">Customer Email</span>
-                  <strong class="text-dark font-monospace">{{ billingSearchResult.customerEmail }}</strong>
-                </div>
-              </div>
-
-              <!-- Financial Breakdown Row -->
-              <div class="mb-4">
-                <span class="text-uppercase font-monospace text-secondary fs-8 fw-bold d-block mb-2">Financial Breakdown</span>
-                <div class="border rounded-4 p-3 bg-white shadow-sm">
-                  <div class="row g-2 fs-7.5">
-                    <div class="col-6 text-muted">Subtotal:</div>
-                    <div class="col-6 text-end fw-bold text-dark font-monospace">৳{{ billingSearchResult.subtotal | number:'1.2-2' }}</div>
-                    
-                    <div class="col-6 text-muted">Tax Rate:</div>
-                    <div class="col-6 text-end text-dark font-monospace">{{ billingSearchResult.taxRate }}% (৳{{ billingSearchResult.taxAmount | number:'1.2-2' }})</div>
-                    
-                    <div class="col-6 text-muted">Discount Rate:</div>
-                    <div class="col-6 text-end text-dark font-monospace">{{ billingSearchResult.discountPercentage }}% (৳{{ billingSearchResult.discountAmount | number:'1.2-2' }})</div>
-                    
-                    <div class="col-6 text-muted">Shipping Fees:</div>
-                    <div class="col-6 text-end text-dark font-monospace">৳{{ billingSearchResult.shippingFees | number:'1.2-2' }}</div>
-                    
-                    <div class="col-12 border-top my-2"></div>
-                    
-                    <div class="col-6 fw-bold text-dark fs-7">Total Amount:</div>
-                    <div class="col-6 text-end fw-bold text-primary fs-7 font-monospace">৳{{ billingSearchResult.totalAmount | number:'1.2-2' }}</div>
-                    
-                    <div class="col-6 fw-bold text-success fs-7.5">Paid Amount:</div>
-                    <div class="col-6 text-end fw-bold text-success fs-7.5 font-monospace">৳{{ billingSearchResult.paidAmount | number:'1.2-2' }}</div>
-                    
-                    <div class="col-6 fw-bold text-danger fs-7.5">Due Amount:</div>
-                    <div class="col-6 text-end fw-bold text-danger fs-7.5 font-monospace">৳{{ billingSearchResult.dueAmount | number:'1.2-2' }}</div>
+                <div class="col-md-4">
+                  <div class="p-3 bg-light rounded-3 border-0">
+                    <span class="text-muted fs-8 fw-bold d-block text-uppercase mb-1" style="letter-spacing: 0.04em;">Currency</span>
+                    <span class="badge bg-dark-subtle text-dark font-monospace fs-8 px-2.5 py-1 rounded-2">{{ billingSearchResult.currency || 'BDT' }}</span>
                   </div>
                 </div>
               </div>
 
-              <!-- Payment Status & Method Matrix -->
-              <div class="row g-3 fs-7.5 border-top pt-3">
-                <div class="col-6 col-md-4">
-                  <span class="text-muted d-block mb-0.5">Payment Method:</span>
-                  <span class="badge bg-secondary-subtle text-dark border px-2.5 py-1">{{ billingSearchResult.paymentMethod || 'N/A' }}</span>
+              <!-- Payment Statement Log Table -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2.5">
+                  <span class="text-uppercase font-monospace text-secondary fs-8 fw-bold" style="letter-spacing: 0.05em;">
+                    <i class="bi bi-receipt-cutoff text-primary me-1"></i> Payment Statement Log
+                  </span>
+                  <span class="badge bg-primary-subtle text-primary fw-semibold fs-8 rounded-pill px-2.5 py-1">
+                    {{ statementPayments.length }} {{ statementPayments.length === 1 ? 'Record' : 'Records' }}
+                  </span>
                 </div>
-                <div class="col-6 col-md-8">
-                  <span class="text-muted d-block mb-0.5">Transaction Reference:</span>
-                  <strong class="text-dark font-monospace">{{ billingSearchResult.transactionReference || 'N/A' }}</strong>
+
+                <div class="table-responsive bg-white rounded-3 border">
+                  <table class="table table-hover table-sm fs-8 mb-0 align-middle">
+                    <thead class="bg-light text-secondary border-bottom" style="font-size: 0.72rem; letter-spacing: 0.03em;">
+                      <tr>
+                        <th class="ps-3 py-2.5">Date & Time</th>
+                        <th class="py-2.5">Method</th>
+                        <th class="py-2.5">Account / Ref</th>
+                        <th class="py-2.5">Paid Amount</th>
+                        <th class="py-2.5">Status</th>
+                        <th class="pe-3 text-center py-2.5">Proof of Payment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (payment of statementPayments; track payment.id) {
+                        <tr class="border-bottom-0">
+                          <td class="ps-3 font-monospace text-dark py-2.5">
+                            <i class="bi bi-calendar3 me-1 text-muted"></i>{{ payment.createdAt | date:'yyyy-MM-dd HH:mm' }}
+                          </td>
+                          <td class="py-2.5">
+                            <span class="badge bg-secondary-subtle text-dark border px-2 py-1 font-monospace fw-bold fs-8.5">{{ payment.paymentMethod }}</span>
+                          </td>
+                          <td class="font-monospace text-dark py-2.5">{{ payment.customerAccountNumber || 'N/A' }}</td>
+                          <td class="font-monospace text-success fw-bold py-2.5 fs-7">৳{{ payment.paidAmount | number:'1.2-2' }}</td>
+                          <td class="py-2.5">
+                            <span class="badge px-2.5 py-1.5 rounded-pill fw-semibold fs-8.5 d-inline-flex align-items-center gap-1" 
+                                  [ngClass]="getIssueStatusClass(payment.issueStatus)">
+                              <i class="bi bi-check-circle-fill" *ngIf="payment.issueStatus && payment.issueStatus.includes('CONFIRMED')"></i>
+                              <i class="bi bi-hourglass-split" *ngIf="payment.issueStatus && payment.issueStatus.includes('PENDING')"></i>
+                              <i class="bi bi-x-circle-fill" *ngIf="payment.issueStatus && (payment.issueStatus.includes('FAILED') || payment.issueStatus.includes('REJECTED'))"></i>
+                              {{ formatIssueStatus(payment.issueStatus) }}
+                            </span>
+                          </td>
+                          <td class="pe-3 text-center py-2.5">
+                            @if (payment.paymentCheckImage) {
+                              <a [href]="imgUrl + payment.paymentCheckImage" target="_blank" class="btn btn-outline-primary btn-sm fs-8 py-1 px-2.5 rounded-pill d-inline-flex align-items-center gap-1 fw-semibold shadow-xs">
+                                <i class="bi bi-image"></i> View Image
+                              </a>
+                            } @else {
+                              <span class="text-muted fs-8.5"><i class="bi bi-slash-circle me-1"></i> No Image</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr>
+                          <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-3 text-secondary d-block mb-1 opacity-50"></i>
+                            No payment statement transactions recorded yet for this order.
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              <div class="text-center pt-4 border-top mt-4">
-                <button class="btn btn-outline-primary px-4 fw-bold rounded-pill" type="button">
-                  <i class="bi bi-download me-1"></i> Download Billing Invoice PDF
+              <!-- Financial Breakdown Card -->
+              <div class="mb-4" *ngIf="billingSearchResult">
+                <span class="text-uppercase font-monospace text-secondary fs-8 fw-bold d-block mb-2" style="letter-spacing: 0.05em;">
+                  <i class="bi bi-calculator text-primary me-1"></i> Financial Breakdown
+                </span>
+                <div class="border rounded-4 p-3.5 bg-light-subtle">
+                  
+                  <!-- Top 3 Metric Stat Cards -->
+                  <div class="row g-2 mb-3">
+                    <div class="col-4">
+                      <div class="bg-white p-2.5 rounded-3 border text-center">
+                        <small class="text-muted d-block fs-8 text-uppercase fw-semibold mb-0.5">Total Amount</small>
+                        <span class="fw-bold text-primary font-monospace fs-7">৳{{ billingSearchResult.totalAmount | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                    <div class="col-4">
+                      <div class="bg-white p-2.5 rounded-3 border text-center">
+                        <small class="text-muted d-block fs-8 text-uppercase fw-semibold mb-0.5">Paid Amount</small>
+                        <span class="fw-bold text-success font-monospace fs-7">৳{{ billingSearchResult.paidAmount | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                    <div class="col-4">
+                      <div class="bg-white p-2.5 rounded-3 border text-center">
+                        <small class="text-muted d-block fs-8 text-uppercase fw-semibold mb-0.5">Due Amount</small>
+                        <span class="fw-bold font-monospace fs-7" [ngClass]="billingSearchResult.dueAmount > 0 ? 'text-danger' : 'text-secondary'">
+                          ৳{{ billingSearchResult.dueAmount | number:'1.2-2' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Detailed List Breakdown -->
+                  <div class="bg-white rounded-3 p-3 border">
+                    <div class="row g-2 fs-7.5">
+                      <div class="col-6 text-muted">Subtotal:</div>
+                      <div class="col-6 text-end fw-bold text-dark font-monospace">৳{{ billingSearchResult.subtotal | number:'1.2-2' }}</div>
+                      
+                      <div class="col-6 text-muted">Tax / Shipping:</div>
+                      <div class="col-6 text-end text-dark font-monospace">৳{{ (billingSearchResult.taxAmount || 0) + (billingSearchResult.shippingFees || 0) | number:'1.2-2' }}</div>
+                      
+                      <div class="col-12 border-top my-2"></div>
+                      
+                      <div class="col-6 fw-bold text-dark fs-7">Total Amount:</div>
+                      <div class="col-6 text-end fw-bold text-primary fs-7 font-monospace">৳{{ billingSearchResult.totalAmount | number:'1.2-2' }}</div>
+                      
+                      <div class="col-6 fw-bold text-success fs-7.5">Paid Amount:</div>
+                      <div class="col-6 text-end fw-bold text-success fs-7.5 font-monospace">৳{{ billingSearchResult.paidAmount | number:'1.2-2' }}</div>
+                      
+                      <div class="col-6 fw-bold text-danger fs-7.5">Due Amount:</div>
+                      <div class="col-6 text-end fw-bold text-danger fs-7.5 font-monospace">৳{{ billingSearchResult.dueAmount | number:'1.2-2' }}</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Dual Signature Section -->
+              <div class="row mt-4 py-3 mb-2 border-top border-bottom">
+                <div class="col-6 text-center">
+                  <div class="mx-auto text-muted font-monospace fs-8" style="letter-spacing: -1px;">-----------------------------------</div>
+                  <strong class="d-block text-dark fs-7.5 mb-0.5">Commercial Officer Signature</strong>
+                  <small class="text-muted fs-8 d-block">Commercial Accounts & Verification</small>
+                </div>
+                <div class="col-6 text-center">
+                  <div class="mx-auto text-muted font-monospace fs-8" style="letter-spacing: -1px;">-----------------------------------</div>
+                  <strong class="d-block text-dark fs-7.5 mb-0.5">Manager Signature</strong>
+                  <small class="text-muted fs-8 d-block">General Manager / Operations</small>
+                </div>
+              </div>
+
+              <!-- Statement Export Actions -->
+              <div class="d-flex justify-content-center pt-3 border-top mt-2">
+                <button class="btn btn-primary px-4 py-2 fw-bold rounded-pill shadow-xs d-inline-flex align-items-center gap-2" type="button" (click)="downloadStatementWord()" style="background-color: #2b579a; border-color: #2b579a;">
+                  <i class="bi bi-file-earmark-word-fill fs-5"></i> Export Word Document (.doc)
                 </button>
               </div>
 
             </div>
-          } @else if (billingSearched && !billingSearchResult) {
-            <div class="card border-0 bg-danger-subtle text-danger p-4 text-center rounded-4">
+          } @else if (billingSearched && !billingSearchResult && statementPayments.length === 0) {
+            <div class="card border-0 bg-danger-subtle text-danger p-4 text-center rounded-4 shadow-sm">
               <i class="bi bi-exclamation-triangle-fill fs-2 mb-2"></i>
-              <h6 class="fw-bold mb-1">Invoice Record Not Found</h6>
-              <p class="small mb-0">No active billing records found matching this order reference code in database cache.</p>
+              <h6 class="fw-bold mb-1">Payment Statement Record Not Found</h6>
+              <p class="small mb-0">No active payment statements or billing records found matching Customer Order Number #{{ searchBillingCode }}.</p>
             </div>
           }
 
         </div>
 
+        <!-- Footer -->
         <div class="modal-footer bg-white px-4 py-3 border-top justify-content-end" style="border-top: 1px solid #f1f5f9 !important;">
-          <button type="button" class="btn px-4 py-2.5 fw-bold text-white rounded-pill" style="background-color: #64748b; border: 0; font-size: 0.85rem;" (click)="closeBillingModal()">Close Panel</button>
+          <button type="button" class="btn px-4 py-2 fw-bold text-secondary bg-light border rounded-pill fs-8.5" (click)="closeBillingModal()">Close Panel</button>
         </div>
 
       </div>

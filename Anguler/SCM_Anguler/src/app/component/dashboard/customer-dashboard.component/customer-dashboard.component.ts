@@ -209,65 +209,98 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  toggleStatementCard(): void {
-    this.isStatementCardOpen = !this.isStatementCardOpen;
-    this.statementData = null;
-    this.statementPayments = [];
-    this.searchStatementOrderId = '';
-    this.statementError = null;
-    this.cdr.markForCheck();
-  }
-
-  // নতুন স্টেটমেন্ট রেকর্ড সার্চ মেথড যা এইচটিএমএল ফাইলের সাথে যুক্ত করা হয়েছে
-  searchStatementRecord(): void {
-    if (!this.searchStatementOrderId || this.searchStatementOrderId.trim() === '') {
-      this.statementError = 'Please enter a valid Customer Order Number.';
-      return;
+  formatIssueStatus(status: string | null | undefined): string {
+    if (!status) return 'Pending Verification';
+    switch (status.toUpperCase()) {
+      case 'CONFIRMED_BY_OFFICER':
+      case 'CONFIRMED':
+        return 'Confirmed by Officer';
+      case 'PENDING_VERIFICATION':
+      case 'PENDING':
+        return 'Pending Verification';
+      case 'FAILED_OR_REJECTED':
+      case 'FAILED':
+      case 'REJECTED':
+        return 'Rejected / Failed';
+      default:
+        return status.replace(/_/g, ' ');
     }
-    
-    this.statementError = null;
-    const orderNumber = this.searchStatementOrderId.trim();
-
-    this.paymentService.getPaymentsByOrderNumber(orderNumber).subscribe({
-      next: (res) => {
-        this.statementPayments = res || [];
-        if (this.statementPayments.length === 0) {
-          this.statementError = 'No payment statements found for Order Number #' + orderNumber;
-        }
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.statementPayments = [];
-        this.statementError = 'Error fetching payment statements for Order Number #' + orderNumber;
-        this.cdr.markForCheck();
-      }
-    });
   }
+
+  getIssueStatusClass(status: string | null | undefined): string {
+    if (!status) return 'bg-warning-subtle text-warning border border-warning-subtle';
+    const s = status.toUpperCase();
+    if (s.includes('CONFIRMED')) return 'bg-success-subtle text-success border border-success-subtle';
+    if (s.includes('PENDING')) return 'bg-warning-subtle text-warning border border-warning-subtle';
+    if (s.includes('FAILED') || s.includes('REJECTED')) return 'bg-danger-subtle text-danger border border-danger-subtle';
+    return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+  }
+
+
 
   searchBilling(): void {
     this.billingSearched = true;
     if (!this.searchBillingCode || this.searchBillingCode.trim() === '') {
       this.billingSearchResult = null;
+      this.statementPayments = [];
       return;
     }
 
+    const orderNumber = this.searchBillingCode.trim();
+
+    // Fetch Payment Statements for this order number
+    this.paymentService.getPaymentsByOrderNumber(orderNumber).subscribe({
+      next: (payments) => {
+        this.statementPayments = payments || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.statementPayments = [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    // Fetch Invoice & Order details
     this.invoiceService.findAll().subscribe({
       next: (invoices) => {
         this.orderService.findAll().subscribe({
           next: (orders) => {
             const order = (orders || []).find(
-              o => o.orderNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase()
+              o => o.orderNumber?.toLowerCase() === orderNumber.toLowerCase()
             );
             const foundInvoice = (invoices || []).find(inv => 
-              inv.invoiceNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase() ||
+              inv.invoiceNumber?.toLowerCase() === orderNumber.toLowerCase() ||
               (order && inv.customerOrderId === order.id)
             );
-            this.billingSearchResult = foundInvoice || null;
+
+            if (foundInvoice) {
+              this.billingSearchResult = foundInvoice;
+            } else if (order) {
+              this.billingSearchResult = {
+                invoiceNumber: 'INV-' + order.orderNumber,
+                customerOrderId: order.id,
+                issuedToName: order.customerName || this.userName,
+                customerEmail: order.deliveryPhone || '',
+                paymentStatus: order.paymentStatus || 'UNPAID',
+                totalAmount: order.totalAmount || 0,
+                paidAmount: order.paidAmount || 0,
+                dueAmount: order.dueAmount || 0,
+                subtotal: order.totalAmount || 0,
+                taxRate: 0,
+                taxAmount: 0,
+                discountPercentage: 0,
+                discountAmount: 0,
+                shippingFees: 0,
+                currency: 'BDT'
+              };
+            } else {
+              this.billingSearchResult = null;
+            }
             this.cdr.markForCheck();
           },
           error: () => {
             const foundInvoice = (invoices || []).find(inv => 
-              inv.invoiceNumber?.toLowerCase() === this.searchBillingCode.trim().toLowerCase()
+              inv.invoiceNumber?.toLowerCase() === orderNumber.toLowerCase()
             );
             this.billingSearchResult = foundInvoice || null;
             this.cdr.markForCheck();
@@ -618,9 +651,210 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['customer_profile'], { relativeTo: this.route });
   }
 
-  downloadStatementPdf(): void {
-    window.print(); 
+
+
+  downloadStatementWord(): void {
+    const orderNo = this.searchBillingCode || this.searchStatementOrderId || 'STATEMENT';
+    const invoiceNo = this.billingSearchResult?.invoiceNumber || ('INV-' + orderNo);
+    const customerName = this.billingSearchResult?.issuedToName || this.userName || 'Customer';
+    const currency = this.billingSearchResult?.currency || 'BDT';
+    const totalAmount = this.billingSearchResult?.totalAmount || 0;
+    const paidAmount = this.billingSearchResult?.paidAmount || 0;
+    const dueAmount = this.billingSearchResult?.dueAmount || 0;
+
+    let tableRows = '';
+    if (this.statementPayments && this.statementPayments.length > 0) {
+      this.statementPayments.forEach((p, index) => {
+        const dateStr = p.createdAt ? new Date(p.createdAt).toLocaleString() : 'N/A';
+        const method = p.paymentMethod || 'N/A';
+        const acc = p.customerAccountNumber || 'N/A';
+        const amount = p.paidAmount ? p.paidAmount.toFixed(2) : '0.00';
+        const status = this.formatIssueStatus(p.issueStatus);
+        const bgRow = index % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+        
+        let statusBadge = `<span style="background-color: #f1f5f9; color: #475569; padding: 3px 8px; font-size: 8.5pt; font-weight: bold; border-radius: 10px;">${status}</span>`;
+        if (p.issueStatus && p.issueStatus.includes('CONFIRMED')) {
+          statusBadge = `<span style="background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 3px 8px; font-size: 8.5pt; font-weight: bold; border-radius: 10px;">Confirmed by Officer</span>`;
+        } else if (p.issueStatus && p.issueStatus.includes('PENDING')) {
+          statusBadge = `<span style="background-color: #fef9c3; color: #a16207; border: 1px solid #fde047; padding: 3px 8px; font-size: 8.5pt; font-weight: bold; border-radius: 10px;">Pending Verification</span>`;
+        }
+
+        tableRows += `
+          <tr style="${bgRow}">
+            <td class="data-td" style="text-align: center; font-weight: bold;">${index + 1}</td>
+            <td class="data-td" style="font-family: monospace;">${dateStr}</td>
+            <td class="data-td" style="text-align: center;"><b style="background-color: #e2e8f0; padding: 2px 6px; font-size: 8.5pt;">${method}</b></td>
+            <td class="data-td" style="font-family: monospace;">${acc}</td>
+            <td class="data-td" style="text-align: right; font-weight: bold; color: #16a34a; font-family: monospace;">৳${amount}</td>
+            <td class="data-td" style="text-align: center;">${statusBadge}</td>
+          </tr>
+        `;
+      });
+    } else {
+      tableRows = `
+        <tr>
+          <td colspan="6" style="text-align: center; border: 1px solid #cbd5e1; padding: 12px; color: #64748b;">No payment statement transactions recorded yet.</td>
+        </tr>
+      `;
+    }
+
+    const wordTemplate = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Payment Statement - ${orderNo}</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page { size: A4 portrait; margin: 0.5in 0.5in 0.5in 0.5in; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; background-color: #ffffff; }
+          table { border-collapse: collapse; width: 100%; }
+          .title-banner { background-color: #1d4ed8; color: #ffffff; padding: 14px 18px; font-size: 18pt; font-weight: bold; text-align: left; }
+          .subtitle { color: #93c5fd; font-size: 9.5pt; font-weight: normal; margin-top: 3px; }
+          .section-bar { background-color: #1e3a8a; color: #ffffff; font-size: 10.5pt; font-weight: bold; padding: 6px 12px; letter-spacing: 0.5px; }
+          .meta-td { padding: 7px 10px; border: 1px solid #cbd5e1; font-size: 9.5pt; }
+          .meta-label { background-color: #f1f5f9; font-weight: bold; color: #475569; width: 22%; }
+          .data-th { background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 9.5pt; padding: 8px 10px; border: 1px solid #0f172a; text-align: left; }
+          .data-td { padding: 7px 10px; font-size: 9.5pt; border: 1px solid #e2e8f0; vertical-align: middle; }
+          .summary-td { padding: 7px 10px; font-size: 9.5pt; border: 1px solid #e2e8f0; }
+        </style>
+      </head>
+      <body>
+
+        <!-- Executive Banner Header -->
+        <table width="100%" style="margin-bottom: 12px;">
+          <tr>
+            <td class="title-banner">
+              OFFICIAL PAYMENT STATEMENT
+              <div class="subtitle">Supply Chain Management Financial Settlement Report</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Order & Customer Meta Table -->
+        <table width="100%" style="margin-bottom: 16px;">
+          <tr>
+            <td class="meta-td meta-label">Customer Order No:</td>
+            <td class="meta-td" style="font-weight: bold; color: #1d4ed8; font-family: monospace;">${orderNo}</td>
+            <td class="meta-td meta-label">Invoice Reference:</td>
+            <td class="meta-td" style="font-family: monospace;">${invoiceNo}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Issued To Name:</td>
+            <td class="meta-td" style="font-weight: bold;">${customerName}</td>
+            <td class="meta-td meta-label">Settlement Currency:</td>
+            <td class="meta-td" style="font-weight: bold;">${currency}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Generated Date:</td>
+            <td class="meta-td">${new Date().toLocaleString()}</td>
+            <td class="meta-td meta-label">Payment Status:</td>
+            <td class="meta-td" style="font-weight: bold; color: #16a34a;">${this.billingSearchResult?.paymentStatus || 'RECORD FOUND'}</td>
+          </tr>
+        </table>
+
+        <!-- Transaction Log Section -->
+        <table width="100%" style="margin-bottom: 4px;">
+          <tr>
+            <td class="section-bar">PAYMENT STATEMENT TRANSACTION LOG</td>
+          </tr>
+        </table>
+
+        <table width="100%" class="data-table" style="margin-bottom: 16px;">
+          <thead>
+            <tr>
+              <th class="data-th" style="text-align: center; width: 6%;">SL</th>
+              <th class="data-th" style="width: 24%;">Date & Time</th>
+              <th class="data-th" style="width: 14%; text-align: center;">Method</th>
+              <th class="data-th" style="width: 22%;">Account / Ref No</th>
+              <th class="data-th" style="width: 16%; text-align: right;">Paid Amount</th>
+              <th class="data-th" style="width: 18%; text-align: center;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+
+        <!-- Financial Breakdown Section -->
+        <table width="100%" style="margin-bottom: 4px;">
+          <tr>
+            <td class="section-bar">FINANCIAL BREAKDOWN SUMMARY</td>
+          </tr>
+        </table>
+
+        <table width="100%" style="margin-bottom: 16px;">
+          <tr>
+            <td class="summary-td meta-label">Subtotal Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; font-family: monospace;">৳${Number(this.billingSearchResult?.subtotal || totalAmount).toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td class="summary-td meta-label">Tax & Shipping Fees:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; font-family: monospace;">৳${Number((this.billingSearchResult?.taxAmount || 0) + (this.billingSearchResult?.shippingFees || 0)).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #eff6ff;">
+            <td class="summary-td" style="font-weight: bold; color: #1d4ed8;">Total Order Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #1d4ed8; font-family: monospace; font-size: 11pt;">৳${Number(totalAmount).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #f0fdf4;">
+            <td class="summary-td" style="font-weight: bold; color: #15803d;">Total Paid Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #15803d; font-family: monospace; font-size: 11pt;">৳${Number(paidAmount).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #fef2f2;">
+            <td class="summary-td" style="font-weight: bold; color: #b91c1c;">Total Due Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #b91c1c; font-family: monospace; font-size: 11pt;">৳${Number(dueAmount).toFixed(2)}</td>
+          </tr>
+        </table>
+
+        <!-- Dual Signature Block (MSO Word Formatted Table) -->
+        <table width="100%" style="margin-top: 30px; margin-bottom: 20px; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+          <tr>
+            <td style="width: 45%; text-align: center; vertical-align: top; padding-top: 15px; padding-bottom: 15px;">
+              <div style="font-family: monospace; color: #475569; letter-spacing: -1px; font-size: 11pt; margin-bottom: 6px;">-----------------------------------</div>
+              <div style="font-weight: bold; font-size: 10pt; color: #0f172a; margin-bottom: 3px;">Commercial Officer Signature</div>
+              <div style="font-size: 8.5pt; color: #64748b;">Commercial Accounts &amp; Verification</div>
+            </td>
+            <td style="width: 10%;"></td>
+            <td style="width: 45%; text-align: center; vertical-align: top; padding-top: 15px; padding-bottom: 15px;">
+              <div style="font-family: monospace; color: #475569; letter-spacing: -1px; font-size: 11pt; margin-bottom: 6px;">-----------------------------------</div>
+              <div style="font-weight: bold; font-size: 10pt; color: #0f172a; margin-bottom: 3px;">Manager Signature</div>
+              <div style="font-size: 8.5pt; color: #64748b;">General Manager / Operations</div>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Document Footer -->
+        <table width="100%" style="margin-top: 15px; border-top: 1px solid #cbd5e1;">
+          <tr>
+            <td style="padding-top: 8px; font-size: 8.5pt; color: #64748b; text-align: center;">
+              Official System Generated Statement — Supply Chain Management Engine
+            </td>
+          </tr>
+        </table>
+
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + wordTemplate], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Payment_Statement_${orderNo}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
+
+
 
   logout(): void {
     this.storage.clearSession();
