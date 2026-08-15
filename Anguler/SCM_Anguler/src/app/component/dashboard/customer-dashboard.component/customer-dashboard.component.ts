@@ -54,6 +54,15 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   trackedResult: CustomerOrderResponseModel | null = null;
   trackSearched = false;
 
+  // Quick Invoice Search Modal States
+  isInvoiceModalOpen: boolean = false;
+  searchInvoiceOrderNumber: string = '';
+  invoiceSearchResult: InvoiceResponseModel | null = null;
+  invoiceSearchOrder: CustomerOrderResponseModel | null = null;
+  invoiceSearched: boolean = false;
+  invoiceSearchLoading: boolean = false;
+  invoiceSearchError: string | null = null;
+
   // Invoice History & Statement States
   isStatementCardOpen: boolean = false;
   searchStatementOrderId: string = ''; 
@@ -236,7 +245,332 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
     return 'bg-secondary-subtle text-secondary border border-secondary-subtle';
   }
 
+  openInvoiceModal(): void {
+    this.isInvoiceModalOpen = true;
+    this.searchInvoiceOrderNumber = '';
+    this.invoiceSearchResult = null;
+    this.invoiceSearchOrder = null;
+    this.invoiceSearched = false;
+    this.invoiceSearchLoading = false;
+    this.invoiceSearchError = null;
+    this.cdr.markForCheck();
+  }
 
+  closeInvoiceModal(): void {
+    this.isInvoiceModalOpen = false;
+    this.searchInvoiceOrderNumber = '';
+    this.invoiceSearchResult = null;
+    this.invoiceSearchOrder = null;
+    this.invoiceSearched = false;
+    this.invoiceSearchLoading = false;
+    this.invoiceSearchError = null;
+    this.cdr.markForCheck();
+  }
+
+  searchInvoice(): void {
+    if (!this.searchInvoiceOrderNumber || this.searchInvoiceOrderNumber.trim() === '') {
+      this.invoiceSearchError = 'Please enter a valid Customer Order Number or Invoice Reference Code.';
+      this.invoiceSearchResult = null;
+      this.invoiceSearchOrder = null;
+      this.invoiceSearched = true;
+      return;
+    }
+
+    const queryTerm = this.searchInvoiceOrderNumber.trim();
+    this.invoiceSearched = true;
+    this.invoiceSearchLoading = true;
+    this.invoiceSearchError = null;
+    this.invoiceSearchResult = null;
+    this.invoiceSearchOrder = null;
+
+    // First try tracking the order by orderNumber
+    this.orderService.trackOrder(queryTerm).subscribe({
+      next: (order) => {
+        this.invoiceSearchOrder = order;
+        // Fetch all invoices to match exact backend invoice entity
+        this.invoiceService.findAll().subscribe({
+          next: (invoices) => {
+            const foundInvoice = (invoices || []).find(
+              inv => (inv.invoiceNumber && inv.invoiceNumber.toLowerCase() === queryTerm.toLowerCase()) ||
+                     (inv.customerOrderId && inv.customerOrderId === order.id) ||
+                     (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(order.orderNumber.toLowerCase()))
+            );
+
+            if (foundInvoice) {
+              this.invoiceSearchResult = foundInvoice;
+            } else {
+              // Construct dynamic invoice object from tracked order
+              this.invoiceSearchResult = {
+                id: order.id,
+                invoiceNumber: 'INV-' + order.orderNumber,
+                customerOrderId: order.id,
+                customerEmail: this.customer?.email || 'customer@scm.com',
+                issuedToName: order.customerName || this.userName || 'Valued Customer',
+                currency: order.currency || 'BDT',
+                subtotal: order.itemSubtotal || order.totalAmount,
+                taxRate: 0,
+                taxAmount: 0,
+                discountAmount: 0,
+                discountPercentage: 0,
+                shippingFees: order.deliveryCharge || 0,
+                totalAmount: order.totalAmount,
+                paidAmount: order.paymentStatus === 'PAID' ? order.totalAmount : (order.codAmount || 0),
+                dueAmount: Number(order.dueAmount || 0),
+                paymentStatus: order.paymentStatus || 'UNPAID',
+                paymentMethod: order.paymentMethod || 'CASH',
+                invoiceStatus: 'ISSUED',
+                deliveryDate: order.estimatedDelivery || null,
+                deliveryAddress: order.deliveryAddress || 'Standard Shipping Address',
+                createdAt: order.createdAt || new Date().toISOString(),
+                updatedAt: order.createdAt || new Date().toISOString()
+              };
+            }
+            this.invoiceSearchLoading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.invoiceSearchResult = {
+              id: order.id,
+              invoiceNumber: 'INV-' + order.orderNumber,
+              customerOrderId: order.id,
+              customerEmail: this.customer?.email || 'customer@scm.com',
+              issuedToName: order.customerName || this.userName || 'Valued Customer',
+              currency: order.currency || 'BDT',
+              subtotal: order.itemSubtotal || order.totalAmount,
+              taxRate: 0,
+              taxAmount: 0,
+              discountAmount: 0,
+              discountPercentage: 0,
+              shippingFees: order.deliveryCharge || 0,
+              totalAmount: order.totalAmount,
+              paidAmount: order.paymentStatus === 'PAID' ? order.totalAmount : (order.codAmount || 0),
+              dueAmount: Number(order.dueAmount || 0),
+              paymentStatus: order.paymentStatus || 'UNPAID',
+              paymentMethod: order.paymentMethod || 'CASH',
+              invoiceStatus: 'ISSUED',
+              deliveryDate: order.estimatedDelivery || null,
+              deliveryAddress: order.deliveryAddress || 'Standard Shipping Address',
+              createdAt: order.createdAt || new Date().toISOString(),
+              updatedAt: order.createdAt || new Date().toISOString()
+            };
+            this.invoiceSearchLoading = false;
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      error: () => {
+        // Fallback: search invoices directly by queryTerm
+        this.invoiceService.findAll().subscribe({
+          next: (invoices) => {
+            const foundInvoice = (invoices || []).find(
+              inv => (inv.invoiceNumber && inv.invoiceNumber.toLowerCase().includes(queryTerm.toLowerCase()))
+            );
+            if (foundInvoice) {
+              this.invoiceSearchResult = foundInvoice;
+            } else {
+              this.invoiceSearchError = 'No invoice records found matching Order Number #' + queryTerm;
+            }
+            this.invoiceSearchLoading = false;
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.invoiceSearchError = 'No invoice records found matching Order Number #' + queryTerm;
+            this.invoiceSearchLoading = false;
+            this.cdr.markForCheck();
+          }
+        });
+      }
+    });
+  }
+
+  downloadInvoiceWord(): void {
+    if (!this.invoiceSearchResult) return;
+    const inv = this.invoiceSearchResult;
+    const orderNo = this.invoiceSearchOrder?.orderNumber || (inv.invoiceNumber ? inv.invoiceNumber.replace('INV-', '') : 'ORDER');
+    const invoiceNo = inv.invoiceNumber || ('INV-' + orderNo);
+    const customerName = inv.issuedToName || this.userName || 'Customer';
+    const currency = inv.currency || 'BDT';
+    const totalAmount = inv.totalAmount || 0;
+    const paidAmount = Number(inv.paidAmount || 0);
+    const dueAmount = Number(inv.dueAmount || 0);
+
+    let itemRows = '';
+    if (this.invoiceSearchOrder && this.invoiceSearchOrder.lineItems && this.invoiceSearchOrder.lineItems.length > 0) {
+      this.invoiceSearchOrder.lineItems.forEach((item: any, index: number) => {
+        const prodName = item.productName || this.getProductName(item.productId);
+        const qty = item.quantity || 1;
+        const price = item.unitPrice || 0;
+        const lineTotal = item.lineTotal || (qty * price);
+        const bgRow = index % 2 === 1 ? 'background-color: #f8fafc;' : 'background-color: #ffffff;';
+        itemRows += `
+          <tr style="${bgRow}">
+            <td style="text-align: center; border: 1px solid #cbd5e1; padding: 7px;">${index + 1}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 7px; font-weight: bold;">${prodName}</td>
+            <td style="text-align: center; border: 1px solid #cbd5e1; padding: 7px;">${qty}</td>
+            <td style="text-align: right; border: 1px solid #cbd5e1; padding: 7px; font-family: monospace;">৳${price.toFixed(2)}</td>
+            <td style="text-align: right; border: 1px solid #cbd5e1; padding: 7px; font-weight: bold; color: #1e3a8a; font-family: monospace;">৳${lineTotal.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+    } else {
+      itemRows = `
+        <tr>
+          <td colspan="5" style="text-align: center; border: 1px solid #cbd5e1; padding: 10px; color: #64748b;">Consignment Package Items</td>
+        </tr>
+      `;
+    }
+
+    const wordTemplate = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Official Invoice - ${invoiceNo}</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page { size: A4 portrait; margin: 0.5in 0.5in 0.5in 0.5in; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; margin: 0; padding: 0; background-color: #ffffff; }
+          table { border-collapse: collapse; width: 100%; }
+          .title-banner { background-color: #2563eb; color: #ffffff; padding: 14px 18px; font-size: 18pt; font-weight: bold; text-align: left; }
+          .subtitle { color: #bfdbfe; font-size: 9.5pt; font-weight: normal; margin-top: 3px; }
+          .section-bar { background-color: #1e3a8a; color: #ffffff; font-size: 10.5pt; font-weight: bold; padding: 6px 12px; letter-spacing: 0.5px; }
+          .meta-td { padding: 7px 10px; border: 1px solid #cbd5e1; font-size: 9.5pt; }
+          .meta-label { background-color: #f1f5f9; font-weight: bold; color: #475569; width: 22%; }
+          .data-th { background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 9.5pt; padding: 8px 10px; border: 1px solid #0f172a; text-align: left; }
+          .data-td { padding: 7px 10px; font-size: 9.5pt; border: 1px solid #e2e8f0; vertical-align: middle; }
+          .summary-td { padding: 7px 10px; font-size: 9.5pt; border: 1px solid #e2e8f0; }
+        </style>
+      </head>
+      <body>
+        <table width="100%" style="margin-bottom: 12px;">
+          <tr>
+            <td class="title-banner">
+              OFFICIAL INVOICE
+              <div class="subtitle">Supply Chain Management Sales &amp; Billing Settlement</div>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" style="margin-bottom: 16px;">
+          <tr>
+            <td class="meta-td meta-label">Invoice Number:</td>
+            <td class="meta-td" style="font-weight: bold; color: #2563eb; font-family: monospace;">${invoiceNo}</td>
+            <td class="meta-td meta-label">Customer Order No:</td>
+            <td class="meta-td" style="font-weight: bold; font-family: monospace;">${orderNo}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Billed To Customer:</td>
+            <td class="meta-td" style="font-weight: bold;">${customerName}</td>
+            <td class="meta-td meta-label">Customer Email:</td>
+            <td class="meta-td">${inv.customerEmail || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Invoice Issued Date:</td>
+            <td class="meta-td">${inv.issuedAt ? new Date(inv.issuedAt).toLocaleString() : new Date(inv.createdAt).toLocaleString()}</td>
+            <td class="meta-td meta-label">Payment Status:</td>
+            <td class="meta-td" style="font-weight: bold; color: #16a34a;">${inv.paymentStatus || 'UNPAID'}</td>
+          </tr>
+          <tr>
+            <td class="meta-td meta-label">Delivery Address:</td>
+            <td class="meta-td" colspan="3">${inv.deliveryAddress || 'N/A'}</td>
+          </tr>
+        </table>
+
+        <table width="100%" style="margin-bottom: 4px;">
+          <tr>
+            <td class="section-bar">ITEMIZED PRODUCTS BREAKDOWN</td>
+          </tr>
+        </table>
+
+        <table width="100%" class="data-table" style="margin-bottom: 16px;">
+          <thead>
+            <tr>
+              <th class="data-th" style="text-align: center; width: 6%;">SL</th>
+              <th class="data-th" style="width: 44%;">Product Description</th>
+              <th class="data-th" style="width: 12%; text-align: center;">Qty</th>
+              <th class="data-th" style="width: 18%; text-align: right;">Unit Price</th>
+              <th class="data-th" style="width: 20%; text-align: right;">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemRows}
+          </tbody>
+        </table>
+
+        <table width="100%" style="margin-bottom: 4px;">
+          <tr>
+            <td class="section-bar">FINANCIAL BILLING SUMMARY</td>
+          </tr>
+        </table>
+
+        <table width="100%" style="margin-bottom: 16px;">
+          <tr>
+            <td class="summary-td meta-label">Subtotal Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; font-family: monospace;">৳${Number(inv.subtotal || totalAmount).toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td class="summary-td meta-label">Shipping &amp; Delivery Fees:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; font-family: monospace;">৳${Number(inv.shippingFees || 0).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #eff6ff;">
+            <td class="summary-td" style="font-weight: bold; color: #1d4ed8;">Grand Total Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #1d4ed8; font-family: monospace; font-size: 11pt;">৳${Number(totalAmount).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #f0fdf4;">
+            <td class="summary-td" style="font-weight: bold; color: #15803d;">Paid Amount:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #15803d; font-family: monospace; font-size: 11pt;">৳${Number(paidAmount).toFixed(2)}</td>
+          </tr>
+          <tr style="background-color: #fef2f2;">
+            <td class="summary-td" style="font-weight: bold; color: #b91c1c;">Due Balance:</td>
+            <td class="summary-td" style="text-align: right; font-weight: bold; color: #b91c1c; font-family: monospace; font-size: 11pt;">৳${Number(dueAmount).toFixed(2)}</td>
+          </tr>
+        </table>
+
+        <!-- Dual Signature Block (MSO Word Formatted Table) -->
+        <table width="100%" style="margin-top: 30px; margin-bottom: 20px; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+          <tr>
+            <td style="width: 45%; text-align: center; vertical-align: top; padding-top: 15px; padding-bottom: 15px;">
+              <div style="font-family: monospace; color: #475569; letter-spacing: -1px; font-size: 11pt; margin-bottom: 6px;">-----------------------------------</div>
+              <div style="font-weight: bold; font-size: 10pt; color: #0f172a; margin-bottom: 3px;">Commercial Officer Signature</div>
+              <div style="font-size: 8.5pt; color: #64748b;">Commercial Accounts &amp; Verification</div>
+            </td>
+            <td style="width: 10%;"></td>
+            <td style="width: 45%; text-align: center; vertical-align: top; padding-top: 15px; padding-bottom: 15px;">
+              <div style="font-family: monospace; color: #475569; letter-spacing: -1px; font-size: 11pt; margin-bottom: 6px;">-----------------------------------</div>
+              <div style="font-weight: bold; font-size: 10pt; color: #0f172a; margin-bottom: 3px;">Manager Signature</div>
+              <div style="font-size: 8.5pt; color: #64748b;">General Manager / Operations</div>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" style="margin-top: 15px; border-top: 1px solid #cbd5e1;">
+          <tr>
+            <td style="padding-top: 8px; font-size: 8.5pt; color: #64748b; text-align: center;">
+              Official System Generated Invoice — Supply Chain Management Engine
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob(['\ufeff' + wordTemplate], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Invoice_${invoiceNo}.doc`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 
   searchBilling(): void {
     this.billingSearched = true;
