@@ -376,37 +376,8 @@ export class SupplierDashboardComponent implements OnInit {
     });
 
     // ---------------------------------------------------------
-    // D. Load Invoices (For Outstanding Payments KPI)
+    // D. Skip Invoices (SUPPLIER does not access invoices)
     // ---------------------------------------------------------
-    this.invoiceService.findAll().subscribe({
-      next: (allInvoicesFromDatabase: any[]) => {
-        // Keep only invoices related to this specific supplier
-        const supplierInvoices = allInvoicesFromDatabase.filter((invoice: any) => {
-          return invoice.supplierId === supplierId;
-        });
-        
-        // Calculate the total amount of money still owed to the supplier
-        let totalUnpaidAmount = 0;
-        supplierInvoices.forEach(invoice => {
-          if (invoice.status === 'UNPAID' || invoice.status === 'PENDING') {
-            totalUnpaidAmount += (invoice.amount || 0);
-          }
-        });
-        this.outstandingPayments = totalUnpaidAmount;
-        
-        // Update the Payment KPI
-        const invoiceTrendPercentage = totalUnpaidAmount > 10000 ? 5 : (totalUnpaidAmount > 0 ? 2 : 0);
-        this.kpis[2] = { ...this.kpis[2], value: `৳${this.outstandingPayments.toLocaleString()}`, trend: invoiceTrendPercentage };
-
-        this.loading = false; // Turn off loading skeleton once this is done
-        this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        console.error('Invoice Load Error:', err);
-        this.loading = false;
-        this.cdr.markForCheck();
-      }
-    });
 
     // ---------------------------------------------------------
     // E. Load Shipments (For Shortcut Modal)

@@ -9,6 +9,10 @@ import com.example.SCM.entity.Supplier;
 import com.example.SCM.repository.PurchaseOrderRepository;
 import com.example.SCM.repository.ShipmentRepository;
 import com.example.SCM.repository.SupplierRepository;
+import com.example.SCM.entity.User;
+import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
+import com.example.SCM.service.NotificationService;
 import com.example.SCM.service.ShipmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +33,8 @@ public class ShipmentServiceImp implements ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final PurchaseOrderRepository poRepository;
     private final SupplierRepository supplierRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
     private final ShipmentMapper shipmentMapper;
 
     @Value("${image.upload.dir}")
@@ -50,7 +56,45 @@ public class ShipmentServiceImp implements ShipmentService {
         Shipment shipment = shipmentMapper.toEntity(dto, po, supplier);
         shipment.setShipmentNumber("SH-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
 
-        return shipmentMapper.convertTOResponseDTO(shipmentRepository.save(shipment));
+        Shipment savedShipment = shipmentRepository.save(shipment);
+
+        // Send alert notifications to PROCUREMENT, LOGISTICS_OFFICER, and MANAGER
+        try {
+            String title = "New Cargo Shipment Dispatched: " + savedShipment.getShipmentNumber();
+            String message = String.format(
+                    "New shipment (%s) dispatched by supplier %s. PO Ref: #%d, Vehicle: %s, Destination: %s.",
+                    savedShipment.getShipmentNumber(),
+                    supplier.getName() != null ? supplier.getName() : "Supplier",
+                    po.getId(),
+                    savedShipment.getVehicleNumber(),
+                    savedShipment.getSendByAddress()
+            );
+
+            // 1. Dispatch to role-level targets
+            notificationService.send("PROCUREMENT", "SHIPMENT", title, message);
+            notificationService.send("LOGISTICS_OFFICER", "SHIPMENT", title, message);
+            notificationService.send("MANAGER", "SHIPMENT", title, message);
+
+            // 2. Dispatch to specific user IDs
+            List<Role> targetRoles = List.of(Role.PROCUREMENT, Role.LOGISTICS_OFFICER, Role.MANAGER);
+            List<User> targetUsers = userRepository.findUsersByRoles(targetRoles);
+            if (targetUsers != null) {
+                for (User user : targetUsers) {
+                    if (user.getId() != null) {
+                        notificationService.send(
+                                user.getId().toString(),
+                                "SHIPMENT",
+                                title,
+                                message
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Shipment Notification Error: " + e.getMessage());
+        }
+
+        return shipmentMapper.convertTOResponseDTO(savedShipment);
     }
 
     @Override

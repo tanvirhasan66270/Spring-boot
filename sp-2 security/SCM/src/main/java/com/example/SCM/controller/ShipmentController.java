@@ -26,8 +26,7 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
     private final SupplierRepository supplierRepository;
 
-    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> create(
             @RequestPart("shipment") String shipmentJson,
@@ -38,8 +37,8 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
-    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
+    // 🌟 COMMERCIAL_OFFICER এবং SUPPLIER যুক্ত করা হলো
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
             @PathVariable Long id,

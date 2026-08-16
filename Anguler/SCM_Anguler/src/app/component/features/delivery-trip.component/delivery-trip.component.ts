@@ -53,6 +53,7 @@ export class DeliveryTripComponent implements OnInit {
     dispatcherId: 0,
     customerId: 0,
     vehicleId: 0,
+    driverId: 0,
     status: 'PENDING',
     customerAddress: '',
     remarks: '',
@@ -152,10 +153,14 @@ export class DeliveryTripComponent implements OnInit {
       return;
     }
 
+    const vehicle = this.allVehicles.find(v => +v.id === +this.formModel.vehicleId);
+    const driverId = vehicle ? vehicle.driverId : null;
+
     const payload: DeliveryTripRequestModel = {
       dispatcherId: +this.formModel.dispatcherId || this.currentUserId,
       customerId: +this.formModel.customerId,
       vehicleId: +this.formModel.vehicleId,
+      driverId: driverId || 0,
       status: this.formModel.status.toUpperCase(),
       customerAddress: this.formModel.customerAddress.trim(),
       remarks: this.formModel.remarks?.trim() || null,
@@ -283,6 +288,7 @@ export class DeliveryTripComponent implements OnInit {
       dispatcherId: trip.dispatcherId,
       customerId: trip.customerId,
       vehicleId: trip.vehicleId,
+      driverId: trip.driverId || 0,
       status: trip.status,
       customerAddress: trip.customerAddress,
       remarks: trip.remarks,
@@ -358,6 +364,7 @@ export class DeliveryTripComponent implements OnInit {
       dispatcherId: this.currentUserId,
       customerId: 0,
       vehicleId: 0,
+      driverId: 0,
       status: 'PENDING',
       customerAddress: '',
       remarks: '',

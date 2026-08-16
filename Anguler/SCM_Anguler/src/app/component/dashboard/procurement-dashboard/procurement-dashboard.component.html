@@ -269,8 +269,79 @@
     </div>
   </div>
 
-   <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+  <!-- ───────────────── RFQ, PO & SHIPMENT LOG TABS ───────────────── -->
+  <div class="row g-3 mb-4">
+    <!-- Button 1: RFQ Log -->
+    <div class="col-md-3">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="activeRfqTab === 'RFQ' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="activeRfqTab = (activeRfqTab === 'RFQ' ? 'ALL' : 'RFQ')">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-warning">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">RFQ Log</div>
+            <div class="text-muted small">{{ displayRfqs.length }} Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button 2: Approved Purchase Orders -->
+    <div class="col-md-3">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="activeRfqTab === 'APPROVED' ? 'border-success bg-success-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="activeRfqTab = (activeRfqTab === 'APPROVED' ? 'ALL' : 'APPROVED')">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-success">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Approved Purchase Order</div>
+            <div class="text-muted small">{{ approvedRfqs.length }} Approved</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button 3: Rejected Purchase Orders -->
+    <div class="col-md-3">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="activeRfqTab === 'REJECTED' ? 'border-danger bg-danger-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="activeRfqTab = (activeRfqTab === 'REJECTED' ? 'ALL' : 'REJECTED')">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-danger">
+            <i class="bi bi-x-circle-fill"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Rejected Purchase Order</div>
+            <div class="text-muted small">{{ rejectedRfqs.length }} Rejected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button 4: Cargo Shipment Log -->
+    <div class="col-md-3">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="activeRfqTab === 'SHIPMENT' ? 'border-info bg-info-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="activeRfqTab = (activeRfqTab === 'SHIPMENT' ? 'ALL' : 'SHIPMENT')">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-info">
+            <i class="bi bi-truck"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Cargo Shipment Log</div>
+            <div class="text-muted small">{{ shipments.length }} Shipments</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" *ngIf="activeRfqTab === 'RFQ' || activeRfqTab === 'ALL'">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
       <h6 class="mb-0 fw-bold text-dark text-uppercase">
         <i class="bi bi-clock-history text-teal me-2"></i> SCM Request For Quotations (RFQ) Log
@@ -336,6 +407,141 @@
                 </div>
               </td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── APPROVED PURCHASE ORDER LOG ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4" *ngIf="activeRfqTab === 'APPROVED' || activeRfqTab === 'ALL'">
+    <div class="card-header bg-white py-3 border-0">
+      <h6 class="mb-0 fw-bold text-success text-uppercase">
+        <i class="bi bi-check-circle-fill text-success me-2"></i> Approved Purchase Order Log
+      </h6>
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="approvedRfqs.length === 0 && !loading" class="text-center text-muted py-4">
+        <i class="bi bi-inbox fs-2 d-block mb-1"></i>
+        <small>No Approved Purchase Orders found</small>
+      </div>
+      <div class="table-responsive" *ngIf="approvedRfqs.length > 0">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">RFQ Ref ID</th>
+              <th>Component Specification</th>
+              <th>Quantity</th>
+              <th>Preferred Vendor Target</th>
+              <th>RFQ Lifecycle State</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rfq of approvedRfqs">
+              <td class="ps-4 fw-bold text-primary">{{ rfq.id }}</td>
+              <td class="fw-semibold text-dark">{{ rfq.item }}</td>
+              <td>{{ rfq.qty }} Units</td>
+              <td>{{ rfq.supplier }}</td>
+              <td>
+                <span class="badge bg-success text-uppercase">APPROVED</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── REJECTED PURCHASE ORDER LOG ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-danger border-4" *ngIf="activeRfqTab === 'REJECTED' || activeRfqTab === 'ALL'">
+    <div class="card-header bg-white py-3 border-0">
+      <h6 class="mb-0 fw-bold text-danger text-uppercase">
+        <i class="bi bi-x-circle-fill text-danger me-2"></i> Rejected Purchase Order Log
+      </h6>
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="rejectedRfqs.length === 0 && !loading" class="text-center text-muted py-4">
+        <i class="bi bi-inbox fs-2 d-block mb-1"></i>
+        <small>No Rejected Purchase Orders found</small>
+      </div>
+      <div class="table-responsive" *ngIf="rejectedRfqs.length > 0">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">RFQ Ref ID</th>
+              <th>Component Specification</th>
+              <th>Quantity</th>
+              <th>Preferred Vendor Target</th>
+              <th>RFQ Lifecycle State</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rfq of rejectedRfqs">
+              <td class="ps-4 fw-bold text-primary">{{ rfq.id }}</td>
+              <td class="fw-semibold text-dark">{{ rfq.item }}</td>
+              <td>{{ rfq.qty }} Units</td>
+              <td>{{ rfq.supplier }}</td>
+              <td>
+                <span class="badge bg-danger text-uppercase">REJECTED</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── CARGO SHIPMENT LOG ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4" *ngIf="activeRfqTab === 'SHIPMENT' || activeRfqTab === 'ALL'">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-truck text-info me-2"></i> Cargo Shipment Log
+      </h6>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="input-group input-group-sm" style="width: 250px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control border-start-0 ps-0" placeholder="Search Shipments..." [(ngModel)]="rfqSearchText">
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="displayShipments.length === 0 && !loading" class="text-center text-muted py-5">
+        <i class="bi bi-truck-flatbed fs-1 d-block mb-2 text-secondary"></i>
+        <small>No shipments found</small>
+      </div>
+      <div class="table-responsive" *ngIf="displayShipments.length > 0">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">Shipment No</th>
+              <th>Linked PO Ref</th>
+              <th>Supplier / Origin</th>
+              <th>Vehicle & Captain</th>
+              <th>Transport Cost</th>
+              <th>Est Delivery</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of displayShipments; track s.id) {
+            <tr>
+              <td class="ps-4">
+                <span class="badge bg-dark font-monospace tracking-wide">{{ s.shipmentNumber }}</span>
+              </td>
+              <td>
+                <div class="fw-bold text-dark">PO Ref #{{ s.poId }}</div>
+              </td>
+              <td>
+                <div class="fw-bold text-secondary">{{ s.supplierName || 'N/A' }}</div>
+                <div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ s.origin || 'N/A' }}</div>
+              </td>
+              <td>
+                <div class="text-dark font-monospace fw-semibold">{{ s.vehicleNumber || 'N/A' }}</div>
+                <div class="text-secondary small">Reg: {{ s.captainRegistrationNumber || 'N/A' }}</div>
+              </td>
+              <td class="font-monospace fw-bold text-primary">${{ s.transportCost | number:'1.2-2' }}</td>
+              <td class="font-monospace text-danger fw-semibold"><i class="bi bi-calendar-check me-1"></i>{{ s.estimatedDelivery | date:'mediumDate' }}</td>
+            </tr>
+            }
           </tbody>
         </table>
       </div>

@@ -149,8 +149,15 @@
 </div>
 
 <ng-template #poLineItemFormTemplate>
-      <form #lineForm="ngForm" (ngSubmit)="lineForm.valid && save()">
+      <form #lineForm="ngForm" (ngSubmit)="save()">
         
+        @if (errorMessage) {
+          <div class="alert alert-danger alert-dismissible fade show shadow-sm border-2 mb-3 fs-7" role="alert">
+            <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Validation Error:</strong> {{ errorMessage }}
+            <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+          </div>
+        }
+
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Parent Purchase Order Matrix</label>
           <select class="form-select fs-7" [(ngModel)]="item.poId" name="poId" (change)="onPoChange($event)" required [disabled]="isEdit">

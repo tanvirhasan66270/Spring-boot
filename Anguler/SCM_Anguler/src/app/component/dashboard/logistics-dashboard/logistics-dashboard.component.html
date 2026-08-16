@@ -162,6 +162,107 @@
     </div>
   </div>
 
+  <!-- ───────────────── QUICK NAVIGATION CARDS ───────────────── -->
+  <div class="mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3 ps-1">
+      <i class="bi bi-grid-1x2-fill text-primary fs-5"></i>
+      <h6 class="fw-bold text-dark mb-0 fs-6">Quick Navigation</h6>
+    </div>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5 g-3">
+
+      <!-- 1. Stock Card -->
+      <div class="col">
+        <a href="javascript:void(0)" (click)="openStockNavModal($event)" class="text-decoration-none">
+          <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 logi-nav-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="nav-card-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 48px; height: 48px; background: #eff6ff; color: #2563eb;">
+                <i class="bi bi-layers-fill fs-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate fs-7">Stock</div>
+                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Inventory Control</small>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- 2. Stock Movement Card -->
+      <div class="col">
+        <a href="javascript:void(0)" (click)="openStockMovementNavModal($event)" class="text-decoration-none">
+          <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 logi-nav-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="nav-card-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 48px; height: 48px; background: #ecfeff; color: #0891b2;">
+                <i class="bi bi-arrow-left-right fs-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate fs-7">Stock Movement</div>
+                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Stock Transfers</small>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- 3. Goods Received Note Card -->
+      <div class="col">
+        <a href="javascript:void(0)" (click)="openGRNNavModal($event)" class="text-decoration-none">
+          <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 logi-nav-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="nav-card-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 48px; height: 48px; background: #f0fdf4; color: #16a34a;">
+                <i class="bi bi-box-arrow-in-down fs-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate fs-7">Goods Received</div>
+                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Inbound Cargo GRN</small>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- 4. Delivery Trip Card -->
+      <div class="col">
+        <a href="javascript:void(0)" (click)="openDeliveryTripNavModal($event)" class="text-decoration-none">
+          <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 logi-nav-card logi-nav-card--active">
+            <div class="d-flex align-items-center gap-3">
+              <div class="nav-card-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 48px; height: 48px; background: #f3e8ff; color: #7c3aed;">
+                <i class="bi bi-signpost-2-fill fs-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate fs-7">Delivery Trip</div>
+                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Dispatch Routes</small>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- 5. Vehicles Card -->
+      <div class="col">
+        <a href="javascript:void(0)" (click)="openVehicleNavModal($event)" class="text-decoration-none">
+          <div class="card border-0 shadow-sm rounded-4 bg-white p-3 h-100 logi-nav-card">
+            <div class="d-flex align-items-center gap-3">
+              <div class="nav-card-icon rounded-3 d-flex align-items-center justify-content-center flex-shrink-0"
+                   style="width: 48px; height: 48px; background: #fff7ed; color: #ea580c;">
+                <i class="bi bi-bus-front-fill fs-4"></i>
+              </div>
+              <div class="overflow-hidden">
+                <div class="fw-bold text-dark text-truncate fs-7">Vehicles</div>
+                <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">Fleet Management</small>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
   <!-- ───────────────── ROW 1: SCHEDULE, FLEET, TIMELINE ───────────────── -->
   <div class="row g-4 mb-4">
     <!-- Today's Dispatch Schedule -->
@@ -775,6 +876,464 @@
             </div>
           }
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 1. STOCK NAV MODAL (FORM + DATA) ───────────────── -->
+  <div class="modal fade" [class.show]="showStockNavModal" [style.display]="showStockNavModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(15,23,42,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <!-- Modal Header matching screenshot -->
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="custom-modal-icon">
+              <i class="bi bi-layers-fill fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">Stock Inventory Control</h5>
+              <small class="text-white-50">Manage inventory levels, adjust stock counts, and verify warehouse nodes</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeStockNavModal()"></button>
+        </div>
+
+        <!-- Form Body matching 2-column screenshot layout -->
+        <div class="modal-body p-4 bg-white">
+          <form #fStock="ngForm" (ngSubmit)="fStock.valid && submitStockForm()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Target Product / Item SKU *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="stockForm.productId" name="productId" required>
+                  <option [value]="0">-- Select Product SKU --</option>
+                  <option *ngFor="let p of productList" [value]="p.id">{{ p.name }} (Code: {{ p.productCode }})</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Assigned Warehouse Node *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="stockForm.warehouseId" name="warehouseId" required>
+                  <option [value]="0">-- Select Warehouse Node --</option>
+                  <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Quantity on Hand *</label>
+                <input type="number" class="form-control custom-form-control" [(ngModel)]="stockForm.quantityOnHand" name="quantityOnHand" placeholder="100" min="1" required />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Reorder Safety Level</label>
+                <input type="number" class="form-control custom-form-control" [(ngModel)]="stockForm.quantityReserved" name="quantityReserved" placeholder="15" />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="custom-form-label">Stock Status Grade</label>
+                <select class="form-select custom-form-control" [(ngModel)]="stockForm.stockStatus" name="stockStatus">
+                  <option value="IN_STOCK">IN STOCK</option>
+                  <option value="LOW_STOCK">LOW STOCK</option>
+                  <option value="RESERVED">RESERVED</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Updated By Officer</label>
+                <input type="text" class="form-control custom-form-control bg-light" [value]="userName || 'Logistics Officer'" readonly />
+              </div>
+            </div>
+
+            <!-- Footer matching screenshot button layout -->
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-modal-cancel" (click)="closeStockNavModal()">Cancel</button>
+              <button type="submit" class="btn btn-modal-submit">
+                <i class="bi bi-box-seam me-2"></i>Update Stock Record
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 2. STOCK MOVEMENT NAV MODAL (FORM + DATA) ───────────────── -->
+  <div class="modal fade" [class.show]="showStockMovementNavModal" [style.display]="showStockMovementNavModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(15,23,42,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="custom-modal-icon">
+              <i class="bi bi-arrow-left-right fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">Record Stock Movement</h5>
+              <small class="text-white-50">Log inbound, outbound, or inter-warehouse transfer transactions</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeStockMovementNavModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <form #fMove="ngForm" (ngSubmit)="fMove.valid && submitMovementForm()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Movement Type *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="movementForm.movementType" name="movementType" required>
+                  <option value="INWARD">📥 INWARD (Vendor Receipt/GRN)</option>
+                  <option value="OUTWARD">📤 OUTWARD (Customer Dispatch/Sales)</option>
+                  <option value="TRANSFER">🔄 TRANSFER (Inter-Warehouse Shift)</option>
+                  <option value="ADJUSTMENT">⚙️ ADJUSTMENT (Audit / Damage Balancing)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Product Item *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="movementForm.productId" name="productId" required>
+                  <option [value]="0">-- Select Product --</option>
+                  <option *ngFor="let p of productList" [value]="p.id">{{ p.name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Movement Quantity *</label>
+                <input type="number" class="form-control custom-form-control" [(ngModel)]="movementForm.quantity" name="quantity" placeholder="50" min="1" required />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Source Warehouse (For Transfers)</label>
+                <select class="form-select custom-form-control" [(ngModel)]="movementForm.sourceWarehouseId" name="sourceWarehouseId">
+                  <option [value]="0">-- Select Source Facility --</option>
+                  <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="custom-form-label">Target Destination Warehouse *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="movementForm.warehouseId" name="warehouseId" required>
+                  <option [value]="0">-- Select Target Facility --</option>
+                  <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Reference Identifier / PO / GRN *</label>
+                <input type="text" class="form-control custom-form-control" [(ngModel)]="movementForm.referenceId" name="referenceId" placeholder="e.g. GRN-994" required />
+              </div>
+            </div>
+
+            <div class="mb-4">
+              <label class="custom-form-label">Remarks &amp; Audit Notes</label>
+              <textarea class="form-control custom-form-control" [(ngModel)]="movementForm.remarks" name="remarks" rows="2" placeholder="Cause of stock adjustment or movement..."></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-modal-cancel" (click)="closeStockMovementNavModal()">Cancel</button>
+              <button type="submit" class="btn btn-modal-submit">
+                <i class="bi bi-arrow-left-right me-2"></i>Commit Movement Ledger
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 3. GOODS RECEIVED NOTE NAV MODAL (FORM + DATA) ───────────────── -->
+  <div class="modal fade" [class.show]="showGRNNavModal" [style.display]="showGRNNavModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(15,23,42,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="custom-modal-icon">
+              <i class="bi bi-box-arrow-in-down fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">Goods Received Note (GRN) Entry</h5>
+              <small class="text-white-50">Log inbound cargo consignments and verify purchase order matching</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeGRNNavModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <form #fGrn="ngForm" (ngSubmit)="fGrn.valid && submitGRNForm()">
+            <!-- SOURCE PURCHASE ORDER VECTOR -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">SOURCE PURCHASE ORDER VECTOR *</label>
+              <select class="form-select custom-form-control" [(ngModel)]="grnForm.poId" name="poId" required>
+                <option [value]="0">-- Link Core Procurement PO --</option>
+                <option *ngFor="let po of purchaseOrders" [value]="po.id">PO #{{ po.poNumber }} (Volume: {{ po.quantity || 0 }} Units)</option>
+              </select>
+            </div>
+
+            <!-- DESTINATION VAULT (WAREHOUSE ALLOCATION) -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">DESTINATION VAULT (WAREHOUSE ALLOCATION) *</label>
+              <select class="form-select custom-form-control" [(ngModel)]="grnForm.warehouseId" name="warehouseId" required>
+                <option [value]="0">-- Select Destination Terminal --</option>
+                <option *ngFor="let wh of warehouses" [value]="wh.id">{{ wh.name }} (Location: {{ wh.address || 'Central Zone' }})</option>
+              </select>
+            </div>
+
+            <!-- TOTAL RECEIVED VOLUME & ARRIVAL LOG DATE -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">TOTAL RECEIVED VOLUME *</label>
+                <input type="number" class="form-control custom-form-control" [(ngModel)]="grnForm.receivedQuantity" name="receivedQuantity" min="0" required />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">ARRIVAL LOG DATE *</label>
+                <input type="date" class="form-control custom-form-control" [(ngModel)]="grnForm.receivedAt" name="receivedAt" required />
+              </div>
+            </div>
+
+            <!-- Quality Assurance Checks (Screenshot Style) -->
+            <div class="card border border-info-subtle mb-3 p-3" style="background-color: #f8fafc; border-radius: 10px;">
+              <h6 class="fw-bold small text-primary mb-3">
+                <i class="bi bi-shield-fill me-2"></i>Quality Assurance Checks
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">QC AUTHORIZED INSPECTOR</label>
+                  <select class="form-select custom-form-control" [(ngModel)]="grnForm.inspectedBy" name="inspectedBy">
+                    <option [value]="null">-- Map Inspector Node --</option>
+                    <option *ngFor="let u of users" [value]="u.id">{{ u.name }} ({{ u.role }})</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">INSPECTION TIMESTAMP</label>
+                  <input type="date" class="form-control custom-form-control" [(ngModel)]="grnForm.inspectionDate" name="inspectionDate" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Bulk Item Line Cargo Allocation (Screenshot Style) -->
+            <div class="card border border-light-subtle mb-3 p-3 bg-white" style="border-radius: 10px;">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold small text-secondary mb-0">
+                  <i class="bi bi-box-seam me-2"></i>BULK ITEM LINE CARGO ALLOCATION
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-primary px-3 rounded-pill fw-semibold" (click)="addDashboardGrnLineItem()">
+                  <i class="bi bi-plus-circle me-1"></i>Add Product Row
+                </button>
+              </div>
+
+              <!-- Empty State Dashboard Placeholder -->
+              <div *ngIf="grnForm.lineItems.length === 0" class="text-center py-4 border-dashed rounded" style="border: 1.5px dashed #cbd5e1; color: #64748b; font-size: 0.85rem;">
+                No specific child line-items added yet.
+              </div>
+
+              <!-- Lines List -->
+              <div *ngFor="let item of grnForm.lineItems; let idx = index" class="row g-2 align-items-center mb-2 bg-light p-2.5 rounded">
+                <div class="col-md-5">
+                  <label class="custom-form-label fs-8 text-secondary">Product</label>
+                  <select class="form-select custom-form-control py-1 fs-7" [(ngModel)]="item.productId" name="itemProd_{{idx}}" required>
+                    <option [value]="0">-- Select Product --</option>
+                    <option *ngFor="let p of productList" [value]="p.id">{{ p.name }}</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="custom-form-label fs-8 text-secondary">Qty Ordered</label>
+                  <input type="number" class="form-control custom-form-control py-1 fs-7 font-monospace" [(ngModel)]="item.quantityOrdered" name="itemOrd_{{idx}}" placeholder="Ordered" required />
+                </div>
+                <div class="col-md-3">
+                  <label class="custom-form-label fs-8 text-secondary">Qty Received</label>
+                  <input type="number" class="form-control custom-form-control py-1 fs-7 font-monospace fw-semibold" [(ngModel)]="item.quantityReceived" name="itemRec_{{idx}}" placeholder="Received" required />
+                </div>
+                <div class="col-md-1 text-center pt-3">
+                  <button type="button" class="btn btn-sm text-danger p-0 mt-1" (click)="removeDashboardGrnLineItem(idx)">
+                    <i class="bi bi-x-circle-fill fs-5"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- OPERATIONAL TONNAGE TERMINAL REMARKS -->
+            <div class="mb-4">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">OPERATIONAL TONNAGE TERMINAL REMARKS</label>
+              <textarea class="form-control custom-form-control" [(ngModel)]="grnForm.remarks" name="remarks" rows="3" placeholder="Consignment damage logs, missing parts descriptions..."></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-modal-cancel" (click)="closeGRNNavModal()">Cancel</button>
+              <button type="submit" class="btn btn-modal-submit">
+                <i class="bi bi-file-earmark-check me-2"></i>Authorize &amp; Stream Stock
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 4. DELIVERY TRIP NAV MODAL (FORM + DATA) ───────────────── -->
+  <div class="modal fade" [class.show]="showDeliveryTripNavModal" [style.display]="showDeliveryTripNavModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(15,23,42,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="custom-modal-icon">
+              <i class="bi bi-signpost-2-fill fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">Create Delivery Trip</h5>
+              <small class="text-white-50">Dispatch official cargo delivery manifest to assigned drivers</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeDeliveryTripNavModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <form #fTrip="ngForm" (ngSubmit)="fTrip.valid && submitTripForm()">
+            <!-- TARGET CUSTOMER ACCOUNT -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">TARGET CUSTOMER ACCOUNT *</label>
+              <select class="form-select custom-form-control" [(ngModel)]="tripForm.customerId" name="customerId" required>
+                <option [value]="0">-- Choose Client Nodes --</option>
+                <option *ngFor="let c of customerList" [value]="c.id">{{ c.name }} ({{ c.companyName || 'Corporate Client' }})</option>
+              </select>
+            </div>
+
+            <!-- SELECT VEHICLE MODE -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">SELECT VEHICLE MODE *</label>
+              <select class="form-select custom-form-control" [(ngModel)]="selectedVehicleType" name="selectedVehicleType" (change)="onVehicleTypeChange()" required>
+                <option value="">-- Choose Fleet Mode --</option>
+                <option value="TRUCK">🚛 TRUCK DISPATCH</option>
+                <option value="VAN">🚐 VAN INFRASTRUCTURE</option>
+                <option value="BIKE">🏍️ BIKE FAST DELIVERY</option>
+                <option value="AIR">✈️ AIR FREIGHT CORE</option>
+                <option value="RIVER_SHIP">🚢 RIVER SHIFT NETWORK</option>
+              </select>
+            </div>
+
+            <!-- ASSIGN CAPTAIN & FLEET ASSET -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">ASSIGN CAPTAIN &amp; FLEET ASSET</label>
+              <select class="form-select custom-form-control" [(ngModel)]="tripForm.vehicleId" name="vehicleId" [disabled]="filteredVehicles.length === 0" required>
+                <option [value]="0">
+                  {{ filteredVehicles.length === 0 ? '-- Choose Fleet Mode First / No Driver Available --' : '-- Choose Captain (Vehicle Number) --' }}
+                </option>
+                <option *ngFor="let v of filteredVehicles" [value]="v.id">
+                  👤 {{ v.driverName }} (🚗 {{ v.vehicleNumber || v.plateNumber }})
+                </option>
+              </select>
+            </div>
+
+            <!-- INITIAL OPERATIONAL STATE -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">INITIAL OPERATIONAL STATE</label>
+              <select class="form-select custom-form-control" [(ngModel)]="tripForm.status" name="status">
+                <option value="PENDING">📂 PENDING (Manifest Locked)</option>
+                <option value="IN_TRANSIT">🚚 IN TRANSIT (On Route)</option>
+                <option value="DELIVERED">✅ DELIVERED (Manifest Closed)</option>
+              </select>
+            </div>
+
+            <!-- CONSIGNMENT DROP COORDINATE ADDRESS -->
+            <div class="mb-3">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">CONSIGNMENT DROP COORDINATE ADDRESS *</label>
+              <textarea class="form-control custom-form-control" [(ngModel)]="tripForm.customerAddress" name="customerAddress" rows="3" placeholder="Input target shipping map coordinates..." required></textarea>
+            </div>
+
+            <!-- OPERATIONAL TRANSIT NOTES -->
+            <div class="mb-4">
+              <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">OPERATIONAL TRANSIT NOTES</label>
+              <textarea class="form-control custom-form-control" [(ngModel)]="tripForm.remarks" name="remarks" rows="3" placeholder="Log route delays, damage profiles or general variables..."></textarea>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-modal-cancel" (click)="closeDeliveryTripNavModal()">Cancel</button>
+              <button type="submit" class="btn btn-modal-submit">
+                <i class="bi bi-truck me-2"></i>Dispatch Delivery Trip
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── 5. VEHICLE NAV MODAL (FORM + DATA) ───────────────── -->
+  <div class="modal fade" [class.show]="showVehicleNavModal" [style.display]="showVehicleNavModal ? 'block' : 'none'" tabindex="-1" style="background-color: rgba(15,23,42,0.65); backdrop-filter: blur(4px);">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <div class="custom-modal-header d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div class="custom-modal-icon">
+              <i class="bi bi-bus-front-fill fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold mb-0 text-white">Register Fleet Vehicle</h5>
+              <small class="text-white-50">Add new cargo transport vehicles and assign designated drivers</small>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeVehicleNavModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <form #fVeh="ngForm" (ngSubmit)="fVeh.valid && submitVehicleForm()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Registration Number *</label>
+                <input type="text" class="form-control custom-form-control" [(ngModel)]="vehicleForm.vehicleNumber" name="vehicleNumber" placeholder="DHAKA-METRO-TA-1122" required />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Vehicle Type / Category *</label>
+                <select class="form-select custom-form-control" [(ngModel)]="vehicleForm.type" name="type" required>
+                  <option value="COVERED_VAN">COVERED VAN</option>
+                  <option value="CARGO_TRUCK">CARGO TRUCK</option>
+                  <option value="PICKUP">PICKUP</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="custom-form-label">Load Capacity (Tons) *</label>
+                <input type="number" class="form-control custom-form-control" [(ngModel)]="vehicleForm.capacity" name="capacity" placeholder="5" min="1" required />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Operational Status</label>
+                <select class="form-select custom-form-control" [(ngModel)]="vehicleForm.status" name="status">
+                  <option value="AVAILABLE">AVAILABLE</option>
+                  <option value="IN_TRANSIT">IN TRANSIT</option>
+                  <option value="MAINTENANCE">MAINTENANCE</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-6">
+                <label class="custom-form-label">Assign Primary Driver Name</label>
+                <input type="text" class="form-control custom-form-control" [(ngModel)]="vehicleForm.driverName" name="driverName" placeholder="Rahim Uddin" />
+              </div>
+              <div class="col-md-6">
+                <label class="custom-form-label">Registered By Officer</label>
+                <input type="text" class="form-control custom-form-control bg-light" [value]="userName || 'Logistics Officer'" readonly />
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+              <button type="button" class="btn btn-modal-cancel" (click)="closeVehicleNavModal()">Cancel</button>
+              <button type="submit" class="btn btn-modal-submit">
+                <i class="bi bi-bus-front me-2"></i>Register Fleet Vehicle
+              </button>
+            </div>
+          </form>
+        </div>
+
       </div>
     </div>
   </div>

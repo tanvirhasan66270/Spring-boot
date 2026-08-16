@@ -306,11 +306,11 @@
   <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
 </div>
 <ng-template #shipmentFormTemplate>
-<form #sForm="ngForm" (ngSubmit)="sForm.valid && save()">
+<form #sForm="ngForm" (ngSubmit)="save()">
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Target Purchase Order Vector</label>
-          <select class="form-select fs-7" [(ngModel)]="shipment.poId" name="poId" required [disabled]="isEdit">
+          <select class="form-select fs-7" [(ngModel)]="shipment.poId" name="poId" (change)="onPoChange()" required [disabled]="isEdit">
             <option [value]="0">-- Link Master Purchase Order --</option>
             @for (po of purchaseOrders; track po.id) {
             <option [value]="po.id">PO #{{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
@@ -321,6 +321,7 @@
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
           @if (userRole === 'SUPPLIER') {
+          <input type="hidden" [(ngModel)]="shipment.supplierId" name="supplierId">
           <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold"
             [value]="currentSupplierName" readonly disabled>
           } @else {

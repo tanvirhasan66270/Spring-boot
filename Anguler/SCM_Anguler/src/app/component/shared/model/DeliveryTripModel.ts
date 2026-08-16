@@ -3,6 +3,7 @@ export interface DeliveryTripRequestModel {
   dispatcherId: number;
   customerId: number;
   vehicleId: number;
+  driverId: number;
   status: 'PENDING' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED' | string;
   customerAddress: string;
   recipientSignature?: string | null; // ফাইল আপলোডের পর জেনারেট হওয়া স্ট্রিং পাথ

@@ -83,7 +83,7 @@ export class CustomerOrderComponent implements OnInit {
   ngOnInit() {
     const user = this.storage.getUser();
     if (user) {
-      this.userRole = user.role;
+      this.userRole = (this.storage.getActiveRole() || user.role || '').toUpperCase();
       if (this.userRole === 'CUSTOMER') {
         this.loggedInCustomerName = user.name;
         this.loadCustomerByUserId(user.userId);

@@ -21,28 +21,38 @@ public class NotificationController {
     @GetMapping
     public ResponseEntity<List<Notification>> getUserNotifications(
             @AuthenticationPrincipal User currentUser,
-            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String backupUserRole) {
 
         String finalUserId = resolveUserId(currentUser, backupUserId);
-        if (finalUserId == null) {
+        String finalRole = (currentUser != null && currentUser.getRole() != null)
+                ? currentUser.getRole().name()
+                : backupUserRole;
+
+        if (finalUserId == null && finalRole == null) {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(service.getNotificationsForUser(finalUserId));
+        return ResponseEntity.ok(service.getNotificationsForUserAndRole(finalUserId, finalRole));
     }
 
 
     @GetMapping("/unread-count")
     public ResponseEntity<Long> getCount(
             @AuthenticationPrincipal User currentUser,
-            @RequestHeader(value = "X-User-Id", required = false) String backupUserId) {
+            @RequestHeader(value = "X-User-Id", required = false) String backupUserId,
+            @RequestHeader(value = "X-User-Role", required = false) String backupUserRole) {
 
         String finalUserId = resolveUserId(currentUser, backupUserId);
-        if (finalUserId == null) {
-            return ResponseEntity.ok(0L); // সেশন না থাকলে ক্রাশ না করে ০ রিটার্ন করবে
+        String finalRole = (currentUser != null && currentUser.getRole() != null)
+                ? currentUser.getRole().name()
+                : backupUserRole;
+
+        if (finalUserId == null && finalRole == null) {
+            return ResponseEntity.ok(0L);
         }
 
-        return ResponseEntity.ok(service.getUnreadCount(finalUserId));
+        return ResponseEntity.ok(service.getUnreadCountForUserAndRole(finalUserId, finalRole));
     }
 
 

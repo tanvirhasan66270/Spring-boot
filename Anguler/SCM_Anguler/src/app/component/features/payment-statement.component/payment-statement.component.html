@@ -19,20 +19,28 @@
   </div>
   }
 
-  <!-- Order Selection Filter -->
+  <!-- Order Selection & Search Filter -->
   <div class="card mb-4 shadow-sm border-0 bg-light">
     <div class="card-body">
-      <div class="row align-items-center">
-        <div class="col-md-3">
-          <label class="fw-bold small text-uppercase text-secondary mb-1">Select Order to View Payments</label>
-        </div>
-        <div class="col-md-6">
+      <div class="row align-items-center g-3">
+        <div class="col-md-5">
+          <label class="fw-bold small text-uppercase text-secondary mb-1">Filter by Customer Order</label>
           <select class="form-select border-success fw-bold text-dark" [(ngModel)]="selectedOrderId" (change)="onOrderSelect()">
-            <option [value]="null">-- Select a Customer Order --</option>
+            <option value="ALL">-- All Customer Orders (All Payments) --</option>
             @for (o of orders; track o.id) {
             <option [value]="o.id">{{ o.orderNumber }} - {{ o.customerName }} (৳{{ o.totalAmount }})</option>
             }
           </select>
+        </div>
+        <div class="col-md-7">
+          <label class="fw-bold small text-uppercase text-secondary mb-1">Search Payment Statements</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0 fw-semibold" placeholder="Search by Transaction ID, Method, Status, Amount..." [(ngModel)]="searchText">
+            <button class="btn btn-outline-secondary" type="button" *ngIf="searchText" (click)="searchText = ''">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -53,7 +61,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (p of payments; track p.id) {
+            @for (p of filteredPayments; track p.id) {
             <tr>
               <td class="ps-4">
                 <span class="badge bg-dark font-monospace fs-8">{{ p.transactionId }}</span>
@@ -77,10 +85,12 @@
               </td>
               <td class="text-end px-4">
                 <div class="d-flex justify-content-end gap-1">
-                  @if (userRole !== 'CUSTOMER') {
+                  @if (userRole === 'COMMERCIAL_OFFICER' || userRole === 'ADMIN') {
                   <button class="btn btn-icon btn-light text-success border-0 shadow-sm" title="Verify Payment" (click)="openStatusModal(p)">
                     <i class="bi bi-shield-check"></i>
                   </button>
+                  }
+                  @if (userRole !== 'CUSTOMER') {
                   <button class="btn btn-icon btn-light text-warning border-0" title="Edit Payment" (click)="edit(p)">
                     <i class="bi bi-pencil-square"></i>
                   </button>
@@ -96,11 +106,7 @@
             <tr>
               <td colspan="6" class="text-center py-5 text-muted">
                 <i class="bi bi-receipt fs-1 d-block mb-2 text-secondary"></i>
-                @if (selectedOrderId) {
-                  No payment statements found for this order.
-                } @else {
-                  Please select an order above to view its payment statements.
-                }
+                No payment statements found matching your search.
               </td>
             </tr>
             }

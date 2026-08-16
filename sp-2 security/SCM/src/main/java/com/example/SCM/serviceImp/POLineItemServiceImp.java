@@ -72,11 +72,6 @@ public class POLineItemServiceImp implements POLineItemService {
 
         POLineItem savedItem = poLineItemRepository.save(item);
 
-        //role-up logic: নতুন আইটেম সেভ হওয়ার পর প্যারেন্ট PurchaseOrder-এর totalAmountdatabase update
-        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
-        order.setTotalAmount(updatedTotal);
-        purchaseOrderRepository.save(order);
-
         return poLineItemMapper.convertTOResponseDTO(savedItem);
     }
 
@@ -137,10 +132,6 @@ public class POLineItemServiceImp implements POLineItemService {
         inventoryRepository.save(inventory);
         POLineItem updatedItem = poLineItemRepository.save(item);
 
-        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
-        order.setTotalAmount(updatedTotal);
-        purchaseOrderRepository.save(order);
-
         return poLineItemMapper.convertTOResponseDTO(updatedItem);
     }
 
@@ -182,10 +173,6 @@ public class POLineItemServiceImp implements POLineItemService {
         }
 
         poLineItemRepository.delete(item);
-
-        double updatedTotal = poLineItemRepository.getActiveTotalAmountByPoId(order.getId());
-        order.setTotalAmount(updatedTotal);
-        purchaseOrderRepository.save(order);
     }
 
 

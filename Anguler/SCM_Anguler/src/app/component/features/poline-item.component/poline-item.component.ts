@@ -123,9 +123,13 @@ filteredLineItems: POLineItemResponseDTO[] = [];
         if (this.activeRole === 'SUPPLIER' && this.currentSupplierId) {
           this.purchaseOrders = allPOs.filter((po: any) => {
             const sId = po.supplierId || (po.supplier ? po.supplier.id : null);
-            return sId === this.currentSupplierId });
+            return sId === this.currentSupplierId;
+          });
           
           this.extractProductsFromSupplierPOs();
+          if (this.products.length === 0) {
+            this.loadAllGlobalProducts();
+          }
         } else {
           this.purchaseOrders = allPOs;
           this.loadAllGlobalProducts();
@@ -135,14 +139,12 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     });
   }
 
-  
-  onPoChange(event: any) {
-    const poId = +event.target.value;
-    
+  onPoChange(event?: any) {
+    const poId = Number(this.item.poId);
     const targetPo = this.purchaseOrders.find(po => po.id === poId);
     
     if (targetPo) {
-      this.item.poNumber = targetPo.poNumber; // প্যারেন্ট PO নাম্বার অটো সিঙ্ক
+      this.item.poNumber = targetPo.poNumber || '';
       const productMap = new Map();
       
       if (targetPo.items && Array.isArray(targetPo.items)) {
@@ -159,16 +161,21 @@ filteredLineItems: POLineItemResponseDTO[] = [];
         productMap.set(targetPo.product.id, targetPo.product);
       }
       
-      if (productMap.size > 0) { this.products = Array.from(productMap.values()); }
-      
+      if (productMap.size > 0) {
+        this.products = Array.from(productMap.values());
+      } else if (this.products.length === 0) {
+        this.loadAllGlobalProducts();
+      }
     } else {
       this.item.poNumber = '';
+      if (this.products.length === 0) {
+        this.loadAllGlobalProducts();
+      }
     }
 
     this.cdr.markForCheck(); 
   }
 
- 
   extractProductsFromSupplierPOs() {
     const productMap = new Map();
     
@@ -200,7 +207,11 @@ filteredLineItems: POLineItemResponseDTO[] = [];
       }
     });
 
-    if (productMap.size > 0) { this.products = Array.from(productMap.values()); }
+    if (productMap.size > 0) { 
+      this.products = Array.from(productMap.values()); 
+    } else {
+      this.loadAllGlobalProducts();
+    }
     this.cdr.markForCheck();
   }
 
@@ -236,20 +247,58 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   save() {
     this.errorMessage = null;
 
-    if (this.item.poId === 0 || this.item.productId === 0) {
-      this.errorMessage = "Validation Exception: Parent Purchase Order and Target Product mappings are mandatory.";
+    if (!this.item.poId || Number(this.item.poId) === 0) {
+      this.errorMessage = "Please select a Parent Purchase Order.";
+      this.cdr.markForCheck();
       return;
     }
 
+    if (!this.item.productId || Number(this.item.productId) === 0) {
+      this.errorMessage = "Please select a Target Product Module.";
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.item.quantity || Number(this.item.quantity) <= 0) {
+      this.errorMessage = "Allocated Volume (Qty) must be at least 1.";
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.item.deliveryDate) {
+      this.errorMessage = "Target Delivery Date is required.";
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.item.poId = Number(this.item.poId);
+    this.item.productId = Number(this.item.productId);
+    this.item.quantity = Number(this.item.quantity);
+    this.item.unitPrice = Number(this.item.unitPrice || 0);
+
     if (this.isEdit && this.currentEditId !== null) {
       this.service.update(this.currentEditId, this.item).subscribe({
-        next: () => { alert("PO Line Item properties updated successfully."); this.closeDrawer(); this.loadLineItems(); },
-        error: (err: any) => this.errorMessage = err.error?.message || "Warehouse stock or state machine validation fault."
+        next: () => {
+          alert("PO Line Item properties updated successfully.");
+          this.closeDrawer();
+          this.loadLineItems();
+        },
+        error: (err: any) => {
+          this.errorMessage = err.error?.message || err.message || "Warehouse stock or state machine validation fault.";
+          this.cdr.markForCheck();
+        }
       });
     } else {
       this.service.save(this.item).subscribe({
-        next: () => { alert("New PO Line Item logged. Inventory reserved successfully."); this.closeDrawer(); this.loadLineItems(); },
-        error: (err: any) => this.errorMessage = err.error?.message || "Insufficient warehouse stock vector."
+        next: () => {
+          alert("New PO Line Item logged. Inventory reserved successfully.");
+          this.closeDrawer();
+          this.loadLineItems();
+        },
+        error: (err: any) => {
+          this.errorMessage = err.error?.message || err.message || "Insufficient warehouse stock vector or invalid mapping.";
+          this.cdr.markForCheck();
+        }
       });
     }
   }

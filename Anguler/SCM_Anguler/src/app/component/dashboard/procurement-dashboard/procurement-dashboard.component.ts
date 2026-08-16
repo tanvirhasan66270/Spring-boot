@@ -17,6 +17,7 @@ import { PurchaseOrderResponseModel, PurchaseOrderRequestModel } from '../../sha
 import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
 import { SupplierService } from '../../../service/supplier.service';
+import { ShipmentService } from '../../../service/shipment.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 
 @Component({
@@ -55,10 +56,24 @@ export class ProcurementDashboardComponent implements OnInit {
 
   rfqSearchText: string = '';
   rfqSearchDate: string = '';
+  activeRfqTab: string = 'ALL';
+  shipments: any[] = [];
+
+  get displayShipments() {
+    let filtered = this.shipments || [];
+    if (this.rfqSearchText && this.rfqSearchText.trim() !== '') {
+      const searchLower = this.rfqSearchText.toLowerCase().trim();
+      filtered = filtered.filter(s => {
+        const values = Object.values(s).join(' ').toLowerCase();
+        return values.includes(searchLower);
+      });
+    }
+    return filtered;
+  }
 
   get displayRfqs() {
     // Bypass monthly filter: "no change monthly data"
-    let filtered = this.rawRFQs;
+    let filtered = (this.rawRFQs || []).filter(q => q.status !== 'APPROVED' && q.status !== 'REJECTED');
     
     if (this.rfqSearchText && this.rfqSearchText.trim() !== '') {
       const searchLower = this.rfqSearchText.toLowerCase().trim();
@@ -88,6 +103,28 @@ export class ProcurementDashboardComponent implements OnInit {
       return mapped.slice(0, 5);
     }
     return mapped;
+  }
+
+  get approvedRfqs() {
+    let filtered = (this.rawRFQs || []).filter(q => q.status === 'APPROVED');
+    return filtered.map((q: any) => ({
+      id: q.id || q.quotationId,
+      item: q.productName || q.productDescription || 'N/A',
+      qty: q.quantity || 0,
+      status: q.status || 'APPROVED',
+      supplier: q.supplierName || 'Pending Sourcing',
+    }));
+  }
+
+  get rejectedRfqs() {
+    let filtered = (this.rawRFQs || []).filter(q => q.status === 'REJECTED');
+    return filtered.map((q: any) => ({
+      id: q.id || q.quotationId,
+      item: q.productName || q.productDescription || 'N/A',
+      qty: q.quantity || 0,
+      status: q.status || 'REJECTED',
+      supplier: q.supplierName || 'Pending Sourcing',
+    }));
   }
 
   selectedDashboardPeriod: string = 'All Time';
@@ -376,7 +413,8 @@ export class ProcurementDashboardComponent implements OnInit {
     private poService: PurchaseOrderService,
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
-    private supplierService: SupplierService
+    private supplierService: SupplierService,
+    private shipmentService: ShipmentService
   ) {}
 
   ngOnInit(): void {
@@ -453,6 +491,14 @@ export class ProcurementDashboardComponent implements OnInit {
     let poCount = 0;
     let poPending = 0;
     let totalSpend = 0;
+
+    this.shipmentService.findAll().subscribe({
+      next: (data) => {
+        this.shipments = data || [];
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error("Error loading shipments in procurement dashboard", err)
+    });
 
     this.prService.findAll().subscribe({
       next: (data) => {
@@ -889,17 +935,27 @@ export class ProcurementDashboardComponent implements OnInit {
   }
 
   updateQuotationStatus(id: number, status: string) {
+    // Update locally first for instant UI response
+    const target = (this.rawRFQs || []).find((q: any) => (q.id === id || q.quotationId === id));
+    if (target) {
+      target.status = status;
+      this.rawRFQs = [...this.rawRFQs];
+      this.cdr.markForCheck();
+    }
+
     this.quotationService.updateStatus(id, status).subscribe({
       next: () => {
         this.quotationService.findAll().subscribe({
           next: (data) => {
-            this.rawRFQs = data || [];
+            if (data && data.length > 0) {
+              this.rawRFQs = data;
+            }
             this.aggregateRFQs();
             this.cdr.markForCheck();
           }
         });
       },
-      error: (err) => console.error("Failed to update status", err)
+      error: (err) => console.error("Failed to update status on server", err)
     });
   }
 

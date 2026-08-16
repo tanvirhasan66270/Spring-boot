@@ -192,10 +192,29 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     this.isEdit = false;
     
     if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
-      this.shipment.supplierId = this.currentSupplierId;
+      this.shipment.supplierId = Number(this.currentSupplierId);
+    }
+
+    if (this.userRole === 'SUPPLIER' && this.purchaseOrders.length > 0 && (!this.shipment.poId || this.shipment.poId === 0)) {
+      this.shipment.poId = Number(this.purchaseOrders[0].id);
+      this.onPoChange();
     }
     
     this.isDrawerOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  onPoChange() {
+    if (this.shipment.poId) {
+      const poId = Number(this.shipment.poId);
+      const selectedPo = this.purchaseOrders.find(po => po.id === poId);
+      if (selectedPo) {
+        const sId = selectedPo.supplierId || (selectedPo.supplier ? selectedPo.supplier.id : null);
+        if (sId) {
+          this.shipment.supplierId = Number(sId);
+        }
+      }
+    }
     this.cdr.markForCheck();
   }
 
@@ -212,12 +231,33 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
   save() {
     this.errorMessage = null;
 
+    if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
+      this.shipment.supplierId = Number(this.currentSupplierId);
+    }
+
+    if ((!this.shipment.supplierId || this.shipment.supplierId === 0) && this.shipment.poId) {
+      const selectedPo = this.purchaseOrders.find(po => po.id === Number(this.shipment.poId));
+      if (selectedPo) {
+        const sId = selectedPo.supplierId || (selectedPo.supplier ? selectedPo.supplier.id : null);
+        if (sId) {
+          this.shipment.supplierId = Number(sId);
+        }
+      }
+    }
+
     this.shipment.poId = Number(this.shipment.poId);
     this.shipment.supplierId = Number(this.shipment.supplierId);
     this.shipment.transportCost = Number(this.shipment.transportCost);
 
-    if (!this.shipment.poId || this.shipment.poId === 0 || !this.shipment.supplierId || this.shipment.supplierId === 0) {
-      this.errorMessage = 'Validation Error: Cluster reference fields (Purchase Order ID, Vendor Node) are required.';
+    if (!this.shipment.poId || this.shipment.poId === 0) {
+      this.errorMessage = 'Please select a Purchase Order to link this shipment.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.shipment.supplierId || this.shipment.supplierId === 0) {
+      this.errorMessage = 'Validation Error: Dispatch Supplier Node reference is required.';
+      this.cdr.markForCheck();
       return;
     }
 
@@ -231,6 +271,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
         error: (err: any) => {
           console.error('Update error:', err);
           this.errorMessage = err.error?.message || err.message || 'Modification matrix deployment failure.';
+          this.cdr.markForCheck();
         },
       });
     } else {
@@ -243,6 +284,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
         error: (err: any) => {
           console.error('Save error:', err);
           this.errorMessage = err.error?.message || err.message || 'Logistics initialization exception.';
+          this.cdr.markForCheck();
         },
       });
     }
@@ -324,7 +366,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
   reset() {
     this.shipment = {
       poId: 0,
-      supplierId: 0,
+      supplierId: (this.userRole === 'SUPPLIER' && this.currentSupplierId) ? Number(this.currentSupplierId) : 0,
       vehicleNumber: '',
       captainRegistrationNumber: '',
       assignedByEmail: this.currentUserEmail,

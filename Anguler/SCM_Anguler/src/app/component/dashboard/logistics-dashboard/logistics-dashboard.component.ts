@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { LogisticsOfficerService } from '../../../service/logistics-officer.service';
 import { LogisticsOfficerResponseModel } from '../../shared/model/logisticsOfficer';
@@ -12,13 +13,24 @@ import { DeliveryTripService } from '../../../service/delivery-trip.service';
 import { InventoryService } from '../../../service/inventory.service';
 import { StockMovementService } from '../../../service/stock-movement.service';
 import { VehicleService } from '../../../service/vehicle.service';
+import { GoodRecivedNoteService } from '../../../service/good-recived-note.service';
+import { AddProductService } from '../../../service/add-product.service';
+import { CustomerService } from '../../../service/customer.service';
+import { QcInspectorService } from '../../../service/qc-inspactor.service';
+import { ManagerService } from '../../../service/manager.service';
+import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
+import { StockMovementRequestModel } from '../../shared/model/stock-movement';
+import { GoodsReceivedNoteRequestModel } from '../../shared/model/goodRecivedNoteModel';
+import { VehicleRequestModel } from '../../shared/model/vehicleModel';
+import { InventoryRequestModel } from '../../shared/model/inventoryModel';
+import { DeliveryTripRequestModel } from '../../shared/model/DeliveryTripModel';
 
 @Component({
   selector: 'app-logistics-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, DashboardSettingsComponent],
   templateUrl: './logistics-dashboard.component.html',
   styleUrls: ['./logistics-dashboard.component.css'],
 })
@@ -57,6 +69,83 @@ export class LogisticsDashboardComponent implements OnInit {
   liveTimeline: any[] = [];
   dispatchQueue: any[] = [];
   
+  // Quick Nav Modal States & Data
+  showStockNavModal = false;
+  showStockMovementNavModal = false;
+  showGRNNavModal = false;
+  showDeliveryTripNavModal = false;
+  showVehicleNavModal = false;
+
+  stockList: any[] = [];
+  stockMovementList: any[] = [];
+  grnList: any[] = [];
+  deliveryTripList: any[] = [];
+  vehicleList: any[] = [];
+  productList: any[] = [];
+  customerList: any[] = [];
+
+  // Form Models for all 5 nav forms
+  stockForm = {
+    productId: 0,
+    warehouseId: 0,
+    quantityOnHand: 0,
+    quantityReserved: 0,
+    locationStatus: '',
+    expiryDate: '',
+    stockStatus: 'IN_STOCK'
+  };
+
+  movementForm = {
+    movementType: 'INWARD',
+    productId: 0,
+    quantity: 0,
+    sourceWarehouseId: 0,
+    warehouseId: 0,
+    referenceId: '',
+    remarks: ''
+  };
+
+  grnForm = {
+    poId: 0,
+    poNumber: '',
+    supplierName: 'Global Suppliers Ltd',
+    supplierId: 0,
+    grnNumber: '',
+    waybillNumber: '',
+    receivedQuantity: 0,
+    receivedAt: new Date().toISOString().split('T')[0],
+    qcStatus: 'PENDING',
+    warehouseId: 0,
+    productId: 0,
+    inspectedBy: null as number | null,
+    inspectionDate: '',
+    lineItems: [] as any[],
+    remarks: ''
+  };
+
+  users: any[] = [];
+
+  tripForm = {
+    dispatcherId: 0,
+    customerId: 0,
+    vehicleId: 0,
+    status: 'PENDING',
+    customerAddress: '',
+    remarks: ''
+  };
+
+  vehicleForm = {
+    vehicleNumber: '',
+    type: 'COVERED_VAN',
+    model: 'Tata Turbo',
+    capacity: 5,
+    status: 'AVAILABLE',
+    driverName: ''
+  };
+
+  selectedVehicleType = '';
+  filteredVehicles: any[] = [];
+  
   // Chart Data
   fleetStats = { available: { val: 0, pct: 0, offset: 0, dash: '0 100' }, onRoute: { val: 0, pct: 0, offset: 0, dash: '0 100' }, maintenance: { val: 0, pct: 0, offset: 0, dash: '0 100' }, offline: { val: 0, pct: 0, offset: 0, dash: '0 100' } };
   inventoryStats = { in: { val: 0, pct: 0, offset: 0, dash: '0 100' }, out: { val: 0, pct: 0, offset: 0, dash: '0 100' }, transfer: { val: 0, pct: 0, offset: 0, dash: '0 100' } };
@@ -79,6 +168,7 @@ export class LogisticsDashboardComponent implements OnInit {
   allShipments: any[] = [];
 
   warehouses: any[] = [];
+  purchaseOrders: any[] = [];
   alerts: any[] = [];
   
   // Modal State
@@ -104,7 +194,13 @@ export class LogisticsDashboardComponent implements OnInit {
     private deliveryTripService: DeliveryTripService,
     private inventoryService: InventoryService,
     private vehicleService: VehicleService,
-    private stockMovementService: StockMovementService
+    private stockMovementService: StockMovementService,
+    private grnService: GoodRecivedNoteService,
+    private productService: AddProductService,
+    private customerService: CustomerService,
+    private managerService: ManagerService,
+    private qcInspectorService: QcInspectorService,
+    private poService: PurchaseOrderService
   ) {}
 
   ngOnInit(): void {
@@ -114,8 +210,83 @@ export class LogisticsDashboardComponent implements OnInit {
     }
     this.userName = user.name || 'Logistics Officer';
     this.userId = user.userId;
+    this.tripForm.dispatcherId = user.userId;
     this.loadLogisticsOfficer();
     this.loadDashboardData();
+    this.loadNavFormData();
+  }
+
+  loadNavFormData() {
+    this.productService.findAll().subscribe({
+      next: (data: any) => {
+        this.productList = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.customerService.getAll().subscribe({
+      next: (data: any) => {
+        this.customerList = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.poService.findAll().subscribe({
+      next: (data: any) => {
+        this.purchaseOrders = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.vehicleService.findAll().subscribe({
+      next: (data: any) => {
+        this.vehicleList = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    const managers$ = this.managerService.findAll();
+    const inspectors$ = this.qcInspectorService.findAll();
+
+    managers$.subscribe({
+      next: (managers) => {
+        const managerUsers = (managers || []).map((m: any) => ({
+          id: m.userId || m.id,
+          name: m.name || m.managerName,
+          role: 'WAREHOUSE_MANAGER'
+        }));
+        inspectors$.subscribe({
+          next: (inspectors) => {
+            const inspectorUsers = (inspectors || []).map((i: any) => ({
+              id: i.userId || i.id,
+              name: i.name || i.inspectorName,
+              role: 'QUALITY_INSPECTOR'
+            }));
+            this.users = [...managerUsers, ...inspectorUsers];
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.users = managerUsers;
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      error: () => {
+        inspectors$.subscribe({
+          next: (inspectors) => {
+            this.users = (inspectors || []).map((i: any) => ({
+              id: i.userId || i.id,
+              name: i.name || i.inspectorName,
+              role: 'QUALITY_INSPECTOR'
+            }));
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.users = [];
+          }
+        });
+      }
+    });
   }
 
   loadDashboardData() {
@@ -606,6 +777,103 @@ export class LogisticsDashboardComponent implements OnInit {
   closeMapModal(): void {
     this.showMapModal = false;
   }
+
+  // ───────────────── QUICK NAV CARD MODALS ─────────────────
+  openStockNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showStockNavModal = true;
+    this.inventoryService.findAll().subscribe({
+      next: (data: any) => {
+        this.stockList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  closeStockNavModal(): void {
+    this.showStockNavModal = false;
+  }
+
+  openStockMovementNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showStockMovementNavModal = true;
+    this.stockMovementService.findAll().subscribe({
+      next: (data: any) => {
+        this.stockMovementList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  closeStockMovementNavModal(): void {
+    this.showStockMovementNavModal = false;
+  }
+
+  openGRNNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showGRNNavModal = true;
+    this.grnService.findAll().subscribe({
+      next: (data: any) => {
+        this.grnList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  closeGRNNavModal(): void {
+    this.showGRNNavModal = false;
+  }
+
+  openDeliveryTripNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showDeliveryTripNavModal = true;
+    this.deliveryTripService.findAll().subscribe({
+      next: (data: any) => {
+        this.deliveryTripList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+    this.vehicleService.findAll().subscribe({
+      next: (data: any) => {
+        this.vehicleList = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  closeDeliveryTripNavModal(): void {
+    this.showDeliveryTripNavModal = false;
+    this.tripForm = {
+      dispatcherId: this.userId,
+      customerId: 0,
+      vehicleId: 0,
+      status: 'PENDING',
+      customerAddress: '',
+      remarks: ''
+    };
+    this.selectedVehicleType = '';
+    this.filteredVehicles = [];
+  }
+
+  openVehicleNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showVehicleNavModal = true;
+    this.vehicleService.findAll().subscribe({
+      next: (data: any) => {
+        this.vehicleList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  closeVehicleNavModal(): void {
+    this.showVehicleNavModal = false;
+  }
   
   generateDummyTimeline() {
       this.liveTimeline = [
@@ -641,6 +909,164 @@ export class LogisticsDashboardComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: () => {},
+    });
+  }
+
+  submitStockForm(): void {
+    if (!this.stockForm.productId || !this.stockForm.warehouseId) {
+      alert('Validation Error: Target Product and Warehouse Node must be specified.');
+      return;
+    }
+    const payload: InventoryRequestModel = {
+      productId: +this.stockForm.productId,
+      warehouseId: +this.stockForm.warehouseId,
+      quantityOnHand: +this.stockForm.quantityOnHand,
+      quantityReserved: +this.stockForm.quantityReserved,
+      locationStatus: this.stockForm.locationStatus,
+      expiryDate: this.stockForm.expiryDate || undefined,
+      stockStatus: this.stockForm.stockStatus
+    };
+    this.inventoryService.save(payload).subscribe({
+      next: () => {
+        alert('Inventory Stock node allocated and committed successfully.');
+        this.closeStockNavModal();
+        this.loadDashboardData();
+      },
+      error: (err: any) => alert(err.error?.message || 'Failed to commit stock ledger.')
+    });
+  }
+
+  submitMovementForm(): void {
+    if (!this.movementForm.productId || !this.movementForm.warehouseId) {
+      alert('Validation Error: Product and Target Warehouse Node must be specified.');
+      return;
+    }
+    const payload: StockMovementRequestModel = {
+      movementType: this.movementForm.movementType,
+      productId: +this.movementForm.productId,
+      quantity: +this.movementForm.quantity,
+      sourceWarehouseId: this.movementForm.movementType === 'TRANSFER' ? +this.movementForm.sourceWarehouseId : null,
+      warehouseId: +this.movementForm.warehouseId,
+      referenceId: this.movementForm.referenceId,
+      remarks: this.movementForm.remarks,
+      performedBy: this.userId || 0
+    };
+    this.stockMovementService.logMovement(payload).subscribe({
+      next: () => {
+        alert('Stock Movement transaction logged successfully.');
+        this.closeStockMovementNavModal();
+        this.loadDashboardData();
+      },
+      error: (err: any) => alert(err.error?.message || 'Failed to log stock movement.')
+    });
+  }
+
+  submitGRNForm(): void {
+    if (!this.grnForm.poId || !this.grnForm.warehouseId) {
+      alert('Validation Error: Source Purchase Order and Destination Warehouse are required.');
+      return;
+    }
+    const payload: GoodsReceivedNoteRequestModel = {
+      poId: +this.grnForm.poId,
+      productId: +this.grnForm.productId || null,
+      receivedQuantity: +this.grnForm.receivedQuantity,
+      receivedBy: this.userId || 0,
+      warehouseId: +this.grnForm.warehouseId,
+      receivedAt: this.grnForm.receivedAt,
+      status: this.grnForm.qcStatus || 'PENDING',
+      remarks: this.grnForm.remarks || '',
+      inspectedBy: this.grnForm.inspectedBy ? +this.grnForm.inspectedBy : null,
+      inspectionDate: this.grnForm.inspectionDate || null,
+      lineItems: this.grnForm.lineItems.map((item) => ({
+        ...item,
+        productId: +item.productId,
+        quantityOrdered: +item.quantityOrdered,
+        quantityReceived: +item.quantityReceived
+      }))
+    };
+    this.grnService.save(payload).subscribe({
+      next: () => {
+        alert('Goods Received Note (GRN) created successfully.');
+        this.closeGRNNavModal();
+        this.loadDashboardData();
+      },
+      error: (err: any) => alert(err.error?.message || 'Failed to authorize GRN entry.')
+    });
+  }
+
+  addDashboardGrnLineItem(): void {
+    this.grnForm.lineItems.push({
+      productId: 0,
+      quantityOrdered: 0,
+      quantityReceived: 0
+    });
+    this.cdr.markForCheck();
+  }
+
+  removeDashboardGrnLineItem(index: number): void {
+    this.grnForm.lineItems.splice(index, 1);
+    this.cdr.markForCheck();
+  }
+
+  onVehicleTypeChange(): void {
+    this.tripForm.vehicleId = 0;
+    if (!this.selectedVehicleType) {
+      this.filteredVehicles = [];
+    } else {
+      this.filteredVehicles = this.vehicleList.filter(
+        (v: any) => v.type.toUpperCase() === this.selectedVehicleType.toUpperCase() && v.driverId != null
+      );
+    }
+    this.cdr.markForCheck();
+  }
+
+  submitTripForm(): void {
+    if (!this.tripForm.customerId || +this.tripForm.customerId === 0 || !this.tripForm.vehicleId || +this.tripForm.vehicleId === 0) {
+      alert('Validation Error: Customer account selection and fleet vehicle mode allocation are required.');
+      return;
+    }
+    const vehicle = this.vehicleList.find(v => +v.id === +this.tripForm.vehicleId);
+    const driverId = vehicle ? vehicle.driverId : null;
+
+    const payload: DeliveryTripRequestModel = {
+      dispatcherId: this.userId || this.tripForm.dispatcherId,
+      customerId: +this.tripForm.customerId,
+      vehicleId: +this.tripForm.vehicleId,
+      driverId: driverId || 0,
+      status: this.tripForm.status,
+      customerAddress: this.tripForm.customerAddress,
+      remarks: this.tripForm.remarks
+    };
+    this.deliveryTripService.create(payload).subscribe({
+      next: () => {
+        alert('New Delivery Trip blueprint deployed successfully.');
+        this.closeDeliveryTripNavModal();
+        this.loadDashboardData();
+      },
+      error: (err: any) => alert(err.error?.message || 'Failed to deploy delivery trip.')
+    });
+  }
+
+  submitVehicleForm(): void {
+    if (!this.vehicleForm.vehicleNumber) {
+      alert('Validation Error: Registration Number is required.');
+      return;
+    }
+    const payload: VehicleRequestModel = {
+      plateNumber: this.vehicleForm.vehicleNumber,
+      type: this.vehicleForm.type,
+      capacity: +this.vehicleForm.capacity,
+      status: this.vehicleForm.status,
+      fuelLevel: 100,
+      driverId: null
+    };
+    this.vehicleService.create(payload).subscribe({
+      next: () => {
+        alert('Fleet Vehicle registered successfully.');
+        this.closeVehicleNavModal();
+        this.loadDashboardData();
+      },
+      error: (err: any) => alert(err.error?.message || 'Failed to register fleet vehicle.')
     });
   }
 

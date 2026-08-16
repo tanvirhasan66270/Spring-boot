@@ -20,8 +20,12 @@ export class NotificationService {
    * 🎯 ইউজার আইডির কাস্টম হেডার মেথড
    */
   private getHeaders(): HttpHeaders {
-    const userId = this.storage.getUser()?.userId?.toString() ?? '';
-    return new HttpHeaders().set('X-User-Id', userId);
+    const user = this.storage.getUser();
+    const userId = user?.userId?.toString() ?? '';
+    const role = this.storage.getActiveRole() || user?.role || '';
+    return new HttpHeaders()
+      .set('X-User-Id', userId)
+      .set('X-User-Role', role);
   }
 
 

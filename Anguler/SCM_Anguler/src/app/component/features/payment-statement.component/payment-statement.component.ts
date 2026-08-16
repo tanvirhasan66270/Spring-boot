@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { PaymentStatementService } from '../../../service/payment-statement.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { PaymentStatementResponse, PaymentStatementRequest } from '../../shared/model/PaymentStatementModel';
@@ -16,8 +18,10 @@ import { StorageService } from '../../../auth/auth_service/storage.service';
 })
 export class PaymentStatementComponent implements OnInit {
   orders: CustomerOrderResponseModel[] = [];
-  selectedOrderId: number | null = null;
+  selectedOrderId: number | string | null = 'ALL';
+  allPayments: PaymentStatementResponse[] = [];
   payments: PaymentStatementResponse[] = [];
+  searchText: string = '';
   
   isDrawerOpen = false;
   isEdit = false;
@@ -54,20 +58,76 @@ export class PaymentStatementComponent implements OnInit {
     this.loadOrders();
   }
 
+  get filteredPayments(): PaymentStatementResponse[] {
+    let list = this.payments || [];
+    if (this.searchText && this.searchText.trim() !== '') {
+      const q = this.searchText.toLowerCase().trim();
+      list = list.filter(p => {
+        const idStr = p.id ? String(p.id) : '';
+        const txnIdStr = p.transactionId ? String(p.transactionId) : '';
+        const amountStr = p.paidAmount ? String(p.paidAmount) : '';
+        const methodStr = p.paymentMethod ? String(p.paymentMethod) : '';
+        const statusStr = p.issueStatus ? String(p.issueStatus) : '';
+        const dateStr = p.createdAt ? String(p.createdAt) : '';
+        return idStr.toLowerCase().includes(q) ||
+               txnIdStr.toLowerCase().includes(q) ||
+               amountStr.toLowerCase().includes(q) ||
+               methodStr.toLowerCase().includes(q) ||
+               statusStr.toLowerCase().includes(q) ||
+               dateStr.toLowerCase().includes(q);
+      });
+    }
+    return list;
+  }
+
   loadOrders() {
     this.orderService.findAll().subscribe({
       next: (data) => {
         this.orders = data || [];
+        this.loadAllPayments();
+      }
+    });
+  }
+
+  loadAllPayments() {
+    if (!this.orders || this.orders.length === 0) {
+      this.payments = [];
+      this.allPayments = [];
+      this.cdr.markForCheck();
+      return;
+    }
+    const requests = this.orders.map(o => 
+      this.service.getPaymentsByOrderId(o.id).pipe(
+        catchError(() => of([] as PaymentStatementResponse[]))
+      )
+    );
+    forkJoin(requests).subscribe({
+      next: (resultsArray: PaymentStatementResponse[][]) => {
+        const combined: PaymentStatementResponse[] = resultsArray.reduce(
+          (acc: PaymentStatementResponse[], curr: PaymentStatementResponse[]) => acc.concat(curr || []),
+          [] as PaymentStatementResponse[]
+        );
+        combined.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        this.allPayments = combined;
+        if (this.selectedOrderId === 'ALL' || !this.selectedOrderId) {
+          this.payments = [...this.allPayments];
+        } else {
+          this.loadPaymentsByOrder(Number(this.selectedOrderId));
+        }
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.payments = [];
         this.cdr.markForCheck();
       }
     });
   }
 
   onOrderSelect() {
-    if (this.selectedOrderId) {
-      this.loadPaymentsByOrder(this.selectedOrderId);
+    if (!this.selectedOrderId || this.selectedOrderId === 'ALL') {
+      this.payments = [...this.allPayments];
     } else {
-      this.payments = [];
+      this.loadPaymentsByOrder(Number(this.selectedOrderId));
     }
   }
 
@@ -130,7 +190,7 @@ export class PaymentStatementComponent implements OnInit {
         next: () => {
           alert("Payment updated successfully.");
           this.closeDrawer();
-          this.onOrderSelect(); // refresh table
+          this.loadAllPayments();
         },
         error: (err) => this.handleError(err)
       });
@@ -139,10 +199,7 @@ export class PaymentStatementComponent implements OnInit {
         next: () => {
           alert("Payment created successfully.");
           this.closeDrawer();
-          // If the selected order in the top dropdown matches the one we just added to, refresh it
-          if (this.selectedOrderId == this.payment.customerOrderId) {
-            this.onOrderSelect();
-          }
+          this.loadAllPayments();
         },
         error: (err) => this.handleError(err)
       });
@@ -167,7 +224,7 @@ export class PaymentStatementComponent implements OnInit {
       this.service.deletePayment(id).subscribe({
         next: () => {
           alert("Payment deleted.");
-          this.onOrderSelect();
+          this.loadAllPayments();
         },
         error: (err) => this.handleError(err)
       });
@@ -193,7 +250,7 @@ export class PaymentStatementComponent implements OnInit {
         next: () => {
           alert("Payment status updated successfully.");
           this.closeStatusModal();
-          this.onOrderSelect();
+          this.loadAllPayments();
         },
         error: (err) => this.handleError(err)
       });
@@ -201,8 +258,9 @@ export class PaymentStatementComponent implements OnInit {
   }
 
   reset() {
+    const defaultOrderId = (this.selectedOrderId && this.selectedOrderId !== 'ALL') ? Number(this.selectedOrderId) : 0;
     this.payment = {
-      customerOrderId: this.selectedOrderId || 0,
+      customerOrderId: defaultOrderId,
       paidAmount: 0,
       paymentMethod: 'CASH'
     };

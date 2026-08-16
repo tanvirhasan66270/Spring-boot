@@ -1,19 +1,22 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { QcInspectorService } from '../../../service/qc-inspactor.service';
 import { LoginResponse } from '../../../auth/Model/authModel';
 import { QcInspectionService } from '../../../service/qc-inspection.service';
 import { NotificationService } from '../../../system/service/notification.service';
 import { GoodRecivedNoteService } from '../../../service/good-recived-note.service';
+import { AddProductService } from '../../../service/add-product.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
+import { QCInspectionRequestModel } from '../../shared/model/qc-inspection';
 
 @Component({
   selector: 'app-qc-inspector-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent],
+  imports: [CommonModule, RouterModule, FormsModule, DashboardSettingsComponent],
   templateUrl: './qc-inspector-dashboard.component.html',
   styleUrls: ['./qc-inspector-dashboard.component.css'],
 })
@@ -24,6 +27,30 @@ export class QCInspectorDashboardComponent implements OnInit {
   user: LoginResponse | null = null;
   showSettings = false;
   loading = true;
+
+  // Record Inspection Modal States
+  isRecordModalOpen = false;
+  grns: any[] = [];
+  products: any[] = [];
+  inspectors: any[] = [];
+  selectedFile: File | null = null;
+  modalErrorMessage: string | null = null;
+  modalSuccessMessage: string | null = null;
+
+  inspection: QCInspectionRequestModel = {
+    grnId: 0,
+    productId: 0,
+    inspectionType: 'VISUAL',
+    inspectedBy: 0,
+    sampleSize: 5,
+    defectsFound: 0,
+    defectDescription: '',
+    result: 'GOOD',
+    certificateRef: '',
+    labTestReport: '',
+    inspectedAt: new Date().toISOString().split('T')[0],
+    checklists: [],
+  };
 
   kpis = [
     {
@@ -78,6 +105,7 @@ export class QCInspectorDashboardComponent implements OnInit {
     private inspectionService: QcInspectionService,
     private notificationService: NotificationService,
     private grnService: GoodRecivedNoteService,
+    private productService: AddProductService
   ) {}
 
   ngOnInit(): void {
@@ -87,10 +115,110 @@ export class QCInspectorDashboardComponent implements OnInit {
     }
     this.userName = user.name || 'QC Inspector';
     this.userId = user.userId;
+    this.inspection.inspectedBy = user.userId;
     this.loadQcInspector();
     this.loadDashboardData();
     this.loadNotifications();
     this.loadPendingGRNs();
+  }
+
+  // Modal Handler Methods
+  openRecordModal() {
+    this.resetInspectionForm();
+    this.isRecordModalOpen = true;
+    this.loadModalOptions();
+    this.cdr.markForCheck();
+  }
+
+  closeRecordModal() {
+    this.isRecordModalOpen = false;
+    this.modalErrorMessage = null;
+    this.modalSuccessMessage = null;
+    this.cdr.markForCheck();
+  }
+
+  loadModalOptions() {
+    this.grnService.findAll().subscribe({ next: (data) => { this.grns = data || []; this.cdr.markForCheck(); } });
+    this.productService.findAll().subscribe({ next: (data) => { this.products = data || []; this.cdr.markForCheck(); } });
+    this.qcInspectorService.findAll().subscribe({
+      next: (data) => {
+        this.inspectors = (data || []).map((i: any) => ({
+          id: i.userId || i.id,
+          name: i.name || i.inspectorName,
+          designation: i.designation || 'QC Inspector'
+        }));
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onFileChange(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedFile = event.target.files[0];
+    }
+  }
+
+  resetInspectionForm() {
+    this.inspection = {
+      grnId: 0,
+      productId: 0,
+      inspectionType: 'VISUAL',
+      inspectedBy: this.userId || 0,
+      sampleSize: 5,
+      defectsFound: 0,
+      defectDescription: '',
+      result: 'GOOD',
+      certificateRef: '',
+      labTestReport: '',
+      inspectedAt: new Date().toISOString().split('T')[0],
+      checklists: [],
+    };
+    this.selectedFile = null;
+    this.modalErrorMessage = null;
+    this.modalSuccessMessage = null;
+  }
+
+  submitInspection() {
+    this.modalErrorMessage = null;
+    this.modalSuccessMessage = null;
+
+    if (!this.inspection.grnId || +this.inspection.grnId === 0 || !this.inspection.productId || +this.inspection.productId === 0) {
+      this.modalErrorMessage = 'Validation Error: Please select both a Linked GRN and Target Product.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.inspection.inspectedAt) {
+      this.modalErrorMessage = 'Validation Error: Please specify the Inspection Execution Date.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const payload: QCInspectionRequestModel = {
+      ...this.inspection,
+      grnId: +this.inspection.grnId,
+      productId: +this.inspection.productId,
+      inspectedBy: this.userId || +this.inspection.inspectedBy,
+      sampleSize: +this.inspection.sampleSize,
+      defectsFound: +this.inspection.defectsFound,
+      result: (this.inspection.result || 'GOOD').toUpperCase(),
+      checklists: []
+    };
+
+    this.inspectionService.save(payload, this.selectedFile).subscribe({
+      next: () => {
+        this.modalSuccessMessage = 'QC Audit Log Authorized & Successfully Recorded!';
+        this.loadDashboardData();
+        this.cdr.markForCheck();
+        setTimeout(() => {
+          this.closeRecordModal();
+        }, 1300);
+      },
+      error: (err: any) => {
+        this.modalErrorMessage = err.error?.message || 'Failed to record QC inspection.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   loadDashboardData() {

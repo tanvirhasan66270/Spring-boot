@@ -105,7 +105,10 @@ public class SecurityConfig {
                 "Authorization",
                 "Content-Type",
                 "Cache-Control",
-                "x-user-id"
+                "x-user-id",
+                "X-User-Id",
+                "x-user-role",
+                "X-User-Role"
         ));
 
         configuration.setAllowCredentials(true);

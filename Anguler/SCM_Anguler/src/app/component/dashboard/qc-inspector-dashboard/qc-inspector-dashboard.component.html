@@ -52,8 +52,10 @@
   <div class="row g-3 mb-4">
     <div class="col-md-6">
       <a
-        routerLink="/qc-inspection"
+        href="javascript:void(0)"
+        (click)="openRecordModal()"
         class="action-btn text-center p-3.5 rounded-3 shadow-sm bg-white d-block text-decoration-none"
+        style="cursor: pointer;"
       >
         <i class="bi bi-patch-check fs-2 text-purple mb-1 d-block"></i>
         <strong class="text-dark d-block">Record Inspection</strong>
@@ -283,4 +285,158 @@
     [isOpen]="showSettings"
     (close)="closeSettings()"
   ></app-dashboard-settings>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     RECORD INSPECTION MODAL
+══════════════════════════════════════════════════════════════ -->
+<div class="qc-modal-backdrop" *ngIf="isRecordModalOpen" (click)="closeRecordModal()"></div>
+
+<div class="qc-modal-panel shadow-lg" [class.qc-modal-open]="isRecordModalOpen" *ngIf="isRecordModalOpen">
+  <!-- Modal Header -->
+  <div class="qc-modal-header d-flex justify-content-between align-items-center p-4">
+    <div>
+      <h5 class="fw-bold mb-1 text-white">
+        <i class="bi bi-shield-check me-2"></i>Authorize Quality Matrix
+      </h5>
+      <small class="text-white-50">Record a new QC audit log for an inbound cargo batch</small>
+    </div>
+    <button type="button" class="btn-close btn-close-white" (click)="closeRecordModal()"></button>
+  </div>
+
+  <!-- Modal Body -->
+  <div class="qc-modal-body p-4" style="overflow-y: auto; max-height: calc(90vh - 110px);">
+
+    <!-- Success / Error Alerts -->
+    <div class="alert alert-success d-flex align-items-center gap-2 mb-3 shadow-sm" *ngIf="modalSuccessMessage">
+      <i class="bi bi-check-circle-fill fs-5"></i>
+      <span class="fw-semibold">{{ modalSuccessMessage }}</span>
+    </div>
+    <div class="alert alert-danger d-flex align-items-center gap-2 mb-3 shadow-sm" *ngIf="modalErrorMessage">
+      <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+      <span class="fw-semibold">{{ modalErrorMessage }}</span>
+    </div>
+
+    <form #modalQcForm="ngForm" (ngSubmit)="modalQcForm.valid && submitInspection()">
+
+      <!-- GRN Selection -->
+      <div class="mb-3">
+        <label class="form-label fw-bold small text-uppercase text-secondary">
+          <i class="bi bi-box-arrow-in-down me-1 text-teal"></i>Arriving Cargo Node Vector (GRN Link)
+        </label>
+        <select class="form-select fs-7" [(ngModel)]="inspection.grnId" name="grnId" required>
+          <option [value]="0">-- Select Inbound GRN Code Reference --</option>
+          <option *ngFor="let g of grns" [value]="g.id">
+            GRN: {{ g.grnNumber }} (PO: {{ g.poNumber }})
+          </option>
+        </select>
+      </div>
+
+      <!-- Product Selection -->
+      <div class="mb-3">
+        <label class="form-label fw-bold small text-uppercase text-secondary">
+          <i class="bi bi-box me-1 text-primary"></i>Target Consignment Product
+        </label>
+        <select class="form-select fs-7" [(ngModel)]="inspection.productId" name="productId" required>
+          <option [value]="0">-- Select Core Target Product --</option>
+          <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
+        </select>
+      </div>
+
+      <!-- Inspection Type & Grade -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-funnel me-1"></i>Inspection Topology
+          </label>
+          <select class="form-select fs-7" [(ngModel)]="inspection.inspectionType" name="inspectionType" required>
+            <option value="VISUAL">VISUAL EXAMINATION</option>
+            <option value="LAB_TEST">CHEMICAL LAB TEST</option>
+            <option value="FUNCTIONAL">FUNCTIONAL AUDIT</option>
+            <option value="DIMENSIONAL">DIMENSIONAL METRIC</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-award me-1"></i>Audit Evaluation Grade
+          </label>
+          <select class="form-select fs-7 fw-bold" [(ngModel)]="inspection.result" name="result" required>
+            <option value="VERY_GOOD">🌟 VERY GOOD</option>
+            <option value="GOOD">✅ GOOD</option>
+            <option value="AVERAGE">⚠️ AVERAGE</option>
+            <option value="BAD">❌ BAD</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sample Size & Defects -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-collection me-1"></i>Sample Pool Volume Size
+          </label>
+          <input type="number" class="form-control fs-7 font-monospace fw-bold"
+            [(ngModel)]="inspection.sampleSize" name="sampleSize" min="1" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-x-circle me-1 text-danger"></i>Total Defectives Identified
+          </label>
+          <input type="number" class="form-control fs-7 font-monospace fw-bold text-danger"
+            [(ngModel)]="inspection.defectsFound" name="defectsFound" min="0" required>
+        </div>
+      </div>
+
+      <!-- Date & Certificate -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-calendar-check me-1"></i>Audit Authority Execution Date
+          </label>
+          <input type="date" class="form-control fs-7 font-monospace"
+            [(ngModel)]="inspection.inspectedAt" name="inspectedAt" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-secondary">
+            <i class="bi bi-patch-check me-1"></i>Certificate Reference Stamp
+          </label>
+          <input type="text" class="form-control fs-7 font-monospace"
+            [(ngModel)]="inspection.certificateRef" name="certificateRef"
+            placeholder="e.g. ISO-QC-99221">
+        </div>
+      </div>
+
+      <!-- Defect Narrative -->
+      <div class="mb-3">
+        <label class="form-label fw-bold small text-uppercase text-secondary">
+          <i class="bi bi-chat-square-text me-1"></i>Defect Layer Narrative Description
+        </label>
+        <textarea class="form-control fs-7" rows="2"
+          [(ngModel)]="inspection.defectDescription" name="defectDescription"
+          placeholder="Provide detailed specifications of flaws discovered during batch audit..."></textarea>
+      </div>
+
+      <!-- Lab Report Upload -->
+      <div class="mb-4">
+        <label class="form-label fw-bold small text-uppercase text-secondary">
+          <i class="bi bi-file-earmark-medical me-1 text-teal"></i>Chemical Lab SWIFT Telemetry Report Copy
+        </label>
+        <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
+        <small class="text-muted fs-8 d-block mt-1">Upload verified chemical composition maps or spectroscopic scan logs.</small>
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="d-flex gap-2 pt-3 border-top">
+        <button
+          class="btn btn-teal text-white flex-grow-1 py-2 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase"
+          type="submit">
+          <i class="bi bi-cloud-arrow-up-fill"></i> Authorize &amp; Broadcast Matrix
+        </button>
+        <button type="button" class="btn btn-outline-secondary px-4 fs-7 text-uppercase"
+          (click)="closeRecordModal()">Cancel</button>
+      </div>
+
+    </form>
+  </div>
 </div>
