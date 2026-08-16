@@ -115,113 +115,115 @@
         </div>
       </div>
     </div>
+  </div>
 
-
-    <!-- ───────────────── TABLE TABS NAVIGATION (CARD STYLE) ───────────────── -->
-  <div class="row g-3 mb-4" *ngIf="!isLoading">
-    
-    <!-- Approvals -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'APPROVALS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'APPROVALS'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'APPROVALS' ? 'text-primary' : 'text-danger'">
-            <i class="bi bi-shield-exclamation"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Approvals</div>
-            <div class="text-muted small">{{ approvals.length }} Pending</div>
+  <!-- ───────────────── TABLE TABS NAVIGATION (CARD STYLE) ───────────────── -->
+  <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
+    <div class="row g-3" *ngIf="!isLoading">
+      
+      <!-- Approvals -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'APPROVALS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'APPROVALS'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'APPROVALS' ? 'text-primary' : 'text-danger'">
+              <i class="bi bi-shield-exclamation"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">PRQ Approvals</div>
+              <div class="text-muted small">{{ approvals.length }} Pending</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- POs -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'PO' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'PO'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'PO' ? 'text-primary' : 'text-primary'">
-            <i class="bi bi-cart-check"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Purchase Orders</div>
-            <div class="text-muted small">{{ pendingPOs.length }} Awaiting</div>
+      <!-- POs -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'PO' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'PO'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'PO' ? 'text-primary' : 'text-primary'">
+              <i class="bi bi-cart-check"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">Purchase Orders</div>
+              <div class="text-muted small">{{ pendingPOs.length }} Awaiting</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- GRNs -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'GRN' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'GRN'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'GRN' ? 'text-primary' : 'text-success'">
-            <i class="bi bi-box-arrow-in-down"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">GRNs</div>
-            <div class="text-muted small">{{ grns.length }} Pending</div>
+      <!-- GRNs -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'GRN' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'GRN'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'GRN' ? 'text-primary' : 'text-success'">
+              <i class="bi bi-box-arrow-in-down"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">GRNs</div>
+              <div class="text-muted small">{{ grns.length }} Pending</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Shipments -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'SHIPMENTS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'SHIPMENTS'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'SHIPMENTS' ? 'text-primary' : 'text-info'">
-            <i class="bi bi-truck"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Shipments</div>
-            <div class="text-muted small">{{ activeShipments.length }} Active</div>
+      <!-- Shipments -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'SHIPMENTS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'SHIPMENTS'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'SHIPMENTS' ? 'text-primary' : 'text-info'">
+              <i class="bi bi-truck"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">Shipments</div>
+              <div class="text-muted small">{{ activeShipments.length }} Active</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Low Stock -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'LOW_STOCK' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'LOW_STOCK'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'LOW_STOCK' ? 'text-primary' : 'text-warning'">
-            <i class="bi bi-exclamation-triangle"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Low Stock</div>
-            <div class="text-muted small">{{ lowStockItems.length }} Alerts</div>
+      <!-- Low Stock -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'LOW_STOCK' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'LOW_STOCK'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'LOW_STOCK' ? 'text-primary' : 'text-warning'">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">Low Stock</div>
+              <div class="text-muted small">{{ lowStockItems.length }} Alerts</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Reports -->
-    <div class="col-xl-2 col-lg-4 col-md-6">
-      <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
-           [ngClass]="activeTableTab === 'REPORTS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeTableTab = 'REPORTS'">
-        <div class="d-flex align-items-center">
-          <div class="me-3 fs-3" [ngClass]="activeTableTab === 'REPORTS' ? 'text-primary' : 'text-primary'">
-            <i class="bi bi-file-earmark-bar-graph"></i>
-          </div>
-          <div>
-            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Daily Report</div>
-            <div class="text-muted small">{{ dailyReports.length }} Submitted</div>
+      <!-- Reports -->
+      <div class="col-xl-2 col-lg-4 col-md-6">
+        <div class="card border rounded-3 p-3 shadow-sm h-100" style="cursor: pointer; transition: all 0.2s;"
+             [ngClass]="activeTableTab === 'REPORTS' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+             (click)="activeTableTab = 'REPORTS'">
+          <div class="d-flex align-items-center">
+            <div class="me-3 fs-3" [ngClass]="activeTableTab === 'REPORTS' ? 'text-primary' : 'text-primary'">
+              <i class="bi bi-file-earmark-bar-graph"></i>
+            </div>
+            <div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">Daily Report</div>
+              <div class="text-muted small">{{ dailyReports.length }} Submitted</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
+    </div>
   </div>
 
   <!-- ───────────────── PENDING APPROVALS (PR) ───────────────── -->
@@ -774,7 +776,6 @@
         </div>
       </div>
     </div>
-  </div>
 
   <!-- ───────────────── CHARTS GRID ───────────────── -->
   <div class="row g-4 mb-4" *ngIf="!isLoading">
