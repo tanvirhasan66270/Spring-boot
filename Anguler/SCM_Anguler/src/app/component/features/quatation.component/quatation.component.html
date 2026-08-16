@@ -1,4 +1,4 @@
-<div class="container-fluid py-4 px-4 text-dark">
+<div class="container-fluid py-4 px-4 text-dark" *ngIf="!isEmbedded">
 
   <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
     <div>
@@ -113,8 +113,8 @@
                   </button>
 
                   <button class="btn btn-icon btn-light text-warning" title="Edit Properties" (click)="edit(q)" 
-                    *ngIf="(userRole === 'ADMIN' || userRole === 'PROCUREMENT' || userRole === 'MANAGER') || 
-                           (userRole === 'SUPPLIER' && q.supplierId === currentSupplierId && q.status === 'PENDING')">
+                      *ngIf="(userRole === 'ADMIN' || userRole === 'PROCUREMENT' || userRole === 'MANAGER') || 
+                             (userRole === 'SUPPLIER' && q.supplierId == currentSupplierId && q.status !== 'APPROVED' && q.status !== 'UNDER_REVIEW')">
                     <i class="bi bi-pencil-square"></i>
                   </button>
 
@@ -146,109 +146,7 @@
     </div>
 
     <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
-      <form #qForm="ngForm" (ngSubmit)="qForm.valid && save()">
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Linked Purchase Requisition Vector</label>
-          <select class="form-select fs-7" [(ngModel)]="quotation.purchaseRequisitionId" name="purchaseRequisitionId"
-            #prRef="ngModel" required [disabled]="isEdit" [class.is-invalid]="prRef.value === 0 && qForm.submitted">
-            <option [value]="0">-- Select Linked Requisition Node --</option>
-            @for (pr of requisitions; track pr.id) {
-            <option [value]="pr.id">PR #{{ pr.id }} (Required Date: {{ pr.requiredByDate }})</option>
-            }
-          </select>
-          <div class="invalid-feedback small fw-bold" *ngIf="prRef.value === 0 && qForm.submitted">Purchase Requisition link is mandatory!</div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Target Vendor Node</label>
-          <select class="form-select fs-7 bg-light fw-bold" [(ngModel)]="quotation.supplierId" name="supplierId"
-            #supRef="ngModel" required [disabled]="isEdit || activeRole === 'SUPPLIER'" [class.is-invalid]="supRef.value === 0 && qForm.submitted">
-            <option [value]="0"></option>
-            @if (activeRole === 'SUPPLIER') {
-              <option [value]="currentSupplierId" selected>{{ currentSupplierName }}</option>
-            } @else {
-              @for (s of suppliers; track s.id) {
-              <option [value]="s.id">{{ s.name }} ({{ s.companyName || 'Corporate Entity' }})</option>
-              }
-            }
-          </select>
-          <div class="invalid-feedback small fw-bold" *ngIf="supRef.value === 0 && qForm.submitted">Supplier selection is mandatory!</div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Unit Bid Cost ($)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="quotation.unitPrice"
-              name="unitPrice" min="0" placeholder="0.00" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Supply Volume (Qty)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold"
-              [class.is-invalid]="!isQuantityValid()" [(ngModel)]="quotation.quantity" name="quantity" min="1" required>
-            <div class="invalid-feedback d-block small fw-bold" *ngIf="!isQuantityValid()">
-              Quantity limit exceeded! Max limit is: {{ getLinkedRequisitionQty() }}.
-            </div>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Lead Time (Days)</label>
-            <input type="number" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.leadTimeDays"
-              name="leadTimeDays" min="1" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Bidding Strategy Stage</label>
-            <select class="form-select fs-7" [(ngModel)]="quotation.status" name="status" required [disabled]="activeRole === 'SUPPLIER'">
-              <option value="PENDING">PENDING</option>
-              <option value="UNDER_REVIEW">UNDER_REVIEW</option>
-              <option value="APPROVED">APPROVED</option>
-              <option value="REJECTED">REJECTED</option>
-              <option value="EXPIRED">EXPIRED</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Quotation Received Date</label>
-            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.receivedAt" name="receivedAt" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Date</label>
-            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.deliveryTime" name="deliveryTime" required>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Warranty Coverage Matrix</label>
-          <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 3 Years">
-        </div>
-
-        <div class="mb-3" *ngIf="!isEdit">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Supplier Attachment Document Envelope</label>
-          <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Product Nomenclature Specifications</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription"></textarea>
-        </div>
-
-        <div class="mb-4">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Sourcing Operations Notes</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.notes" name="notes"></textarea>
-        </div>
-
-        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
-          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase"
-            type="submit" [disabled]="!isQuantityValid() || qForm.invalid">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Bid Mutations' : 'Publish Quotation Envelope' }}
-          </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
-        </div>
-      </form>
+      <ng-container *ngTemplateOutlet="quotationFormTemplate"></ng-container>
     </div>
   </div>
 
@@ -418,3 +316,134 @@
 
 <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
 </div>
+<ng-template #quotationFormTemplate>
+<form #qForm="ngForm" (ngSubmit)="qForm.valid && save()">
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Linked Purchase Requisition Vector</label>
+          <select class="form-select fs-7" [(ngModel)]="quotation.purchaseRequisitionId" (ngModelChange)="onRequisitionSelect($event)" name="purchaseRequisitionId"
+            #prRef="ngModel" required [disabled]="isEdit" [class.is-invalid]="prRef.value === 0 && qForm.submitted">
+            <option [value]="0">-- Select Linked Requisition Node --</option>
+            @for (pr of requisitions; track pr.id) {
+            <option [value]="pr.id">PR #{{ pr.id }} (Required Date: {{ pr.requiredByDate }})</option>
+            }
+          </select>
+          <div class="invalid-feedback small fw-bold" *ngIf="prRef.value === 0 && qForm.submitted">Purchase Requisition link is mandatory!</div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Vendor Node</label>
+          <select class="form-select fs-7 bg-light fw-bold" [(ngModel)]="quotation.supplierId" name="supplierId"
+            #supRef="ngModel" required [disabled]="isEdit || activeRole === 'SUPPLIER'" [class.is-invalid]="supRef.value === 0 && qForm.submitted">
+            <option [value]="0"></option>
+            @if (activeRole === 'SUPPLIER') {
+              <option [value]="currentSupplierId" selected>{{ currentSupplierName }}</option>
+            } @else {
+              @for (s of suppliers; track s.id) {
+              <option [value]="s.id">{{ s.name }} ({{ s.companyName || 'Corporate Entity' }})</option>
+              }
+            }
+          </select>
+          <div class="invalid-feedback small fw-bold" *ngIf="supRef.value === 0 && qForm.submitted">Supplier selection is mandatory!</div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Unit Bid Cost ($)</label>
+            <input type="number" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="quotation.unitPrice"
+              name="unitPrice" min="0" placeholder="0.00" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Supply Volume (Qty)</label>
+            <input type="number" class="form-control fs-7 font-monospace fw-bold"
+              [class.is-invalid]="!isQuantityValid()" [(ngModel)]="quotation.quantity" name="quantity" min="1" required>
+            <div class="invalid-feedback d-block small fw-bold" *ngIf="!isQuantityValid()">
+              Quantity limit exceeded! Max limit is: {{ getLinkedRequisitionQty() }}.
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Lead Time (Days)</label>
+            <input type="number" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.leadTimeDays"
+              name="leadTimeDays" min="1" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Bidding Strategy Stage</label>
+            <select class="form-select fs-7" [(ngModel)]="quotation.status" name="status" required [disabled]="activeRole === 'SUPPLIER'">
+              <option value="PENDING">PENDING</option>
+              <option value="UNDER_REVIEW">UNDER_REVIEW</option>
+              <option value="APPROVED">APPROVED</option>
+              <option value="REJECTED">REJECTED</option>
+              <option value="EXPIRED">EXPIRED</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Requisition Received Date</label>
+            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.receivedAt" name="receivedAt" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Estimated Delivery Date</label>
+            <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="quotation.deliveryTime" name="deliveryTime" required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Warranty Coverage Matrix</label>
+          <input type="text" class="form-control fs-7" [(ngModel)]="quotation.warranty" name="warranty" placeholder="e.g. 3 Years">
+        </div>
+
+        <div class="mb-3" *ngIf="!isEdit">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Supplier Attachment Document Envelope</label>
+          <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Product Nomenclature Specifications</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.productDescription" name="productDescription"></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Sourcing Operations Notes</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="quotation.notes" name="notes"></textarea>
+        </div>
+
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase"
+            type="submit" [disabled]="!isQuantityValid() || qForm.invalid">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Bid Mutations' : 'Publish Quotation Envelope' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase" (click)="reset()">Clear</button>
+        </div>
+      </form>
+</ng-template>
+
+<!-- MODAL: ADD QUOTATION (LC STYLE) -->
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 1055;" *ngIf="isEmbedded">
+  <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 850px;">
+    <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
+      <div class="modal-header px-4 py-3.5 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-2.5 rounded-3 bg-white bg-opacity-20 backdrop-blur shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+            <i class="bi bi-file-earmark-arrow-up fs-4 text-white"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-white" style="letter-spacing: -0.01em;">Submit Quotation Bid</h5>
+            <p class="text-white-50 small mb-0 fs-8">Provide pricing and timeline for corporate purchase requisitions</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+      </div>
+      <div class="modal-body p-4 bg-light custom-scroll overflow-auto" style="max-height: 580px;">
+         <ng-container *ngTemplateOutlet="quotationFormTemplate"></ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

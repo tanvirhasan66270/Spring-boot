@@ -1,4 +1,4 @@
-<div class="container-fluid py-4 px-4 text-dark">
+<div class="container-fluid py-4 px-4 text-dark" *ngIf="!isEmbedded">
 
   <!-- হেডার এবং ডুয়াল সার্চ বার প্যানেল -->
   <div
@@ -112,113 +112,14 @@
   </div>
 
   <!-- Sliding Form Drawer Framework -->
-  <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
+  <div class="custom-drawer shadow" [class.open]="isDrawerOpen" *ngIf="!isEmbedded">
     <div class="drawer-header bg-dark text-white p-4 d-flex justify-content-between align-items-center">
       <h5 class="fw-bold mb-0">{{ isEdit ? 'Mutate Freight Parameters' : 'Authorize Freight Node' }}</h5>
       <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
     </div>
 
     <div class="drawer-body p-4" style="overflow-y: auto; height: calc(100vh - 110px);">
-      <form #sForm="ngForm" (ngSubmit)="sForm.valid && save()">
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Target Purchase Order Vector</label>
-          <select class="form-select fs-7" [(ngModel)]="shipment.poId" name="poId" required [disabled]="isEdit">
-            <option [value]="0">-- Link Master Purchase Order --</option>
-            @for (po of purchaseOrders; track po.id) {
-            <option [value]="po.id">PO #{{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
-          @if (userRole === 'SUPPLIER') {
-          <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold"
-            [value]="currentSupplierName" readonly disabled>
-          } @else {
-          <select class="form-select fs-7 text-dark fw-semibold" [(ngModel)]="shipment.supplierId" name="supplierId"
-            required [disabled]="isEdit">
-            <option [value]="0">-- Map Dispatch Supplier Node --</option>
-            @for (v of suppliers; track v.id) {
-            <option [value]="v.id">{{ v.name }} (Contact: {{ v.contactPerson }})</option>
-            }
-          </select>
-          }
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Vehicle Fleet Plate No</label>
-            <input type="text" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="shipment.vehicleNumber"
-              name="vehicleNumber" placeholder="e.g. DHAKA-METRO-T-1122" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Captain License Reg No</label>
-            <input type="text" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.captainRegistrationNumber"
-              name="captainRegistrationNumber" placeholder="e.g. BRTA-DL-99228" required>
-          </div>
-        </div>
-
-        <div class="row g-2 mb-3">
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Freight Sourcing Origin</label>
-            <input type="text" class="form-control fs-7" [(ngModel)]="shipment.origin" name="origin"
-              placeholder="e.g. Chittagong Port Yard" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold shadow-none"
-              [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Target Expected Delivery Date</label>
-          <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.estimatedDelivery"
-            name="estimatedDelivery" required>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Controller Email</label>
-          <input type="email" class="form-control fs-7 bg-light text-muted font-monospace"
-            [(ngModel)]="shipment.assignedByEmail" name="assignedByEmail" readonly disabled>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Consignment Target Destination
-            Address</label>
-          <textarea class="form-control fs-7" rows="2" [(ngModel)]="shipment.sendByAddress" name="sendByAddress"
-            placeholder="Full delivery terminal address details..." required></textarea>
-        </div>
-
-        <div class="mb-4">
-          <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (PDF/Image
-            POD)</label>
-          <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
-          <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation
-            sheets.</small>
-        </div>
-
-        @if (errorMessage) {
-        <div class="alert alert-danger shadow-sm border-2 mb-3 fs-7" role="alert">
-          <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
-        </div>
-        }
-
-
-
-        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
-          <button
-            class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase"
-            type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Freight Changes' : 'Launch Consignment Track'
-            }}
-          </button>
-          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase"
-            (click)="closeDrawer()">Clear</button>
-        </div>
-      </form>
+      <ng-container *ngTemplateOutlet="shipmentFormTemplate"></ng-container>
     </div>
   </div>
 
@@ -403,5 +304,133 @@
   </div>
 
   <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
+</div>
+<ng-template #shipmentFormTemplate>
+<form #sForm="ngForm" (ngSubmit)="sForm.valid && save()">
 
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Purchase Order Vector</label>
+          <select class="form-select fs-7" [(ngModel)]="shipment.poId" name="poId" required [disabled]="isEdit">
+            <option [value]="0">-- Link Master Purchase Order --</option>
+            @for (po of purchaseOrders; track po.id) {
+            <option [value]="po.id">PO #{{ po.poNumber }} (Financial Valuation: ${{ po.totalAmount }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Supplier Vendor</label>
+          @if (userRole === 'SUPPLIER') {
+          <input type="text" class="form-control fs-7 bg-light text-muted font-monospace fw-bold"
+            [value]="currentSupplierName" readonly disabled>
+          } @else {
+          <select class="form-select fs-7 text-dark fw-semibold" [(ngModel)]="shipment.supplierId" name="supplierId"
+            required [disabled]="isEdit">
+            <option [value]="0">-- Map Dispatch Supplier Node --</option>
+            @for (v of suppliers; track v.id) {
+            <option [value]="v.id">{{ v.name }} (Contact: {{ v.contactPerson }})</option>
+            }
+          </select>
+          }
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Vehicle Fleet Plate No</label>
+            <input type="text" class="form-control fs-7 font-monospace fw-bold" [(ngModel)]="shipment.vehicleNumber"
+              name="vehicleNumber" placeholder="e.g. DHAKA-METRO-T-1122" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Captain License Reg No</label>
+            <input type="text" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.captainRegistrationNumber"
+              name="captainRegistrationNumber" placeholder="e.g. BRTA-DL-99228" required>
+          </div>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Freight Sourcing Origin</label>
+            <input type="text" class="form-control fs-7" [(ngModel)]="shipment.origin" name="origin"
+              placeholder="e.g. Chittagong Port Yard" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
+            <input type="number" class="form-control fs-7 font-monospace fw-bold shadow-none"
+              [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required />
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Target Expected Delivery Date</label>
+          <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="shipment.estimatedDelivery"
+            name="estimatedDelivery" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Assigned Controller Email</label>
+          <input type="email" class="form-control fs-7 bg-light text-muted font-monospace"
+            [(ngModel)]="shipment.assignedByEmail" name="assignedByEmail" readonly disabled>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Consignment Target Destination
+            Address</label>
+          <textarea class="form-control fs-7" rows="2" [(ngModel)]="shipment.sendByAddress" name="sendByAddress"
+            placeholder="Full delivery terminal address details..." required></textarea>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (PDF/Image
+            POD)</label>
+          <input type="file" class="form-control fs-7" (change)="onFileChange($event)" accept="image/*,.pdf">
+          <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation
+            sheets.</small>
+        </div>
+
+        @if (errorMessage) {
+        <div class="alert alert-danger shadow-sm border-2 mb-3 fs-7" role="alert">
+          <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ errorMessage }}
+        </div>
+        }
+
+
+
+        <div class="drawer-footer d-flex gap-2 pt-2 border-top">
+          <button
+            class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase"
+            type="submit">
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Freight Changes' : 'Launch Consignment Track'
+            }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary px-3 fs-7 text-uppercase"
+            (click)="closeDrawer()">Clear</button>
+        </div>
+      </form>
+</ng-template>
+
+<!-- MODAL: ADD SHIPMENT (LC STYLE) -->
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 1055;" *ngIf="isEmbedded">
+  <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 850px;">
+    <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
+      
+      <!-- Header -->
+      <div class="modal-header px-4 py-3.5 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-2.5 rounded-3 bg-white bg-opacity-20 backdrop-blur shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+            <i class="bi bi-truck fs-4 text-white"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-white" style="letter-spacing: -0.01em;">Authorize Freight Node</h5>
+            <p class="text-white-50 small mb-0 fs-8">Register commercial logistics shipping assignment</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+      </div>
+
+      <!-- Form Body -->
+      <div class="modal-body p-4 bg-light custom-scroll overflow-auto" style="max-height: 580px;">
+         <ng-container *ngTemplateOutlet="shipmentFormTemplate"></ng-container>
+      </div>
+    </div>
+  </div>
 </div>

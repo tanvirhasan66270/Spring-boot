@@ -1,6 +1,8 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { AddProductService } from '../../../service/add-product.service';
@@ -15,6 +17,10 @@ import { StorageService, KEYS } from '../../../auth/auth_service/storage.service
   styleUrl: './purchase-requisition.component.css'
 })
 export class PurchaseRequisitionComponent implements OnInit {
+
+  @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
+  isPdfModalOpen = false;
+  selectedReqForPdf: purchaseRequisitionResponseModel | null = null;
 
   requisitions: purchaseRequisitionResponseModel[] = [];
   filteredRequisitions: purchaseRequisitionResponseModel[] = []; 
@@ -272,5 +278,42 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   isSupplierSelected(supplierId: number): boolean {
     return this.requisition.supplierIds.includes(supplierId);
+  }
+
+  openPdfModal(r: purchaseRequisitionResponseModel) {
+    this.selectedReqForPdf = r;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedReqForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadPdfFromModal() {
+    const element = this.pdfPreviewContainer.nativeElement;
+    html2canvas(element, { scale: 2, useCORS: true, windowHeight: element.scrollHeight, height: element.scrollHeight }).then((canvas: HTMLCanvasElement) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; 
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Requisition-Details-PRQ-${this.selectedReqForPdf?.id || 'Doc'}.pdf`);
+    });
   }
 }

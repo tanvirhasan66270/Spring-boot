@@ -197,7 +197,7 @@
   <div class="row g-2 mb-4">
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/purchase-requisition"
+        (click)="openPrModal()" style="cursor:pointer;"
         class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-file-earmark-plus fs-3 text-teal mb-2 d-block"></i>
@@ -207,7 +207,7 @@
     </div>
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/purchase-order"
+        (click)="openPoModal()" style="cursor:pointer;"
         class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-cart-plus fs-3 text-primary mb-2 d-block"></i>
@@ -217,8 +217,11 @@
     </div>
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/quotation"
-        class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
+        (click)="openDirectoryModal('quotations')" style="cursor:pointer; transition: all 0.3s ease; border-radius: 16px;"
+        [style.border]="activeDirectoryModal === 'quotations' ? '2.5px solid #dfa526' : '2.5px solid transparent'"
+        [style.boxShadow]="activeDirectoryModal === 'quotations' ? '0 10px 25px -5px rgba(223, 165, 38, 0.25)' : 'none'"
+        [class.bg-warning-subtle]="activeDirectoryModal === 'quotations'"
+        class="action-btn text-center p-3 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-file-richtext fs-3 text-warning mb-2 d-block"></i>
         <strong class="text-dark d-block text-truncate" style="font-size: 0.85rem;">Award Quotations</strong>
@@ -227,8 +230,11 @@
     </div>
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/supplier"
-        class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
+        (click)="openDirectoryModal('suppliers')" style="cursor:pointer; transition: all 0.3s ease; border-radius: 16px;"
+        [style.border]="activeDirectoryModal === 'suppliers' ? '2.5px solid #ef4444' : '2.5px solid transparent'"
+        [style.boxShadow]="activeDirectoryModal === 'suppliers' ? '0 10px 25px -5px rgba(239, 68, 68, 0.25)' : 'none'"
+        [class.bg-danger-subtle]="activeDirectoryModal === 'suppliers'"
+        class="action-btn text-center p-3 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-people fs-3 text-danger mb-2 d-block"></i>
         <strong class="text-dark d-block text-truncate" style="font-size: 0.85rem;">Manage Suppliers</strong>
@@ -237,8 +243,11 @@
     </div>
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/invoice"
-        class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
+        (click)="openDirectoryModal('invoices')" style="cursor:pointer; transition: all 0.3s ease; border-radius: 16px;"
+        [style.border]="activeDirectoryModal === 'invoices' ? '2.5px solid #06b6d4' : '2.5px solid transparent'"
+        [style.boxShadow]="activeDirectoryModal === 'invoices' ? '0 10px 25px -5px rgba(6, 182, 212, 0.25)' : 'none'"
+        [class.bg-info-subtle]="activeDirectoryModal === 'invoices'"
+        class="action-btn text-center p-3 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-receipt fs-3 text-info mb-2 d-block"></i>
         <strong class="text-dark d-block text-truncate" style="font-size: 0.85rem;">Process Invoices</strong>
@@ -247,13 +256,89 @@
     </div>
     <div class="col-md-4 col-lg-2">
       <a
-        routerLink="/inventory"
-        class="action-btn text-center p-3 rounded-4 bg-white d-block text-decoration-none h-100"
+        (click)="openDirectoryModal('inventory')" style="cursor:pointer; transition: all 0.3s ease; border-radius: 16px;"
+        [style.border]="activeDirectoryModal === 'inventory' ? '2.5px solid #10b981' : '2.5px solid transparent'"
+        [style.boxShadow]="activeDirectoryModal === 'inventory' ? '0 10px 25px -5px rgba(16, 183, 129, 0.25)' : 'none'"
+        [class.bg-success-subtle]="activeDirectoryModal === 'inventory'"
+        class="action-btn text-center p-3 bg-white d-block text-decoration-none h-100"
       >
         <i class="bi bi-boxes fs-3 text-success mb-2 d-block"></i>
         <strong class="text-dark d-block text-truncate" style="font-size: 0.85rem;">Inventory Status</strong>
         <small class="text-muted d-block text-truncate mt-1" style="font-size: 0.7rem;">Track stock</small>
       </a>
+    </div>
+  </div>
+
+   <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <h6 class="mb-0 fw-bold text-dark text-uppercase">
+        <i class="bi bi-clock-history text-teal me-2"></i> SCM Request For Quotations (RFQ) Log
+      </h6>
+      <div class="d-flex gap-2 align-items-center">
+        <div class="input-group input-group-sm" style="width: 250px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control border-start-0 ps-0" placeholder="Search RFQs..." [(ngModel)]="rfqSearchText">
+        </div>
+        <input type="date" class="form-control form-control-sm text-secondary" [(ngModel)]="rfqSearchDate">
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div *ngIf="displayRfqs.length === 0 && !loading" class="text-center text-muted py-5">
+        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+        <small>No RFQs found</small>
+      </div>
+      <div class="table-responsive" *ngIf="displayRfqs.length > 0">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
+            <tr>
+              <th class="ps-4">RFQ Ref ID</th>
+              <th>Component Specification</th>
+              <th>Quantity</th>
+              <th>Preferred Vendor Target</th>
+              <th>RFQ Lifecycle State</th>
+              <th class="text-center" *ngIf="userRole === 'PROCUREMENT'">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rfq of displayRfqs">
+              <td class="ps-4 fw-bold text-primary">{{ rfq.id }}</td>
+              <td class="fw-semibold text-dark">{{ rfq.item }}</td>
+              <td class="">{{ rfq.qty }} Units</td>
+              <td>{{ rfq.supplier }}</td>
+              <td>
+                <span
+                  class="badge text-uppercase"
+                  [ngClass]="{
+                    'bg-success': rfq.status === 'Awarded' || rfq.status === 'APPROVED',
+                    'bg-primary': rfq.status === 'Active' || rfq.status === 'ACTIVE',
+                    'bg-secondary': rfq.status === 'Draft' || rfq.status === 'DRAFT',
+                    'bg-warning': rfq.status === 'PENDING',
+                    'bg-info': rfq.status === 'SENT',
+                  }"
+                >
+                  {{ rfq.status }}
+                </span>
+              </td>
+              <td class="text-center" *ngIf="userRole === 'PROCUREMENT'">
+                <div class="d-flex justify-content-center gap-2" *ngIf="rfq.status !== 'APPROVED' && rfq.status !== 'REJECTED'">
+                  <button class="btn btn-sm btn-success fw-semibold px-3" 
+                    (click)="updateQuotationStatus(rfq.id, 'APPROVED')" style="border-radius: 6px;">
+                    Approve
+                  </button>
+                  <button class="btn btn-sm btn-danger fw-semibold px-3" 
+                    (click)="updateQuotationStatus(rfq.id, 'REJECTED')" style="border-radius: 6px;">
+                    Reject
+                  </button>
+                </div>
+                <div *ngIf="rfq.status === 'APPROVED' || rfq.status === 'REJECTED'">
+                  <span class="text-muted small fw-semibold"><i class="bi bi-lock-fill"></i> Locked</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -354,62 +439,7 @@
     </div>
   </div>
 
-  <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->
-  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-clock-history text-teal me-2"></i> SCM Request For Quotations (RFQ) Log
-      </h6>
-      <div class="d-flex gap-2 align-items-center">
-        <div class="input-group input-group-sm" style="width: 250px;">
-          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-          <input type="text" class="form-control border-start-0 ps-0" placeholder="Search RFQs..." [(ngModel)]="rfqSearchText">
-        </div>
-        <input type="date" class="form-control form-control-sm text-secondary" [(ngModel)]="rfqSearchDate">
-      </div>
-    </div>
-    <div class="card-body p-0">
-      <div *ngIf="displayRfqs.length === 0 && !loading" class="text-center text-muted py-5">
-        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-        <small>No RFQs found</small>
-      </div>
-      <div class="table-responsive" *ngIf="displayRfqs.length > 0">
-        <table class="table table-hover align-middle mb-0 fs-8">
-          <thead class="table-light text-uppercase">
-            <tr>
-              <th class="ps-4">RFQ Ref ID</th>
-              <th>Component Specification</th>
-              <th>Quantity</th>
-              <th>Preferred Vendor Target</th>
-              <th>RFQ Lifecycle State</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let rfq of displayRfqs">
-              <td class="ps-4 fw-bold text-primary">{{ rfq.id }}</td>
-              <td class="fw-semibold text-dark">{{ rfq.item }}</td>
-              <td class="">{{ rfq.qty }} Units</td>
-              <td>{{ rfq.supplier }}</td>
-              <td>
-                <span
-                  class="badge text-uppercase"
-                  [ngClass]="{
-                    'bg-success': rfq.status === 'Awarded' || rfq.status === 'APPROVED',
-                    'bg-primary': rfq.status === 'Active' || rfq.status === 'ACTIVE',
-                    'bg-secondary': rfq.status === 'Draft' || rfq.status === 'DRAFT',
-                    'bg-warning': rfq.status === 'PENDING',
-                    'bg-info': rfq.status === 'SENT',
-                  }"
-                >
-                  {{ rfq.status }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+ 
 
   <!-- ───────────────── NOTIFICATIONS & SPEND CATEGORY ───────────────── -->
   <div class="row g-4 mb-4">
@@ -804,5 +834,408 @@
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<style>
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+</style>
+
+<!--  MODAL: DIRECTORY DETAILS (POPUP OVERLAY) -->
+<div *ngIf="activeDirectoryModal" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);">
+  <div style="width:100%;max-width:960px;max-height:85vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);background:#fff;animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- HEADER -->
+    <div style="padding:24px 32px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <!-- ICON -->
+        <i class="bi" 
+           [class.bi-file-richtext]="activeDirectoryModal === 'quotations'"
+           [class.bi-people]="activeDirectoryModal === 'suppliers'"
+           [class.bi-receipt]="activeDirectoryModal === 'invoices'"
+           [class.bi-boxes]="activeDirectoryModal === 'inventory'" 
+           style="font-size:20px;color:#1e293b;"></i>
+        <!-- TITLE -->
+        <span style="font-size:0.95rem;font-weight:700;color:#1e293b;text-transform:uppercase;letter-spacing:0.04em;">
+          {{ activeDirectoryModal === 'quotations' ? 'QUOTATION DIRECTORY' : 
+             activeDirectoryModal === 'suppliers' ? 'SUPPLIER DIRECTORY' : 
+             activeDirectoryModal === 'invoices' ? 'INVOICE DIRECTORY' : 'WAREHOUSE STOCK DIRECTORY' }}
+        </span>
+      </div>
+      <!-- CLOSE X ICON -->
+      <button (click)="closeDirectoryModal()" style="font-size:20px;color:#94a3b8;cursor:pointer;background:transparent;border:none;outline:none;">&#x2715;</button>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div style="padding:0 32px 16px;position:relative;flex-shrink:0;">
+      <div style="position:relative;display:flex;align-items:center;">
+        <i class="bi bi-search" style="position:absolute;left:14px;color:#94a3b8;font-size:14px;"></i>
+        <input type="text" 
+               [placeholder]="'Search...'" 
+               [(ngModel)]="directorySearchQuery"
+               style="width:100%;border:1.5px solid #f1f5f9;border-radius:8px;padding:10px 14px 10px 38px;font-size:0.86rem;background:#f8fafc;color:#334155;outline:none;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <!-- TABLE BODY -->
+    <div style="flex:1;overflow-y:auto;padding:0 32px 16px;border-top:1.5px solid #f1f5f9;background:#fff;">
+      
+      <!-- 1. QUOTATION TABLE -->
+      <table *ngIf="activeDirectoryModal === 'quotations'" style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+          <tr style="border-bottom:1.5px solid #f1f5f9;">
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">QUOTATION NO</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">PRODUCT DETAILS</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">SUPPLIER NAME</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;text-align:right;">QUANTITY</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;text-align:right;">TOTAL PRICE</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">STATUS</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;text-align:center;">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredQuotationsList.length === 0">
+            <td colspan="7" style="padding:24px;text-align:center;color:#94a3b8;font-size:0.85rem;">No quotations found.</td>
+          </tr>
+          <tr *ngFor="let q of filteredQuotationsList" style="border-bottom:1.5px solid #f8fafc;transition:background-color 0.2s;">
+            <td style="padding:14px;font-size:0.82rem;font-weight:600;color:#2563eb;">#{{ q.quotationNumber || q.id }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ q.productDescription || 'N/A' }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;">{{ q.supplierName }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;text-align:right;font-family:monospace;">{{ q.quantity }}</td>
+            <td style="padding:14px;font-size:0.82rem;font-weight:700;color:#1e1b4b;text-align:right;font-family:monospace;">${{ (q.totalPrice || q.unitPrice * q.quantity) | number:'1.2-2' }}</td>
+            <td style="padding:14px;font-size:0.82rem;">
+              <span style="padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;"
+                    [style.background]="q.status === 'APPROVED' ? '#dcfce7' : q.status === 'UNDER_REVIEW' ? '#dbeafe' : q.status === 'PENDING' ? '#fef9c3' : '#fee2e2'"
+                    [style.color]="q.status === 'APPROVED' ? '#15803d' : q.status === 'UNDER_REVIEW' ? '#1d4ed8' : q.status === 'PENDING' ? '#a16207' : '#b91c1c'">
+                {{ q.status }}
+              </span>
+            </td>
+            <td style="padding:14px;text-align:center;">
+              <div style="display:flex;gap:6px;justify-content:center;">
+                <button (click)="updateQuotationStatus(q.id, 'APPROVED')" 
+                        [disabled]="q.status === 'APPROVED'"
+                        style="padding:4px 8px;border-radius:6px;border:1px solid #22c55e;background:#fff;color:#15803d;font-size:0.72rem;font-weight:600;cursor:pointer;">Approve</button>
+                <button (click)="updateQuotationStatus(q.id, 'UNDER_REVIEW')" 
+                        [disabled]="q.status === 'UNDER_REVIEW'"
+                        style="padding:4px 8px;border-radius:6px;border:1px solid #3b82f6;background:#fff;color:#1d4ed8;font-size:0.72rem;font-weight:600;cursor:pointer;">Review</button>
+                <button (click)="updateQuotationStatus(q.id, 'REJECTED')" 
+                        [disabled]="q.status === 'REJECTED' || q.status === 'APPROVED'"
+                        style="padding:4px 8px;border-radius:6px;border:1px solid #ef4444;background:#fff;color:#b91c1c;font-size:0.72rem;font-weight:600;cursor:pointer;">Reject</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 2. SUPPLIER TABLE -->
+      <table *ngIf="activeDirectoryModal === 'suppliers'" style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+          <tr style="border-bottom:1.5px solid #f1f5f9;">
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">NAME</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">EMAIL</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">PHONE</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">LOCATION</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">RATING</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredSuppliersList.length === 0">
+            <td colspan="6" style="padding:24px;text-align:center;color:#94a3b8;font-size:0.85rem;">No suppliers found.</td>
+          </tr>
+          <tr *ngFor="let s of filteredSuppliersList" style="border-bottom:1.5px solid #f8fafc;transition:background-color 0.2s;">
+            <td style="padding:14px;font-size:0.82rem;font-weight:600;color:#2563eb;">{{ s.name }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;">{{ s.email }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;font-family:monospace;">{{ s.phone }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#475569;">{{ s.address || 'house No:112' }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;">
+              <span style="display:flex;align-items:center;gap:4px;color:#d97706;font-weight:700;">
+                &#9733; {{ s.rating || '4.5' }}
+              </span>
+            </td>
+            <td style="padding:14px;font-size:0.82rem;">
+              <span style="padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;background:#dcfce7;color:#15803d;">
+                ACTIVE
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 3. INVOICE TABLE -->
+      <table *ngIf="activeDirectoryModal === 'invoices'" style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+          <tr style="border-bottom:1.5px solid #f1f5f9;">
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">INVOICE NUMBER</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">CLIENT NAME</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">ORDER REF</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;text-align:right;">AMOUNT</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredInvoicesList.length === 0">
+            <td colspan="5" style="padding:24px;text-align:center;color:#94a3b8;font-size:0.85rem;">No invoices found.</td>
+          </tr>
+          <tr *ngFor="let inv of filteredInvoicesList" style="border-bottom:1.5px solid #f8fafc;transition:background-color 0.2s;">
+            <td style="padding:14px;font-size:0.82rem;font-weight:600;color:#2563eb;">{{ inv.invoiceNumber }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;">{{ inv.issuedToName || 'Walk-in Customer' }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;"><span style="background:#f1f5f9;padding:2px 8px;border-radius:4px;font-size:0.75rem;">ORD-{{ inv.customerOrderId || 'N/A' }}</span></td>
+            <td style="padding:14px;font-size:0.82rem;font-weight:700;color:#334155;text-align:right;font-family:monospace;">${{ inv.totalAmount | number:'1.2-2' }}</td>
+            <td style="padding:14px;font-size:0.82rem;">
+              <span style="padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;"
+                    [style.background]="inv.paymentStatus === 'PAID' ? '#dcfce7' : inv.paymentStatus === 'PARTIALLY_PAID' ? '#fef9c3' : '#fee2e2'"
+                    [style.color]="inv.paymentStatus === 'PAID' ? '#15803d' : inv.paymentStatus === 'PARTIALLY_PAID' ? '#a16207' : '#b91c1c'">
+                {{ inv.paymentStatus }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 4. INVENTORY STOCK TABLE -->
+      <table *ngIf="activeDirectoryModal === 'inventory'" style="width:100%;border-collapse:collapse;text-align:left;">
+        <thead>
+          <tr style="border-bottom:1.5px solid #f1f5f9;">
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">PRODUCT CODE</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">PRODUCT NAME</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">CATEGORY</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;text-align:right;">STOCK LEVEL</th>
+            <th style="padding:12px 14px;font-size:0.72rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;background:#fff;position:sticky;top:0;z-index:2;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredProductsList.length === 0">
+            <td colspan="5" style="padding:24px;text-align:center;color:#94a3b8;font-size:0.85rem;">No products found.</td>
+          </tr>
+          <tr *ngFor="let p of filteredProductsList" style="border-bottom:1.5px solid #f8fafc;transition:background-color 0.2s;">
+            <td style="padding:14px;font-size:0.82rem;font-weight:600;color:#2563eb;font-family:monospace;">{{ p.productCode }}</td>
+            <td style="padding:14px;font-size:0.82rem;font-weight:600;color:#334155;">{{ p.name }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#475569;">{{ p.categoryName || 'N/A' }}</td>
+            <td style="padding:14px;font-size:0.82rem;color:#334155;text-align:right;font-family:monospace;font-weight:700;">{{ p.quantity }} {{ p.unit }}</td>
+            <td style="padding:14px;font-size:0.82rem;">
+              <span style="padding:4px 10px;border-radius:12px;font-size:0.7rem;font-weight:700;"
+                    [style.background]="p.quantity === 0 ? '#fee2e2' : (p.quantity <= p.reorderPoint ? '#fef9c3' : '#dcfce7')"
+                    [style.color]="p.quantity === 0 ? '#b91c1c' : (p.quantity <= p.reorderPoint ? '#a16207' : '#15803d')">
+                {{ p.quantity === 0 ? 'OUT OF STOCK' : (p.quantity <= p.reorderPoint ? 'LOW STOCK' : 'ACTIVE') }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:16px 32px 24px;display:flex;justify-content:flex-end;border-top:1.5px solid #f1f5f9;background:#fff;flex-shrink:0;">
+      <button (click)="closeDirectoryModal()" style="background:#5c6470;color:#ffffff;padding:10px 24px;border-radius:8px;border:none;font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);">Close</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL: CREATE REQUISITION (LC STYLE) ================= -->
+<div *ngIf="isPrModalOpen" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);">
+  <div style="width:100%;max-width:850px;max-height:90vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);background:#fff;animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4f46e5 100%);padding:24px 32px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-file-earmark-plus text-white" style="font-size:20px;"></i>
+        </div>
+        <div>
+          <h5 style="font-size:1.15rem;font-weight:700;color:#ffffff;margin:0;letter-spacing:-0.01em;">Create New Requisition</h5>
+          <p style="font-size:0.76rem;color:rgba(255,255,255,0.75);margin:0;">Launch corporate sourcing request and collect supplier bids</p>
+        </div>
+      </div>
+      <button (click)="closePrModal()" style="font-size:20px;color:rgba(255,255,255,0.8);cursor:pointer;background:transparent;border:none;outline:none;">&#x2715;</button>
+    </div>
+
+    <!-- BODY -->
+    <div style="padding:32px;background:#ffffff;flex:1;overflow-y:auto;box-sizing:border-box;">
+      <form #prForm="ngForm" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px 24px;">
+        
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Requester Name *</label>
+          <input type="text" [value]="userName" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Settlement Currency</label>
+          <input type="text" value="USD ($) - US Dollar" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Product Specification Vector *</label>
+          <select (change)="onPrProductSelect($event)" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;margin-bottom:8px;">
+            <option value="0">-- Select Product to Add --</option>
+            <option *ngFor="let p of prProducts" [value]="p.id">{{ p.name }}</option>
+          </select>
+          <!-- SELECTED PRODUCTS CONTAINER BOX -->
+          <div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:10px;min-height:54px;max-height:100px;overflow-y:auto;background:#f8fafc;display:flex;flex-wrap:wrap;gap:6px;box-sizing:border-box;">
+            <span *ngFor="let p of selectedPrProducts" style="background:#fff;color:#334155;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:1px solid #e2e8f0;">
+              {{ p.name }}
+              <i class="bi bi-x" (click)="removePrProduct(p.id)" style="cursor:pointer;font-size:14px;color:#94a3b8;"></i>
+            </span>
+            <span *ngIf="selectedPrProducts.length === 0" style="color:#94a3b8;font-size:0.76rem;font-style:italic;">No products selected</span>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Target Suppliers *</label>
+          <select (change)="onPrSupplierSelect($event)" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;margin-bottom:8px;">
+            <option value="0">-- Select Supplier to Add --</option>
+            <option *ngFor="let s of prSuppliers" [value]="s.id">{{ s.name }}</option>
+          </select>
+          <!-- SELECTED SUPPLIERS CONTAINER BOX -->
+          <div style="border:1.5px solid #e2e8f0;border-radius:8px;padding:10px;min-height:54px;max-height:100px;overflow-y:auto;background:#f8fafc;display:flex;flex-wrap:wrap;gap:6px;box-sizing:border-box;">
+            <span *ngFor="let s of selectedPrSuppliers" style="background:#fff;color:#334155;padding:4px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:1px solid #e2e8f0;">
+              {{ s.name }}
+              <i class="bi bi-x" (click)="removePrSupplier(s.id)" style="cursor:pointer;font-size:14px;color:#94a3b8;"></i>
+            </span>
+            <span *ngIf="selectedPrSuppliers.length === 0" style="color:#94a3b8;font-size:0.76rem;font-style:italic;">No suppliers selected</span>
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Required Volume *</label>
+          <input type="number" [(ngModel)]="newPr.quantityRequired" name="quantityRequired" min="1" required style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Urgency Stratum Level *</label>
+          <select [(ngModel)]="newPr.urgencyLevel" name="urgencyLevel" required style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;">
+            <option value="LOW">LOW Urgency Strategy</option>
+            <option value="MEDIUM">MEDIUM Pipeline</option>
+            <option value="HIGH">HIGH Accelerated Strategy</option>
+            <option value="CRITICAL">CRITICAL Mission Vector</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Timeline Deadline *</label>
+          <input type="date" [(ngModel)]="newPr.requiredByDate" name="requiredByDate" required style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div style="grid-column:span 2;">
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Remarks & Logistics Directives</label>
+          <textarea [(ngModel)]="newPr.remarks" name="remarks" rows="3" placeholder="Provide context or guidelines for this requisition..." style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;resize:none;"></textarea>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ERROR & SUCCESS MESSAGES -->
+    <div style="padding:0 32px;" *ngIf="modalSuccessMsg || modalErrorMsg">
+      <div *ngIf="modalSuccessMsg" style="background:#dcfce7;color:#15803d;padding:10px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;margin-bottom:12px;">{{ modalSuccessMsg }}</div>
+      <div *ngIf="modalErrorMsg" style="background:#fee2e2;color:#b91c1c;padding:10px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;margin-bottom:12px;">{{ modalErrorMsg }}</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:16px 32px 24px;display:flex;justify-content:flex-end;gap:12px;background:#fff;flex-shrink:0;">
+      <button (click)="closePrModal()" style="background:#f1f5f9;color:#475569;padding:10px 24px;border-radius:20px;border:none;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancel</button>
+      <button (click)="submitPr()" [disabled]="!prForm.form.valid || newPr.productIds.length === 0" style="background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#ffffff;padding:10px 28px;border-radius:20px;border:none;font-size:0.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.2);">
+        <i class="bi bi-send-check-fill"></i> Raise Requisition
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL: CREATE PURCHASE ORDER (LC STYLE) ================= -->
+<div *ngIf="isPoModalOpen" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);">
+  <div style="width:100%;max-width:850px;max-height:90vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);background:#fff;animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- HEADER -->
+    <div style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 60%,#4f46e5 100%);padding:24px 32px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:44px;height:44px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-cart-plus text-white" style="font-size:20px;"></i>
+        </div>
+        <div>
+          <h5 style="font-size:1.15rem;font-weight:700;color:#ffffff;margin:0;letter-spacing:-0.01em;">Create Purchase Order</h5>
+          <p style="font-size:0.76rem;color:rgba(255,255,255,0.75);margin:0;">Dispatch official purchase contracts to approved suppliers</p>
+        </div>
+      </div>
+      <button (click)="closePoModal()" style="font-size:20px;color:rgba(255,255,255,0.8);cursor:pointer;background:transparent;border:none;outline:none;">&#x2715;</button>
+    </div>
+
+    <!-- BODY -->
+    <div style="padding:32px;background:#ffffff;flex:1;overflow-y:auto;box-sizing:border-box;">
+      <form #poForm="ngForm" style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px 24px;">
+        
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Select Approved Quotation *</label>
+          <select [(ngModel)]="newPo.quotationId" name="quotationId" required (change)="onQuotationChange($event)" style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;">
+            <option value="0">-- Select Approved Bid --</option>
+            <option *ngFor="let q of approvedQuotations" [value]="q.id">#Q-{{ q.quotationNumber || q.id }} (Requisition: PR-{{q.purchaseRequisitionId}})</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Supplier Beneficiary</label>
+          <input type="text" [value]="newPo.supplierName" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Supplier Email</label>
+          <input type="text" [value]="newPo.supplierEmail" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Quantity Ordered</label>
+          <input type="text" [value]="newPo.quantity" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Settlement Currency</label>
+          <input type="text" [value]="newPo.currency" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Contract Amount *</label>
+          <div style="position:relative;display:flex;align-items:center;">
+            <span style="position:absolute;left:14px;color:#4b5563;font-weight:700;font-size:0.85rem;">$</span>
+            <input type="text" [value]="newPo.totalAmount | number:'1.2-2'" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px 10px 30px;font-size:0.85rem;background:#f8fafc;color:#334155;font-weight:700;outline:none;box-sizing:border-box;">
+          </div>
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Expected Delivery Date *</label>
+          <input type="date" [(ngModel)]="newPo.expectedDeliveryDate" name="expectedDeliveryDate" required style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#fff;color:#374151;outline:none;box-sizing:border-box;">
+        </div>
+
+        <div>
+          <label style="display:block;font-size:0.76rem;font-weight:700;color:#374151;margin-bottom:6px;">Issued By</label>
+          <input type="text" [value]="newPo.issuedByName" disabled style="width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:0.85rem;background:#f8fafc;color:#64748b;outline:none;box-sizing:border-box;">
+        </div>
+
+      </form>
+    </div>
+
+    <!-- ERROR & SUCCESS MESSAGES -->
+    <div style="padding:0 32px;" *ngIf="modalSuccessMsg || modalErrorMsg">
+      <div *ngIf="modalSuccessMsg" style="background:#dcfce7;color:#15803d;padding:10px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;margin-bottom:12px;">{{ modalSuccessMsg }}</div>
+      <div *ngIf="modalErrorMsg" style="background:#fee2e2;color:#b91c1c;padding:10px 16px;border-radius:8px;font-size:0.82rem;font-weight:600;margin-bottom:12px;">{{ modalErrorMsg }}</div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:16px 32px 24px;display:flex;justify-content:flex-end;gap:12px;background:#fff;flex-shrink:0;">
+      <button (click)="closePoModal()" style="background:#f1f5f9;color:#475569;padding:10px 24px;border-radius:20px;border:none;font-size:0.85rem;font-weight:600;cursor:pointer;">Cancel</button>
+      <button (click)="submitPo()" [disabled]="!poForm.form.valid || newPo.quotationId === 0" style="background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);color:#ffffff;padding:10px 28px;border-radius:20px;border:none;font-size:0.85rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.2);">
+        <i class="bi bi-cart-check-fill"></i> Dispatch Order
+      </button>
+    </div>
+
   </div>
 </div>

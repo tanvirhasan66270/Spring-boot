@@ -39,7 +39,7 @@ public class InvoiceController {
     }
     // Fetch All Invoices Register Dataset (GET)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT')")
     @GetMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER')")
     public ResponseEntity<List<InvoiceResponseDTO>> findAll() {
@@ -52,7 +52,7 @@ public class InvoiceController {
 
     // Fetch Invoice Instance Details By Unique Record ID (GET)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT')")
     @GetMapping("/{id}")
 
     public ResponseEntity<InvoiceResponseDTO> getById(@PathVariable Long id) {

@@ -190,9 +190,10 @@ export class AddProductComponent implements OnInit {
     return imageName ? `${this.imageBaseUrl}${imageName}` : '';
   }
 
-  onImageError(event: Event): void {
+  onImageError(event: Event, p?: any): void {
     const target = event.target as HTMLImageElement | null;
     if (target) target.style.display = 'none';
+    if (p) p.image = null;
   }
 
   private handleBackendError(err: any) {

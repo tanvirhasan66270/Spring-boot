@@ -26,7 +26,7 @@ export class DailyReportComponent implements OnInit {
   selectedFile: File | null = null;
   imagePreview: string | ArrayBuffer | null = null; 
 
-readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/reports/";
+readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/reports";
   formModel = {
     warehouseId: '',
     reportDate: new Date().toISOString().split('T')[0],

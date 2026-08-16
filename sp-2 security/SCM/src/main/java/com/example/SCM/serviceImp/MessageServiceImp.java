@@ -91,8 +91,6 @@ public class MessageServiceImp {
         List<User> users;
         if (role == Role.CUSTOMER) {
             users = userRepository.findByRole(Role.SALES_OFFICER);
-        } else if (role == Role.SALES_OFFICER) {
-            users = userRepository.findByRole(Role.CUSTOMER);
         } else if (role == Role.SUPPLIER) {
             users = userRepository.findUsersByRoles(List.of(Role.MANAGER, Role.PROCUREMENT));
         } else {

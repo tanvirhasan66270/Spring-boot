@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { POLineItemRequestDTO, POLineItemResponseDTO } from '../../shared/model/pOLineItemModel';
@@ -16,6 +16,8 @@ import { SupplierService } from '../../../service/supplier.service';
   styleUrl: './poline-item.component.css',
 })
 export class POLineItemComponent implements OnInit {
+  @Input() isEmbedded: boolean = false;
+  @Output() formClosed = new EventEmitter<void>();
 
   lineItems: POLineItemResponseDTO[] = [];
   purchaseOrders: any[] = [];
@@ -139,7 +141,7 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     
     const targetPo = this.purchaseOrders.find(po => po.id === poId);
     
-    if (targetPo && targetPo.status === 'RECEIVED') {
+    if (targetPo) {
       this.item.poNumber = targetPo.poNumber; // প্যারেন্ট PO নাম্বার অটো সিঙ্ক
       const productMap = new Map();
       
@@ -157,10 +159,9 @@ filteredLineItems: POLineItemResponseDTO[] = [];
         productMap.set(targetPo.product.id, targetPo.product);
       }
       
-      this.products = Array.from(productMap.values());
+      if (productMap.size > 0) { this.products = Array.from(productMap.values()); }
       
     } else {
-      this.products = [];
       this.item.poNumber = '';
     }
 
@@ -171,9 +172,15 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   extractProductsFromSupplierPOs() {
     const productMap = new Map();
     
-    const receivedOrders = this.purchaseOrders.filter(order => order.status === 'RECEIVED');
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 500);
     
-    receivedOrders.forEach((order: any) => {
+    const recentOrders = this.purchaseOrders.filter(order => {
+      if (!order.createdAt) return true;
+      return new Date(order.createdAt) >= cutoffDate;
+    });
+    
+    recentOrders.forEach((order: any) => {
       if (order.items && Array.isArray(order.items)) {
         order.items.forEach((item: any) => {
           if (item.product) {
@@ -193,7 +200,7 @@ filteredLineItems: POLineItemResponseDTO[] = [];
       }
     });
 
-    this.products = Array.from(productMap.values());
+    if (productMap.size > 0) { this.products = Array.from(productMap.values()); }
     this.cdr.markForCheck();
   }
 
@@ -207,7 +214,14 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   }
 
   openDrawer() { this.reset(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
-  closeDrawer() { this.isDrawerOpen = false; this.reset(); this.cdr.markForCheck(); }
+  closeDrawer() { 
+    this.isDrawerOpen = false; 
+    this.reset(); 
+    if (this.isEmbedded) {
+      this.formClosed.emit();
+    }
+    this.cdr.markForCheck(); 
+  }
 
   trackShipment() {
     if (!this.trackingSearchQuery.trim()) return;
@@ -287,3 +301,5 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     this.errorMessage = null;
   }
 }
+
+

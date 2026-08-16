@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
@@ -37,6 +37,8 @@ export class QuatationComponent implements OnInit {
 
   errorMessage: string | null = null;
   isDrawerOpen = false;
+  @Input() isEmbedded = false;
+  @Output() formClosed = new EventEmitter<void>();
   isEdit = false;
   currentEditId: number | null = null;
   selectedFile: File | null = null;
@@ -80,6 +82,9 @@ export class QuatationComponent implements OnInit {
     const cachedSupplier = this.storage.getData(KEYS.SUPPLIER) as any;
     if (cachedSupplier) {
       this.currentSupplierId = cachedSupplier.id;
+      if (this.activeRole === 'SUPPLIER') {
+        this.quotation.supplierId = this.currentSupplierId!;
+      }
       console.log(this.currentSupplierId);
       this.currentSupplierName = cachedSupplier.name || user?.name || 'Your Supplier Account';
       console.log(this.currentSupplierName)
@@ -92,6 +97,9 @@ export class QuatationComponent implements OnInit {
           if (supplier && supplier.id) {
             this.currentSupplierId = supplier.id;
             this.currentSupplierName = supplier.name || this.currentSupplierName;
+            if (this.activeRole === 'SUPPLIER') {
+              this.quotation.supplierId = this.currentSupplierId!;
+            }
             this.storage.saveData(KEYS.SUPPLIER, { id: this.currentSupplierId, name: this.currentSupplierName });
           }
           this.loadQuotations();
@@ -125,7 +133,10 @@ export class QuatationComponent implements OnInit {
       return 0;
     }
     const pr = this.requisitions.find(r => r.id === Number(this.quotation.purchaseRequisitionId));
-    return pr ? pr.quantityRequired : 0;
+    if (!pr) return 0;
+    
+    const productCount = (pr.productIds && Array.isArray(pr.productIds) && pr.productIds.length > 0) ? pr.productIds.length : 1;
+    return pr.quantityRequired * productCount;
   }
 
   isQuantityValid(): boolean {
@@ -205,6 +216,18 @@ export class QuatationComponent implements OnInit {
     this.requisitionService.findAll().subscribe({ next: (data) => { this.requisitions = data || []; this.cdr.markForCheck(); } });
   }
 
+  onRequisitionSelect(reqId: any): void {
+    if (reqId && Number(reqId) > 0) {
+      const selectedReq = this.requisitions.find(r => r.id === Number(reqId));
+      if (selectedReq && selectedReq.createdAt) {
+        this.quotation.receivedAt = selectedReq.createdAt.split('T')[0];
+      } else {
+        this.quotation.receivedAt = new Date().toISOString().split('T')[0];
+      }
+      this.cdr.markForCheck();
+    }
+  }
+
   onFileChange(event: any): void {
     if (event.target.files && event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
@@ -225,6 +248,7 @@ export class QuatationComponent implements OnInit {
 
   closeDrawer(): void { 
     this.isDrawerOpen = false; 
+    this.formClosed.emit();
     this.reset(); 
     this.cdr.markForCheck(); 
   }
@@ -285,17 +309,37 @@ export class QuatationComponent implements OnInit {
       this.quotation.supplierId = this.currentSupplierId;
     }
 
-    this.service.save(this.quotation, this.selectedFile).subscribe({
-      next: () => {
-        alert("Quotation document node synchronized successfully.");
-        this.closeDrawer();
-        this.loadQuotations();
-      },
-      error: (err: any) => this.handleError(err)
-    });
+    if (this.isEdit && this.currentEditId) {
+      const original = this.quotations.find(q => q.id === this.currentEditId);
+      if (original && (original.status === 'APPROVED' || original.status === 'UNDER_REVIEW')) {
+        this.errorMessage = "Access Denied: Cannot modify a quotation that is APPROVED or UNDER_REVIEW.";
+        return;
+      }
+      this.service.update(this.currentEditId, this.quotation).subscribe({
+        next: () => {
+          alert("Quotation document node updated successfully.");
+          this.closeDrawer();
+          this.loadQuotations();
+        },
+        error: (err: any) => this.handleError(err)
+      });
+    } else {
+      this.service.save(this.quotation, this.selectedFile).subscribe({
+        next: () => {
+          alert("Quotation document node synchronized successfully.");
+          this.closeDrawer();
+          this.loadQuotations();
+        },
+        error: (err: any) => this.handleError(err)
+      });
+    }
   }
 
   edit(o: QuotationResponseModel): void {
+    if (o.status === 'APPROVED' || o.status === 'UNDER_REVIEW') {
+      alert("Cannot edit or update a quotation that is APPROVED or UNDER_REVIEW.");
+      return;
+    }
     this.errorMessage = null;
     this.currentEditId = o.id;
     this.isEdit = true;

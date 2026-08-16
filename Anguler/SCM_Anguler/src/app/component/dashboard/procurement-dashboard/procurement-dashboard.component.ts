@@ -13,7 +13,10 @@ import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { InvoiceService } from '../../../service/invoice.service';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
-import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
+import { PurchaseOrderResponseModel, PurchaseOrderRequestModel } from '../../shared/model/purchaseOrderModel';
+import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
+import { QuotationRequestModel, QuotationResponseModel } from '../../shared/model/quatationModel';
+import { SupplierService } from '../../../service/supplier.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 
 @Component({
@@ -92,6 +95,83 @@ export class ProcurementDashboardComponent implements OnInit {
   rawRFQs: any[] = [];
   rawPOs: any[] = [];
   rawProducts: any[] = [];
+  rawInvoices: any[] = [];
+  activeDirectoryModal: 'quotations' | 'suppliers' | 'invoices' | 'inventory' | null = null;
+  userRole: string = '';
+
+
+  // MODAL STATES & FORM DATA
+  isPrModalOpen = false;
+  isPoModalOpen = false;
+  isQuotationModalOpen = false;
+
+  prProducts: any[] = [];
+  prSuppliers: any[] = [];
+  approvedQuotations: QuotationResponseModel[] = [];
+  quoteRequisitions: purchaseRequisitionResponseModel[] = [];
+
+  newPr: purchaseRequisitionRequestModel = {
+    requestedBy: 0,
+    productIds: [],
+    supplierIds: [],
+    currency: 'USD',
+    quantityRequired: 1,
+    urgencyLevel: 'LOW',
+    requiredByDate: '',
+    remarks: ''
+  };
+
+  selectedPrProducts: any[] = [];
+  selectedPrSuppliers: any[] = [];
+
+  newPo: PurchaseOrderRequestModel = {
+    quotationId: 0,
+    issuedBy: 0,
+    totalAmount: 0,
+    quantity: 1,
+    currency: 'USD',
+    expectedDeliveryDate: '',
+    status: 'ISSUED',
+    supplierName: 'N/A',
+    supplierEmail: 'N/A',
+    issuedByName: ''
+  };
+
+  newQuotation: QuotationRequestModel = {
+    supplierId: 0,
+    purchaseRequisitionId: 0,
+    leadTimeDays: 7,
+    receivedAt: '',
+    status: 'PENDING',
+    productDescription: '',
+    unitPrice: 0,
+    quantity: 1,
+    deliveryTime: '',
+    warranty: '',
+    notes: ''
+  };
+
+  poCreatedAt: string = new Date().toLocaleString();
+  modalSuccessMsg = '';
+  modalErrorMsg = '';
+
+  directorySearchQuery: string = '';
+
+  openDirectoryModal(tab: 'quotations' | 'suppliers' | 'invoices' | 'inventory') {
+    this.activeDirectoryModal = tab;
+    this.directorySearchQuery = '';
+    if (tab === 'suppliers' && (!this.prSuppliers || this.prSuppliers.length === 0)) {
+      this.supplierService.findAll().subscribe((d: any) => this.prSuppliers = d || []);
+    }
+    this.cdr.markForCheck();
+  }
+
+  closeDirectoryModal() {
+    this.activeDirectoryModal = null;
+    this.directorySearchQuery = '';
+    this.cdr.markForCheck();
+  }
+
 
   setDashboardPeriod(period: string) {
     this.selectedDashboardPeriod = period;
@@ -296,6 +376,7 @@ export class ProcurementDashboardComponent implements OnInit {
     private poService: PurchaseOrderService,
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
+    private supplierService: SupplierService
   ) {}
 
   ngOnInit(): void {
@@ -303,8 +384,15 @@ export class ProcurementDashboardComponent implements OnInit {
     if (!user) {
       return;
     }
+    this.userRole = this.storage.getActiveRole()?.toUpperCase() || '';
+    if (!this.userRole && user.role) {
+      this.userRole = user.role.toUpperCase();
+    }
     this.userName = user.name || 'Procurement Officer';
     this.userId = user.userId;
+    this.newPr.requestedBy = this.userId;
+    this.newPo.issuedBy = this.userId;
+    this.newPo.issuedByName = this.userName;
     this.loadProcurement();
     this.loadDashboardData();
     this.loadNotifications();
@@ -581,6 +669,238 @@ export class ProcurementDashboardComponent implements OnInit {
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
     return `${Math.floor(hrs / 24)}d ago`;
+  }
+
+  // ================= SEARCH FILTERS FOR QUICK ACTION CARD TABLES =================
+  get filteredQuotationsList(): any[] {
+    if (!this.rawRFQs) return [];
+    if (!this.directorySearchQuery || this.directorySearchQuery.trim() === '') return this.rawRFQs;
+    const q = this.directorySearchQuery.toLowerCase().trim();
+    return this.rawRFQs.filter((item: any) => {
+      return (item.quotationNumber && item.quotationNumber.toLowerCase().includes(q)) ||
+             (item.supplierName && item.supplierName.toLowerCase().includes(q)) ||
+             (item.productName && item.productName.toLowerCase().includes(q)) ||
+             (item.status && item.status.toLowerCase().includes(q));
+    });
+  }
+
+  get filteredSuppliersList(): any[] {
+    if (!this.prSuppliers) return [];
+    if (!this.directorySearchQuery || this.directorySearchQuery.trim() === '') return this.prSuppliers;
+    const q = this.directorySearchQuery.toLowerCase().trim();
+    return this.prSuppliers.filter((item: any) => {
+      return (item.name && item.name.toLowerCase().includes(q)) ||
+             (item.email && item.email.toLowerCase().includes(q)) ||
+             (item.phone && item.phone.toLowerCase().includes(q)) ||
+             (item.address && item.address.toLowerCase().includes(q));
+    });
+  }
+
+  get filteredInvoicesList(): any[] {
+    if (!this.rawInvoices) return [];
+    if (!this.directorySearchQuery || this.directorySearchQuery.trim() === '') return this.rawInvoices;
+    const q = this.directorySearchQuery.toLowerCase().trim();
+    return this.rawInvoices.filter((item: any) => {
+      return (item.invoiceNumber && item.invoiceNumber.toLowerCase().includes(q)) ||
+             (item.issuedToName && item.issuedToName.toLowerCase().includes(q)) ||
+             (item.paymentStatus && item.paymentStatus.toLowerCase().includes(q)) ||
+             (item.invoiceStatus && item.invoiceStatus.toLowerCase().includes(q));
+    });
+  }
+
+  get filteredProductsList(): any[] {
+    if (!this.rawProducts) return [];
+    if (!this.directorySearchQuery || this.directorySearchQuery.trim() === '') return this.rawProducts;
+    const q = this.directorySearchQuery.toLowerCase().trim();
+    return this.rawProducts.filter((item: any) => {
+      return (item.name && item.name.toLowerCase().includes(q)) ||
+             (item.productCode && item.productCode.toLowerCase().includes(q)) ||
+             (item.categoryName && item.categoryName.toLowerCase().includes(q));
+    });
+  }
+
+  // ================= MODAL LOGIC =================
+  loadModalData() {
+    this.productService.findAll().subscribe((d: any) => this.prProducts = d || []);
+    this.supplierService.findAll().subscribe((d: any) => this.prSuppliers = d || []);
+    this.quotationService.findAll().subscribe((d: any) => {
+      this.approvedQuotations = (d || []).filter((q: any) => q.status === 'APPROVED');
+    });
+    this.prService.findAll().subscribe((d: any) => {
+      this.quoteRequisitions = (d || []).filter((pr: any) => pr.approvalStatus === 'APPROVED');
+    });
+  }
+
+  openPrModal() {
+    this.isPrModalOpen = true;
+    this.modalSuccessMsg = '';
+    this.modalErrorMsg = '';
+    this.clearPrForm();
+    this.loadModalData();
+  }
+  closePrModal() { this.isPrModalOpen = false; }
+
+  onPrProductSelect(event: any) {
+    const id = parseInt(event.target.value, 10);
+    if (id > 0 && !this.newPr.productIds.includes(id)) {
+      this.newPr.productIds.push(id);
+      const prod = this.prProducts.find((p: any) => p.id === id);
+      if (prod) this.selectedPrProducts.push(prod);
+    }
+  }
+
+  removePrProduct(id: number) {
+    this.newPr.productIds = this.newPr.productIds.filter((pid: number) => pid !== id);
+    this.selectedPrProducts = this.selectedPrProducts.filter((p: any) => p.id !== id);
+  }
+
+  onPrSupplierSelect(event: any) {
+    const id = parseInt(event.target.value, 10);
+    if (id > 0 && !this.newPr.supplierIds.includes(id)) {
+      this.newPr.supplierIds.push(id);
+      const supplier = this.prSuppliers.find((s: any) => s.id === id);
+      if (supplier) this.selectedPrSuppliers.push(supplier);
+    }
+  }
+
+  removePrSupplier(id: number) {
+    this.newPr.supplierIds = this.newPr.supplierIds.filter((sid: number) => sid !== id);
+    this.selectedPrSuppliers = this.selectedPrSuppliers.filter((s: any) => s.id !== id);
+  }
+
+  clearPrForm() {
+    this.newPr = {
+      requestedBy: this.userId,
+      productIds: [],
+      supplierIds: [],
+      currency: 'USD',
+      quantityRequired: 1,
+      urgencyLevel: 'LOW',
+      requiredByDate: '',
+      remarks: ''
+    };
+    this.selectedPrProducts = [];
+    this.selectedPrSuppliers = [];
+    this.modalSuccessMsg = '';
+    this.modalErrorMsg = '';
+  }
+
+  submitPr() {
+    this.prService.save(this.newPr).subscribe({
+      next: () => {
+        this.modalSuccessMsg = 'Purchase Requisition Created Successfully!';
+        this.loadDashboardData();
+        setTimeout(() => this.closePrModal(), 1500);
+      },
+      error: (e: any) => this.modalErrorMsg = e.error?.message || 'Failed to create PR.'
+    });
+  }
+
+  openPoModal() {
+    this.isPoModalOpen = true;
+    this.clearPoForm();
+    this.loadModalData();
+  }
+  closePoModal() { this.isPoModalOpen = false; }
+
+  onQuotationChange(event: any) {
+    const qId = parseInt(event.target.value, 10);
+    this.newPo.quotationId = qId;
+    const selectedQ = this.approvedQuotations.find((q: any) => q.id === qId) as any;
+    if (selectedQ) {
+      this.newPo.totalAmount = selectedQ.totalPrice || selectedQ.unitPrice * selectedQ.quantity;
+      this.newPo.quantity = selectedQ.quantity;
+      this.newPo.supplierName = selectedQ.supplierName || 'N/A';
+      this.newPo.currency = (selectedQ.currency as string) || 'USD';
+
+      // Try email from quotation first, fall back to prSuppliers list
+      if (selectedQ.supplierEmail && selectedQ.supplierEmail.trim() !== '') {
+        this.newPo.supplierEmail = selectedQ.supplierEmail;
+      } else {
+        const matchedSupplier = this.prSuppliers.find((s: any) => s.id === selectedQ.supplierId) as any;
+        this.newPo.supplierEmail = matchedSupplier?.email || matchedSupplier?.supplierEmail || matchedSupplier?.contactEmail || 'N/A';
+      }
+    } else {
+      this.newPo.supplierName = 'N/A';
+      this.newPo.supplierEmail = 'N/A';
+      this.newPo.currency = 'USD';
+    }
+  }
+
+  clearPoForm() {
+    this.newPo = {
+      quotationId: 0,
+      issuedBy: this.userId,
+      totalAmount: 0,
+      quantity: 1,
+      currency: 'USD',
+      expectedDeliveryDate: '',
+      status: 'ISSUED',
+      supplierName: 'N/A',
+      supplierEmail: 'N/A',
+      issuedByName: this.userName
+    };
+    this.poCreatedAt = new Date().toLocaleString();
+    this.modalSuccessMsg = '';
+    this.modalErrorMsg = '';
+  }
+
+  submitPo() {
+    this.poService.save(this.newPo).subscribe({
+      next: () => {
+        this.modalSuccessMsg = 'Purchase Order Created Successfully!';
+        this.loadDashboardData();
+        setTimeout(() => this.closePoModal(), 1500);
+      },
+      error: (e: any) => this.modalErrorMsg = e.error?.message || 'Failed to create PO.'
+    });
+  }
+
+  openQuotationModal() {
+    this.isQuotationModalOpen = true;
+    this.newQuotation = {
+      supplierId: 0,
+      purchaseRequisitionId: 0,
+      leadTimeDays: 7,
+      receivedAt: new Date().toISOString().split('T')[0],
+      status: 'PENDING',
+      productDescription: '',
+      unitPrice: 0,
+      quantity: 1,
+      deliveryTime: '',
+      warranty: '',
+      notes: ''
+    };
+    this.modalSuccessMsg = '';
+    this.modalErrorMsg = '';
+    this.loadModalData();
+  }
+  closeQuotationModal() { this.isQuotationModalOpen = false; }
+
+  submitQuotation() {
+    this.quotationService.save(this.newQuotation, null).subscribe({
+      next: () => {
+        this.modalSuccessMsg = 'Quotation Registered Successfully!';
+        this.loadDashboardData();
+        setTimeout(() => this.closeQuotationModal(), 1500);
+      },
+      error: (e: any) => this.modalErrorMsg = e.error?.message || 'Failed to register Quotation.'
+    });
+  }
+
+  updateQuotationStatus(id: number, status: string) {
+    this.quotationService.updateStatus(id, status).subscribe({
+      next: () => {
+        this.quotationService.findAll().subscribe({
+          next: (data) => {
+            this.rawRFQs = data || [];
+            this.aggregateRFQs();
+            this.cdr.markForCheck();
+          }
+        });
+      },
+      error: (err) => console.error("Failed to update status", err)
+    });
   }
 
   logout(): void {

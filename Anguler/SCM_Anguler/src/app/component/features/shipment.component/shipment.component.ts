@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, ElementRef, Input, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ShipmentRequestModel, ShipmentResponseModel } from '../../shared/model/shipmentModel';
@@ -7,6 +7,7 @@ import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 
+import { ActivatedRoute } from '@angular/router';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { environment } from '../../../../environment/environment';
@@ -19,6 +20,8 @@ import { environment } from '../../../../environment/environment';
   styleUrl: './shipment.component.css',
 })
 export class ShipmentComponent implements OnInit {
+  @Input() isEmbedded: boolean = false;
+  @Output() formClosed = new EventEmitter<void>();
   shipments: ShipmentResponseModel[] = [];
   filteredShipments: ShipmentResponseModel[] = [];
   purchaseOrders: any[] = [];
@@ -65,6 +68,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     private supplierService: SupplierService,
     private storage: StorageService,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
@@ -106,6 +110,12 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       this.loadPurchaseOrders();
       this.loadSuppliers();
     }
+
+    this.route.queryParams.subscribe(params => {
+      if (params['openForm'] === 'true') {
+        this.openDrawer();
+      }
+    });
   }
 
   loadShipments() {
@@ -191,6 +201,10 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
 
   closeDrawer() {
     this.isDrawerOpen = false;
+    this.errorMessage = null;
+    if (this.isEmbedded) {
+      this.formClosed.emit();
+    }
     this.reset();
     this.cdr.markForCheck();
   }

@@ -141,8 +141,6 @@ export class MassageComponent implements OnInit, OnDestroy {
       return 'Choose a Procurement or Manager from the chat list sidebar to pull credentials and retrieve message records.';
     } else if (this.currentUser?.role === 'CUSTOMER') {
       return 'Choose a Sales Officer from the chat list sidebar to pull credentials and retrieve message records.';
-    } else if (this.currentUser?.role === 'SALES_OFFICER') {
-      return 'Choose a Customer from the chat list sidebar to pull credentials and retrieve message records.';
     } else if (this.currentUser?.role === 'DRIVER') {
       return 'Choose a Driver, Logistics Officer, Sales Officer, or Customer from the sidebar to chat.';
     } else {
@@ -155,8 +153,6 @@ export class MassageComponent implements OnInit, OnDestroy {
       return 'Only connected Procurement and Manager roles are linked in this portal.';
     } else if (this.currentUser?.role === 'CUSTOMER') {
       return 'Only connected Sales Officer roles are linked in this portal.';
-    } else if (this.currentUser?.role === 'SALES_OFFICER') {
-      return 'Only connected Customer roles are linked in this portal.';
     } else if (this.currentUser?.role === 'DRIVER') {
       return 'Drivers can only communicate with Logistics, Sales, Customers, and other Drivers.';
     } else {

@@ -7,6 +7,10 @@ import com.example.SCM.entity.Quotation;
 import com.example.SCM.dto.mapper.QuotationMapper;
 import com.example.SCM.repository.QuotationRepository;
 import com.example.SCM.repository.PurchaseRequisitionRepository; // পিআর রিপোজিটরি ইমপোর্ট করুন
+import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
+import com.example.SCM.service.NotificationService;
+import com.example.SCM.entity.User;
 import com.example.SCM.service.QuotationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class QuotationServiceImp implements QuotationService {
     private final QuotationRepository quotationRepository;
     private final PurchaseRequisitionRepository requisitionRepository;
     private final QuotationMapper quotationMapper;
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
@@ -48,8 +54,11 @@ public class QuotationServiceImp implements QuotationService {
                 PurchaseRequisition pr = requisitionRepository.findById(dto.getPurchaseRequisitionId())
                         .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition record missing at ID: " + dto.getPurchaseRequisitionId()));
 
-                if (dto.getQuantity() > pr.getQuantityRequired()) {
-                    throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + pr.getQuantityRequired() + ".");
+                int productCount = (pr.getProducts() != null && !pr.getProducts().isEmpty()) ? pr.getProducts().size() : 1;
+                long maxLimit = (long) pr.getQuantityRequired() * productCount;
+
+                if (dto.getQuantity() > maxLimit) {
+                    throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + maxLimit + ".");
                 }
 
                 if (pr.getProducts() != null && !pr.getProducts().isEmpty()) {
@@ -76,6 +85,22 @@ public class QuotationServiceImp implements QuotationService {
             }
 
             Quotation savedQuotation = quotationRepository.save(quotation);
+
+            // Send Notification to Procurement Managers
+            try {
+                List<User> managers = userRepository.findByRole(Role.MANAGER);
+                for (User manager : managers) {
+                    notificationService.send(
+                            manager.getId().toString(),
+                            "QUOTATION",
+                            "New Quotation Submitted",
+                            "A new quotation has been submitted by a supplier."
+                    );
+                }
+            } catch (Exception e) {
+                System.out.println("Error sending notification for quotation save: " + e.getMessage());
+            }
+
             return quotationMapper.toResponseDTO(savedQuotation);
 
         } catch (Exception e) {
@@ -97,8 +122,13 @@ public class QuotationServiceImp implements QuotationService {
             pr = existingQuotation.getPurchaseRequisition();
         }
 
-        if (pr != null && dto.getQuantity() > pr.getQuantityRequired()) {
-            throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + pr.getQuantityRequired() + ".");
+        if (pr != null) {
+            int productCount = (pr.getProducts() != null && !pr.getProducts().isEmpty()) ? pr.getProducts().size() : 1;
+            long maxLimit = (long) pr.getQuantityRequired() * productCount;
+
+            if (dto.getQuantity() > maxLimit) {
+                throw new IllegalArgumentException("Quantity limit exceeded! Your quantity limit is: " + maxLimit + ".");
+            }
         }
 
         quotationMapper.updateEntityFromDTO(dto, existingQuotation);
@@ -170,6 +200,20 @@ public class QuotationServiceImp implements QuotationService {
         }
 
         Quotation updatedQuotation = quotationRepository.save(existingQuotation);
+
+        // Send Notification to Supplier
+        try {
+            if (updatedQuotation.getSupplier() != null && updatedQuotation.getSupplier().getUser() != null) {
+                notificationService.send(
+                        updatedQuotation.getSupplier().getUser().getId().toString(),
+                        "QUOTATION",
+                        "Quotation " + status.toUpperCase(),
+                        "Your quotation has been " + status.toLowerCase() + " by the procurement team."
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("Error sending notification for quotation status update: " + e.getMessage());
+        }
 
         return quotationMapper.toResponseDTO(updatedQuotation);
     }

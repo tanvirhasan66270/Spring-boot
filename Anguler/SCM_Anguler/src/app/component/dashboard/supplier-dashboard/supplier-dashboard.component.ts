@@ -19,11 +19,14 @@ import { PurchaseRequisitionService } from '../../../service/purchase-requisitio
 import { purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 import { ShipmentService } from '../../../service/shipment.service';
 import { PoLineItemService } from '../../../service/po-line-item.service';
+import { QuatationComponent } from '../../features/quatation.component/quatation.component';
+import { ShipmentComponent } from '../../features/shipment.component/shipment.component';
+import { POLineItemComponent } from '../../features/poline-item.component/poline-item.component';
 
 @Component({
   selector: 'app-supplier-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule],
+  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule, QuatationComponent, ShipmentComponent, POLineItemComponent],
   templateUrl: './supplier-dashboard.component.html',
   styleUrls:['./supplier-dashboard.component.css'],
 })
@@ -76,6 +79,10 @@ export class SupplierDashboardComponent implements OnInit {
   loading = true; // Shows skeleton loader when true
   lcOpen = false;
   poRegistryOpen = false;
+
+  showQuotationForm = false;
+  showPoLineItemForm = false;
+  showShipmentForm = false;
 
   // Calculated Metrics
   outstandingPayments = 0;
@@ -317,10 +324,11 @@ export class SupplierDashboardComponent implements OnInit {
           item: quotation.productName || 'N/A',
           closingDate: quotation.validUntil || 'N/A',
           status: quotation.status || 'PENDING',
+          createdAt: quotation.createdAt
         }));
         
         // Get only the quotations from the last 30 days for the shortcut modal
-        this.recentRfqs = this.filterLastMonth(supplierSpecificQuotations, 'createdAt');
+        this.recentRfqs = this.filterLastMonth(this.rfqs, 'createdAt');
 
         // Update the Quotation KPI
         const rfqTrendPercentage = supplierSpecificQuotations.length > 5 ? 20 : (supplierSpecificQuotations.length > 0 ? 5 : 0);
@@ -475,6 +483,63 @@ export class SupplierDashboardComponent implements OnInit {
     this.activeShortcutModal = null;
     this.modalSearchText = '';
     this.cdr.markForCheck();
+  }
+
+  openQuotationForm(): void {
+    this.showQuotationForm = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  openPoLineItemForm(): void {
+    this.showPoLineItemForm = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  openShipmentForm(): void {
+    this.showShipmentForm = true;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  closeFormModals(): void {
+    this.showQuotationForm = false;
+    this.showPoLineItemForm = false;
+    this.showShipmentForm = false;
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
+  }
+
+  isRfqModalOpen = false;
+  searchRfqTerm = '';
+
+  openRfqModal(event: Event) {
+    event.preventDefault();
+    this.searchRfqTerm = '';
+    this.isRfqModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  goToAddShipment(event: Event) {
+    event.preventDefault();
+    this.router.navigate(['/shipment'], { queryParams: { openForm: 'true' } });
+  }
+
+  closeRfqModal() {
+    this.isRfqModalOpen = false;
+    this.searchRfqTerm = '';
+    this.cdr.markForCheck();
+  }
+
+  get filteredRfqList() {
+    if (!this.searchRfqTerm.trim()) {
+      return this.recentRfqs;
+    }
+    const term = this.searchRfqTerm.toLowerCase();
+    return this.recentRfqs.filter(r => 
+      JSON.stringify(r).toLowerCase().includes(term)
+    );
   }
 
   /**

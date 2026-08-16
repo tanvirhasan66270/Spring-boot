@@ -8,7 +8,7 @@ import { DailyReportResponseModel } from '../component/shared/model/daley-report
   providedIn: 'root',
 })
 export class DailyReportService {
-  private apiUrl = environment.apiUrl + 'reports/';
+  private apiUrl = environment.apiUrl + 'reports';
 
   constructor(private http: HttpClient) {}
 

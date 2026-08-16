@@ -88,6 +88,53 @@
           </div>
         </div>
       </div>
+      <!-- NEW ACTION BUTTONS -->
+      <div class="row g-3 mb-4">
+        <!-- Add Quotation -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openQuotationForm()">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success" style="width: 48px; height: 48px;">
+                <i class="bi bi-plus-lg fs-4"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Add Quotation</h6>
+                <small class="text-muted">Create a new quotation</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Add PO Line Item -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openPoLineItemForm()">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-teal-subtle text-teal" style="width: 48px; height: 48px;">
+                <i class="bi bi-plus-lg fs-4"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Add PO Line Item</h6>
+                <small class="text-muted">Add items to purchase order</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Add Shipment -->
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openShipmentForm()">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-info-subtle text-info" style="width: 48px; height: 48px;">
+                <i class="bi bi-plus-lg fs-4"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Add Shipment</h6>
+                <small class="text-muted">Create a new shipment</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- QUICK ACTIONS -->
       <div class="card border-0 shadow-sm p-4 bg-white rounded-4 mb-4">
@@ -139,7 +186,7 @@
                  style="cursor: pointer;">
               <i class="bi bi-truck fs-2 text-info"></i>
               <div class="text-truncate">
-                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Shipment</strong>
+                <strong class="text-dark d-block text-truncate" style="font-size: 0.9rem;">Add Shipment</strong>
                 <small class="text-muted fw-semibold">Manage</small>
               </div>
             </div>
@@ -479,7 +526,7 @@
           <h6 class="mb-0 fw-bold text-dark text-uppercase">
             <i class="bi bi-clock-history text-success me-2"></i> Open Sourcing RFQ Bidding Invitations
           </h6>
-          <a routerLink="quotation" class="btn btn-sm btn-outline-success fw-semibold">View All</a>
+          <button class="btn btn-sm btn-outline-success fw-semibold" (click)="openRfqModal($event)">View All</button>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -781,3 +828,68 @@
     </div>
   </div>
 </div>
+
+<!-- RFQ QUOTATIONS MODAL (Mockup Implementation) -->
+<div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isRfqModalOpen">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg rounded-4">
+      <div class="modal-header bg-white border-0 px-4 py-3 pb-2 d-flex justify-content-between align-items-center">
+        <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2">
+          <i class="bi bi-file-earmark-arrow-up text-success fs-4"></i> Quotations (Last 30 Days)
+        </h5>
+        <button type="button" class="btn-close text-secondary" (click)="closeRfqModal()"></button>
+      </div>
+      
+      <div class="modal-body p-0">
+        <div class="px-4 pb-3 pt-2 bg-white sticky-top">
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-white border-end-0 border-light-subtle">
+              <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0 border-light-subtle fs-7 py-2" 
+                   placeholder="Search details..." [(ngModel)]="searchRfqTerm">
+          </div>
+        </div>
+
+        <div class="table-responsive px-4">
+          <table class="table table-hover align-middle mb-4 fs-8">
+            <thead class="table-light text-uppercase sticky-top" style="top: 0; z-index: 10;">
+              <tr>
+                <th class="ps-3 py-3" style="width: 20%;">QUOTATION REF</th>
+                <th class="py-3" style="width: 45%;">PRODUCT NAME</th>
+                <th class="py-3" style="width: 20%;">VALID UNTIL</th>
+                <th class="py-3" style="width: 15%;">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of filteredRfqList">
+                <td class="ps-3 py-3 font-monospace fw-bold text-success">{{ r.id }}</td>
+                <td class="py-3 text-muted">{{ r.item }}</td>
+                <td class="py-3 text-muted">{{ r.closingDate | date: 'mediumDate' }}</td>
+                <td class="py-3">
+                  <span class="badge text-uppercase px-2.5 py-1" [ngClass]="getRfqStatusClass(r.status)">
+                    {{ r.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredRfqList.length === 0">
+                <td colspan="4" class="text-center py-5 text-muted font-monospace bg-light rounded">
+                  <i class="bi bi-folder-x fs-2 d-block mb-2 opacity-50"></i> No quotation records found.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer bg-white border-0 px-4 py-3">
+        <button type="button" class="btn btn-secondary text-white px-4 fw-semibold rounded-3 shadow-sm" style="background-color: #6c757d;" (click)="closeRfqModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop fade show" *ngIf="isRfqModalOpen"></div>
+
+<!-- FORMS MODALS -->
+<app-quatation *ngIf="showQuotationForm" [isEmbedded]="true" (formClosed)="closeFormModals()"></app-quatation>
+<app-poline-item *ngIf="showPoLineItemForm" [isEmbedded]="true" (formClosed)="closeFormModals()"></app-poline-item>
+<app-shipment *ngIf="showShipmentForm" [isEmbedded]="true" (formClosed)="closeFormModals()"></app-shipment>

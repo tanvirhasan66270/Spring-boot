@@ -13,6 +13,7 @@ import com.example.SCM.repository.QuotationRepository;
 import com.example.SCM.repository.UserRepository;
 import com.example.SCM.role.Role;
 import com.example.SCM.service.ActivityLogService;
+import com.example.SCM.service.NotificationService;
 import com.example.SCM.service.PurchaseOrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
     private final MailService mailService;
     private final PurchaseOrderTokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     // Activity Log & Request Context Dependencies
     private final ActivityLogService activityLogService;
@@ -84,6 +86,19 @@ public class PurchaseOrderServiceImp implements PurchaseOrderService {
         PurchaseOrder po = purchaseOrderMapper.toEntity(dto, quotation, supplier, purchaseRequisition);
         po.setStatus(PurchaseOrderStatus.DRAFT);
         PurchaseOrder savedPo = purchaseOrderRepository.save(po);
+
+        try {
+            if (savedPo.getSupplier() != null && savedPo.getSupplier().getUser() != null) {
+                notificationService.send(
+                        savedPo.getSupplier().getUser().getId().toString(),
+                        "PURCHASE_ORDER",
+                        "New Purchase Order #" + savedPo.getPoNumber(),
+                        "A new purchase order has been created for you. Please review the details."
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("Error sending notification for PO creation: " + e.getMessage());
+        }
 
         PurchaseOrderToken token = new PurchaseOrderToken();
         token.setToken(UUID.randomUUID().toString());

@@ -24,7 +24,10 @@ export class QuotationService {
   save(quotation: QuotationRequestModel, file: File | null): Observable<QuotationResponseModel> {
     const formData = new FormData();
     
-    formData.append('quotation', JSON.stringify(quotation));
+    formData.append(
+      'quotation',
+      new Blob([JSON.stringify(quotation)], { type: 'application/json' })
+    );
     
     if (file) {
       formData.append('image', file); 
