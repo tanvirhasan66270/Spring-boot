@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.46
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -44,7 +44,7 @@ CREATE TABLE `delivery_trips` (
   CONSTRAINT `FK2o3mj1p41rujvmfdplp1mj0nx` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`),
   CONSTRAINT `FKmjs8olu2fy49vw2m6vbfveoey` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`),
   CONSTRAINT `FKr449c60k54t53nlem00r869t3` FOREIGN KEY (`driver_id`) REFERENCES `drivers` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,7 +53,7 @@ CREATE TABLE `delivery_trips` (
 
 LOCK TABLES `delivery_trips` WRITE;
 /*!40000 ALTER TABLE `delivery_trips` DISABLE KEYS */;
-INSERT INTO `delivery_trips` VALUES (1,'2026-07-28 16:36:57.318174','2026-07-09 19:06:12.627115','saDF;kerl jefkerwnojhor','deliveries/DELIVERIES_48de0bc4-2e61-4e03-8a61-c823e65c2f43_Screenshot_8.png',1,'signatures/SIGNATURES_32019516-7d26-4d51-b96d-c589b3799896_Screenshot_7.png','esrgmlkjhnoijfrgvt jhok','2026-07-28 16:36:57.318174','DELIVERED','2026-07-28 17:12:38.532663',1,1,1),(2,NULL,'2026-07-09 19:06:16.102922','saDF;kerl jefkerwnojhor',NULL,1,NULL,'esrgmlkjhnoijfrgvt jhok',NULL,'PENDING','2026-07-09 19:06:16.102922',1,1,1);
+INSERT INTO `delivery_trips` VALUES (1,'2026-07-28 16:36:57.318174','2026-07-09 19:06:12.627115','saDF;kerl jefkerwnojhor','deliveries/DELIVERIES_48de0bc4-2e61-4e03-8a61-c823e65c2f43_Screenshot_8.png',1,'signatures/SIGNATURES_32019516-7d26-4d51-b96d-c589b3799896_Screenshot_7.png','esrgmlkjhnoijfrgvt jhok','2026-07-28 16:36:57.318174','DELIVERED','2026-07-28 17:12:38.532663',1,1,1),(2,NULL,'2026-07-09 19:06:16.102922','saDF;kerl jefkerwnojhor',NULL,1,NULL,'esrgmlkjhnoijfrgvt jhok',NULL,'PENDING','2026-07-09 19:06:16.102922',1,1,1),(3,'2026-08-16 19:05:12.842314','2026-08-16 19:03:02.282035','qawrfasfd','deliveries/DELIVERIES_4bdb0e63-11e2-42b3-b159-dcd77895ce45_quatation.jpg',66,'signatures/SIGNATURES_b8c1d0f6-1468-4b6d-8e37-c8108e6aced6_quatation.jpg','afsef','2026-08-16 19:04:54.296260','DELIVERED','2026-08-16 19:05:12.842314',15,5,5);
 /*!40000 ALTER TABLE `delivery_trips` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -66,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 16:03:00
+-- Dump completed on 2026-08-16 19:07:57

@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.46
+-- Server version	8.0.45
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -42,7 +42,7 @@ CREATE TABLE `po_line_items` (
   KEY `FK110v33g1nivy9s5rhuqj5bs5x` (`po_id`),
   CONSTRAINT `FK110v33g1nivy9s5rhuqj5bs5x` FOREIGN KEY (`po_id`) REFERENCES `purchase_orders` (`id`),
   CONSTRAINT `FKhmm1b027r53yyytpuovxigg31` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -51,6 +51,7 @@ CREATE TABLE `po_line_items` (
 
 LOCK TABLES `po_line_items` WRITE;
 /*!40000 ALTER TABLE `po_line_items` DISABLE KEYS */;
+INSERT INTO `po_line_items` VALUES (1,'2026-08-16 16:54:30.966088','2026-08-31',10000000,'asdfadsf','PO-1786872119070',100,'sbdjvhcfbwshaidb','3','PENDING',NULL,100000,1,15),(2,'2026-08-16 17:02:48.756254','2026-08-19',1000000,'sddgfd','PO-1786872119070',100,'sdfgsd','sdgsdfg','PENDING',NULL,10000,1,15);
 /*!40000 ALTER TABLE `po_line_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -63,4 +64,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 16:02:55
+-- Dump completed on 2026-08-16 19:07:56
