@@ -270,9 +270,9 @@
   </div>
 
   <!-- ───────────────── RFQ, PO & SHIPMENT LOG TABS ───────────────── -->
-  <div class="row g-3 mb-4">
+  <div class="row g-3 mb-4 row-cols-1 row-cols-md-3 row-cols-lg-5">
     <!-- Button 1: RFQ Log -->
-    <div class="col-md-3">
+    <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'RFQ' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
            (click)="activeRfqTab = (activeRfqTab === 'RFQ' ? 'ALL' : 'RFQ')">
@@ -289,7 +289,7 @@
     </div>
 
     <!-- Button 2: Approved Purchase Orders -->
-    <div class="col-md-3">
+    <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'APPROVED' ? 'border-success bg-success-subtle' : 'bg-white border-light-subtle hover-elevate'"
            (click)="activeRfqTab = (activeRfqTab === 'APPROVED' ? 'ALL' : 'APPROVED')">
@@ -306,7 +306,7 @@
     </div>
 
     <!-- Button 3: Rejected Purchase Orders -->
-    <div class="col-md-3">
+    <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'REJECTED' ? 'border-danger bg-danger-subtle' : 'bg-white border-light-subtle hover-elevate'"
            (click)="activeRfqTab = (activeRfqTab === 'REJECTED' ? 'ALL' : 'REJECTED')">
@@ -323,7 +323,7 @@
     </div>
 
     <!-- Button 4: Cargo Shipment Log -->
-    <div class="col-md-3">
+    <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'SHIPMENT' ? 'border-info bg-info-subtle' : 'bg-white border-light-subtle hover-elevate'"
            (click)="activeRfqTab = (activeRfqTab === 'SHIPMENT' ? 'ALL' : 'SHIPMENT')">
@@ -334,6 +334,23 @@
           <div>
             <div class="fw-bold text-dark fs-6 lh-sm mb-1">Cargo Shipment Log</div>
             <div class="text-muted small">{{ shipments.length }} Shipments</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Button 5: Track Purchase Order -->
+    <div class="col">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="isTrackingModalOpen ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="openTrackingModal()">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-primary">
+            <i class="bi bi-geo-alt-fill"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">Track Purchase Order</div>
+            <div class="text-muted small">Search & Track Status</div>
           </div>
         </div>
       </div>
@@ -1443,5 +1460,313 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- ================= MODAL: TRACK PURCHASE ORDER ================= -->
+<div *ngIf="isTrackingModalOpen" style="position:fixed;inset:0;z-index:1055;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,0.4);backdrop-filter:blur(4px);">
+  <div style="width:100%;max-width:900px;max-height:95vh;display:flex;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);background:#ffffff;animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
+    
+    <!-- HEADER -->
+    <div style="background:#198754;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;background:rgba(255,255,255,0.2);backdrop-filter:blur(4px);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-compass text-white" style="font-size:20px;"></i>
+        </div>
+        <div>
+          <h5 style="font-size:1.15rem;font-weight:700;color:#ffffff;margin:0;letter-spacing:-0.01em;">Track Purchase Order</h5>
+          <p style="font-size:0.76rem;color:rgba(255,255,255,0.85);margin:0;">Real-time tracking of procurement stages and delivery logistics</p>
+        </div>
+      </div>
+      <button (click)="closeTrackingModal()" style="font-size:20px;color:rgba(255,255,255,0.8);cursor:pointer;background:transparent;border:none;outline:none;">&#x2715;</button>
+    </div>
+
+    <!-- BODY -->
+    <div style="padding:32px;background:#f8fafc;flex:1;overflow-y:auto;box-sizing:border-box;">
+      <!-- Search input card (matches "Quick Add Payment" style) -->
+      <div class="card border-0 shadow-sm p-4 bg-white rounded-3 mb-4">
+        <div class="row">
+          <div class="col-md-10 mx-auto">
+            <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">Customer Order Number</label>
+            <div class="input-group border rounded-3 overflow-visible position-relative" style="border-color: #dee2e6 !important;">
+              <span class="input-group-text bg-white border-0 text-muted px-3"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control border-0 ps-0 text-dark fw-semibold py-2.5 shadow-none" 
+                     placeholder="Enter Order Number (e.g., PO-2024-001...)" 
+                     [(ngModel)]="trackingPoNumberSearch" 
+                     (focus)="showPoSuggestions = true"
+                     (blur)="onInputBlur()"
+                     (keyup.enter)="trackPoByNumber(); showPoSuggestions = false">
+              <button class="btn btn-primary px-4 fw-bold border-0" style="background-color: #0d6efd;" type="button" (click)="trackPoByNumber(); showPoSuggestions = false">
+                Find
+              </button>
+
+              <!-- Suggestions Dropdown -->
+              <div class="po-suggestions-dropdown" *ngIf="showPoSuggestions && filteredPoSuggestions.length > 0">
+                @for (po of filteredPoSuggestions; track po.id) {
+                  <div class="po-suggestion-item d-flex justify-content-between align-items-center" (mousedown)="selectPoSuggestion(po)">
+                    <div>
+                      <strong class="text-primary">{{ po.poNumber }}</strong>
+                      <span class="text-muted ms-2 small">({{ po.supplierName || 'N/A' }})</span>
+                    </div>
+                    <span class="badge font-monospace text-uppercase"
+                          [ngClass]="{
+                            'bg-light text-dark': po.status === 'DRAFT',
+                            'bg-primary-subtle text-primary border border-primary': po.status === 'ISSUED',
+                            'bg-warning-subtle text-warning border border-warning': po.status === 'PARTIALLY_RECEIVED',
+                            'bg-success-subtle text-success border border-success': po.status === 'RECEIVED' || po.status === 'APPROVED',
+                            'bg-danger-subtle text-danger border border-danger': po.status === 'CANCELLED'
+                          }" style="font-size: 0.65rem;">
+                      {{ po.status }}
+                    </span>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="text-muted small mt-2" style="font-size: 0.75rem;">
+              Search by order number to load tracking details.
+            </div>
+            <div *ngIf="trackingSearchError" class="text-danger small mt-2 d-flex align-items-center gap-1" style="font-size: 0.78rem;">
+              <i class="bi bi-exclamation-circle-fill"></i>
+              <span>{{ trackingSearchError }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Placeholder -->
+      <div *ngIf="!trackedPo" class="text-center text-muted py-5">
+        <i class="bi bi-compass fs-1 d-block mb-2 text-secondary"></i>
+        <small>Enter a valid Purchase Order number above and click Find to display detailed status.</small>
+      </div>
+
+      <!-- Result Cards -->
+      <div *ngIf="trackedPo" class="row g-4 animate-fade-in">
+        <!-- PO Status & Stepper (Left) -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
+            <div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
+              <div>
+                <h5 class="fw-bold text-dark mb-1">{{ trackedPo.poNumber }}</h5>
+                <span class="text-muted small">Issued Date: {{ trackedPo.createdAt | date:'mediumDate' }}</span>
+              </div>
+              <span class="badge py-2 px-3 fs-7.5"
+                    [ngClass]="{
+                      'bg-light text-dark': trackedPo.status === 'DRAFT',
+                      'bg-primary-subtle text-primary border border-primary': trackedPo.status === 'ISSUED',
+                      'bg-warning-subtle text-warning border border-warning': trackedPo.status === 'PARTIALLY_RECEIVED',
+                      'bg-success-subtle text-success border border-success': trackedPo.status === 'RECEIVED' || trackedPo.status === 'APPROVED' || trackedPo.status === 'COMPLETE',
+                      'bg-danger-subtle text-danger border border-danger': trackedPo.status === 'CANCELLED'
+                    }">
+                {{ trackedPo.status }}
+              </span>
+            </div>
+
+            <!-- Vertical Status Stepper -->
+            <div class="po-stepper mt-3">
+              <!-- DRAFT -->
+              <div class="stepper-step" [class.active]="true">
+                <div class="step-icon">
+                  <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">DRAFT</div>
+                  <div class="step-desc text-muted small">Purchase order created and prepared for review.</div>
+                </div>
+              </div>
+
+              <!-- ISSUED -->
+              <div class="stepper-step" [class.active]="['ISSUED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'COMPLETE', 'APPROVED'].includes(trackedPo.status?.toUpperCase())">
+                <div class="step-icon">
+                  <i class="bi bi-send"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">ISSUED</div>
+                  <div class="step-desc text-muted small">Purchase order dispatched to supplier.</div>
+                </div>
+              </div>
+
+              <!-- PARTIALLY_RECEIVED -->
+              <div class="stepper-step" [class.active]="['PARTIALLY_RECEIVED', 'RECEIVED', 'COMPLETE'].includes(trackedPo.status?.toUpperCase())">
+                <div class="step-icon">
+                  <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">PARTIALLY RECEIVED</div>
+                  <div class="step-desc text-muted small">Items partially received and logged at warehouse.</div>
+                </div>
+              </div>
+
+              <!-- RECEIVED -->
+              <div class="stepper-step" [class.active]="['RECEIVED', 'COMPLETE'].includes(trackedPo.status?.toUpperCase())">
+                <div class="step-icon">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">RECEIVED</div>
+                  <div class="step-desc text-muted small">All items received at destination warehouse.</div>
+                </div>
+              </div>
+
+              <!-- PROCESS -->
+              <div class="stepper-step" [class.active]="getTrackedPoLineItems().length > 0">
+                <div class="step-icon">
+                  <i class="bi bi-gear-fill"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">PROCESS</div>
+                  <div class="step-desc text-muted small">{{ getProcessedUnitsCount() }} Units processed ({{ getPoProgressPercentage() }}%).</div>
+                </div>
+              </div>
+
+              <!-- Shipment -->
+              <div class="stepper-step" [class.active]="!!getTrackedPoShipment()">
+                <div class="step-icon">
+                  <i class="bi bi-truck"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">SHIPMENT</div>
+                  <div class="step-desc text-muted small">{{ getShippedUnitsCount() }} Units shipped ({{ getPoProgressPercentage() }}%).</div>
+                </div>
+              </div>
+
+              <!-- Complete -->
+              <div class="stepper-step" [class.active]="['COMPLETE', 'RECEIVED'].includes(trackedPo.status?.toUpperCase()) && !!getTrackedPoShipment()">
+                <div class="step-icon">
+                  <i class="bi bi-bookmark-check-fill"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">COMPLETE</div>
+                  <div class="step-desc text-muted small">Order completed, verified, and closed.</div>
+                </div>
+              </div>
+
+              <!-- CANCELLED -->
+              <div class="stepper-step" [class.cancelled]="trackedPo.status?.toUpperCase() === 'CANCELLED'" [class.active]="trackedPo.status?.toUpperCase() === 'CANCELLED'" *ngIf="trackedPo.status?.toUpperCase() === 'CANCELLED'">
+                <div class="step-icon">
+                  <i class="bi bi-x-circle-fill"></i>
+                </div>
+                <div class="step-content">
+                  <div class="step-title">CANCELLED</div>
+                  <div class="step-desc text-danger small">Purchase order has been voided/cancelled.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipment / Delivery info (Right) -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
+            <h6 class="fw-bold text-dark mb-4 border-bottom pb-3">
+              <i class="bi bi-geo-alt-fill text-info me-2"></i> Purchase Order Tracking
+            </h6>
+
+            <div class="d-flex flex-column gap-3">
+              <!-- Purchase Order Number -->
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small">Purchase Order Number</span>
+                <span class="badge bg-dark font-monospace px-2.5 py-1.5 fs-7.5">{{ trackedPo.poNumber }}</span>
+              </div>
+
+              <!-- Order Total Volume -->
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small">Order Total Volume</span>
+                <span class="text-dark fw-bold font-monospace">{{ trackedPo.quantity }} Units</span>
+              </div>
+
+              <!-- Production (Allocated Volume) -->
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-secondary small">Production (Allocated Qty)</span>
+                <span class="text-success fw-bold font-monospace">{{ getTrackedPoAllocatedVolume() }} Units</span>
+              </div>
+
+              <!-- Allocation Progress bar -->
+              <div class="mt-2 border-bottom pb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="text-muted">PO Allocation Progress</span>
+                  <span class="fw-bold text-success">{{ getPoProgressPercentage() }}%</span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                       role="progressbar"
+                       [style.width.%]="getPoProgressPercentage()"></div>
+                </div>
+              </div>
+
+              <!-- Product Specifications -->
+              <div>
+                <h6 class="text-uppercase text-secondary fw-bold mb-2.5" style="font-size: 0.72rem; letter-spacing: 0.5px;">Product Specifications</h6>
+                
+                <div *ngIf="getTrackedPoLineItems().length === 0" class="text-center text-muted py-4">
+                  <i class="bi bi-boxes fs-3 d-block mb-2 text-secondary"></i>
+                  <small>No product items allocated to this PO yet.</small>
+                </div>
+
+                <div class="table-responsive" *ngIf="getTrackedPoLineItems().length > 0" style="max-height: 220px; overflow-y: auto;">
+                  <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Product</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Total Volume</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (item of getTrackedPoLineItems(); track item.id; let idx = $index) {
+                        <tr>
+                          <td>
+                            <div class="fw-semibold text-dark">{{ item.productName || 'N/A' }}</div>
+                            <div class="text-muted small font-monospace" style="font-size: 0.65rem;">Code: {{ item.productCode || 'N/A' }}</div>
+                          </td>
+                          <td class="text-center font-monospace">{{ item.quantity }}</td>
+                          <td class="text-end font-monospace">${{ item.unitPrice | number:'1.2-2' }}</td>
+                          <td class="text-end font-monospace fw-bold text-primary">{{ getRunningTotalVolume(idx) }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Progress Summary Card -->
+      <div *ngIf="trackedPo" class="card border-0 shadow-sm p-4 bg-white rounded-3 mt-4 animate-fade-in">
+        <div class="row align-items-center">
+          <div class="col-md-3 text-center border-end py-2">
+            <div class="text-secondary small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">Overall Tracking Progress</div>
+            <div class="display-6 fw-bold text-primary font-monospace">{{ getOverallTrackingPercentage() }}%</div>
+          </div>
+          <div class="col-md-9 ps-md-4 py-2">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-dark"><i class="bi bi-activity text-success me-2"></i>Order Fulfillment Status</span>
+              <span class="text-secondary small font-monospace">
+                {{ getActiveStepsCount() }} of 7 Milestones Completed
+              </span>
+            </div>
+            <!-- Overall Progress Bar -->
+            <div class="progress mb-2" style="height: 12px; border-radius: 6px;">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary"
+                   role="progressbar"
+                   [style.width.%]="getOverallTrackingPercentage()"
+                   style="border-radius: 6px;"></div>
+            </div>
+            <div class="text-muted small">
+              Purchase Order is currently in <strong>{{ trackedPo.status }}</strong> state. 
+              Allocated Qty volume is at <strong>{{ getPoProgressPercentage() }}%</strong> ({{ getTrackedPoAllocatedVolume() }} ready of {{ trackedPo.quantity }} Units).
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div style="padding:16px 32px 24px;display:flex;justify-content:flex-end;border-top:1.5px solid #f1f5f9;background:#fff;flex-shrink:0;">
+      <button (click)="closeTrackingModal()" style="background:#5c6470;color:#ffffff;padding:10px 24px;border-radius:8px;border:none;font-size:0.85rem;font-weight:600;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);">Close</button>
+    </div>
   </div>
 </div>

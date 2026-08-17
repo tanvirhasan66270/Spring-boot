@@ -91,7 +91,7 @@
       <!-- NEW ACTION BUTTONS -->
       <div class="row g-3 mb-4">
         <!-- Add Quotation -->
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openQuotationForm()">
             <div class="d-flex align-items-center gap-3">
               <div class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success" style="width: 48px; height: 48px;">
@@ -106,7 +106,7 @@
         </div>
         
         <!-- Add PO Line Item -->
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openPoLineItemForm()">
             <div class="d-flex align-items-center gap-3">
               <div class="rounded-circle d-flex align-items-center justify-content-center bg-teal-subtle text-teal" style="width: 48px; height: 48px;">
@@ -121,7 +121,7 @@
         </div>
         
         <!-- Add Shipment -->
-        <div class="col-md-4">
+        <div class="col-md-3">
           <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openShipmentForm()">
             <div class="d-flex align-items-center gap-3">
               <div class="rounded-circle d-flex align-items-center justify-content-center bg-info-subtle text-info" style="width: 48px; height: 48px;">
@@ -130,6 +130,21 @@
               <div>
                 <h6 class="fw-bold text-dark mb-0">Add Shipment</h6>
                 <small class="text-muted">Create a new shipment</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipment Update -->
+        <div class="col-md-3">
+          <div class="card border-0 shadow-sm p-3 rounded-4 hover-elevate transition-all bg-white" style="cursor: pointer;" (click)="openShipmentUpdateModal()">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning" style="width: 48px; height: 48px;">
+                <i class="bi bi-arrow-repeat fs-4"></i>
+              </div>
+              <div>
+                <h6 class="fw-bold text-dark mb-0">Shipment Update</h6>
+                <small class="text-muted">Register shipment details</small>
               </div>
             </div>
           </div>
@@ -888,6 +903,178 @@
   </div>
 </div>
 <div class="modal-backdrop fade show" *ngIf="isRfqModalOpen"></div>
+
+<!-- SHIPMENT UPDATE MODAL (LC/ADD PAYMENT STYLE) -->
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 1055;" *ngIf="isShipmentUpdateModalOpen">
+  <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 800px;">
+    <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
+      
+      <!-- Header -->
+      <div class="modal-header px-4 py-3.5 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);">
+        <div class="d-flex align-items-center gap-3">
+          <div class="p-2.5 rounded-3 bg-white bg-opacity-20 backdrop-blur shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+            <i class="bi bi-arrow-repeat fs-4 text-white"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold mb-0 text-white" style="letter-spacing: -0.01em;">Shipment Update</h5>
+            <p class="text-white-50 small mb-0 fs-8">Search Purchase Order to create or update cargo consignment shipments</p>
+          </div>
+        </div>
+        <button type="button" class="btn-close btn-close-white" (click)="closeShipmentUpdateModal()"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body p-4 bg-light custom-scroll overflow-auto" style="max-height: 580px;">
+        
+        <!-- Search PO Bar -->
+        <div class="mb-4 position-relative">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Search Purchase Order Number</label>
+          <div class="input-group shadow-sm rounded-3 overflow-hidden">
+            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" 
+                   class="form-control border-start-0 py-2 fs-7" 
+                   placeholder="Type PO Number (e.g. PO-17868...)" 
+                   [(ngModel)]="shipmentUpdateSearchTerm" />
+          </div>
+
+          <!-- PO Search Suggestions Dropdown -->
+          <div *ngIf="shipmentUpdatePoSuggestions.length > 0 && !showShipmentUpdateForm" 
+               class="list-group position-absolute w-100 shadow-lg border-light rounded-3 mt-1 overflow-hidden" 
+               style="z-index: 1060; max-height: 200px; overflow-y: auto;">
+            <button *ngFor="let po of shipmentUpdatePoSuggestions" 
+                    type="button" 
+                    class="list-group-item list-group-item-action d-flex justify-content-between align-items-center fs-7.5 py-2.5" 
+                    (click)="selectShipmentUpdatePo(po)">
+              <div>
+                <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                <span class="fw-semibold text-dark">{{ po.poNumber }}</span>
+              </div>
+              <span class="badge bg-secondary rounded-pill font-monospace">${{ po.amount | number:'1.2-2' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- If PO is selected, show "New Add Shipment" Form -->
+        <div *ngIf="showShipmentUpdateForm && selectedShipmentUpdatePo" class="card border-0 shadow-sm p-4 rounded-3 bg-white mb-3">
+          <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-file-earmark-plus text-primary me-2"></i>New Add Shipment</h6>
+            <span class="badge bg-success text-uppercase py-1.5 px-3 rounded-pill">{{ selectedShipmentUpdatePo.status }}</span>
+          </div>
+
+          <!-- PO Details Summary Header -->
+          <div class="row g-3 mb-4 bg-light p-3 rounded-3 border-start border-3 border-primary small">
+            <div class="col-sm-6">
+              <span class="text-muted d-block">PO Number:</span>
+              <strong class="text-dark">{{ selectedShipmentUpdatePo.poNumber }}</strong>
+            </div>
+            <div class="col-sm-6 text-sm-end">
+              <span class="text-muted d-block">Order Valuation:</span>
+              <strong class="text-primary fs-6">${{ selectedShipmentUpdatePo.amount | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+
+          <!-- Shipment Form Fields -->
+          <form (ngSubmit)="submitShipmentUpdate()">
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-uppercase text-secondary">Vehicle Fleet Plate No</label>
+                <input type="text" 
+                       class="form-control fs-7 font-monospace fw-bold" 
+                       [(ngModel)]="shipmentUpdateForm.vehicleNumber" 
+                       name="vehicleNumber" 
+                       placeholder="e.g. DHAKA-METRO-T-1122" 
+                       required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-uppercase text-secondary">Captain License Reg No</label>
+                <input type="text" 
+                       class="form-control fs-7 font-monospace" 
+                       [(ngModel)]="shipmentUpdateForm.captainRegistrationNumber" 
+                       name="captainRegistrationNumber" 
+                       placeholder="e.g. BRTA-DL-99228" 
+                       required />
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-uppercase text-secondary">Freight Sourcing Origin</label>
+                <input type="text" 
+                       class="form-control fs-7" 
+                       [(ngModel)]="shipmentUpdateForm.origin" 
+                       name="origin" 
+                       placeholder="e.g. Chittagong Port Yard" 
+                       required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
+                <input type="number" 
+                       class="form-control fs-7 font-monospace fw-bold shadow-none" 
+                       [(ngModel)]="shipmentUpdateForm.transportCost" 
+                       name="transportCost" 
+                       min="0" 
+                       required />
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-uppercase text-secondary">Target Expected Delivery Date</label>
+              <input type="date" 
+                       class="form-control fs-7 font-monospace" 
+                       [(ngModel)]="shipmentUpdateForm.estimatedDelivery" 
+                       name="estimatedDelivery" 
+                       required />
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-uppercase text-secondary">Consignment Target Destination Address</label>
+              <textarea class="form-control fs-7" 
+                        rows="2" 
+                        [(ngModel)]="shipmentUpdateForm.sendByAddress" 
+                        name="sendByAddress" 
+                        placeholder="Full delivery terminal address details..." 
+                        required></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-bold small text-uppercase text-secondary">Proof of Delivery (PDF/Image POD)</label>
+              <input type="file" 
+                     class="form-control fs-7" 
+                     (change)="onShipmentUpdateFileChange($event)" 
+                     accept="image/*,.pdf" />
+              <small class="text-muted d-block mt-1 fs-8">Attach signed delivery challenge slips or carrier confirmation sheets.</small>
+            </div>
+
+            <!-- Error Alerts inside the form -->
+            <div *ngIf="shipmentUpdateError" class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
+              <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Core Fault:</strong> {{ shipmentUpdateError }}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex gap-2 pt-3 border-top">
+              <button class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-bold fs-7 text-uppercase" 
+                      type="submit">
+                <i class="bi bi-cloud-arrow-up-fill"></i> Launch Consignment Track
+              </button>
+              <button type="button" 
+                      class="btn btn-outline-secondary px-4 fs-7 text-uppercase" 
+                      (click)="closeShipmentUpdateModal()">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Info/Default state when PO is not selected -->
+        <div *ngIf="!selectedShipmentUpdatePo" class="text-center py-5 text-muted">
+          <i class="bi bi-search fs-1 d-block mb-3 text-secondary opacity-50"></i>
+          <h6>No Purchase Order Selected</h6>
+          <p class="small">Search and select an active Purchase Order above to proceed with the shipment update.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- FORMS MODALS -->
 <app-quatation *ngIf="showQuotationForm" [isEmbedded]="true" (formClosed)="closeFormModals()"></app-quatation>

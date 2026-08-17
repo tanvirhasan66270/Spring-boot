@@ -10,6 +10,7 @@ import { PurchaseRequisitionService } from '../../../service/purchase-requisitio
 import { QuotationService } from '../../../service/quatation.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { PoLineItemService } from '../../../service/po-line-item.service';
 import { InvoiceService } from '../../../service/invoice.service';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
@@ -131,7 +132,13 @@ export class ProcurementDashboardComponent implements OnInit {
   rawPRs: any[] = [];
   rawRFQs: any[] = [];
   rawPOs: any[] = [];
+  trackedPo: any = null;
+  trackingPoNumberSearch: string = '';
+  trackingSearchError: string = '';
+  isTrackingModalOpen: boolean = false;
+  showPoSuggestions: boolean = false;
   rawProducts: any[] = [];
+  rawPoLineItems: any[] = [];
   rawInvoices: any[] = [];
   activeDirectoryModal: 'quotations' | 'suppliers' | 'invoices' | 'inventory' | null = null;
   userRole: string = '';
@@ -414,7 +421,8 @@ export class ProcurementDashboardComponent implements OnInit {
     private invoiceService: InvoiceService,
     private notificationService: NotificationService,
     private supplierService: SupplierService,
-    private shipmentService: ShipmentService
+    private shipmentService: ShipmentService,
+    private poLineItemService: PoLineItemService
   ) {}
 
   ngOnInit(): void {
@@ -552,6 +560,13 @@ export class ProcurementDashboardComponent implements OnInit {
         }
         this.cdr.markForCheck();
       },
+    });
+
+    this.poLineItemService.findAll().subscribe({
+      next: (data) => {
+        this.rawPoLineItems = data || [];
+        this.cdr.markForCheck();
+      }
     });
 
     // Dummy Data Initializations
@@ -957,6 +972,169 @@ export class ProcurementDashboardComponent implements OnInit {
       },
       error: (err) => console.error("Failed to update status on server", err)
     });
+  }
+
+  openTrackingModal() {
+    this.isTrackingModalOpen = true;
+    this.trackedPo = null;
+    this.trackingPoNumberSearch = '';
+    this.trackingSearchError = '';
+    this.showPoSuggestions = false;
+    this.cdr.markForCheck();
+  }
+
+  closeTrackingModal() {
+    this.isTrackingModalOpen = false;
+    this.showPoSuggestions = false;
+    this.cdr.markForCheck();
+  }
+
+  get filteredPoSuggestions(): any[] {
+    const query = (this.trackingPoNumberSearch || '').trim().toLowerCase();
+    if (!query) {
+      return (this.rawPOs || []).slice(0, 10);
+    }
+    return (this.rawPOs || []).filter(po => 
+      po.poNumber && po.poNumber.toLowerCase().includes(query)
+    );
+  }
+
+  selectPoSuggestion(po: any) {
+    this.trackingPoNumberSearch = po.poNumber;
+    this.trackedPo = po;
+    this.trackingSearchError = '';
+    this.showPoSuggestions = false;
+    this.cdr.markForCheck();
+  }
+
+  onInputBlur() {
+    setTimeout(() => {
+      this.showPoSuggestions = false;
+      this.cdr.markForCheck();
+    }, 250);
+  }
+
+  trackPoByNumber() {
+    this.trackingSearchError = '';
+    this.trackedPo = null;
+    const query = (this.trackingPoNumberSearch || '').trim().toLowerCase();
+    if (!query) {
+      this.trackingSearchError = 'Please enter a Purchase Order number.';
+      this.cdr.markForCheck();
+      return;
+    }
+    const found = (this.rawPOs || []).find(po => po.poNumber && po.poNumber.toLowerCase() === query);
+    if (found) {
+      this.trackedPo = found;
+    } else {
+      this.trackingSearchError = `No Purchase Order found with number "${this.trackingPoNumberSearch}".`;
+    }
+    this.cdr.markForCheck();
+  }
+
+  getTrackedPoShipment(): any {
+    if (!this.trackedPo) return null;
+    return (this.shipments || []).find(s => Number(s.poId) === Number(this.trackedPo.id));
+  }
+
+  getPoStepIndex(status: string, hasShipment: boolean): number {
+    if (!status) return 0;
+    const s = status.toUpperCase();
+    if (s === 'DRAFT') return 1;
+    if (s === 'ISSUED') return 2;
+    if (s === 'PARTIALLY_RECEIVED') return 3;
+    if (s === 'RECEIVED') return 4;
+
+    // Check PO Line Items to determine processing progress
+    const lineItems = this.getTrackedPoLineItems();
+    if (lineItems.length > 0) {
+      const statuses = lineItems.map(item => (item.status || '').toUpperCase());
+      if (statuses.includes('DELIVERED')) return 7;
+      if (statuses.includes('SHIPPED')) return 6;
+      if (statuses.includes('APPROVED')) return 5;
+    }
+
+    if (hasShipment || s === 'SHIPPED') return 6;
+    if (s === 'COMPLETE' || s === 'APPROVED') return 7;
+    if (s === 'CANCELLED') return 8;
+    return 2;
+  }
+
+  getPoProgressPercentage(): number {
+    if (!this.trackedPo || !this.trackedPo.quantity) return 0;
+    const lineItemsForPo = this.getTrackedPoLineItems();
+    const allocatedVolume = lineItemsForPo.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const pct = (allocatedVolume / this.trackedPo.quantity) * 100;
+    return Math.min(Math.round(pct), 100);
+  }
+
+  getTrackedPoLineItems(): any[] {
+    if (!this.trackedPo) return [];
+    return (this.rawPoLineItems || []).filter(item => 
+      (item.poId && Number(item.poId) === Number(this.trackedPo.id)) ||
+      (item.poNumber && String(item.poNumber).toLowerCase().trim() === String(this.trackedPo.poNumber).toLowerCase().trim())
+    );
+  }
+
+  getTrackedPoAllocatedVolume(): number {
+    return this.getTrackedPoLineItems().reduce((sum, item) => sum + (item.quantity || 0), 0);
+  }
+
+  getActiveStepsCount(): number {
+    if (!this.trackedPo) return 0;
+    let activeCount = 1; // DRAFT is always active
+    const status = this.trackedPo.status?.toUpperCase() || '';
+    if (['ISSUED', 'PARTIALLY_RECEIVED', 'RECEIVED', 'COMPLETE', 'APPROVED'].includes(status)) {
+      activeCount++;
+    }
+    if (['PARTIALLY_RECEIVED', 'RECEIVED', 'COMPLETE'].includes(status)) {
+      activeCount++;
+    }
+    if (['RECEIVED', 'COMPLETE'].includes(status)) {
+      activeCount++;
+    }
+    if (this.getTrackedPoLineItems().length > 0) {
+      activeCount++;
+    }
+    if (this.getTrackedPoShipment()) {
+      activeCount++;
+    }
+    if (['COMPLETE', 'RECEIVED'].includes(status) && this.getTrackedPoShipment()) {
+      activeCount++;
+    }
+    return activeCount;
+  }
+
+  getOverallTrackingPercentage(): number {
+    if (!this.trackedPo) return 0;
+    const stepperProgress = (this.getActiveStepsCount() / 7) * 100;
+    const allocationProgress = this.getPoProgressPercentage();
+    return Math.min(Math.round((stepperProgress + allocationProgress) / 2), 100);
+  }
+
+  getRunningTotalVolume(index: number): number {
+    if (!this.trackedPo || !this.trackedPo.quantity) return 0;
+    const items = this.getTrackedPoLineItems();
+    let remaining = this.trackedPo.quantity;
+    for (let i = 0; i < index; i++) {
+      remaining -= (items[i].quantity || 0);
+    }
+    return Math.max(remaining, 0);
+  }
+
+  getProcessedUnitsCount(): number {
+    return this.getTrackedPoAllocatedVolume();
+  }
+
+  getShippedUnitsCount(): number {
+    if (!this.getTrackedPoShipment()) return 0;
+    const shippedItems = this.getTrackedPoLineItems().filter(item => 
+      ['SHIPPED', 'DELIVERED', 'RECEIVED'].includes((item.status || '').toUpperCase())
+    );
+    if (shippedItems.length > 0) {
+      return shippedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    }
+    return this.getTrackedPoAllocatedVolume();
   }
 
   logout(): void {

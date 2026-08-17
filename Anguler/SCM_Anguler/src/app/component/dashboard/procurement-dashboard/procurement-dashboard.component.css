@@ -117,3 +117,125 @@ svg text {
 .card[style*="linear-gradient"]:hover {
   box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.4) !important;
 }
+
+/* Vertical Stepper styles */
+.po-stepper {
+  position: relative;
+  padding-left: 2.5rem;
+}
+
+.po-stepper::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  left: 0.95rem;
+  width: 2px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+
+.stepper-step {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.stepper-step:last-child {
+  margin-bottom: 0;
+}
+
+.stepper-step .step-icon {
+  position: absolute;
+  left: -2.5rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: #f8fafc;
+  border: 2px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.stepper-step .step-icon i {
+  font-size: 0.9rem;
+}
+
+.stepper-step.active .step-icon {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15);
+}
+
+.stepper-step.active .step-title {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.stepper-step .step-title {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 0.15rem;
+  transition: color 0.3s ease;
+}
+
+.stepper-step .step-desc {
+  font-size: 0.75rem;
+}
+
+/* PO Suggestions Dropdown */
+.po-suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 220px;
+  overflow-y: auto;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  margin-top: 4px;
+}
+
+.po-suggestion-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.po-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.po-suggestion-item:hover {
+  background-color: #f8fafc;
+}
+
+/* Cancelled step styling */
+.stepper-step.cancelled .step-icon {
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+  color: #842029;
+}
+
+.stepper-step.cancelled.active .step-icon {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.15);
+}
+
+.stepper-step.cancelled .step-title {
+  color: #842029;
+  font-weight: 600;
+}

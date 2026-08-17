@@ -84,6 +84,22 @@ export class SupplierDashboardComponent implements OnInit {
   showPoLineItemForm = false;
   showShipmentForm = false;
 
+  // Shipment Update Modal State variables
+  isShipmentUpdateModalOpen = false;
+  shipmentUpdateSearchTerm = '';
+  selectedShipmentUpdatePo: any = null;
+  showShipmentUpdateForm = false;
+  shipmentUpdateError: string | null = null;
+  selectedShipmentFile: File | null = null;
+  shipmentUpdateForm = {
+    vehicleNumber: '',
+    captainRegistrationNumber: '',
+    origin: '',
+    sendByAddress: '',
+    estimatedDelivery: '',
+    transportCost: 0
+  };
+
   // Calculated Metrics
   outstandingPayments = 0;
   supplyAccuracy = 0;
@@ -501,6 +517,108 @@ export class SupplierDashboardComponent implements OnInit {
     this.isRfqModalOpen = false;
     this.searchRfqTerm = '';
     this.cdr.markForCheck();
+  }
+
+  openShipmentUpdateModal(): void {
+    this.isShipmentUpdateModalOpen = true;
+    this.shipmentUpdateSearchTerm = '';
+    this.selectedShipmentUpdatePo = null;
+    this.showShipmentUpdateForm = false;
+    this.shipmentUpdateError = null;
+    this.selectedShipmentFile = null;
+    this.shipmentUpdateForm = {
+      vehicleNumber: '',
+      captainRegistrationNumber: '',
+      origin: '',
+      sendByAddress: '',
+      estimatedDelivery: '',
+      transportCost: 0
+    };
+    this.cdr.markForCheck();
+  }
+
+  closeShipmentUpdateModal(): void {
+    this.isShipmentUpdateModalOpen = false;
+    this.shipmentUpdateSearchTerm = '';
+    this.selectedShipmentUpdatePo = null;
+    this.showShipmentUpdateForm = false;
+    this.shipmentUpdateError = null;
+    this.selectedShipmentFile = null;
+    this.cdr.markForCheck();
+  }
+
+  get shipmentUpdatePoSuggestions(): any[] {
+    const term = (this.shipmentUpdateSearchTerm || '').trim().toLowerCase();
+    if (!term) return [];
+    return (this.allSupplierPOs || []).filter(po => 
+      String(po.poNumber || '').toLowerCase().includes(term)
+    );
+  }
+
+  selectShipmentUpdatePo(po: any): void {
+    this.selectedShipmentUpdatePo = po;
+    this.shipmentUpdateSearchTerm = po.poNumber;
+    this.showShipmentUpdateForm = true;
+    this.shipmentUpdateError = null;
+    this.cdr.markForCheck();
+  }
+
+  onShipmentUpdateFileChange(event: any): void {
+    if (event.target.files && event.target.files.length > 0) {
+      this.selectedShipmentFile = event.target.files[0];
+    }
+  }
+
+  submitShipmentUpdate(): void {
+    this.shipmentUpdateError = null;
+    const poId = this.selectedShipmentUpdatePo ? this.selectedShipmentUpdatePo.id : 0;
+    const supplierId = this.supplier ? this.supplier.id : 0;
+
+    if (!poId) {
+      this.shipmentUpdateError = 'Please select a valid Purchase Order first.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!supplierId) {
+      this.shipmentUpdateError = 'Supplier node identity reference was not resolved.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.shipmentUpdateForm.vehicleNumber || !this.shipmentUpdateForm.captainRegistrationNumber) {
+      this.shipmentUpdateError = 'Vehicle and Captain registration details are required.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    const payload = {
+      poId: Number(poId),
+      supplierId: Number(supplierId),
+      vehicleNumber: this.shipmentUpdateForm.vehicleNumber,
+      captainRegistrationNumber: this.shipmentUpdateForm.captainRegistrationNumber,
+      origin: this.shipmentUpdateForm.origin || 'Supplier Warehouse',
+      sendByAddress: this.shipmentUpdateForm.sendByAddress || 'Central Terminal',
+      estimatedDelivery: this.shipmentUpdateForm.estimatedDelivery,
+      transportCost: Number(this.shipmentUpdateForm.transportCost || 0),
+      assignedByEmail: this.user?.email || 'supplier@scm.com',
+      podFileUrl: ''
+    };
+
+    this.shipmentService.save(payload, this.selectedShipmentFile).subscribe({
+      next: () => {
+        alert('🚀 Cargo shipment dispatched and registered successfully!');
+        this.closeShipmentUpdateModal();
+        if (this.supplier) {
+          this.loadDashboardData(this.supplier.id);
+        }
+      },
+      error: (err: any) => {
+        console.error('Shipment save error:', err);
+        this.shipmentUpdateError = err.error?.message || err.message || 'Failed to dispatch shipment.';
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   get filteredRfqList() {
