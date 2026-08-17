@@ -157,7 +157,7 @@
     </div>
 
     <!-- Quality Control -->
-    <div class="nav-section" *ngIf="hasAccess(['QC_INSPECTOR', 'MANAGER'])">
+    <div class="nav-section" *ngIf="hasAccess(['QC_INSPECTOR', 'MANAGER', 'LOGISTICS_OFFICER'])">
       <div class="nav-section-label">Quality Control</div>
       <a routerLink="/qc-inspection" routerLinkActive="active" class="nav-item">
         <i class="bi bi-clipboard-pulse"></i>

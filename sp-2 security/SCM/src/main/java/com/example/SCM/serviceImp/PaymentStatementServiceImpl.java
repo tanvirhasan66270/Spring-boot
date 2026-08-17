@@ -11,7 +11,11 @@ import com.example.SCM.enumClass.PaymentIssueStatus;
 
 import com.example.SCM.repository.CustomerOrderRepository;
 import com.example.SCM.repository.PaymentStatementRepository;
+import com.example.SCM.repository.UserRepository;
 import com.example.SCM.service.PaymentStatementService;
+import com.example.SCM.service.NotificationService;
+import com.example.SCM.entity.User;
+import com.example.SCM.role.Role;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,6 +42,12 @@ public class PaymentStatementServiceImpl implements PaymentStatementService {
 
     @Autowired
     private PaymentStatementMapper paymentStatementMapper;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
@@ -70,6 +80,29 @@ public class PaymentStatementServiceImpl implements PaymentStatementService {
 
         order.addPaymentStatement(payment);
         customerOrderRepository.save(order);
+
+        try {
+            notificationService.send(
+                    "COMMERCIAL_OFFICER",
+                    "PAYMENT",
+                    "New Payment Added: Order #" + order.getOrderNumber(),
+                    "A new payment of " + requestDTO.getPaidAmount() + " has been added for Customer Order: " + order.getOrderNumber()
+            );
+
+            List<User> officers = userRepository.findByRole(Role.COMMERCIAL_OFFICER);
+            for (User officer : officers) {
+                if (officer.getId() != null) {
+                    notificationService.send(
+                            officer.getId().toString(),
+                            "PAYMENT",
+                            "New Payment Added: Order #" + order.getOrderNumber(),
+                            "A new payment of " + requestDTO.getPaidAmount() + " has been added for Customer Order: " + order.getOrderNumber()
+                    );
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending payment notification: " + e.getMessage());
+        }
 
         return paymentStatementMapper.toResponseDTO(payment);
     }

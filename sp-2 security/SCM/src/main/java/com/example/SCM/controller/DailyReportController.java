@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/reports/")
+@RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class DailyReportController {
 

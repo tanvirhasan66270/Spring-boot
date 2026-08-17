@@ -59,16 +59,34 @@ public class InventoryServiceImp implements InventoryService {
             throw new IllegalArgumentException("Inventory request data cannot be null");
         }
 
-        Optional<Inventory> existingStock = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId());
-        if (existingStock.isPresent()) {
-            throw new RuntimeException("Inventory record already exists for this Product in the specified Warehouse! Please use update instead.");
-        }
-
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
         Warehouse warehouse = warehouseRepository.findById(dto.getWarehouseId())
                 .orElseThrow(() -> new RuntimeException("Warehouse not found with ID: " + dto.getWarehouseId()));
+
+        Optional<Inventory> existingStock = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId());
+        if (existingStock.isPresent()) {
+            Inventory inventory = existingStock.get();
+            inventoryMapper.updateEntity(dto, inventory, product, warehouse);
+            calculateAndSetStockStatus(inventory, product);
+            Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);
+
+            activityLogService.log(
+                    resolveCurrentUserId(),
+                    null,
+                    "UPDATE",
+                    "INVENTORY",
+                    updatedInventory.getId().toString(),
+                    "Stock levels auto-adjusted (auto-save fallback) for Product ID: " + product.getId() + " at Warehouse: " + warehouse.getName(),
+                    null,
+                    "{\"quantityOnHand\":" + updatedInventory.getQuantityOnHand() + ", \"stockStatus\":\"" + updatedInventory.getStockStatus().name() + "\"}",
+                    ActionStatus.SUCCESS,
+                    request.getRemoteAddr()
+            );
+
+            return inventoryMapper.convertTOResponseDTO(updatedInventory);
+        }
 
         Inventory inventory = inventoryMapper.toEntity(dto, product, warehouse);
 

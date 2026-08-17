@@ -17,6 +17,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.example.SCM.service.NotificationService;
+import com.example.SCM.role.Role;
+
 @Service
 @RequiredArgsConstructor
 public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
@@ -28,6 +31,7 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
     private final WarehouseRepository warehouseRepository;
     private final GoodsReceivedNoteMapper goodsReceivedNoteMapper;
     private final GRNLineItemMapper gRNLineItemMapper;
+    private final NotificationService notificationService;
 
 
     @Transactional
@@ -78,6 +82,42 @@ public class GoodsReceivedNoteServiceImp implements GoodsReceivedNoteService {
         grn.setGrnNumber(generatedGrnNumber);
 
         GoodsReceivedNote savedGrn = goodsReceivedNoteRepository.save(grn);
+
+        try {
+            String title = "New Goods Received Note Created: " + savedGrn.getGrnNumber();
+            String message = String.format(
+                    "New Goods Received Note (%s) created for PO #%s. Received Qty: %d, Warehouse: %s.",
+                    savedGrn.getGrnNumber(),
+                    po.getPoNumber() != null ? po.getPoNumber() : po.getId().toString(),
+                    savedGrn.getReceivedQuantity(),
+                    warehouse.getName() != null ? warehouse.getName() : "Warehouse"
+            );
+
+            // 1. Dispatch to role-level targets
+            notificationService.send("MANAGER", "GRN", title, message);
+            if (inspectedBy != null) {
+                notificationService.send(inspectedBy.getId().toString(), "GRN", title, message);
+            }
+
+            // 2. Dispatch to specific user IDs
+            List<Role> targetRoles = List.of(Role.MANAGER);
+            List<User> targetUsers = userRepository.findUsersByRoles(targetRoles);
+            if (targetUsers != null) {
+                for (User user : targetUsers) {
+                    if (user.getId() != null) {
+                        notificationService.send(
+                                user.getId().toString(),
+                                "GRN",
+                                title,
+                                message
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("GRN Notification Error: " + e.getMessage());
+        }
+
         return goodsReceivedNoteMapper.convertTOResponseDTO(savedGrn);
     }
 

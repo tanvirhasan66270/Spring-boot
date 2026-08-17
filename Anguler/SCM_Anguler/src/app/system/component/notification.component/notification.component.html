@@ -47,13 +47,15 @@
                [ngClass]="{
                  'bg-primary-subtle text-primary border border-primary-subtle': n.type === 'SHIPMENT',
                  'bg-danger-subtle text-danger border border-danger-subtle': n.type === 'TRIP_ALERT',
-                 'bg-success-subtle text-success border border-success-subtle': n.type === 'REPORT_APPROVED'
+                 'bg-success-subtle text-success border border-success-subtle': n.type === 'REPORT_APPROVED',
+                 'bg-warning-subtle text-warning border border-warning-subtle': n.type === 'PAYMENT'
                }">
             <i class="bi fs-5" 
                [ngClass]="{
                  'bi-box-seam-fill': n.type === 'SHIPMENT',
                  'bi-exclamation-triangle-fill': n.type === 'TRIP_ALERT',
-                 'bi-check-circle-fill': n.type === 'REPORT_APPROVED'
+                 'bi-check-circle-fill': n.type === 'REPORT_APPROVED',
+                 'bi-cash-coin': n.type === 'PAYMENT'
                }"></i>
           </div>
 

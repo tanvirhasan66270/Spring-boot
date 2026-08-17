@@ -34,4 +34,5 @@ public class GoodsReceivedNoteResponseDTO {
 
     private Long inspectedBy;
     private String inspectedByName;
+
 }

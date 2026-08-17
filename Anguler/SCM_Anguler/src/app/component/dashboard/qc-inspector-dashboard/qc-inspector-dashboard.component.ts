@@ -11,6 +11,8 @@ import { GoodRecivedNoteService } from '../../../service/good-recived-note.servi
 import { AddProductService } from '../../../service/add-product.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { NotificationModel } from '../../../system/NotificationModel';
+import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { QCInspectionRequestModel } from '../../shared/model/qc-inspection';
 
 @Component({
@@ -33,6 +35,8 @@ export class QCInspectorDashboardComponent implements OnInit {
   grns: any[] = [];
   products: any[] = [];
   inspectors: any[] = [];
+  purchaseOrders: any[] = [];
+  purchaseRequisitions: any[] = [];
   selectedFile: File | null = null;
   modalErrorMessage: string | null = null;
   modalSuccessMessage: string | null = null;
@@ -105,7 +109,9 @@ export class QCInspectorDashboardComponent implements OnInit {
     private inspectionService: QcInspectionService,
     private notificationService: NotificationService,
     private grnService: GoodRecivedNoteService,
-    private productService: AddProductService
+    private productService: AddProductService,
+    private purchaseOrderService: PurchaseOrderService,
+    private purchaseRequisitionService: PurchaseRequisitionService,
   ) {}
 
   ngOnInit(): void {
@@ -120,6 +126,8 @@ export class QCInspectorDashboardComponent implements OnInit {
     this.loadDashboardData();
     this.loadNotifications();
     this.loadPendingGRNs();
+    this.loadPurchaseOrders();
+    this.loadPurchaseRequisitions();
   }
 
   // Modal Handler Methods
@@ -178,6 +186,107 @@ export class QCInspectorDashboardComponent implements OnInit {
     this.modalSuccessMessage = null;
   }
 
+  loadPurchaseOrders() {
+    this.purchaseOrderService.findAll().subscribe({
+      next: (data) => {
+        this.purchaseOrders = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.purchaseOrders = [];
+      }
+    });
+  }
+
+  loadPurchaseRequisitions() {
+    this.purchaseRequisitionService.findAll().subscribe({
+      next: (data) => {
+        this.purchaseRequisitions = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.purchaseRequisitions = [];
+      }
+    });
+  }
+
+  getFilteredProducts(): any[] {
+    if (!this.inspection.grnId || +this.inspection.grnId === 0) {
+      return this.products;
+    }
+    const selectedGrn = this.grns.find(g => Number(g.id) === Number(this.inspection.grnId));
+    if (!selectedGrn) {
+      return this.products;
+    }
+
+    const selectedPo = this.purchaseOrders.find(
+      (po) =>
+        Number(po.id) === Number(selectedGrn.poId) ||
+        (selectedGrn.poNumber && po.poNumber === selectedGrn.poNumber)
+    );
+
+    if (!selectedPo) {
+      return this.fallbackGrnFilter(selectedGrn);
+    }
+
+    const selectedPr = this.purchaseRequisitions.find(
+      (pr) => Number(pr.id) === Number(selectedPo.purchaseRequisitionId)
+    );
+
+    if (!selectedPr || !selectedPr.productIds || selectedPr.productIds.length === 0) {
+      return this.fallbackGrnFilter(selectedGrn);
+    }
+
+    const prProductIds = new Set<number>(selectedPr.productIds.map((id: any) => Number(id)));
+    return this.products.filter(p => prProductIds.has(Number(p.id)));
+  }
+
+  fallbackGrnFilter(selectedGrn: any): any[] {
+    const grnProductIds = new Set<number>();
+    if (selectedGrn.productId) {
+      grnProductIds.add(Number(selectedGrn.productId));
+    }
+    if (selectedGrn.lineItems && selectedGrn.lineItems.length > 0) {
+      selectedGrn.lineItems.forEach((item: any) => {
+        if (item.productId) {
+          grnProductIds.add(Number(item.productId));
+        }
+      });
+    }
+    if (grnProductIds.size === 0) {
+      return this.products;
+    }
+    return this.products.filter(p => grnProductIds.has(Number(p.id)));
+  }
+
+  onGrnChange() {
+    const filtered = this.getFilteredProducts();
+    const stillValid = filtered.some(p => Number(p.id) === Number(this.inspection.productId));
+    if (!stillValid) {
+      this.inspection.productId = 0;
+    }
+    this.cdr.markForCheck();
+  }
+
+  addChecklistRow() {
+    if (!this.inspection.checklists) {
+      this.inspection.checklists = [];
+    }
+    this.inspection.checklists.push({
+      checkpointName: '',
+      isPassed: true,
+      remarks: ''
+    });
+    this.cdr.markForCheck();
+  }
+
+  removeChecklistRow(idx: number) {
+    if (this.inspection.checklists) {
+      this.inspection.checklists.splice(idx, 1);
+    }
+    this.cdr.markForCheck();
+  }
+
   submitInspection() {
     this.modalErrorMessage = null;
     this.modalSuccessMessage = null;
@@ -202,7 +311,11 @@ export class QCInspectorDashboardComponent implements OnInit {
       sampleSize: +this.inspection.sampleSize,
       defectsFound: +this.inspection.defectsFound,
       result: (this.inspection.result || 'GOOD').toUpperCase(),
-      checklists: []
+      checklists: (this.inspection.checklists || []).map((c) => ({
+        checkpointName: c.checkpointName || 'General Checkpoint',
+        isPassed: String(c.isPassed) === 'true',
+        remarks: c.remarks || '',
+      }))
     };
 
     this.inspectionService.save(payload, this.selectedFile).subscribe({

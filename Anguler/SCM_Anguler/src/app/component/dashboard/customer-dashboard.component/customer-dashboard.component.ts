@@ -69,6 +69,9 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   statementData: any = null;
   statementPayments: PaymentStatementResponse[] = [];
   statementError: string | null = null;
+  
+  isImageModalOpen = false;
+  selectedPaymentForImage: PaymentStatementResponse | null = null;
 
   // Add Payment Modal States
   isPaymentModalOpen = false;
@@ -216,6 +219,27 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
       queryParamsHandling: 'merge'
     });
     this.cdr.markForCheck();
+  }
+
+  viewImageCard(p: PaymentStatementResponse) {
+    this.selectedPaymentForImage = p;
+    this.isImageModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImageModal() {
+    this.isImageModalOpen = false;
+    this.selectedPaymentForImage = null;
+    this.cdr.markForCheck();
+  }
+
+  getPaymentImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.includes('payment/')) {
+      return `${this.imgUrl}${imagePath}`;
+    }
+    return `${this.imgUrl}payment/${imagePath}`;
   }
 
   formatIssueStatus(status: string | null | undefined): string {

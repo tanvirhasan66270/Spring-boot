@@ -26,7 +26,6 @@ public class PurchaseOrderToken {
     @Column(nullable = false)
     private boolean active = true;
 
-    // expectedDeliveryDate (PO-এর ডেলিভারি ডেট) থেকে সম্পূর্ণ আলাদা
     private LocalDateTime expiryDate;
 
     @Column(updatable = false)

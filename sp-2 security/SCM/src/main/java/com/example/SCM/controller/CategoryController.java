@@ -18,7 +18,7 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PostMapping
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<CategoryResponseDTO> save(@RequestBody CategoryRequestDTO dto) {
@@ -29,7 +29,7 @@ public class CategoryController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PutMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<CategoryResponseDTO> update(
@@ -62,7 +62,7 @@ public class CategoryController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
 //    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {

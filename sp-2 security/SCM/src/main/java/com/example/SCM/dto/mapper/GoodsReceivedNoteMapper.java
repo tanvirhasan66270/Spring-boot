@@ -6,6 +6,8 @@ import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.GRNStatus;
 import org.springframework.stereotype.Component;
 
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -20,6 +22,7 @@ import java.time.format.DateTimeFormatter;
  * from database entities.
  */
 @Component
+@RequiredArgsConstructor
 public class GoodsReceivedNoteMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

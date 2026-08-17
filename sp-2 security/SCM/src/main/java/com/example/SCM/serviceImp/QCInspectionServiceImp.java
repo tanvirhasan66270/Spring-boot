@@ -24,6 +24,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.example.SCM.service.NotificationService;
+import com.example.SCM.role.Role;
+
 @Service
 @RequiredArgsConstructor
 public class QCInspectionServiceImp implements QCInspectionService {
@@ -33,6 +36,7 @@ public class QCInspectionServiceImp implements QCInspectionService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final QCInspectionMapper qcInspectionMapper;
+    private final NotificationService notificationService;
 
     // Activity Log & Request Context Dependencies
     private final ActivityLogService activityLogService;
@@ -82,6 +86,41 @@ public class QCInspectionServiceImp implements QCInspectionService {
         }
 
         QCInspection saved = qcInspectionRepository.saveAndFlush(inspection);
+
+        try {
+            String title = "New QC Inspection Created: #" + saved.getId();
+            String message = String.format(
+                    "New QC Inspection (%s) performed for GRN #%s, Product: %s. Result: %s (Defects: %d/%d).",
+                    saved.getInspectionType(),
+                    grn.getGrnNumber() != null ? grn.getGrnNumber() : grn.getId().toString(),
+                    product.getName() != null ? product.getName() : product.getId().toString(),
+                    saved.getResult() != null ? saved.getResult().toString() : "N/A",
+                    saved.getDefectsFound(),
+                    saved.getSampleSize()
+            );
+
+            // 1. Dispatch to role-level targets
+            notificationService.send("LOGISTICS_OFFICER", "QC_INSPECTION", title, message);
+            notificationService.send("MANAGER", "QC_INSPECTION", title, message);
+
+            // 2. Dispatch to specific user IDs
+            List<Role> targetRoles = List.of(Role.LOGISTICS_OFFICER, Role.MANAGER);
+            List<User> targetUsers = userRepository.findUsersByRoles(targetRoles);
+            if (targetUsers != null) {
+                for (User user : targetUsers) {
+                    if (user.getId() != null) {
+                        notificationService.send(
+                                user.getId().toString(),
+                                "QC_INSPECTION",
+                                title,
+                                message
+                        );
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("QC Inspection Notification Error: " + e.getMessage());
+        }
 
         //  ACTIVITY LOG: CREATE
         activityLogService.log(

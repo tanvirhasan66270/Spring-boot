@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { environment } from '../../../../environment/environment';
 import { FormsModule } from '@angular/forms';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { LogisticsOfficerService } from '../../../service/logistics-officer.service';
@@ -20,6 +21,7 @@ import { QcInspectorService } from '../../../service/qc-inspactor.service';
 import { ManagerService } from '../../../service/manager.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
+import { QcInspectionService } from '../../../service/qc-inspection.service';
 import { NotificationModel } from '../../../system/NotificationModel';
 import { StockMovementRequestModel } from '../../shared/model/stock-movement';
 import { GoodsReceivedNoteRequestModel } from '../../shared/model/goodRecivedNoteModel';
@@ -75,12 +77,18 @@ export class LogisticsDashboardComponent implements OnInit {
   showGRNNavModal = false;
   showDeliveryTripNavModal = false;
   showVehicleNavModal = false;
-
+  showQCInspectionNavModal = false;
+  showDetailsModal = false;
+  showImageModal = false;
+  selectedInspectionForView: any = null;
+  readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + 'images/qc';
+  
   stockList: any[] = [];
   stockMovementList: any[] = [];
   grnList: any[] = [];
   deliveryTripList: any[] = [];
   vehicleList: any[] = [];
+  qcInspectionList: any[] = [];
   productList: any[] = [];
   customerList: any[] = [];
 
@@ -200,7 +208,8 @@ export class LogisticsDashboardComponent implements OnInit {
     private customerService: CustomerService,
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
-    private poService: PurchaseOrderService
+    private poService: PurchaseOrderService,
+    private qcInspectionService: QcInspectionService
   ) {}
 
   ngOnInit(): void {
@@ -798,6 +807,15 @@ export class LogisticsDashboardComponent implements OnInit {
   openStockMovementNavModal(event?: Event): void {
     if (event) event.preventDefault();
     this.showStockMovementNavModal = true;
+    this.movementForm = {
+      movementType: 'INWARD',
+      productId: 0,
+      quantity: 0,
+      sourceWarehouseId: null as any,
+      warehouseId: 0,
+      referenceId: '',
+      remarks: ''
+    };
     this.stockMovementService.findAll().subscribe({
       next: (data: any) => {
         this.stockMovementList = data || [];
@@ -805,10 +823,25 @@ export class LogisticsDashboardComponent implements OnInit {
       },
       error: () => {}
     });
+    this.inventoryService.findAll().subscribe({
+      next: (data: any) => {
+        this.stockList = data || [];
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   closeStockMovementNavModal(): void {
     this.showStockMovementNavModal = false;
+    this.movementForm = {
+      movementType: 'INWARD',
+      productId: 0,
+      quantity: 0,
+      sourceWarehouseId: null as any,
+      warehouseId: 0,
+      referenceId: '',
+      remarks: ''
+    };
   }
 
   openGRNNavModal(event?: Event): void {
@@ -873,6 +906,51 @@ export class LogisticsDashboardComponent implements OnInit {
 
   closeVehicleNavModal(): void {
     this.showVehicleNavModal = false;
+  }
+
+  openQCInspectionNavModal(event?: Event): void {
+    if (event) event.preventDefault();
+    this.showQCInspectionNavModal = true;
+    this.qcInspectionService.findAll().subscribe({
+      next: (data: any) => {
+        this.qcInspectionList = data || [];
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
+  }
+
+  closeQCInspectionNavModal(): void {
+    this.showQCInspectionNavModal = false;
+  }
+
+  openDetailsModal(inspection: any): void {
+    this.selectedInspectionForView = inspection;
+    this.showDetailsModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeDetailsModal(): void {
+    this.showDetailsModal = false;
+    this.selectedInspectionForView = null;
+    this.cdr.markForCheck();
+  }
+
+  openImageModal(inspection: any): void {
+    this.selectedInspectionForView = inspection;
+    this.showImageModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImageModal(): void {
+    this.showImageModal = false;
+    this.selectedInspectionForView = null;
+    this.cdr.markForCheck();
+  }
+
+  getInspectionImageUrl(filename: string | undefined): string {
+    if (!filename) return '';
+    return `${this.imageBaseUrl}/${filename}`;
   }
   
   generateDummyTimeline() {
@@ -941,16 +1019,23 @@ export class LogisticsDashboardComponent implements OnInit {
       alert('Validation Error: Product and Target Warehouse Node must be specified.');
       return;
     }
+
+    if (this.movementForm.sourceWarehouseId && +this.movementForm.warehouseId === +this.movementForm.sourceWarehouseId) {
+      alert('Business Conflict: Source warehouse and Target destination warehouse cannot be identical.');
+      return;
+    }
+
     const payload: StockMovementRequestModel = {
       movementType: this.movementForm.movementType,
       productId: +this.movementForm.productId,
       quantity: +this.movementForm.quantity,
-      sourceWarehouseId: this.movementForm.movementType === 'TRANSFER' ? +this.movementForm.sourceWarehouseId : null,
+      sourceWarehouseId: this.movementForm.movementType === 'TRANSFER' && this.movementForm.sourceWarehouseId ? +this.movementForm.sourceWarehouseId : null,
       warehouseId: +this.movementForm.warehouseId,
-      referenceId: this.movementForm.referenceId,
-      remarks: this.movementForm.remarks,
+      referenceId: this.movementForm.referenceId.trim(),
+      remarks: this.movementForm.remarks?.trim() || '',
       performedBy: this.userId || 0
     };
+
     this.stockMovementService.logMovement(payload).subscribe({
       next: () => {
         alert('Stock Movement transaction logged successfully.');
@@ -959,6 +1044,54 @@ export class LogisticsDashboardComponent implements OnInit {
       },
       error: (err: any) => alert(err.error?.message || 'Failed to log stock movement.')
     });
+  }
+
+  get availableProductsForMovement(): any[] {
+    return this.productList.filter(product => {
+      const stockItem = this.stockList.find(s => s.productId === product.id || (s.product && s.product.id === product.id));
+      const qty = stockItem ? (stockItem.quantityOnHand || stockItem.availableSellable || 0) : 0;
+      return qty >= 1;
+    });
+  }
+
+  onMovementProductChange(): void {
+    if (!this.movementForm.productId || +this.movementForm.productId === 0) {
+      this.movementForm.warehouseId = 0;
+      return;
+    }
+
+    const matchedStock = this.stockList.find(s => 
+      s.productId === +this.movementForm.productId || 
+      (s.product && s.product.id === +this.movementForm.productId)
+    );
+
+    if (matchedStock) {
+      const whId = matchedStock.warehouseId || (matchedStock.warehouse ? matchedStock.warehouse.id : 0);
+      if (whId) {
+        this.movementForm.warehouseId = whId;
+      }
+    }
+    this.cdr.markForCheck();
+  }
+
+  getSelectedProductStock(): string {
+    if (!this.movementForm.productId || +this.movementForm.productId === 0) {
+      return '';
+    }
+    const matchedStock = this.stockList.find(s => 
+      s.productId === +this.movementForm.productId || 
+      (s.product && s.product.id === +this.movementForm.productId)
+    );
+    if (matchedStock) {
+      return `${matchedStock.quantityOnHand || matchedStock.availableSellable || 0} Units`;
+    }
+    return '0 Units';
+  }
+
+  getTargetWarehouseName(): string {
+    if (!this.movementForm.warehouseId) return 'Auto-filled from inventory stock...';
+    const wh = this.warehouses.find(w => w.id === +this.movementForm.warehouseId);
+    return wh ? wh.name : 'Selected Inventory Warehouse';
   }
 
   submitGRNForm(): void {

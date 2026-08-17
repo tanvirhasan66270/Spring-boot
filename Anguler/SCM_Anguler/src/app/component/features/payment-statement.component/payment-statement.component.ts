@@ -8,6 +8,7 @@ import { CustomerOrderService } from '../../../service/customer-order.service';
 import { PaymentStatementResponse, PaymentStatementRequest } from '../../shared/model/PaymentStatementModel';
 import { CustomerOrderResponseModel } from '../../shared/model/customerOrder';
 import { StorageService } from '../../../auth/auth_service/storage.service';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-payment-statement',
@@ -33,6 +34,9 @@ export class PaymentStatementComponent implements OnInit {
   selectedPaymentForStatus: PaymentStatementResponse | null = null;
   newIssueStatus: string = 'PENDING_VERIFICATION';
   availableStatuses: string[] = ['PENDING_VERIFICATION', 'CONFIRMED_BY_OFFICER', 'FAILED_OR_REJECTED'];
+  
+  isImageModalOpen = false;
+  selectedPaymentForImage: PaymentStatementResponse | null = null;
 
   @ViewChild('fileInput') fileInput!: ElementRef;
   selectedFile: File | null = null;
@@ -255,6 +259,27 @@ export class PaymentStatementComponent implements OnInit {
         error: (err) => this.handleError(err)
       });
     }
+  }
+
+  viewImageCard(p: PaymentStatementResponse) {
+    this.selectedPaymentForImage = p;
+    this.isImageModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeImageModal() {
+    this.isImageModalOpen = false;
+    this.selectedPaymentForImage = null;
+    this.cdr.markForCheck();
+  }
+
+  getImageUrl(imagePath: string | undefined): string {
+    if (!imagePath) return '';
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.includes('payment/')) {
+      return `${environment.imgUrl}${imagePath}`;
+    }
+    return `${environment.imgUrl}payment/${imagePath}`;
   }
 
   reset() {

@@ -325,7 +325,7 @@
         <label class="form-label fw-bold small text-uppercase text-secondary">
           <i class="bi bi-box-arrow-in-down me-1 text-teal"></i>Arriving Cargo Node Vector (GRN Link)
         </label>
-        <select class="form-select fs-7" [(ngModel)]="inspection.grnId" name="grnId" required>
+        <select class="form-select fs-7" [(ngModel)]="inspection.grnId" name="grnId" (change)="onGrnChange()" required>
           <option [value]="0">-- Select Inbound GRN Code Reference --</option>
           <option *ngFor="let g of grns" [value]="g.id">
             GRN: {{ g.grnNumber }} (PO: {{ g.poNumber }})
@@ -340,7 +340,7 @@
         </label>
         <select class="form-select fs-7" [(ngModel)]="inspection.productId" name="productId" required>
           <option [value]="0">-- Select Core Target Product --</option>
-          <option *ngFor="let p of products" [value]="p.id">{{ p.name }}</option>
+          <option *ngFor="let p of getFilteredProducts()" [value]="p.id">{{ p.name }}</option>
         </select>
       </div>
 
@@ -415,6 +415,45 @@
         <textarea class="form-control fs-7" rows="2"
           [(ngModel)]="inspection.defectDescription" name="defectDescription"
           placeholder="Provide detailed specifications of flaws discovered during batch audit..."></textarea>
+      </div>
+
+      <!-- Target QC Checkpoint Metrics -->
+      <div class="border p-3 rounded mb-4 bg-white shadow-xs">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="fw-bold small text-teal text-uppercase mb-0"><i class="bi bi-list-task me-1"></i> Target QC Checkpoint Metrics</h6>
+          <button type="button" class="btn btn-sm btn-outline-teal font-sans fs-8 px-2 py-1 fw-bold"
+            (click)="addChecklistRow()">
+            <i class="bi bi-plus-circle me-1"></i>Add Checkpoint
+          </button>
+        </div>
+
+        @for (chk of inspection.checklists; track $index; let idx = $index) {
+        <div class="row g-1 align-items-center mb-2 bg-light p-2 rounded position-relative">
+          <div class="col-md-5">
+            <input type="text" class="form-control fs-8 py-1" [(ngModel)]="chk.checkpointName" name="chkName_{{idx}}"
+              placeholder="Checkpoint Label (e.g. Density Check)" required>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select fs-8 py-1 font-sans fw-semibold" [(ngModel)]="chk.isPassed"
+              name="chkPass_{{idx}}" required>
+              <option [ngValue]="true">✔ PASS</option>
+              <option [ngValue]="false">❌ FAIL</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="text" class="form-control fs-8 py-1" [(ngModel)]="chk.remarks" name="chkRem_{{idx}}"
+              placeholder="Remarks Details">
+          </div>
+          <div class="col-md-1 text-end">
+            <button type="button" class="btn btn-sm text-danger p-0" (click)="removeChecklistRow(idx)">
+              <i class="bi bi-dash-circle-fill"></i>
+            </button>
+          </div>
+        </div>
+        }
+        @if (!inspection.checklists || inspection.checklists.length === 0) {
+        <small class="text-muted font-monospace d-block text-center py-2 border-dashed rounded bg-light fs-8">No specific child checklist checkpoints deployed yet.</small>
+        }
       </div>
 
       <!-- Lab Report Upload -->
