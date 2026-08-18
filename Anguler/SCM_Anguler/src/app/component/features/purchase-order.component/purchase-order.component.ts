@@ -102,8 +102,9 @@ export class PurchaseOrderComponent implements OnInit {
     return this.activeRole === 'ADMIN' || 
            this.activeRole === 'MANAGER' || 
            this.activeRole === 'PROCUREMENT' ||
-           this.activeRole === 'COMMERCIAL_OFFICER' ||
-           this.activeRole === 'LOGISTICS_OFFICER';
+           this.activeRole === 'COMMERCIAL_OFFICER'
+          //   ||
+          //  this.activeRole === 'LOGISTICS_OFFICER';
   }
 
   shouldShowCardSearchBar(): boolean {

@@ -29,7 +29,7 @@ export class PaymentStatementComponent implements OnInit {
   currentEditId: number | null = null;
   errorMessage: string | null = null;
   userRole: string = '';
-
+  activeRole: string = '';
   isStatusModalOpen = false;
   selectedPaymentForStatus: PaymentStatementResponse | null = null;
   newIssueStatus: string = 'PENDING_VERIFICATION';

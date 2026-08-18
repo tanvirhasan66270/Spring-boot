@@ -26,7 +26,7 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
     private final SupplierRepository supplierRepository;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPLIER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> create(
             @RequestPart("shipment") String shipmentJson,
@@ -37,7 +37,7 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
             @PathVariable Long id,
@@ -49,7 +49,7 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.update(id, dto, file));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER',  'PROCUREMENT',  'QC_INSPECTOR')")
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -74,7 +74,7 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT',  'QC_INSPECTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)
@@ -82,7 +82,7 @@ public class ShipmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         shipmentService.delete(id);

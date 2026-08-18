@@ -66,6 +66,8 @@ export class LogisticsDashboardComponent implements OnInit {
   tripsTrend = 0;
   warehouseTrend = 0;
 
+  totalInventoryCount = 0;
+
   // Grid Data
   dispatchSchedule: any[] = [];
   liveTimeline: any[] = [];
@@ -496,15 +498,18 @@ export class LogisticsDashboardComponent implements OnInit {
       error: () => {},
     });
 
-    // 5. Inventory (Only for warehouse capacity)
-    this.inventoryService.findAll().subscribe({
-      next: (data) => {
-        const all = data || [];
-        this.computeWarehouseCapacity(all);
-        this.cdr.markForCheck();
-      },
-      error: () => {},
-    });
+    // 5. Inventory (Only for warehouse capacity & total inventory count)
+this.inventoryService.findAll().subscribe({
+  next: (data) => {
+    const all = data || [];
+    // মোট ইনভেন্টরি কোয়ান্টিটি যোগ করা
+    this.totalInventoryCount = all.reduce((sum: number, inv: any) => sum + (inv.quantityOnHand || inv.availableSellable || 0), 0);
+    
+    this.computeWarehouseCapacity(all);
+    this.cdr.markForCheck();
+  },
+  error: () => {},
+});
 
     // 5.5 Stock Movements (For Today's Inventory Movement Donut)
     this.stockMovementService.findAll().subscribe({
@@ -713,32 +718,33 @@ export class LogisticsDashboardComponent implements OnInit {
   }
 
   private computeWarehouseCapacity(inventories: any[] = []): void {
-    if (this.warehouses.length === 0) return;
+  if (this.warehouses.length === 0) return;
 
-    const usedByWarehouse: Record<number, number> = {};
-    inventories.forEach((inv: any) => {
-      const whId = inv.warehouseId;
+  const usedByWarehouse: Record<number, number> = {};
+  inventories.forEach((inv: any) => {
+    // ইনভেন্টরি থেকে ওয়্যারহাউস আইডি এবং পরিমাণ বের করা
+    const whId = inv.warehouseId || (inv.warehouse ? inv.warehouse.id : 0);
+    if (whId) {
       if (!usedByWarehouse[whId]) usedByWarehouse[whId] = 0;
-      usedByWarehouse[whId] += inv.quantityOnHand || 0;
-    });
+      usedByWarehouse[whId] += inv.quantityOnHand || inv.availableSellable || 0;
+    }
+  });
 
-    let totalUsed = 0;
-    let totalCap = 0;
-    const mockPercents = [72, 41, 95, 63]; 
+  let totalUsed = 0;
+  let totalCap = 0;
+  
+  this.warehouses = this.warehouses.map((w) => {
+    totalCap += Number(w.capacity) || 1000; // ডিফল্ট ক্যাপাসিটি ১০০০ ধরা যেতে পারে যদি না থাকে
+    const used = usedByWarehouse[w.id] || 0;
+    const usedPercent = w.capacity > 0 ? Math.min(100, Math.round((used / w.capacity) * 100)) : 0;
     
-    this.warehouses = this.warehouses.map((w, i) => {
-      totalCap += w.capacity || 0;
-      let used = usedByWarehouse[w.id] || 0;
-      let usedPercent = w.capacity > 0 ? Math.min(100, Math.round((used / w.capacity) * 100)) : 0;
-      
-      totalUsed += used;
-      return { ...w, used, usedPercent };
-    });
+    totalUsed += used;
+    return { ...w, used, usedPercent };
+  });
 
-    this.warehouseCapacityPercent = totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 0;
-    this.cdr.markForCheck();
-  }
-
+  this.warehouseCapacityPercent = totalCap > 0 ? Math.min(100, Math.round((totalUsed / totalCap) * 100)) : 0;
+  this.cdr.markForCheck();
+}
   
 
   

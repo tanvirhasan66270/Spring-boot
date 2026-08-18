@@ -23,11 +23,12 @@ import { DailyReportResponseModel } from '../../shared/model/daley-report';
 import { ActivityLogModel } from '../../shared/model/ActivityLogModel';
 import { GoodsReceivedNoteResponseModel } from '../../shared/model/goodRecivedNoteModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-manager-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, DashboardSettingsComponent],
+  imports: [CommonModule, RouterModule, DashboardSettingsComponent, FormsModule],
   templateUrl: './manager-dashboard.component.html',
   styleUrls: ['./manager-dashboard.component.css'],
 })
@@ -61,6 +62,8 @@ export class ManagerDashboardComponent implements OnInit {
   notifications: NotificationModel[] = [];
   activities: ActivityLogModel[] = [];
 
+
+
   lowStockItems: any[] = [];
   activeShipments: any[] = [];
   dailyReports: DailyReportResponseModel[] = [];
@@ -72,6 +75,9 @@ export class ManagerDashboardComponent implements OnInit {
   monthQuery: string = 'All Months';
   dateQuery: string = '';
   activeTableTab: string = 'APPROVALS';
+
+  purchaseRequisitions: any[] = []; 
+filteredRequisitions: any[] = [];
 
   allWarehouses: any[] = [];
   allSuppliers: any[] = [];
@@ -126,6 +132,22 @@ export class ManagerDashboardComponent implements OnInit {
     this.loadManager();
     this.loadAllData();
   }
+
+
+  filterTable() {
+  const query = this.searchQuery.toLowerCase().trim();
+  
+  if (!query) {
+    this.filteredRequisitions = [...this.purchaseRequisitions];
+    return;
+  }
+
+  this.filteredRequisitions = this.purchaseRequisitions.filter(item => {
+    return (item.prid?.toLowerCase().includes(query)) ||
+           (item.requesterName?.toLowerCase().includes(query)) ||
+           (item.status?.toLowerCase().includes(query));
+  });
+}
 
   getNotificationIcon(notif: any): string {
     const t = (notif.type || '').toUpperCase();

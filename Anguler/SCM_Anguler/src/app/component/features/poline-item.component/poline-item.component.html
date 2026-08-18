@@ -63,7 +63,10 @@
               <th>Shipment Vector</th>
               <th>Tracking Reference</th>
               <th>Item Stage</th>
-              <th class="text-end px-4" width="140">Actions</th>
+              
+              @if (activeRole !== 'PROCUREMENT' && activeRole !== 'COMMERCIAL_OFFICER') {
+  <th class="text-end px-4" width="140">Actions</th>
+}
             </tr>
           </thead>
           <tbody>
@@ -104,16 +107,18 @@
                     {{ i.status }}
                   </span>
                 </td>
-                <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-icon btn-light text-warning" title="Update Node" (click)="edit(i)">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-icon btn-light text-danger" title="Release Stock" (click)="delete(i.id)">
-                      <i class="bi bi-trash3-fill"></i>
-                    </button>
-                  </div>
-                </td>
+                @if (activeRole !== 'PROCUREMENT' && activeRole !== 'COMMERCIAL_OFFICER') {
+                  <td class="text-end px-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      <button class="btn btn-icon btn-light text-warning" title="Update Node" (click)="edit(i)">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-danger" title="Release Stock" (click)="delete(i.id)">
+                        <i class="bi bi-trash3-fill"></i>
+                      </button>
+                    </div>
+                  </td>
+                }
               </tr>
             }
             @empty {

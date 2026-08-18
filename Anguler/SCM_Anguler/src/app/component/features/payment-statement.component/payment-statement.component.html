@@ -59,7 +59,10 @@
               <th>Date</th>
               <th>Verification Status</th>
               <th>Proof of Payment</th>
-              <th class="text-end px-4">Actions</th>
+
+              @if (userRole !== 'MANAGER' && userRole !== 'SALES_OFFICER' ) {
+                <th class="text-end px-4">Actions</th>
+              }
             </tr>
           </thead>
           <tbody>

@@ -1,6 +1,4 @@
-/**
- * 📥 Backend-এর PurchaseRequisitionRequestDTO-এর জন্য ফ্রন্টএন্ড মডেল
- */
+
 export interface purchaseRequisitionRequestModel {
   requestedBy: number;
   productIds: number[];
@@ -12,9 +10,7 @@ export interface purchaseRequisitionRequestModel {
   remarks: string;
 }
 
-/**
- * 📤 Backend-এর PurchaseRequisitionResponseDTO-এর জন্য ফ্রন্টএন্ড মডেল
- */
+
 export interface purchaseRequisitionResponseModel {
   id: number;
   requestedBy: number;
@@ -23,12 +19,11 @@ export interface purchaseRequisitionResponseModel {
   urgencyLevel: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'; // Java UrgencyLevel Enum
   requiredByDate: string; // Jackson কাস্টিং ডেটা (YYYY-MM-DD)
   approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'; // Java PurchaseRequisitionStatus Enum
-  approvedBy: number | null; // ডাটাবেজে নাল থাকতে পারে তাই টাইপ সেফটির জন্য null এলাউড
+  approvedBy: number | null; 
   approvedByName: string | null;
   remarks: string | null;
   createdAt: string; // ISO String format
   
-  // 🎯 ফ্রন্টএন্ড UI গ্রিড/টেবিল রেন্ডারিং এর জন্য ফ্ল্যাটেন্ড অবজেক্ট কালেকশন
   productIds: number[];
   productNames: string[];
   supplierIds: number[];

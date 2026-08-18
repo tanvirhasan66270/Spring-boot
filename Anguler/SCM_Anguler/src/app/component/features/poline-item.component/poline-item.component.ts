@@ -36,6 +36,8 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   currentEditId: number | null = null;
   trackingSearchQuery = '';
 
+  userRole: string = '';
+
   item: POLineItemRequestDTO = {
     poId: 0,
     productId: 0,

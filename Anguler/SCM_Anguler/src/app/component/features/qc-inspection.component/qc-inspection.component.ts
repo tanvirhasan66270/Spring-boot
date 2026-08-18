@@ -36,7 +36,7 @@ export class QcInspectionComponent implements OnInit {
   currentEditId: number | null = null;
   selectedFile: File | null = null;
   currentUserId: number = 0;
-  userRole: string = 'CUSTOMER';
+  userRole: string = '';
  
   showDetailsModal = false;
   showImageModal = false;
