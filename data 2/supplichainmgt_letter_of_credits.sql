@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -53,7 +53,7 @@ CREATE TABLE `letter_of_credits` (
   CONSTRAINT `FKhoo8j70916dkfjeyskagde5vd` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`),
   CONSTRAINT `FKq20c9derecne2dqbjpxwdiq74` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`),
   CONSTRAINT `FKqymcodlnf7g5fakmnbint3pwk` FOREIGN KEY (`issuing_bank_id`) REFERENCES `lc-banks` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -62,6 +62,7 @@ CREATE TABLE `letter_of_credits` (
 
 LOCK TABLES `letter_of_credits` WRITE;
 /*!40000 ALTER TABLE `letter_of_credits` DISABLE KEYS */;
+INSERT INTO `letter_of_credits` VALUES (1,0,50000,'2026-08-17 17:58:53.000000','USD','images/swift_copy_sample.pdf','2027-12-31',1,'2027-11-30','LC-1785315817341','OPENED','2026-08-01','PO-1785315817341','Chattogram','Singapore','FOB','2026-08-17 17:58:53.000000',13,2,1),(2,0,120000,'2026-08-17 17:58:53.000000','USD','images/swift_copy_sample.pdf','2027-12-31',1,'2027-11-30','LC-1786872119070','OPENED','2026-08-01','PO-1786872119070','Chattogram','Singapore','FOB','2026-08-17 17:58:53.000000',15,1,1);
 /*!40000 ALTER TABLE `letter_of_credits` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -74,4 +75,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 19:07:58
+-- Dump completed on 2026-08-19  4:14:51

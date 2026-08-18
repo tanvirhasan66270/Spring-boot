@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -50,7 +50,7 @@ CREATE TABLE `goods_received_notes` (
   CONSTRAINT `FKcxc99qktk1p0ixc7d3eqls40p` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `FKjtftlag5qb1ncrdqum2av3t6b` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `FKor7g7ihbvc9ewv4kxwk9w7ag6` FOREIGN KEY (`received_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,7 +59,7 @@ CREATE TABLE `goods_received_notes` (
 
 LOCK TABLES `goods_received_notes` WRITE;
 /*!40000 ALTER TABLE `goods_received_notes` DISABLE KEYS */;
-INSERT INTO `goods_received_notes` VALUES (1,'2026-07-28 15:12:22.352913','GRN-D16D7310','2026-07-29',15,'2026-07-29',15,'asdcszd','RECEIVED','2026-07-28 15:27:52.138468',68,NULL,1,82,1);
+INSERT INTO `goods_received_notes` VALUES (1,'2026-07-28 15:12:22.352913','GRN-D16D7310','2026-07-29',15,'2026-07-29',15,'asdcszd','RECEIVED','2026-07-28 15:27:52.138468',68,NULL,1,82,1),(2,'2026-08-16 22:35:46.738033','GRN-C739DBDC','2026-08-17',420,'2026-08-16',100,'szdgsdfgb','RECEIVED','2026-08-16 22:36:49.068136',68,NULL,15,66,1);
 /*!40000 ALTER TABLE `goods_received_notes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -72,4 +72,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 19:07:58
+-- Dump completed on 2026-08-19  4:14:52

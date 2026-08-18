@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -44,7 +44,7 @@ CREATE TABLE `vehicles` (
 
 LOCK TABLES `vehicles` WRITE;
 /*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
-INSERT INTO `vehicles` VALUES (1,1500,85,'2026-05-10','Dhaka Metro-GA-11-2026','AVAILABLE','VAN',1),(2,3000,60,'2026-06-01','Dhaka Metro-THA-55-1024','ON_TRIP','TRUCK',2),(3,5000,45,'2026-04-15','Chotto Metro-TA-99-4321','MAINTENANCE','TRUCK',3),(4,1200,90,'2026-06-20','Dhaka Metro-HA-22-9981','OUT_OF_SERVICE','VAN',4),(5,2000,75,'2026-07-01','Dhaka Metro-MOTO-88-7722','AVAILABLE','VAN',5);
+INSERT INTO `vehicles` VALUES (1,1500,85,'2026-05-10','Dhaka Metro-GA-11-2026','AVAILABLE','VAN',1),(2,3000,60,'2026-06-01','Dhaka Metro-THA-55-1024','ON_TRIP','TRUCK',2),(3,5000,45,'2026-04-15','Chotto Metro-TA-99-4321','MAINTENANCE','TRUCK',3),(4,1200,90,'2026-06-20','Dhaka Metro-HA-22-9981','AVAILABLE','VAN',4),(5,2000,75,'2026-07-01','Dhaka Metro-MOTO-88-7722','AVAILABLE','VAN',5);
 /*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 19:07:59
+-- Dump completed on 2026-08-19  4:14:52

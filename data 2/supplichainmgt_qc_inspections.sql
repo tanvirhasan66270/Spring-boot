@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.45, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
 --
 -- Host: localhost    Database: supplichainmgt
 -- ------------------------------------------------------
--- Server version	8.0.45
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -44,7 +44,7 @@ CREATE TABLE `qc_inspections` (
   CONSTRAINT `FK3bi2ccsw4pidh4f89qye72uig` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `FKafi89xlyrdm5pg6osalqtqxgp` FOREIGN KEY (`grn_id`) REFERENCES `goods_received_notes` (`id`),
   CONSTRAINT `FKqlcsx9i5pyvfu3c6bcculr9bx` FOREIGN KEY (`inspected_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,6 +53,7 @@ CREATE TABLE `qc_inspections` (
 
 LOCK TABLES `qc_inspections` WRITE;
 /*!40000 ALTER TABLE `qc_inspections` DISABLE KEYS */;
+INSERT INTO `qc_inspections` VALUES (1,'215341654','2026-08-17 00:48:40.676143','fghnfn',2,'2026-08-17','FUNCTIONAL','QC_FUNCTIONAL_4b6fc452-8c52-400f-bb08-eb7a50dc64e3.png','VERY_GOOD',10,'2026-08-17 00:48:40.676143',2,68,1);
 /*!40000 ALTER TABLE `qc_inspections` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +66,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-16 19:07:57
+-- Dump completed on 2026-08-19  4:14:50
