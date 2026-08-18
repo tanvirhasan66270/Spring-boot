@@ -23,6 +23,7 @@ public class ShipmentMapper {
         dto.setSendByAddress(entity.getSendByAddress());
         dto.setEstimatedDelivery(entity.getEstimatedDelivery().toString());
         dto.setTransportCost(entity.getTransportCost());
+        dto.setShipmentQuantity(entity.getShipmentQuantity());
         dto.setPodFileUrl(entity.getPodFileUrl());
         dto.setCreatedAt(entity.getCreatedAt());
         dto.setUpdatedAt(entity.getUpdatedAt());
@@ -58,6 +59,7 @@ public class ShipmentMapper {
         entity.setSendByAddress(dto.getSendByAddress());
         entity.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         entity.setTransportCost(dto.getTransportCost());
+        entity.setShipmentQuantity(dto.getShipmentQuantity());
         entity.setPodFileUrl(dto.getPodFileUrl());
         entity.setPurchaseOrder(po);
         entity.setSupplier(supplier);
@@ -75,6 +77,7 @@ public class ShipmentMapper {
         if (dto.getSendByAddress() != null) entity.setSendByAddress(dto.getSendByAddress());
         if (dto.getEstimatedDelivery() != null) entity.setEstimatedDelivery(LocalDate.parse(dto.getEstimatedDelivery()));
         if (dto.getTransportCost() != null) entity.setTransportCost(dto.getTransportCost());
+        if (dto.getShipmentQuantity() != null) entity.setShipmentQuantity(dto.getShipmentQuantity());
 
         if (po != null) entity.setPurchaseOrder(po);
         if (supplier != null) entity.setSupplier(supplier);

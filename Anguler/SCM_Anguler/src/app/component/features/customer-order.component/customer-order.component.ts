@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // 🌟 1. Router ইমপোর্ট করা হলো
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -77,7 +78,8 @@ export class CustomerOrderComponent implements OnInit {
     private customerService: CustomerService,
     private productService: AddProductService,
     private storage: StorageService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router // 🌟 2. Router ইনজেক্ট করা হলো
   ) { }
 
   ngOnInit() {
@@ -91,7 +93,6 @@ export class CustomerOrderComponent implements OnInit {
     }
 
     this.loadOrders();
-    // this.loadCustomers();
     this.loadProducts();
 
     setTimeout(() => {
@@ -264,6 +265,25 @@ export class CustomerOrderComponent implements OnInit {
     this.isDrawerOpen = false;
     this.reset();
     this.cdr.markForCheck();
+    
+   
+  }
+  moveButton(){
+ this.router.navigate(['/dashboard/sales']);
+
+  }
+
+  canSeeCloseButton(): boolean {
+    const role = this.userRole.toUpperCase();
+    return role === 'ADMIN' || role === 'SALES_OFFICER';
+  }
+
+  get filteredOrders(): CustomerOrderResponseModel[] {
+    const restrictedRoles = ['MANAGER', 'LOGISTICS_OFFICER'];
+    if (restrictedRoles.includes(this.userRole)) {
+      return this.orders.filter(o => o.status !== 'PENDING');
+    }
+    return this.orders;
   }
 
   loadOrders() {
@@ -274,15 +294,6 @@ export class CustomerOrderComponent implements OnInit {
       }
     });
   }
-
-  // loadCustomers() {
-  //   this.customerService.getAll().subscribe({
-  //     next: (data) => {
-  //       this.customers = data || [];
-  //       this.cdr.markForCheck();
-  //     }
-  //   });
-  // }
 
   loadProducts() {
     this.productService.findAll().subscribe({

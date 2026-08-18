@@ -14,5 +14,6 @@ public class ShipmentRequestDTO {
     private String sendByAddress;
     private String estimatedDelivery;   // "YYYY-MM-DD"
     private Double transportCost;
+    private Double shipmentQuantity;
     private String podFileUrl;          // Image path/URL
 }

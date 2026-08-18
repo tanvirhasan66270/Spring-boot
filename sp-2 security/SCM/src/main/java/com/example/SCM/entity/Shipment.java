@@ -43,6 +43,9 @@ public class Shipment {
     @Column(nullable = false)
     private Double transportCost;
 
+    @Column(nullable = false)
+    private Double shipmentQuantity;
+
     private String podFileUrl;
 
     @JsonIgnore

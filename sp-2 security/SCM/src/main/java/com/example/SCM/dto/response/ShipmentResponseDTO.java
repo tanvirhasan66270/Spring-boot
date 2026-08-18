@@ -29,6 +29,7 @@ public class ShipmentResponseDTO {
     private String sendByAddress;
     private String estimatedDelivery;
     private Double transportCost;
+    private Double shipmentQuantity;
     private String podFileUrl;
 
     private LocalDateTime createdAt;

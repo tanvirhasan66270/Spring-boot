@@ -59,6 +59,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     sendByAddress: '',
     estimatedDelivery: '',
     transportCost: 0,
+    shipmentQuantity: 0,
     podFileUrl: '',
   };
 
@@ -228,6 +229,25 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
     this.cdr.markForCheck();
   }
 
+  getRemainingShipmentQuantity(): number {
+    const poId = Number(this.shipment.poId);
+    if (!poId) return 0;
+    const po = this.purchaseOrders.find((p: any) => p.id === poId);
+    if (!po) return 0;
+    const poQty = po.quantity || 0;
+    const prevShipped = (this.shipments || [])
+      .filter((s: any) => s.poId === poId && s.id !== this.currentEditId)
+      .reduce((sum: number, s: any) => sum + (s.shipmentQuantity || 0), 0);
+    return Math.max(0, poQty - prevShipped);
+  }
+
+  isShipmentQtyInvalid(): boolean {
+    const qty = Number(this.shipment.shipmentQuantity || 0);
+    if (qty <= 0) return false;
+    const remaining = this.getRemainingShipmentQuantity();
+    return qty > remaining;
+  }
+
   save() {
     this.errorMessage = null;
 
@@ -251,6 +271,13 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
 
     if (!this.shipment.poId || this.shipment.poId === 0) {
       this.errorMessage = 'Please select a Purchase Order to link this shipment.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.isShipmentQtyInvalid()) {
+      const maxAllowed = this.getRemainingShipmentQuantity();
+      this.errorMessage = `Shipment quantity cannot exceed remaining PO quantity (Max: ${maxAllowed} Units).`;
       this.cdr.markForCheck();
       return;
     }
@@ -304,6 +331,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       sendByAddress: o.sendByAddress,
       estimatedDelivery: o.estimatedDelivery,
       transportCost: o.transportCost,
+      shipmentQuantity: o.shipmentQuantity,
       podFileUrl: o.podFileUrl || '',
     };
     this.isDrawerOpen = true;
@@ -374,6 +402,7 @@ readonly imageBaseUrl = environment.imgUrl + "shipments/";
       sendByAddress: '',
       estimatedDelivery: '',
       transportCost: 0,
+      shipmentQuantity: 0,
       podFileUrl: '',
     };
     this.selectedFile = null;

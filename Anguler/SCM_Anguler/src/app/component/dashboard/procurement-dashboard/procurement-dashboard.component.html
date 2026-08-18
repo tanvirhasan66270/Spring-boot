@@ -1615,6 +1615,10 @@
                 <div class="step-content">
                   <div class="step-title">PROCESS</div>
                   <div class="step-desc text-muted small">{{ getProcessedUnitsCount() }} Units processed ({{ getPoProgressPercentage() }}%).</div>
+                  <!-- Dynamic Progress Meter -->
+                  <div class="progress mt-1.5" style="height: 4px; width: 140px; background-color: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                    <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="getPoProgressPercentage()" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
                 </div>
               </div>
 
@@ -1625,7 +1629,11 @@
                 </div>
                 <div class="step-content">
                   <div class="step-title">SHIPMENT</div>
-                  <div class="step-desc text-muted small">{{ getShippedUnitsCount() }} Units shipped ({{ getPoProgressPercentage() }}%).</div>
+                  <div class="step-desc text-muted small">{{ getShippedUnitsCount() }} Units shipped ({{ getShippedProgressPercentage() }}%).</div>
+                  <!-- Dynamic Progress Meter -->
+                  <div class="progress mt-1.5" style="height: 4px; width: 140px; background-color: #f1f5f9; border-radius: 4px; overflow: hidden;">
+                    <div class="progress-bar bg-primary" role="progressbar" [style.width.%]="getShippedProgressPercentage()" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
                 </div>
               </div>
 

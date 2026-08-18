@@ -13,6 +13,7 @@ import com.example.SCM.repository.InvoiceRepository;
 import com.example.SCM.repository.CustomerOrderRepository;
 import com.example.SCM.service.ActivityLogService;
 import com.example.SCM.service.InvoiceService;
+import com.example.SCM.service.NotificationService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -37,6 +38,7 @@ public class InvoiceServiceImp implements InvoiceService {
     // Activity Log & Request Context Dependencies
     private final ActivityLogService activityLogService;
     private final HttpServletRequest request;
+    private final NotificationService notificationService;
 
     // Dynamically resolves current active user or system actor
 
@@ -72,6 +74,24 @@ public class InvoiceServiceImp implements InvoiceService {
         }
 
         Invoice savedInvoice = repository.save(invoice);
+
+        // Send notification to the customer
+        try {
+            if (order.getCustomer() != null && order.getCustomer().getId() != null) {
+                String recipientId = order.getCustomer().getId().toString();
+                String title = "New Invoice Generated: " + savedInvoice.getInvoiceNumber();
+                String message = String.format(
+                        "An invoice (#%s) has been generated for your order (#%d). Total Amount: %s %.2f.",
+                        savedInvoice.getInvoiceNumber(),
+                        order.getId(),
+                        savedInvoice.getCurrency(),
+                        savedInvoice.getTotalAmount()
+                );
+                notificationService.send(recipientId, "INVOICE", title, message);
+            }
+        } catch (Exception e) {
+            System.err.println("Customer Invoice Notification Error: " + e.getMessage());
+        }
 
         // স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
         if (savedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !savedInvoice.getCustomerEmail().contains("no-email")) {

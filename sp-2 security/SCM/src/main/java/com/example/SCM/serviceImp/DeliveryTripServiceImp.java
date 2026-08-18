@@ -8,6 +8,7 @@ import com.example.SCM.entity.*;
 import com.example.SCM.enumClass.DeliveryTripStatus;
 import com.example.SCM.repository.*;
 import com.example.SCM.service.DeliveryTripService;
+import com.example.SCM.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
     private final VehicleRepository vehicleRepository;
     private final DeliveryTripMapper tripMapper;
     private final MailService mailService;
+    private final NotificationService notificationService;
 
     @Value("${image.upload.dir}")
     private String uploadDir;
@@ -48,6 +50,39 @@ public class DeliveryTripServiceImp implements DeliveryTripService {
         DeliveryTrip savedTrip = tripRepository.save(trip);
 
         sendTripAssignmentEmail(driver, savedTrip);
+
+        // Send notification to the driver
+        try {
+            if (driver.getUser() != null && driver.getUser().getId() != null) {
+                String recipientId = driver.getUser().getId().toString();
+                String title = "New Delivery Trip Assigned";
+                String message = String.format(
+                        "You have been assigned to a new delivery trip (#%d). Destination: %s.",
+                        savedTrip.getId(),
+                        savedTrip.getCustomerAddress()
+                );
+                notificationService.send(recipientId, "TRIP_ALERT", title, message);
+            }
+        } catch (Exception e) {
+            System.err.println("Driver Notification Error: " + e.getMessage());
+        }
+
+        // Send notification to the customer
+        try {
+            if (customer.getUser() != null && customer.getUser().getId() != null) {
+                String recipientId = customer.getUser().getId().toString();
+                String title = "Delivery Trip Initiated";
+                String message = String.format(
+                        "A delivery trip (#%d) has been initiated for your shipment to %s.",
+                        savedTrip.getId(),
+                        savedTrip.getCustomerAddress()
+                );
+                notificationService.send(recipientId, "TRIP_ALERT", title, message);
+            }
+        } catch (Exception e) {
+            System.err.println("Customer Delivery Trip Notification Error: " + e.getMessage());
+        }
+
         return tripMapper.convertTOResponseDTO(savedTrip);
     }
 

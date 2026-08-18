@@ -53,6 +53,7 @@
           <thead class="table-light text-uppercase fs-8 tracking-wider">
             <tr>
               <th class="ps-4">Transaction ID</th>
+              <th>Order Number</th>
               <th>Paid Amount</th>
               <th>Payment Method</th>
               <th>Date</th>
@@ -66,6 +67,9 @@
             <tr>
               <td class="ps-4">
                 <span class="badge bg-dark font-monospace fs-8">{{ p.transactionId }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary-subtle text-secondary border font-monospace fs-8 px-2 py-1">{{ p.orderNumber || '—' }}</span>
               </td>
               <td><strong class="text-success font-monospace fs-6">৳{{ p.paidAmount | number:'1.2-2' }}</strong></td>
               <td><span class="badge bg-light text-dark border px-2 py-1 text-uppercase fw-semibold">{{ p.paymentMethod }}</span></td>
@@ -97,7 +101,7 @@
                     <i class="bi bi-shield-check"></i>
                   </button>
                   }
-                  @if (userRole !== 'CUSTOMER') {
+                  @if (userRole === 'ADMIN') {
                   <button class="btn btn-icon btn-light text-warning border-0" title="Edit Payment" (click)="edit(p)">
                     <i class="bi bi-pencil-square"></i>
                   </button>

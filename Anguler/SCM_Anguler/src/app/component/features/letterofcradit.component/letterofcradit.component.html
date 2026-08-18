@@ -5,9 +5,11 @@
       <h4 class="text-dark fw-bold mb-1">Commercial Letter of Credit (LC) Hub</h4>
       <p class="text-muted mb-0 small">Audit trade finance instruments, control swift banking links, and issue custom legal patch amendments.</p>
     </div>
-    <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm fs-7" (click)="openDrawer()">
-      <i class="bi bi-bank2 me-2"></i>Initiate Letter of Credit
-    </button>
+    @if (canModify()) {
+      <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm fs-7" (click)="openDrawer()">
+        <i class="bi bi-bank2 me-2"></i>Initiate Letter of Credit
+      </button>
+    }
   </div>
 
   @if (errorMessage) {
@@ -29,7 +31,9 @@
               <th>Total Financial Value</th>
               <th class="text-center">Amend Count</th>
               <th>Instrument Stage</th>
-              <th class="text-end px-4" width="160">Actions</th>
+              @if (canModify()) {
+                <th class="text-end px-4" width="160">Actions</th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -66,19 +70,21 @@
                     {{ l.lcStatus }}
                   </span>
                 </td>
-                <td class="text-end px-4">
-                  <div class="d-flex justify-content-end gap-2">
-                    <button class="btn btn-icon btn-light text-success" title="Apply Commercial Amendment" (click)="openAmendWindow(l)">
-                      <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-icon btn-light text-warning" title="Metadata Edit" (click)="edit(l)" [disabled]="l.lcStatus === 'EXPIRED'">
-                      <i class="bi bi-sliders"></i>
-                    </button>
-                    <button class="btn btn-icon btn-light text-danger" title="Purge Mapping" (click)="delete(l.id)">
-                      <i class="bi bi-trash3-fill"></i>
-                    </button>
-                  </div>
-                </td>
+                @if (canModify()) {
+                  <td class="text-end px-4">
+                    <div class="d-flex justify-content-end gap-2">
+                      <button class="btn btn-icon btn-light text-success" title="Apply Commercial Amendment" (click)="openAmendWindow(l)">
+                        <i class="bi bi-pencil-square"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-warning" title="Metadata Edit" (click)="edit(l)" [disabled]="l.lcStatus === 'EXPIRED'">
+                        <i class="bi bi-sliders"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-danger" title="Purge Mapping" (click)="delete(l.id)">
+                        <i class="bi bi-trash3-fill"></i>
+                      </button>
+                    </div>
+                  </td>
+                }
               </tr>
             }
             @empty {

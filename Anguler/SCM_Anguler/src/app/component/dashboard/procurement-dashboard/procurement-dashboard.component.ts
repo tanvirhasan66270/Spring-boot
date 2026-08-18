@@ -1137,6 +1137,13 @@ export class ProcurementDashboardComponent implements OnInit {
     return this.getTrackedPoAllocatedVolume();
   }
 
+  getShippedProgressPercentage(): number {
+    if (!this.trackedPo || !this.trackedPo.quantity) return 0;
+    if (!this.getTrackedPoShipment()) return 0;
+    const pct = (this.getShippedUnitsCount() / this.trackedPo.quantity) * 100;
+    return Math.min(Math.round(pct), 100);
+  }
+
   logout(): void {
     this.storage.clearSession();
     this.router.navigate(['']);

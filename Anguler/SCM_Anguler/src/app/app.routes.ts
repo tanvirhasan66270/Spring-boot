@@ -37,6 +37,7 @@ import { DriverDashboardComponent } from './component/dashboard/driver-dashboard
 import { SupplierDashboardComponent } from './component/dashboard/supplier-dashboard/supplier-dashboard.component';
 import { AdminDashboardComponent } from './component/dashboard/admin-dashboard/admin-dashboard.component';
 import { PurchaseRequisitionComponent } from './component/features/purchase-requisition.component/purchase-requisition.component';
+import { ProductRequirementComponent } from './component/features/product-requirement.component/product-requirement.component';
 import { QuatationComponent } from './component/features/quatation.component/quatation.component';
 import { PurchaseOrderComponent } from './component/features/purchase-order.component/purchase-order.component';
 import { POLineItemComponent } from './component/features/poline-item.component/poline-item.component';
@@ -198,6 +199,7 @@ export const routes: Routes = [
       { path: 'warehouse', component: WarehouseComponent },
       { path: 'order-dashboard', component: CustomerDashboardComponent },
       { path: 'purchase-requisition', component: PurchaseRequisitionComponent },
+      { path: 'product-requirement', component: ProductRequirementComponent },
       { path: 'quotation', component: QuatationComponent },
       { path: 'purchase-order', component: PurchaseOrderComponent },
       { path: 'poline-item', component: POLineItemComponent },

@@ -239,6 +239,10 @@
                   <td class="text-primary fw-bold">${{ selectedShipmentForPdf?.transportCost | number:'1.2-2' }}</td>
                 </tr>
                 <tr>
+                  <td class="fw-bold bg-light">Shipment Quantity</td>
+                  <td class="font-monospace fw-bold text-dark">{{ selectedShipmentForPdf?.shipmentQuantity || 0 }} Units</td>
+                </tr>
+                <tr>
                   <td class="fw-bold bg-light">Estimated Delivery Date</td>
                   <td>{{ selectedShipmentForPdf?.estimatedDelivery | date:'mediumDate' }}</td>
                 </tr>
@@ -349,12 +353,21 @@
         </div>
 
         <div class="row g-2 mb-3">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <label class="form-label fw-bold small text-uppercase text-secondary">Freight Sourcing Origin</label>
             <input type="text" class="form-control fs-7" [(ngModel)]="shipment.origin" name="origin"
               placeholder="e.g. Chittagong Port Yard" required>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
+            <label class="form-label fw-bold small text-uppercase text-secondary">Shipment Quantity</label>
+            <input type="number" class="form-control fs-7 font-monospace shadow-none"
+              [class.is-invalid]="isShipmentQtyInvalid()"
+              [(ngModel)]="shipment.shipmentQuantity" name="shipmentQuantity" min="0" placeholder="e.g. 150" required />
+            <div class="invalid-feedback fw-semibold small mt-1" style="font-size: 0.75rem;" *ngIf="isShipmentQtyInvalid()">
+              Max: {{ getRemainingShipmentQuantity() }} Units allowed.
+            </div>
+          </div>
+          <div class="col-md-4">
             <label class="form-label fw-bold small text-uppercase text-secondary">Est Cargo Cost ($)</label>
             <input type="number" class="form-control fs-7 font-monospace fw-bold shadow-none"
               [(ngModel)]="shipment.transportCost" name="transportCost" min="0" required />

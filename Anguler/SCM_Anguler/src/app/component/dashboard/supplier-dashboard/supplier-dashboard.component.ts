@@ -22,6 +22,9 @@ import { PoLineItemService } from '../../../service/po-line-item.service';
 import { QuatationComponent } from '../../features/quatation.component/quatation.component';
 import { ShipmentComponent } from '../../features/shipment.component/shipment.component';
 import { POLineItemComponent } from '../../features/poline-item.component/poline-item.component';
+import { LetterOfCreditService } from '../../../service/letterofcradit.service';
+import { LetterOfCreditResponseModel } from '../../shared/model/letterOfCraditModel';
+import { environment } from '../../../../environment/environment';
 
 @Component({
   selector: 'app-supplier-dashboard',
@@ -97,13 +100,19 @@ export class SupplierDashboardComponent implements OnInit {
     origin: '',
     sendByAddress: '',
     estimatedDelivery: '',
-    transportCost: 0
+    transportCost: 0,
+    shipmentQuantity: 0
   };
 
   // Calculated Metrics
   outstandingPayments = 0;
   supplyAccuracy = 0;
   pendingDeliveries = 0;
+  isFindLcModalOpen = false;
+  searchPoNumber = '';
+  foundLc: LetterOfCreditResponseModel | null = null;
+  lcSearchError: string | null = null;
+  readonly imageBaseUrl = environment.imgUrl;
 
   constructor(
     private storage: StorageService,
@@ -116,7 +125,8 @@ export class SupplierDashboardComponent implements OnInit {
     private invoiceService: InvoiceService,
     private prService: PurchaseRequisitionService,
     private shipmentService: ShipmentService,
-    private poLineItemService: PoLineItemService
+    private poLineItemService: PoLineItemService,
+    private lcService: LetterOfCreditService
   ) {}
 
   // =========================================================================
@@ -532,7 +542,8 @@ export class SupplierDashboardComponent implements OnInit {
       origin: '',
       sendByAddress: '',
       estimatedDelivery: '',
-      transportCost: 0
+      transportCost: 0,
+      shipmentQuantity: 0
     };
     this.cdr.markForCheck();
   }
@@ -569,6 +580,23 @@ export class SupplierDashboardComponent implements OnInit {
     }
   }
 
+  getRemainingShipmentQuantity(po: any): number {
+    if (!po) return 0;
+    const poQty = po.quantity || 0;
+    const prevShipped = (this.shipments || [])
+      .filter((s: any) => s.poId === po.id)
+      .reduce((sum: number, s: any) => sum + (s.shipmentQuantity || 0), 0);
+    return Math.max(0, poQty - prevShipped);
+  }
+
+  isShipmentQtyInvalid(): boolean {
+    if (!this.selectedShipmentUpdatePo) return false;
+    const qty = Number(this.shipmentUpdateForm.shipmentQuantity || 0);
+    if (qty <= 0) return false;
+    const remaining = this.getRemainingShipmentQuantity(this.selectedShipmentUpdatePo);
+    return qty > remaining;
+  }
+
   submitShipmentUpdate(): void {
     this.shipmentUpdateError = null;
     const poId = this.selectedShipmentUpdatePo ? this.selectedShipmentUpdatePo.id : 0;
@@ -576,6 +604,13 @@ export class SupplierDashboardComponent implements OnInit {
 
     if (!poId) {
       this.shipmentUpdateError = 'Please select a valid Purchase Order first.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (this.isShipmentQtyInvalid()) {
+      const maxAllowed = this.getRemainingShipmentQuantity(this.selectedShipmentUpdatePo);
+      this.shipmentUpdateError = `Shipment quantity cannot exceed remaining PO quantity (Max: ${maxAllowed} Units).`;
       this.cdr.markForCheck();
       return;
     }
@@ -601,6 +636,7 @@ export class SupplierDashboardComponent implements OnInit {
       sendByAddress: this.shipmentUpdateForm.sendByAddress || 'Central Terminal',
       estimatedDelivery: this.shipmentUpdateForm.estimatedDelivery,
       transportCost: Number(this.shipmentUpdateForm.transportCost || 0),
+      shipmentQuantity: Number(this.shipmentUpdateForm.shipmentQuantity || 0),
       assignedByEmail: this.user?.email || 'supplier@scm.com',
       podFileUrl: ''
     };
@@ -758,5 +794,71 @@ export class SupplierDashboardComponent implements OnInit {
     localStorage.removeItem('hasReceivedPO');
     this.storage.clearSession(); // Clear all saved user data
     this.router.navigate(['']); // Send back to login page
+  }
+
+  openFindLcModal(): void {
+    this.isFindLcModalOpen = true;
+    this.searchPoNumber = '';
+    this.foundLc = null;
+    this.lcSearchError = null;
+    this.cdr.markForCheck();
+  }
+
+  closeFindLcModal(): void {
+    this.isFindLcModalOpen = false;
+    this.searchPoNumber = '';
+    this.foundLc = null;
+    this.lcSearchError = null;
+    this.cdr.markForCheck();
+  }
+
+  searchLcByPo(): void {
+    this.lcSearchError = null;
+    this.foundLc = null;
+
+    const term = (this.searchPoNumber || '').trim().toLowerCase();
+    if (!term) {
+      this.lcSearchError = 'Please enter a Purchase Order number.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!this.supplier) {
+      this.lcSearchError = 'Supplier profile not resolved yet.';
+      this.cdr.markForCheck();
+      return;
+    }
+
+    this.lcService.findAll().subscribe({
+      next: (allLcs) => {
+        const matches = (allLcs || []).filter(lc => {
+          if (lc.supplierId !== this.supplier!.id) return false;
+          const poNo = String(lc.poNumber || '').toLowerCase();
+          const poId = String(lc.purchaseOrderId || '');
+          return poNo === term || poNo.includes(term) || poId === term;
+        });
+
+        if (matches.length > 0) {
+          this.foundLc = matches[0];
+        } else {
+          this.lcSearchError = `No LC found for Purchase Order: "${this.searchPoNumber}".`;
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        console.error('Failed to search LCs:', err);
+        this.lcSearchError = 'Failed to retrieve LC database registry.';
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  viewDocument(filePath?: string | null) {
+    if (!filePath) {
+      alert('No document attached.');
+      return;
+    }
+    const fullUrl = filePath.startsWith('http') ? filePath : this.imageBaseUrl + filePath;
+    window.open(fullUrl, '_blank');
   }
 }

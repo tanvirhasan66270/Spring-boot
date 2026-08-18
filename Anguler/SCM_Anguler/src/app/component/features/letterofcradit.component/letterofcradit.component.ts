@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LetterOfCreditRequestModel, LetterOfCreditResponseModel } from '../../shared/model/letterOfCraditModel';
@@ -6,6 +6,8 @@ import { LetterOfCreditService } from '../../../service/letterofcradit.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { LcbankService } from '../../../service/lcbank.service'; // 🎯 রিয়েল ব্যাংক সার্ভিস সিঙ্ক
+import { StorageService } from '../../../auth/auth_service/storage.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-letter-of-credit',
@@ -14,7 +16,7 @@ import { LcbankService } from '../../../service/lcbank.service'; // 🎯 রি�
   templateUrl: './letterofcradit.component.html',
   styleUrl: './letterofcradit.component.css'
 })
-export class LetterOfCreditComponent implements OnInit {
+export class LetterOfCreditComponent implements OnInit, OnDestroy {
 
   lcs: LetterOfCreditResponseModel[] = [];
   purchaseOrders: any[] = [];
@@ -27,6 +29,8 @@ export class LetterOfCreditComponent implements OnInit {
   isAmendMode = false;
   currentEditId: number | null = null;
   selectedFile: File | null = null;
+  activeRole: string = 'CUSTOMER';
+  private roleSubscription!: Subscription;
 
   lc: LetterOfCreditRequestModel = {
     purchaseOrderId: 0,
@@ -48,10 +52,18 @@ export class LetterOfCreditComponent implements OnInit {
     private poService: PurchaseOrderService,
     private supplierService: SupplierService,
     private bankService: LcbankService, // 🎯 ইনজেক্ট করা হলো
+    private storage: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
+    this.roleSubscription = this.storage.role$.subscribe((role: string) => {
+      if (role) {
+        this.activeRole = role.toUpperCase();
+      } else {
+        this.activeRole = this.storage.getActiveRole()?.toUpperCase();
+      }
+    });
     this.loadLCs();
     this.loadPurchaseOrders();
     this.loadSuppliers();
@@ -205,5 +217,15 @@ export class LetterOfCreditComponent implements OnInit {
     this.isAmendMode = false;
     this.currentEditId = null;
     this.errorMessage = null;
+  }
+
+  ngOnDestroy(): void {
+    if (this.roleSubscription) {
+      this.roleSubscription.unsubscribe();
+    }
+  }
+
+  canModify(): boolean {
+    return ['ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER'].includes(this.activeRole);
   }
 }

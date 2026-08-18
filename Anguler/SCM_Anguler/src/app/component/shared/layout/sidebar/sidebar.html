@@ -87,12 +87,13 @@
     </div>
 
     <!-- Procurement Section -->
-    <div class="nav-section" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'SUPPLIER'])">
+    <div class="nav-section" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'SUPPLIER', 'LOGISTICS_OFFICER'])">
       <div class="nav-section-label">Procurement</div>
       <a routerLink="/purchase-requisition" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'SUPPLIER'])">
         <i class="bi bi-file-earmark-text"></i>
         <span>Purchase Requisition</span>
       </a>
+     
       <a routerLink="/purchase-order" routerLinkActive="active" class="nav-item">
         <i class="bi bi-cart3"></i>
         <span>Purchase Order</span>
@@ -102,6 +103,11 @@
         <span>Quotations</span>
       </a>
     </div>
+
+     <a routerLink="/product-requirement" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['PROCUREMENT', 'MANAGER', 'LOGISTICS_OFFICER'])">
+        <i class="bi bi-box-seam-fill"></i>
+        <span>Product Requirements</span>
+      </a>
 
     <!-- Products & Orders -->
     <div class="nav-section" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'CUSTOMER', 'COMMERCIAL_OFFICER'])">
