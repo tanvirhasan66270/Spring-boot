@@ -367,17 +367,12 @@
 
   <!-- Drawer Form -->
   <div class="custom-drawer shadow" [class.open]="isDrawerOpen">
-    <!-- ড্রয়ারের হেডার অংশ -->
     <div
       class="drawer-header d-flex justify-content-between align-items-center px-4 py-3 border-bottom bg-dark text-white">
       <h5 class="fw-bold mb-0">
-        {{ isEdit ? 'Modify Order Instance' : 'Register New Customer' }}
+        {{ isEdit ? 'Modify Order Instance' : 'Dispatch New Purchase Order' }}
       </h5>
-
-      <!-- ক্রস বাটন -->
-      @if (canSeeCloseButton()) {
-      <button type="button" class="btn-close btn-close-white" (click)="moveButton()"></button>
-      }
+      <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
     </div>
 
     <div class="drawer-body px-4 py-3" style="overflow-y: auto; height: calc(100vh - 110px);">
@@ -498,27 +493,21 @@
               account:</div>
             <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
             <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
-            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i
-                class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days,
-              otherwise the order will be cancelled.</div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
           </div>
 
           <div class="form-group">
             <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index (Customer Bank
               account)</label>
             <input type="text" class="form-control form-control-sm font-monospace fs-7"
-              [(ngModel)]="order.customerAccountNumber" placeholder="e.g. 10214300982341"
-              name="customerAccountNumberBank">
+              [(ngModel)]="order.customerAccountNumber" placeholder="e.g. 10214300982341" name="customerAccountNumberBank">
           </div>
-
+          
           <div class="form-group mt-3 pt-3 border-top border-primary-subtle">
-            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Add
-              Image </label>
-            <input type="file" class="form-control form-control-sm fs-7" accept="image/*"
-              (change)="onImageSelected($event)">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Add Image </label>
+            <input type="file" class="form-control form-control-sm fs-7" accept="image/*" (change)="onImageSelected($event)">
             <div *ngIf="imagePreview" class="mt-2 text-center">
-              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm"
-                style="max-height: 150px;">
+              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm" style="max-height: 150px;">
             </div>
           </div>
         </div>
@@ -534,9 +523,7 @@
               number:</div>
             <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span
                 class="text-danger fw-bold">01712-345678</span> (Send Money / Cash In)</div>
-            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i
-                class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days,
-              otherwise the order will be cancelled.</div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
           </div>
 
           <div class="form-group mb-2">
@@ -545,15 +532,12 @@
             <input type="text" class="form-control form-control-sm font-monospace fs-7"
               [(ngModel)]="order.customerAccountNumber" name="customerAccountNumberMfs" placeholder="01XXXXXXXXX">
           </div>
-
+          
           <div class="form-group mt-3 pt-3 border-top border-danger-subtle">
-            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof /
-              Screenshot (Optional)</label>
-            <input type="file" class="form-control form-control-sm fs-7" accept="image/*"
-              (change)="onImageSelected($event)">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Screenshot (Optional)</label>
+            <input type="file" class="form-control form-control-sm fs-7" accept="image/*" (change)="onImageSelected($event)">
             <div *ngIf="imagePreview" class="mt-2 text-center">
-              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm"
-                style="max-height: 150px;">
+              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm" style="max-height: 150px;">
             </div>
           </div>
         </div>
@@ -641,7 +625,7 @@
               </button>
             </li>
             }
-            @empty {
+            @if (order.items.length === 0) {
             <li class="list-group-item text-center text-muted py-3 small font-monospace fs-8 border-dashed">
               No product components attached to this envelope matrix yet.
             </li>

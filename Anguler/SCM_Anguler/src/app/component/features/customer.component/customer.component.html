@@ -97,7 +97,10 @@
             <small class="opacity-75">{{ isEdit ? 'Update an existing customer in the system' : 'Add a new customer to the system' }}</small>
           </div>
         </div>
-        <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+
+        @if (canSeeCloseButton()) {
+          <button type="button" class="btn-close btn-close-white" (click)="closeDrawer()"></button>
+        }
       </div>
 
       <form #customerForm="ngForm" (ngSubmit)="customerForm.valid && save()" class="d-flex flex-column" style="flex: 1; min-height: 0;">

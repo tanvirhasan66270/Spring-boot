@@ -10,6 +10,7 @@ import { environment } from '../../../../environment/environment';
 import { CustomerResponseModel, CustomerRequestModel } from '../../shared/model/customerModel';
 import { LoginResponse } from '../../../auth/Model/authModel';
 import { ActivatedRoute, Router } from '@angular/router';
+import { StorageService } from '../../../auth/auth_service/storage.service'; 
 
 @Component({
   selector: 'app-customer',
@@ -19,6 +20,7 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrl: './customer.component.css',
 })
 export class CustomerComponent implements OnInit {
+ 
   customers: CustomerResponseModel[] = [];
 
   countries: any[] = [];
@@ -35,6 +37,7 @@ export class CustomerComponent implements OnInit {
   streetAddress: string = '';
   confirmPassword = '';
   errorMessage: string | null = null;
+  userRole: string = ''; // 🌟 ইউজার রোল রাখার জন্য ভ্যারিয়েবল
 
   customer: CustomerRequestModel = {
     name: '',
@@ -65,12 +68,23 @@ export class CustomerComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
+    private storage: StorageService, // 🌟 স্টোরেজ সার্ভিস ইনজেক্ট করুন
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit() {
+    // 🌟 ইউজারের রোল রিড করা হচ্ছে
+    try {
+      const user = this.storage.getUser();
+      if (user) {
+        this.userRole = (this.storage.getActiveRole() || user.role || '').toUpperCase();
+      }
+    } catch (e) {
+      console.warn('Could not retrieve user role', e);
+    }
+
     this.loadCustomers();
     this.loadCountries();
 
@@ -82,7 +96,6 @@ export class CustomerComponent implements OnInit {
       if (params['action'] === 'add') {
         this.openDrawer();
         
-        // Remove the query param so refreshing doesn't keep opening the modal
         this.router.navigate([], {
           relativeTo: this.route,
           queryParams: { action: null },
@@ -114,6 +127,13 @@ export class CustomerComponent implements OnInit {
     this.isDrawerOpen = false;
     this.reset();
     this.cdr.markForCheck();
+    
+    this.router.navigate(['/dashboard/sales']);
+  }
+
+  canSeeCloseButton(): boolean {
+    const role = this.userRole.toUpperCase();
+    return role === 'ADMIN' || role === 'SALES_OFFICER';
   }
 
   setStep(step: number) {
@@ -167,7 +187,6 @@ export class CustomerComponent implements OnInit {
     });
   }
 
-  // CASCADING LOCATION LOGICS
   onCountryChange() {
     this.divisions = [];
     this.districts = [];
@@ -235,7 +254,6 @@ export class CustomerComponent implements OnInit {
     });
   }
 
-  // AUTO ADDRESS COMPILER
   generateFullAddress() {
     const countryName = this.countries.find((x) => x.id == this.selectedCountryId)?.name || '';
     const divisionName = this.divisions.find((x) => x.id == this.selectedDivisionId)?.name || '';
@@ -253,7 +271,6 @@ export class CustomerComponent implements OnInit {
       .join(', ');
   }
 
-  // FILE CAPTURE HANDLER
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     if (!file) return;
@@ -309,7 +326,6 @@ export class CustomerComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  // CRUD CORE METHODS
   save() {
     this.errorMessage = null;
 

@@ -4,8 +4,12 @@ import com.example.SCM.dto.mapper.ProductRequirementMapper;
 import com.example.SCM.dto.request.ProductRequirementRequestDTO;
 import com.example.SCM.dto.response.ProductRequirementResponseDTO;
 import com.example.SCM.entity.ProductRequirement;
+import com.example.SCM.entity.User;
 import com.example.SCM.enumClass.ProductRequestStatus;
 import com.example.SCM.repository.ProductRequirementRepository;
+import com.example.SCM.repository.UserRepository;
+import com.example.SCM.role.Role;
+import com.example.SCM.service.NotificationService;
 import com.example.SCM.service.ProductRequirementService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +29,32 @@ public class ProductRequirementServiceImp implements ProductRequirementService {
     private final ProductRequirementRepository repository;
     private final ProductRequirementMapper mapper;
 
-    // কিন্তু APPROVED record থাকলে নতুন create করা যাবে — APPROVED record-টি UPDATE করতে পারবে না
+    private final NotificationService notificationService;
+    private final UserRepository userRepository;
+
     @Override
     @Transactional
     public ProductRequirementResponseDTO save(ProductRequirementRequestDTO dto) {
         if (dto == null) throw new IllegalArgumentException("ProductRequirement data cannot be null");
         ProductRequirement entity = mapper.toEntity(dto);
         ProductRequirement saved = repository.save(entity);
+
+        try {
+            List<User> targetUsers = userRepository.findByRole(Role.PROCUREMENT);
+
+            for (User user : targetUsers) {
+                notificationService.send(
+                        user.getId().toString(),
+                        "PRODUCT_REQUIREMENT",
+                        "New Product Requirement: " + saved.getProductName(),
+                        "A new product requirement has been requested. Qty: " + saved.getRequestedQuantity() + " " + saved.getUnit()
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Error sending notification for Product Requirement creation: " + e.getMessage());
+        }
+
+
         return mapper.toResponseDTO(saved);
     }
 
