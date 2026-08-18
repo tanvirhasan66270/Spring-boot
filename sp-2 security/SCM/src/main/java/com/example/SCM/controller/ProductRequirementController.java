@@ -65,7 +65,6 @@ public class ProductRequirementController {
 
     // ─────────────────────────────────────────────────────
     // UPDATE STATUS — ADMIN + PROCUREMENT
-    // MANAGER: শুধু read করতে পারবে, status update করতে পারবে না
     // ─────────────────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMIN', 'PROCUREMENT')")
     @PatchMapping("/{id}/status")

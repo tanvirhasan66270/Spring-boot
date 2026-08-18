@@ -35,7 +35,6 @@ public class PurchaseOrderMapper {
         dto.setCreatedAt(po.getCreatedAt());
         dto.setUpdatedAt(po.getUpdatedAt());
 
-        // 1. Supplier সেফ ম্যাপিং (যদি সরাসরি supplier না থাকে, Quotation থেকে বের করার ফলব্যাক ব্যবস্থা)
         try {
             if (po.getSupplier() != null) {
                 dto.setSupplierId(po.getSupplier().getId());
@@ -47,10 +46,8 @@ public class PurchaseOrderMapper {
                 dto.setSupplierEmail(po.getQuotation().getSupplier().getEmail());
             }
         } catch (Exception e) {
-            // Lazy loading exception হ্যান্ডেল করার জন্য
         }
 
-        // 2. Purchase Requisition সেফ ম্যাপিং
         try {
             if (po.getPurchaseRequisition() != null) {
                 dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
@@ -58,10 +55,8 @@ public class PurchaseOrderMapper {
                 dto.setPurchaseRequisitionId(po.getQuotation().getPurchaseRequisition().getId());
             }
         } catch (Exception e) {
-            // Lazy loading exception হ্যান্ডেল করার জন্য
         }
 
-        // 3. Quotation সেফ ম্যাপিং
         if (po.getQuotation() != null) {
             dto.setQuotationId(po.getQuotation().getId());
         }

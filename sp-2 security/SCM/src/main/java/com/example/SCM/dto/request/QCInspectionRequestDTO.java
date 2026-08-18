@@ -19,6 +19,5 @@ public class QCInspectionRequestDTO {
     private String labTestReport;
     private String inspectedAt;
 
-    //  চাইল্ড চেকলিস্টের রিকোয়েস্ট অ্যারে
     private List<QCChecklistRequestDTO> checklists;
 }

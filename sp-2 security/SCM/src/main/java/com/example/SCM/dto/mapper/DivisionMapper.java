@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 @Component
 public class DivisionMapper {
 
-    //Entity -> Response DTO
 
     public DivisionResponseDTO convertTOResponseDTO(Division entity) {
 

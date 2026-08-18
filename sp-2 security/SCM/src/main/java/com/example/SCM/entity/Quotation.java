@@ -104,7 +104,6 @@ public class Quotation {
         calculateTotalPrice();
     }
 
-    // বিজনেস লজিক: টোটাল প্রাইস অটো-সিঙ্ক রাখার জন্য
     private void calculateTotalPrice() {
         if (this.quantity != null) {
             this.totalPrice = this.unitPrice * this.quantity;

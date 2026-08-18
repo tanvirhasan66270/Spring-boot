@@ -38,7 +38,6 @@ public class Vehicle {
     private Integer fuelLevel; // 0 - 100
 
     // One-to-One or Many-to-One with Driver (FK -> driver_id)
-    // ড্রাইভার অ্যাসাইন না থাকলে এটি নাল (null) হতে পারে
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id", nullable = true)

@@ -9,9 +9,7 @@ import org.springframework.stereotype.Component;
 @Component("scmAdminMapperServiceNode")
 public class AdminMapper {
 
-    // =========================
-    // ENTITY -> RESPONSE DTO
-    // =========================
+
     public AdminResponse toResponse(Admin entity) {
         if (entity == null) return null;
 
@@ -21,9 +19,7 @@ public class AdminMapper {
         dto.setPhone(entity.getPhone());
         dto.setEmail(entity.getEmail());
 
-        // =========================
-        // USER INFORMATION
-        // =========================
+
         if (entity.getUser() != null) {
             User user = entity.getUser();
             dto.setUserId(user.getId());
@@ -38,15 +34,12 @@ public class AdminMapper {
         return dto;
     }
 
-    // =========================
-    // REQUEST DTO -> ENTITY UPDATE
-    // =========================
+
     public void updateEntity(AdminRequest request, Admin entity) {
         if (request.getName() != null) {
             entity.setName(request.getName());
         }
 
-        // এখানে আগে ভুলবশত getName() ছিল, সেটি ঠিক করে getPhone() করা হয়েছে
         if (request.getPhone() != null) {
             entity.setPhone(request.getPhone());
         }
@@ -55,9 +48,7 @@ public class AdminMapper {
             entity.setEmail(request.getEmail());
         }
 
-        // =========================
-        // USER UPDATE
-        // =========================
+
         if (entity.getUser() != null) {
             User user = entity.getUser();
 

@@ -74,7 +74,6 @@ public class ManagerController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ManagerResponseDTO> getByUserId(@PathVariable Long id) {
         return managerService.findUserById(id)
                 .map(ResponseEntity::ok)

@@ -12,7 +12,6 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category , Long> {
 
-    //  ক্যাটাগরির নাম দিয়ে হুবহু সার্চ করা (ইউনিক চেক বা ভ্যালিডেশনের জন্য)
     Optional<Category> findByCategoryName(String categoryName);
 
 

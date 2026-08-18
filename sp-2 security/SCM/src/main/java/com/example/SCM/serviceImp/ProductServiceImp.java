@@ -42,7 +42,7 @@ public class ProductServiceImp implements ProductService {
     private String resolveCurrentUserId() {
         String userId = request.getHeader("X-User-Id");
         if (userId != null && !userId.isBlank()) {
-            return userId;                          // ← still returns here first
+            return userId;
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()

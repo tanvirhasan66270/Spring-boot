@@ -21,7 +21,6 @@ public class LCBankController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> createBank(@RequestBody LCBankRequestDTO dto) {
         LCBankResponseDTO response = bankService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -29,7 +28,6 @@ public class LCBankController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LCBankResponseDTO> updateBank(
             @PathVariable Long id,
             @RequestBody LCBankRequestDTO dto) {
@@ -57,7 +55,6 @@ public class LCBankController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteBank(@PathVariable Long id) {
         bankService.delete(id);
         return ResponseEntity.ok("LC Bank mapping profile wiped successfully.");

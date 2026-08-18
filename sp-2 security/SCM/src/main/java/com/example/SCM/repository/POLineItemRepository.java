@@ -18,8 +18,7 @@ public interface POLineItemRepository extends JpaRepository<POLineItem, Long> {
     // ৩. ইউনিক ট্র্যাকিং নাম্বার (trackingNumber) দিয়ে নির্দিষ্ট আইটেম খুঁজে বের করা (Optional টাইপ-সেফ সেটিং)
     Optional<POLineItem> findByTrackingNumber(String trackingNumber);
 
-    // ৪. কাস্টম JPQL কুয়েরি: একটি PO এর আন্ডারে থাকা শুধুমাত্র সক্রিয় (যা CANCELLED নয়) আইটেমগুলোর মোট যোগফল বের করা
-    // 💡 যেহেতু PurchaseOrder টেবিলে grandTotal কলাম নেই, এই কুয়েরিটি সরাসরি ডাটাবেজ থেকে রিয়েল-টাইম totalAmount হিসাব করে আনবে
+
     @Query("SELECT COALESCE(SUM(p.lineTotal), 0.0) FROM POLineItem p WHERE p.purchaseOrder.id = :poId AND p.status <> com.example.SCM.enumClass.POLineItemStatus.CANCELLED")
     double getActiveTotalAmountByPoId(@Param("poId") Long poId);
 }

@@ -40,7 +40,6 @@ public class DailyReport {
 
     private String attachmentUrl;// image
 
-    // রিপোর্টের জেনারেট হওয়ার অরিজিনাল টাইম যেন লক থাকে
     @Column(nullable = false, updatable = false)
     private LocalDateTime generatedAt;
 

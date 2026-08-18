@@ -16,10 +16,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/qc-inspectors")
-@RequiredArgsConstructor // লম্বক দিয়ে ফাইনাল ফিল্ডের জন্য কনস্ট্রাক্টর তৈরি
+@RequiredArgsConstructor
 public class QCInspectorController {
 
-    // @Autowired বাদ দিয়ে final করা হয়েছে (কনস্ট্রাক্টর ইনজেকশন বেস্ট প্র্যাকটিস)
     private final QCInspectorService qcInspectorService;
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR')")

@@ -29,8 +29,8 @@ public class MessageServiceImp {
         List<Message> messagesToSave = new ArrayList<>();
 
         String senderId = currentUser.getId().toString();
-        String senderName = currentUser.getName(); // আপনার User Entity-র নাম রিটার্ন মেথড
-        Role senderRole = currentUser.getRole();       // ইউজারের রোল
+        String senderName = currentUser.getName();
+        Role senderRole = currentUser.getRole();
 
         //  DRIVER -> Auto-Route to MANAGER & LOGISTICS_OFFICER
         if (senderRole == Role.DRIVER) {

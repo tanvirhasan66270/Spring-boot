@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 @Component
 public class DistrictMapper {
 
-    // Entity -> Response DTO
 
     public DistrictResponseDTO convertTOResponseDTO(District entity) {
 
@@ -41,7 +40,6 @@ public class DistrictMapper {
         return dto;
     }
 
-   // Request DTO -> Entity
 
     public District toEntity(DistrictRequestDTO dto, Division division) {
 
@@ -56,7 +54,6 @@ public class DistrictMapper {
         return entity;
     }
 
-    // Update Existing Entity
 
     public void updateEntity(DistrictRequestDTO dto, District entity, Division division) {
         if (dto == null || entity == null) return;

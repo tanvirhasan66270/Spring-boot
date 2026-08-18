@@ -31,7 +31,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> create(
             @RequestPart("report") DailyReportRequestDTO dto,
             @RequestPart(value = "attachment", required = false) MultipartFile attachment
@@ -42,7 +41,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping(value = "{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> update(
             @PathVariable Long id,
             @RequestPart("report") DailyReportRequestDTO dto,
@@ -53,7 +51,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getAll() {
         List<DailyReportResponseDTO> list = reportService.findAll();
         if (list.isEmpty()) {
@@ -64,7 +61,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<DailyReportResponseDTO> getById(@PathVariable Long id) {
         return reportService.getById(id)
                 .map(ResponseEntity::ok)
@@ -73,7 +69,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("warehouse/{warehouseId}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     public ResponseEntity<List<DailyReportResponseDTO>> getByWarehouse(@PathVariable String warehouseId) {
         List<DailyReportResponseDTO> list = reportService.getByWarehouse(warehouseId);
         if (list.isEmpty()) {
@@ -85,14 +80,12 @@ public class DailyReportController {
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PatchMapping("approve/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<DailyReportResponseDTO> approve(@PathVariable Long id) {
         return ResponseEntity.ok(reportService.approveReport(id, null));
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("email-approve")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> emailApprove(
             @RequestParam Long id,
             @RequestParam String approverId
@@ -120,7 +113,6 @@ public class DailyReportController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         reportService.delete(id);
         return ResponseEntity.ok("Daily report record purged successfully.");

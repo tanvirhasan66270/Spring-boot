@@ -86,9 +86,7 @@ public class PurchaseRequisition {
         this.compileProductNames();
     }
 
-    /**
-     * 🎯 Set কালেকশনের উপর ভিত্তি করে প্রোডাক্টের নাম কমা দিয়ে যুক্ত করার মেথড
-     */
+
     private void compileProductNames() {
         if (this.products != null && !this.products.isEmpty()) {
             this.productNames = this.products.stream()

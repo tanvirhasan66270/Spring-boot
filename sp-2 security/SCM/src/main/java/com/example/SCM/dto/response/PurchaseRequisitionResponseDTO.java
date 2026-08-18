@@ -21,7 +21,6 @@ public class PurchaseRequisitionResponseDTO {
     private String remarks;
     private LocalDateTime createdAt;
 
-    // Frontend UI grids এর জন্য ফ্ল্যাটেন্ড ডেটা
     private List<Long> productIds;
     private List<String> productNames;
     private List<Long> supplierIds;

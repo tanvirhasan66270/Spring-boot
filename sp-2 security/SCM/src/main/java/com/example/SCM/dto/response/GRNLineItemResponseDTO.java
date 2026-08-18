@@ -10,7 +10,7 @@ public class GRNLineItemResponseDTO {
 
 
     private Long grnId;
-    private String grnNumber;       // ট্র্যাকিং ডিসপ্লের জন্য
+    private String grnNumber;
 
     private Long productId;
     private String productName;

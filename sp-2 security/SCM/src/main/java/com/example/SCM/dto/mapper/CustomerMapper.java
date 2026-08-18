@@ -17,9 +17,7 @@ public class CustomerMapper {
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    // =========================
-    // ENTITY -> RESPONSE DTO
-    // =========================
+
     public CustomerResponseDTO convertTOResponseDTO(Customer entity) {
 
         CustomerResponseDTO dto = new CustomerResponseDTO();
@@ -39,9 +37,7 @@ public class CustomerMapper {
             dto.setCreatedAt(entity.getCreatedAt().toString());
         }
 
-        // =========================
-        // USER INFORMATION
-        // =========================
+
         if (entity.getUser() != null) {
 
             User user = entity.getUser();
@@ -56,9 +52,7 @@ public class CustomerMapper {
             }
         }
 
-        // =========================
-        // LOCATION INFORMATION
-        // =========================
+
         if (entity.getPoliceStation() != null) {
 
             PoliceStation ps = entity.getPoliceStation();
@@ -95,9 +89,7 @@ public class CustomerMapper {
         return dto;
     }
 
-    // =========================
-    // REQUEST DTO -> ENTITY
-    // =========================
+
     public void updateEntity(CustomerRequestDTO dto,
                              Customer entity,
                              PoliceStation policeStation) {
@@ -120,8 +112,7 @@ public class CustomerMapper {
         if (dto.getNidNumber() != null)
             entity.setNidNumber(dto.getNidNumber());
 
-        // Image এখানে Set করবেন না।
-        // Image CustomerServiceImp থেকে MultipartFile দিয়ে Update হবে।
+
 
         if (dto.getDob() != null) {
             try {
@@ -135,9 +126,7 @@ public class CustomerMapper {
             entity.setPoliceStation(policeStation);
         }
 
-        // =========================
-        // USER UPDATE
-        // =========================
+
         if (entity.getUser() != null) {
 
             User user = entity.getUser();

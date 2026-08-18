@@ -10,28 +10,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-/**
- * CommercialOfficerMapper
- *
- * Responsible for converting:
- * 1. CommercialOfficerRequestDTO -> User/CommercialOfficer Entity
- * 2. CommercialOfficer Entity -> CommercialOfficerResponseDTO
- *
- * This class helps separate API models (DTOs)
- * from database entities.
- */
+
 @Component
 public class CommercialOfficerMapper {
 
 
-    /**
-     * Convert CommercialOfficerRequestDTO to CommercialOfficer Entity.
-     *
-     * @param dto Incoming request data from client
-     * @param user Associated User account reference
-     * @param policeStation Assigned corporate police station node
-     * @return CommercialOfficer entity ready for persistence
-     */
+
     public CommercialOfficer toOfficerEntity(CommercialOfficerRequestDTO dto, User user, PoliceStation policeStation) {
         CommercialOfficer officer = new CommercialOfficer();
         officer.setUser(user);
@@ -61,12 +45,7 @@ public class CommercialOfficerMapper {
         return officer;
     }
 
-    /**
-     * Convert CommercialOfficer Entity to CommercialOfficerResponseDTO.
-     *
-     * @param entity CommercialOfficer entity from database
-     * @return CommercialOfficerResponseDTO
-     */
+
     public CommercialOfficerResponseDTO convertTOResponseDTO(CommercialOfficer entity) {
 
         CommercialOfficerResponseDTO dto = new CommercialOfficerResponseDTO();

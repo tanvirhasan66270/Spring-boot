@@ -55,14 +55,11 @@ public class PurchaseOrderController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SUPPLIER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<PurchaseOrderResponseDTO>> getAll() {
-        // ১. ডাটাবেজ থেকে সমস্ত PO তুলে আনা
         List<PurchaseOrderResponseDTO> allOrders = purchaseOrderService.findAll();
 
-        // ২. স্প্রিং সিকিউরিটি কন্টেক্সট থেকে কারেন্ট সেশন অবজেক্ট রিড করা
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (principal instanceof User currentUser) {
-            // ৩. রোল যদি SUPPLIER হয়, তবে ডাটাবেজ লেভেলে ফিল্টার লক সক্রিয় হবে
             if ("SUPPLIER".equalsIgnoreCase(currentUser.getRole().name())) {
                 return supplierRepository.findByUserId(currentUser.getId())
                         .map(supplier -> {
@@ -73,12 +70,10 @@ public class PurchaseOrderController {
                         })
                         .orElse(ResponseEntity.ok(java.util.Collections.emptyList()));
             }
-            // 🎯 রোল ADMIN, MANAGER বা PROCUREMENT হলে সরাসরি সব ডাটা রিটার্ন করবে
             return ResponseEntity.ok(allOrders);
         }
 
         if (principal instanceof org.springframework.security.core.userdetails.UserDetails userDetails) {
-            // সিকিউরিটি ফিল্টার চেইন ব্যাকআপ (যদি প্রিন্সিপাল UserDetails রিটার্ন করে)
             String role = userDetails.getAuthorities().stream()
                     .map(org.springframework.security.core.GrantedAuthority::getAuthority)
                     .findFirst().orElse("");
@@ -94,7 +89,6 @@ public class PurchaseOrderController {
             return ResponseEntity.ok(allOrders);
         }
 
-        // ডিফল্ট সেফটি রেসপন্স
         if (allOrders.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

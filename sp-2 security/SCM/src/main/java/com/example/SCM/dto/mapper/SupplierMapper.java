@@ -43,9 +43,7 @@ public class SupplierMapper {
             dto.setRole(user.getRole() != null ? user.getRole().name() : null);
         }
 
-        // =========================
-        // LOCATION INFORMATION
-        // =========================
+
         if (supplier.getPoliceStation() != null) {
 
             PoliceStation ps = supplier.getPoliceStation();
@@ -106,7 +104,6 @@ public class SupplierMapper {
                 try {
                     supplier.setDob(String.valueOf(new java.text.SimpleDateFormat("yyyy-MM-dd").parse(dto.getDob())));
                 } catch (Exception ex) {
-                    // Ignore parsing failure
                 }
             }
         }

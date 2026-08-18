@@ -19,7 +19,6 @@ public class PoliceStationMapper {
         dto.setPostalCode(entity.getPostalCode());
         dto.setActive(entity.getActive());
 
-        // Full Location Chain Hierarchy Resolution
         if (entity.getDistrict() != null) {
             District dist = entity.getDistrict();
             dto.setDistrictId(dist.getId());

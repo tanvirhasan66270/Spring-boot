@@ -43,9 +43,7 @@ public class QCInspectorMapper {
             dto.setRole(user.getRole());
             dto.setUserActive(user.isActive());
         }
-         // =========================
-         // LOCATION INFORMATION
-         // =========================
+
          if (inspector.getPoliceStation() != null) {
 
              PoliceStation ps = inspector.getPoliceStation();
@@ -90,7 +88,6 @@ public class QCInspectorMapper {
 
         QCInspector inspector = new QCInspector();
 
-        // DTO থেকে প্রোফাইল কোর ফিল্ডস সেট করা
         inspector.setContactPerson(dto.getContactPerson());
         inspector.setAddress(dto.getAddress());
         inspector.setNidNumber(dto.getNidNumber());
@@ -98,7 +95,6 @@ public class QCInspectorMapper {
         inspector.setImage(dto.getImage());
         inspector.setDesignation(dto.getDesignation());
 
-        // String -> LocalDate ডেট হ্যান্ডেলিং (নাল ও ব্ল্যাঙ্ক সেফটিসহ)
         if (dto.getDob() != null && !dto.getDob().trim().isEmpty()) {
             inspector.setDob(LocalDate.parse(dto.getDob(), dateFormatter));
         }
@@ -106,7 +102,6 @@ public class QCInspectorMapper {
             inspector.setJoiningDate(LocalDate.parse(dto.getJoiningDate(), dateFormatter));
         }
 
-        // String -> Enum কাস্টিং
         if (dto.getGender() != null && !dto.getGender().trim().isEmpty()) {
             inspector.setGender(GenderStatus.valueOf(dto.getGender().toUpperCase()));
         }
@@ -114,7 +109,6 @@ public class QCInspectorMapper {
             inspector.setLanguage(LanguageStatus.valueOf(dto.getLanguage().toUpperCase()));
         }
 
-        // ফরেন কি/রিলেশন অবজেক্ট ইনজেক্ট করা
         inspector.setUser(user);
         inspector.setPoliceStation(policeStation);
 
@@ -124,7 +118,6 @@ public class QCInspectorMapper {
 
     public void updateEntity(QCInspectorRequestDTO dto, QCInspector inspector, PoliceStation policeStation) {
 
-        // ১. সোর্স অফ ট্রুথ (User Entity) আপডেট
         User user = inspector.getUser();
         if (user != null) {
             if (dto.getName() != null) user.setName(dto.getName());
@@ -136,7 +129,6 @@ public class QCInspectorMapper {
             }
         }
 
-        // ২. প্রোফাইল ফিল্ডস আপডেট
         inspector.setContactPerson(dto.getContactPerson());
         inspector.setAddress(dto.getAddress());
         inspector.setNidNumber(dto.getNidNumber());

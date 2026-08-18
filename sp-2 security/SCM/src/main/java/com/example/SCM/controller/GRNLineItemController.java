@@ -18,11 +18,9 @@ public class GRNLineItemController {
 
     private final GRNLineItemService grnLineItemService;
 
-    // এটি সিঙ্গেল লাইন আইটেম আলাদাভাবে ইনভেন্টরিতে অ্যাড করার জন্য ব্যবহৃত হবে।
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> create(@RequestBody GRNLineItemRequestDTO dto) {
         GRNLineItemResponseDTO response = grnLineItemService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -32,7 +30,6 @@ public class GRNLineItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> update(
             @PathVariable Long id,
             @RequestBody GRNLineItemRequestDTO dto) {
@@ -41,11 +38,9 @@ public class GRNLineItemController {
         return ResponseEntity.ok(response);
     }
 
-    // আপনার কাস্টম রিপোজিটরি মেথড থাকলে সার্ভিস ইমপ্লিমেন্টেশনে সেটি যুক্ত করে কুয়েরি অপ্টিমাইজ করে নিতে পারেন।
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<List<GRNLineItemResponseDTO>> getAll() {
         List<GRNLineItemResponseDTO> list = grnLineItemService.findAll();
 
@@ -60,7 +55,6 @@ public class GRNLineItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR')")
     public ResponseEntity<GRNLineItemResponseDTO> getById(@PathVariable Long id) {
         return grnLineItemService.getById(id)
                 .map(ResponseEntity::ok)
@@ -71,7 +65,6 @@ public class GRNLineItemController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         grnLineItemService.delete(id);
         return ResponseEntity.ok("GRN Line Item deleted successfully with ID: " + id);

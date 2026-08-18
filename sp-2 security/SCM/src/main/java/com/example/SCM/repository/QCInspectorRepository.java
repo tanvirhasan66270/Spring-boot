@@ -16,10 +16,7 @@ public interface QCInspectorRepository extends JpaRepository<QCInspector, Long> 
 
     Optional<QCInspector> findByUserId(Long userId);
 
-    /**
-     * 1. অপ্টিমাইজড অল-ইনস্পেক্টর লিস্ট কুয়েরি (Fetch Join)
-     *  এটি সিঙ্গেল ডেটাবেজ হিটে সম্পূর্ণ রিলেশনাল অবজেক্ট চেইন (User এবং Location) লোড করে পারফরম্যান্স বাড়াবে।
-     */
+
     @Query("""
         SELECT DISTINCT q FROM QCInspector q
         LEFT JOIN FETCH q.user
@@ -29,10 +26,6 @@ public interface QCInspectorRepository extends JpaRepository<QCInspector, Long> 
     """)
     List<QCInspector> findAllInspectors();
 
-    /**
-     * 2. আইডি দিয়ে সিঙ্গেল ইনস্পেক্টর খোঁজা (Fetch Join মেকানিজম)
-     * আপনার 'RiderRepository'-এর 'findByIdWithZones' প্যাটার্ন অনুযায়ী হুবহু সিঙ্কড।
-     */
     @Query("""
         SELECT q FROM QCInspector q
         LEFT JOIN FETCH q.user

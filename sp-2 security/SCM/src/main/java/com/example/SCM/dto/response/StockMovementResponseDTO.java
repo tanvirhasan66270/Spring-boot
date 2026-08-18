@@ -16,8 +16,8 @@ public class StockMovementResponseDTO {
     private String warehouseName;
 
     // Source Warehouse Details (Only for TRANSFER type)
-    private Long sourceWarehouseId; //  ফিক্স: আইডি ট্র্যাকিং সেফটি
-    private String sourceWarehouseName; //  ফিক্স: ফ্রন্টএন্ড টেবিলে সোর্স গুদামের নাম দেখানোর জন্য
+    private Long sourceWarehouseId;
+    private String sourceWarehouseName;
 
     private String movementType;
     private int quantity;
@@ -25,7 +25,7 @@ public class StockMovementResponseDTO {
 
     // Performed By Personnel Flattened
     private Long performedBy;
-    private String performedByName; //  ফিক্স: কোন অফিসার এটি এন্ট্রি করেছে তার নাম সরাসরি UI-তে পুশ করার জন্য
+    private String performedByName;
 
     private LocalDateTime movedAt;
     private String remarks;

@@ -56,9 +56,7 @@ public class LogisticsOfficerMapper {
         dto.setCreatedAt(officer.getCreatedAt());
         dto.setUpdatedAt(officer.getUpdatedAt());
 
-        // =========================
-        // LOCATION INFORMATION
-        // =========================
+
         if (officer.getPoliceStation() != null) {
 
             PoliceStation ps = officer.getPoliceStation();

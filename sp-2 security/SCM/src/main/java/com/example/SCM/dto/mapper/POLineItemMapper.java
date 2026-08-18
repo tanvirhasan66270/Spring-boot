@@ -70,16 +70,15 @@ public class POLineItemMapper {
             PurchaseOrder po = item.getPurchaseOrder();
             dto.setPoId(po.getId());
 
-            // যেহেতু এনটিটি থেকে সরাসরি লিস্ট বা গ্র্যান্ড টোটাল বাদ গেছে, তাই সার্ভিস লেয়ার থেকে
-            // এই ভ্যালুটি কাস্টম কুয়েরি বা সামেশনের মাধ্যমে রিয়েল-টাইম ক্যালকুলেট হয়ে ডাটাবেজ থেকে রিফ্লেক্ট করবে।
+
             dto.setTotalAmount(po.getTotalAmount());
         }
 
-        // Product Details Flattening (নাল সেফটিসহ)
+        // Product Details Flattening
         if (item.getProduct() != null) {
             Product prod = item.getProduct();
             dto.setProductId(prod.getId());
-            dto.setProductName(prod.getName());      // ফ্রন্টএন্ড ড্যাশবোর্ডে সরাসরি নাম দেখানোর জন্য
+            dto.setProductName(prod.getName());
             dto.setProductCode(prod.getProductCode());
             dto.setSupplierId(prod.getId());
             dto.setSupplierName(prod.getName());
@@ -111,7 +110,6 @@ public class POLineItemMapper {
             item.setStatus(POLineItemStatus.valueOf(dto.getStatus().toUpperCase()));
         }
 
-        // যদি প্রোডাক্ট পরিবর্তন করার রিকোয়ারমেন্ট থাকে
         if (product != null) {
             item.setProduct(product);
         }

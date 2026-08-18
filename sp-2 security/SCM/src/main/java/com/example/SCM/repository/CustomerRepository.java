@@ -12,9 +12,7 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
 
-    /**
-     * Load all customers with User + Location hierarchy
-     */
+
     @Query("""
             SELECT DISTINCT c
             FROM Customer c
@@ -27,9 +25,7 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
             """)
     List<Customer> findAllCustomersWithDetails();
 
-    /**
-     * Load one customer with complete hierarchy
-     */
+
     @Query("""
             SELECT c
             FROM Customer c

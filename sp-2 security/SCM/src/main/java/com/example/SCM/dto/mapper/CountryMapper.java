@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 @Component
 public class CountryMapper {
 
-   // Entity -> Response DTO
 
     public CountryResponseDTO convertTOResponseDTO(Country entity) {
 
@@ -30,7 +29,6 @@ public class CountryMapper {
         return dto;
     }
 
-  // Request DTO -> Entity
 
     public Country toEntity(CountryRequestDTO dto) {
 
@@ -44,7 +42,6 @@ public class CountryMapper {
         return entity;
     }
 
-    // Update Existing Entity
 
     public void updateEntity(CountryRequestDTO dto, Country entity) {
 

@@ -21,7 +21,7 @@ public class GoodsReceivedNoteResponseDTO {
 
 
     private Long poId;
-    private String poNumber;         // UI স্ক্রিনে দেখানোর জন্য পারচেজ অর্ডার নাম্বার
+    private String poNumber;
 
     private Long productId;
     private String productName;

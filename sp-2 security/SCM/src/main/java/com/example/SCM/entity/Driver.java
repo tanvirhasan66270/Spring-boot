@@ -41,7 +41,6 @@ public class Driver {
 
     private String dob;
 
-    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
     private Double rating = 0.0;
 
     private Integer totalDeliveries = 0;

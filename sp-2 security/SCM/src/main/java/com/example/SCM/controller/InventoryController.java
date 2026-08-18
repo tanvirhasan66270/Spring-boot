@@ -22,7 +22,6 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR')")
     public ResponseEntity<InventoryResponseDTO> save(@RequestBody InventoryRequestDTO dto) {
         InventoryResponseDTO response = inventoryService.save(dto);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -32,7 +31,6 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR')")
     public ResponseEntity<InventoryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody InventoryRequestDTO dto) {
@@ -44,8 +42,7 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR', " +
-//            "'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+
     public ResponseEntity<List<InventoryResponseDTO>> getAll() {
         List<InventoryResponseDTO> list = inventoryService.findAll();
         if (list.isEmpty()) {
@@ -58,8 +55,7 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'QC_INSPECTOR', " +
-//            "'SALES_OFFICER', 'COMMERCIAL_OFFICER')")
+
     public ResponseEntity<InventoryResponseDTO> getById(@PathVariable Long id) {
         return inventoryService.getById(id)
                 .map(ResponseEntity::ok)
@@ -70,7 +66,6 @@ public class InventoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         inventoryService.delete(id);
         return ResponseEntity.ok("Inventory record deleted successfully from the tracking system!");

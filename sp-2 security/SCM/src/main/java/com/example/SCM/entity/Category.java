@@ -23,7 +23,6 @@ public class Category {
     private String description;
 
     // ── Product Relationship ─────────────────────────────────────
-    // একটি ক্যাটাগরির অধীনে অনেক প্রোডাক্ট থাকতে পারে
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
 

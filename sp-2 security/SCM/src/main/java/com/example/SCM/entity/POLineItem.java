@@ -29,7 +29,6 @@ public class POLineItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    // Primitive int হওয়ায় অটোমেটিক নট-নাল হবে
     private int quantity;
 
     private double unitPrice;

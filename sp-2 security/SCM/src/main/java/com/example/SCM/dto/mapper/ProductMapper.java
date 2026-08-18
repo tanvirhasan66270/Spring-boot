@@ -21,7 +21,7 @@ public class ProductMapper {
         dto.setQuantity(entity.getQuantity());
         dto.setSellingPrice(entity.getSellingPrice());
         dto.setHasExpiryDate(entity.getHasExpiryDate());
-        dto.setWeight(entity.getWeight()); // ➕ ম্যাপিং অ্যাড করা হলো
+        dto.setWeight(entity.getWeight());
         dto.setActive(entity.isActive());
         dto.setAvailability(entity.getAvailability());
         dto.setImage(entity.getImage());

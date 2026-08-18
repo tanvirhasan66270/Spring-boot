@@ -22,9 +22,7 @@ public class Procurement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // =========================================================================
-    // Authentication & System Security Relations
-    // =========================================================================
+
 
     // password , name ,phone,Email this all object save in user
     @JsonIgnore

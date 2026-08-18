@@ -20,7 +20,6 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<CategoryResponseDTO> save(@RequestBody CategoryRequestDTO dto) {
         CategoryResponseDTO response = categoryService.save(dto);
         return new ResponseEntity<>(
@@ -31,7 +30,6 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @PutMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<CategoryResponseDTO> update(
             @PathVariable Long id,
             @RequestBody CategoryRequestDTO dto
@@ -42,7 +40,6 @@ public class CategoryController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<CategoryResponseDTO>> getAll() {
         List<CategoryResponseDTO> list = categoryService.findAll();
 
@@ -55,7 +52,6 @@ public class CategoryController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CategoryResponseDTO> getById(@PathVariable Long id) {
         return categoryService.getById(id)
                 .map(ResponseEntity::ok)
@@ -64,7 +60,6 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         categoryService.delete(id);
         return ResponseEntity.ok("Category and its cascades deleted successfully!");

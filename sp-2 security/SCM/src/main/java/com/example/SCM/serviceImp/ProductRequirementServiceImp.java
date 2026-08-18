@@ -59,14 +59,12 @@ public class ProductRequirementServiceImp implements ProductRequirementService {
     }
 
     //  LOGISTICS_OFFICER update করতে পারবে
-    // কিন্তু status = APPROVED হলে update block হবে
     @Override
     @Transactional
     public ProductRequirementResponseDTO update(Long id, ProductRequirementRequestDTO dto) {
         ProductRequirement entity = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("ProductRequirement not found with ID: " + id));
 
-        // APPROVED status হলে LOGISTICS_OFFICER আর update করতে পারবে না
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isLogisticsOfficer = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_LOGISTICS_OFFICER"));
@@ -82,7 +80,6 @@ public class ProductRequirementServiceImp implements ProductRequirementService {
         return mapper.toResponseDTO(updated);
     }
 
-    //  শুধু PROCUREMENT Officer status update করতে পারবে (Controller-level PreAuthorize দিয়ে control)
     @Override
     @Transactional
     public ProductRequirementResponseDTO updateStatus(Long id, String status) {
@@ -114,7 +111,6 @@ public class ProductRequirementServiceImp implements ProductRequirementService {
         return repository.findById(id).map(mapper::toResponseDTO);
     }
 
-    // শুধু ADMIN delete করতে পারবে (Controller-level PreAuthorize দিয়ে control)
     @Override
     @Transactional
     public void delete(Long id) {

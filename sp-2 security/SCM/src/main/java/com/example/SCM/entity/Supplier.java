@@ -37,7 +37,6 @@ public class Supplier {
 
     private String image;
 
-    // Builder.Default ব্যবহার করলে অবজেক্ট তৈরির সময় এগুলো ডিফল্ট মান পেয়ে যাবে
     private double rating = 0.0;
 
     private int averageLeadTimeDays;

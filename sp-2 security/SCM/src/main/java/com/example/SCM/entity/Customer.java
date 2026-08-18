@@ -42,7 +42,6 @@ public class Customer {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // ── User Management / Auth Relations ─────────────────────────
     // Auth account — source of truth for name, phone, email, password, role
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

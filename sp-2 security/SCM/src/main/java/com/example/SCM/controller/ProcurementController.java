@@ -73,7 +73,6 @@ public class ProcurementController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @procurementSecurity.isSelf(#id, authentication)")
     public ResponseEntity<ProcurementResponseDTO> getByUserId(@PathVariable Long id) {
         return procurementService.findUserById(id)
                 .map(ResponseEntity::ok)

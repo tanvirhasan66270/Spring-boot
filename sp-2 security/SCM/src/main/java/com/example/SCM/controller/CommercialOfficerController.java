@@ -79,7 +79,6 @@ public class CommercialOfficerController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     public ResponseEntity<CommercialOfficerResponseDTO> getByUserId(@PathVariable Long id) {
         return officerService.findUserById(id)
                 .map(ResponseEntity::ok)

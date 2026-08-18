@@ -50,6 +50,6 @@ public class Notification {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.isRead = false; // নিউ নোটিফিকেশন ডিফল্ট আনরিড থাকবে
+        this.isRead = false;
     }
 }

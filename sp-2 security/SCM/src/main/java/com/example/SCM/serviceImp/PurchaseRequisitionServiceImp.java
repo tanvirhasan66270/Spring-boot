@@ -96,9 +96,7 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
 
         tokenRepository.save(token);
 
-        // =================================================================
-        //  EXCLUSIVE NOTIFICATION PIPELINE: ONLY MANAGERS & SUPPLIERS
-        // =================================================================
+
         try {
             // 1️ just system manager APPROVAL alert
             List<User> managers = userRepository.findByRole(Role.MANAGER);
@@ -137,7 +135,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         PurchaseRequisition requisition = requisitionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Purchase Requisition missing for ID: " + id));
 
-        //  STEP 1: security content hote principal read
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long managerId = null;
         String managerEmail = "system@scm.com";
@@ -151,7 +148,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
         else if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
             String email = ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
 
-            // ইমেইলের মাধ্যমে ডাটাবেজ থেকে আসল ইউজার অবজেক্ট রিড করা
             User currentManager = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Active corporate session missing in database index!"));
 
@@ -163,7 +159,6 @@ public class PurchaseRequisitionServiceImp implements PurchaseRequisitionService
             throw new RuntimeException("Unauthorized transaction: Active corporate session not found!");
         }
 
-        //  STEP 2: APPROVAL Step and database update
         requisition.setApprovalStatus(PurchaseRequisitionStatus.APPROVED);
         requisition.setApprovedBy(managerId);
 

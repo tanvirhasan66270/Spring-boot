@@ -37,7 +37,6 @@ public class ShipmentController {
         return new ResponseEntity<>(shipmentService.save(dto, file), HttpStatus.CREATED);
     }
 
-    // 🌟 COMMERCIAL_OFFICER এবং SUPPLIER যুক্ত করা হলো
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ShipmentResponseDTO> update(
@@ -50,7 +49,6 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.update(id, dto, file));
     }
 
-    // 🌟 COMMERCIAL_OFFICER এবং SUPPLIER যুক্ত করা হলো (যাতে ফিল্ডারে কোনো সমস্যা না হয়)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
@@ -76,7 +74,6 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
-    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
@@ -85,7 +82,6 @@ public class ShipmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 🌟 COMMERCIAL_OFFICER যুক্ত করা হলো
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Long id) {

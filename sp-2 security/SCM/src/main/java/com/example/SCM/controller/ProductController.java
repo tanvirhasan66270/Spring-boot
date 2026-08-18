@@ -49,7 +49,6 @@ public class ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         List<ProductResponseDTO> list = productService.findAll();
         return ResponseEntity.ok(list);
@@ -57,7 +56,6 @@ public class ProductController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/{id}")
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
         return productService.getById(id)
                 .map(ResponseEntity::ok)

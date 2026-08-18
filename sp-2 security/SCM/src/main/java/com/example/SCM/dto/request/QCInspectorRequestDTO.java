@@ -16,11 +16,11 @@ public class QCInspectorRequestDTO {
     private String address;
     private String nidNumber;
     private String passportNumber;
-    private String dob;            // ফ্রন্টঅ্যান্ড থেকে "YYYY-MM-DD" স্ট্রিং আসবে
+    private String dob;
     private String gender;         // MALE, FEMALE, OTHERS
-    private String image;          // ইমেজ পাথ বা ইউআরএল
+    private String image;
     private String joiningDate;    // "YYYY-MM-DD"
     private String designation;
     private String language;       // BANGLA, ENGLISH, OTHERS
-    private Long policeStationId;  // থানা ফরেন কি আইডি
+    private Long policeStationId;
 }

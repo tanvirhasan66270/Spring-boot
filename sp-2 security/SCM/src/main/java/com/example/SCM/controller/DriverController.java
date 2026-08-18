@@ -81,7 +81,6 @@ public class DriverController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'DRIVER', 'LOGISTICS_OFFICER', 'SALES_OFFICER', 'PROCUREMENT', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
     @GetMapping("/user/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER') or @driverSecurity.isSelf(#id, authentication)")
     public ResponseEntity<DriverResponseDTO> getByUserId(@PathVariable Long id) {
         return driverService.findUserById(id)
                 .map(ResponseEntity::ok)

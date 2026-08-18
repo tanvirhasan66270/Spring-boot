@@ -30,13 +30,11 @@ public class PaymentStatementMapper {
             dto.setCustomerOrderId(order.getId());
             dto.setOrderNumber(order.getOrderNumber());
 
-            // Calculate total confirmed paid amount for this order
             double totalConfirmedPaid = order.getPaymentStatements().stream()
                     .filter(ps -> ps.getIssueStatus() == PaymentIssueStatus.CONFIRMED_BY_OFFICER)
                     .mapToDouble(PaymentStatement::getPaidAmount)
                     .sum();
 
-            // Calculate old paid amount (total before this specific payment was factored in)
             double oldPaid = 0.0;
             if (paymentStatement.getIssueStatus() == PaymentIssueStatus.CONFIRMED_BY_OFFICER) {
                 oldPaid = totalConfirmedPaid - paymentStatement.getPaidAmount();

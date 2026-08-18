@@ -25,6 +25,5 @@ public interface PurchaseOrderService {
 
     PurchaseOrderResponseDTO updateShipmentQuantityCheck(Long id, int shippedQuantity);
 
-    // 🎯 নতুন রিয়েল-টাইম স্ট্যাটাস আপডেট চ্যানেল (সাপ্লায়ার প্যানেল অ্যাকশন bypass করার জন্য)
     PurchaseOrderResponseDTO updateStatus(Long id, PurchaseOrderStatus status);
 }

@@ -14,10 +14,7 @@ import java.util.Optional;
 @Repository
 public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Long> {
 
-    /**
-     * 1. অপ্টিমাইজড অল-পারচেজ অর্ডার লিস্ট কুয়েরি (Fetch Join)
-     * 💡 এটি সিঙ্গেল ডাটাবেজ হিটে সম্পূর্ণ রিলেশনাল অবজেক্ট চেইন (Quotation, Supplier, PurchaseRequisition) লোড করে পারফরম্যান্স বহুগুণ বাড়িয়ে দেবে।
-     */
+
     @Query("""
         SELECT DISTINCT p FROM PurchaseOrder p
         LEFT JOIN FETCH p.supplier s
@@ -26,10 +23,7 @@ public interface PurchaseOrderRepository extends JpaRepository<PurchaseOrder, Lo
     """)
     List<PurchaseOrder> findAllPurchaseOrders();
 
-    /**
-     * 2. আইডি দিয়ে সিঙ্গেল পারচেজ অর্ডার খোঁজা (Fetch Join মেকানিজম)
-     * আপনার 'RiderRepository'-এর 'findByIdWithZones' প্যাটার্ন অনুযায়ী হুবহু সিঙ্কড।
-     */
+
     @Query("""
         SELECT p FROM PurchaseOrder p
         LEFT JOIN FETCH p.supplier s

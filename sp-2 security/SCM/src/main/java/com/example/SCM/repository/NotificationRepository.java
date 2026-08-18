@@ -9,10 +9,8 @@ import java.util.List;
 
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-    // নির্দিষ্ট ইউজারের সমস্ত নোটিফিকেশন টাইমলাইন অনুযায়ী সাজানো
     List<Notification> findByRecipientIdOrderByCreatedAtDesc(String recipientId);
 
-    // কাউন্টার ড্যাশবোর্ডের জন্য আনরিড নোটিফিকেশন কাউন্ট
     long countByRecipientIdAndIsReadFalse(String recipientId);
 
     @Query("SELECT n FROM Notification n WHERE n.recipientId = :userId OR n.recipientId = :role OR n.recipientId = 'ALL' ORDER BY n.createdAt DESC")

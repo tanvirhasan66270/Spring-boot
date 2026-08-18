@@ -59,11 +59,9 @@ public class POLineItemServiceImp implements POLineItemService {
             throw new RuntimeException("InsufficientStockException: Low warehouse inventory!");
         }
 
-        // ভার্চুয়ালি স্টক লক করতে Reserved Quantity বাড়ানো
         inventory.setQuantityReserved(inventory.getQuantityReserved() + dto.getQuantity());
         inventoryRepository.save(inventory);
 
-        // DTO -> Entity conversion
         POLineItem item = poLineItemMapper.toEntity(dto, order, product);
 
         if (POLineItemStatus.SHIPPED.name().equalsIgnoreCase(dto.getStatus())) {
@@ -96,7 +94,6 @@ public class POLineItemServiceImp implements POLineItemService {
         POLineItemStatus oldStatus = item.getStatus();
         int oldQuantity = item.getQuantity();
 
-        // কোয়ান্তিটি পরিবর্তনের উপর ভিত্তি করে ইনভেন্টরি রিজার্ভেশন অ্যাডজাস্টমেন্ট
         if (dto.getQuantity() != oldQuantity) {
             int difference = dto.getQuantity() - oldQuantity;
             if (difference > 0) {

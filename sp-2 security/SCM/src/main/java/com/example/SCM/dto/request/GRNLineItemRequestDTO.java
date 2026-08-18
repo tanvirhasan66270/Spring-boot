@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class GRNLineItemRequestDTO {
-    private Long id;                // আপডেটের সময় কাজে লাগবে
+    private Long id;
     private Long grnId;             // FK -> GoodsReceivedNote
     private Long productId;         // FK -> Product
     private int quantityOrdered;

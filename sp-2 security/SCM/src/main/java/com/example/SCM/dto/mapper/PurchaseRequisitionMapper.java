@@ -104,7 +104,6 @@ public class PurchaseRequisitionMapper {
             pr.setUrgencyLevel(UrgencyLevel.valueOf(dto.getUrgencyLevel().toUpperCase()));
         }
 
-        // 🎯 ওল্ড কোড এরর ফিক্স: আপডেটের সময়ও ডেটা সেট ফোল্ডারে রি-ইনজেক্ট করা হলো
         if (products != null) {
             pr.setProducts(new LinkedHashSet<>(products));
         }

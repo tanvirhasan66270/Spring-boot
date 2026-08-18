@@ -14,7 +14,6 @@ public class AdminSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // ডাটাবেজ ফাঁকা আছে কিনা চেক করা যাতে রিস্টার্ট করলে বারবার সিড না হয়
         if (adminService.getAll().isEmpty()) {
             seedData();
         }
@@ -29,7 +28,6 @@ public class AdminSeeder implements CommandLineRunner {
         admin.setPhone("01999999999");
         admin.setPassword("123456");
 
-        // সার্ভিস অনুযায়ী সঠিক মেথড ও ১টি আর্গুমেন্ট পাস করা হলো
         adminService.create(admin);
 
         System.out.println("Seeding: Admin record created successfully.");

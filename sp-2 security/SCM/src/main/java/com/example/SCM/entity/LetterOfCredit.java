@@ -46,7 +46,7 @@ public class LetterOfCredit {
     private LCBank issuingBank;
 
     @Column(nullable = false)
-    private String shipmentIncoTerms; // FOB, CIF, CFR ইত্যাদি
+    private String shipmentIncoTerms; // FOB, CIF, CFR
 
     @Column(nullable = false)
     private LocalDate latestShipmentDate;

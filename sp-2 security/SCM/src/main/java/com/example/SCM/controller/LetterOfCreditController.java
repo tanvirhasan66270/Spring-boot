@@ -25,7 +25,6 @@ public class LetterOfCreditController {
     // 1. Create New Letter of Credit (POST - Multipart Form Data)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> createLC(
             @RequestPart("lcData") String lcDataJson,
             @RequestPart(value = "file", required = false) MultipartFile file) throws Exception {
@@ -40,7 +39,6 @@ public class LetterOfCreditController {
     // 2. Update Existing Letter of Credit (PUT - Multipart Form Data)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT')")
     public ResponseEntity<LetterOfCreditResponseDTO> updateLC(
             @PathVariable Long id,
             @RequestPart("lcData") String lcDataJson,
@@ -56,7 +54,6 @@ public class LetterOfCreditController {
     // 3. Commercial Amendment Gateway (PATCH - Standard JSON Request)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @PatchMapping("/amend/{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<LetterOfCreditResponseDTO> amendLC(
             @PathVariable Long id,
             @RequestBody LetterOfCreditRequestDTO dto) {
@@ -83,7 +80,6 @@ public class LetterOfCreditController {
     // 6. Delete LC (DELETE)
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER')")
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteLC(@PathVariable Long id) {
         lcService.delete(id);
         return ResponseEntity.ok("Letter of credit cluster mapping wiped successfully.");

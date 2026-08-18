@@ -26,7 +26,7 @@ public class GoodsReceivedNote {
     @Column(unique = true, nullable = false)
     private String grnNumber;
 
-    private Integer quantity; // Auto loaded from PurchaseOrder
+    private Integer quantity;
 
     private int receivedQuantity;
 

@@ -65,7 +65,6 @@ public class PurchaseRequisitionToken {
 
     private LocalDateTime purchaseUpdatedAt;
 
-    // কতগুলো Product ছিল
     private Integer totalProducts;
 
     @Column(columnDefinition = "TEXT")

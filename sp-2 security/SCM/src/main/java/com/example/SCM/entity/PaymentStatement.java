@@ -24,7 +24,7 @@ public class PaymentStatement {
     private Long id;
 
     @Column(nullable = false)
-    private double paidAmount; // Amount paid in this installment
+    private double paidAmount;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;

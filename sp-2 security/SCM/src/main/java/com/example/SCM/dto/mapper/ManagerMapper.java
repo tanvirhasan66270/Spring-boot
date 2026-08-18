@@ -55,9 +55,7 @@ public class ManagerMapper {
         dto.setCreatedAt(manager.getCreatedAt());
         dto.setUpdatedAt(manager.getUpdatedAt());
 
-        // =========================
-        // LOCATION INFORMATION
-        // =========================
+
         if (manager.getPoliceStation() != null) {
 
             PoliceStation ps = manager.getPoliceStation();

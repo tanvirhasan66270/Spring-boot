@@ -37,7 +37,7 @@ public class CustomerOrderController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    // 2. General Update Order Metadata (এডমিন/ম্যানেজার অথবা অর্ডারের প্রকৃত মালিক)
+    // 2. General Update Order Metadata
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @customerOrderSecurity.isOwner(#id, authentication)")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
@@ -54,17 +54,15 @@ public class CustomerOrderController {
         String currentUsername = authentication.getName();
         System.out.println(currentUsername);
 
-        // রোল চেক করার সময় 'ROLE_' প্রিফিক্সসহ বা ছাড়া উভয়টিই হ্যান্ডেল করার ব্যবস্থা
+
         boolean isCustomer = authentication.getAuthorities().stream()
                 .anyMatch(a -> Objects.equals(a.getAuthority(), "CUSTOMER") || Objects.equals(a.getAuthority(), "ROLE_CUSTOMER"));
 
         List<CustomerOrderResponseDTO> responseList;
 
         if (isCustomer) {
-            // কাস্টমার হলে শুধু তার নিজের অর্ডারগুলোই দেখাবে
             responseList = orderService.findByCustomerUsername(currentUsername);
         } else {
-            // এডমিন বা স্টাফ হলে সবার অর্ডার দেখতে পাবে
             responseList = orderService.findAll();
         }
 
@@ -80,7 +78,7 @@ public class CustomerOrderController {
     }
 
 
-    // 4. Find Single Order Context By ID (স্টাফ অথবা অর্ডারের নিজস্ব মালিক)
+    // 4. Find Single Order Context By ID
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'PROCUREMENT', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER') or @customerOrderSecurity.isOwner(#id, authentication)")
     @GetMapping("/{id}")
     public ResponseEntity<CustomerOrderResponseDTO> getOrderById(@PathVariable Long id) {
@@ -89,7 +87,7 @@ public class CustomerOrderController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    // 5. Delete Order Record (শুধু এডমিন বা ম্যানেজার)
+    // 5. Delete Order Record
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteOrder(@PathVariable Long id) {

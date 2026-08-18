@@ -40,7 +40,6 @@ public class OrderLineItemServiceImp implements OrderLineItemService {
         OrderLineItem item = lineItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Target order line item node missing index"));
 
-        // এটি ডাটাবেজ লেভেলে প্যারেন্ট অবজেক্টকেও ট্রিগার করবে
         if (item.getCustomerOrder() != null) {
             item.getCustomerOrder().getLineItems().remove(item);
             item.getCustomerOrder().executeCalculations();

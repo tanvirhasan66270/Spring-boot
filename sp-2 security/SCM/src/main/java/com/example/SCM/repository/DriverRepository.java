@@ -21,7 +21,6 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     """)
     List<Driver> findAllWithDetails();
 
-    // 🔄 d.policeStation ফেচিং যুক্ত করা হলো
     @Query("""
         SELECT d FROM Driver d 
         LEFT JOIN FETCH d.user 

@@ -93,7 +93,6 @@ public class InvoiceServiceImp implements InvoiceService {
             System.err.println("Customer Invoice Notification Error: " + e.getMessage());
         }
 
-        // স্ট্যাটাস ISSUED হলে এবং ভ্যালিড মেইল থাকলে ইমেইল ডিসপ্যাচ করা
         if (savedInvoice.getInvoiceStatus() == InvoiceStatus.ISSUED && !savedInvoice.getCustomerEmail().contains("no-email")) {
             sendInvoiceEmail(savedInvoice, savedInvoice.getCustomerEmail());
         }
@@ -194,7 +193,7 @@ public class InvoiceServiceImp implements InvoiceService {
         if (isCustomer && invoiceOpt.isPresent()) {
             String customerEmail = authentication.getName();
             if (!customerEmail.equals(invoiceOpt.get().getCustomerEmail())) {
-                return Optional.empty(); // Deny access
+                return Optional.empty();
             }
         }
 

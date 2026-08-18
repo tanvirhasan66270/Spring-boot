@@ -12,8 +12,8 @@ import java.time.LocalDateTime;
 public class PaymentStatementResponseDTO {
 
     private Long id;
-    private double paidAmount;          // বর্তমান পেমেন্টের পরিমাণ
-    private double oldPaidAmount;       // নতুন পেমেন্ট দেওয়ার আগে পর্যন্ত মোট পরিশোধিত টাকা
+    private double paidAmount;
+    private double oldPaidAmount;
     private PaymentMethod paymentMethod;
     private String customerAccountNumber;
     private PaymentIssueStatus issueStatus;

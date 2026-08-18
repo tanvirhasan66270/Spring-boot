@@ -6,7 +6,7 @@ import lombok.Data;
 public class PurchaseOrderRequestDTO {
 
     private Long quotationId;
-    private Long issuedBy;                 // লগইন করা ইউজারের আইডি
+    private Long issuedBy;
     private double totalAmount;
     private String currency;               // Default "USD"
     private String expectedDeliveryDate;   // "YYYY-MM-DD"

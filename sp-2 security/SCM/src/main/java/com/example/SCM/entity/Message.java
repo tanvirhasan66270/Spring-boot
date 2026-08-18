@@ -21,7 +21,7 @@ public class Message {
     private String senderName;
 
     @Column(nullable = false)
-    private String recipientId; // Target User ID who can see this message
+    private String recipientId;
 
     @Column(nullable = false)
     private String subject;

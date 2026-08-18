@@ -11,30 +11,14 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-/**
- * GoodsReceivedNoteMapper
- *
- * Responsible for converting:
- * 1. GoodsReceivedNoteRequestDTO -> GoodsReceivedNote Entity
- * 2. GoodsReceivedNote Entity -> GoodsReceivedNoteResponseDTO
- *
- * This class helps separate API models (DTOs)
- * from database entities.
- */
+
 @Component
 @RequiredArgsConstructor
 public class GoodsReceivedNoteMapper {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /**
-     * Convert GoodsReceivedNote Entity to GoodsReceivedNoteResponseDTO.
-     *
-     * Used when sending GRN information back to the client.
-     *
-     * @param grn GoodsReceivedNote entity from database
-     * @return GoodsReceivedNoteResponseDTO
-     */
+
     public GoodsReceivedNoteResponseDTO convertTOResponseDTO(GoodsReceivedNote grn) {
 
 
@@ -79,17 +63,7 @@ public class GoodsReceivedNoteMapper {
         return dto;
     }
 
-    /**
-     * Convert GoodsReceivedNoteRequestDTO to GoodsReceivedNote Entity.
-     *
-     * @param dto Incoming request payload from client
-     * @param po Bound PurchaseOrder entity node
-     * @param product Linked Product identifier reference
-     * @param receivedBy Logged user context tracking reference
-     * @param warehouse Node branch Warehouse destination reference
-     * @param inspectedBy QCInspector entity reference
-     * @return GoodsReceivedNote entity instance
-     */
+
     public GoodsReceivedNote toEntity(GoodsReceivedNoteRequestDTO dto, PurchaseOrder po, Product product, User receivedBy, Warehouse warehouse, User inspectedBy) {
 
         // Create Note Entity
@@ -123,9 +97,7 @@ public class GoodsReceivedNoteMapper {
         return grn;
     }
 
-    /**
-     * Update existing GoodsReceivedNote Entity with request data.
-     */
+
     public void updateEntity(GoodsReceivedNoteRequestDTO dto, GoodsReceivedNote grn, PurchaseOrder po, Product product, Warehouse warehouse, User inspectedBy) {
         if (dto == null || grn == null) {
             return;

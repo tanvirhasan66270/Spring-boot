@@ -20,14 +20,12 @@ public class DistrictController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PostMapping
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<DistrictResponseDTO> create(@RequestBody DistrictRequestDTO dto) {
         return new ResponseEntity<>(districtService.save(dto), HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @PutMapping("{id}")
-//    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<DistrictResponseDTO> update(@PathVariable Long id, @RequestBody DistrictRequestDTO dto) {
         return ResponseEntity.ok(districtService.update(id, dto));
     }
@@ -40,11 +38,9 @@ public class DistrictController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    // নির্দিষ্ট ডিভিশন আইডির আন্ডারে থাকা জেলাগুলো ক্যাস্কেডিং ড্রপডাউনে ফিল্টার করার এন্ডপয়েন্ট।
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("division/{divisionId}")
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<DistrictResponseDTO>> getByDivisionId(@PathVariable Long divisionId) {
         List<DistrictResponseDTO> list = districtService.getByDivisionId(divisionId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
@@ -52,14 +48,12 @@ public class DistrictController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("{id}")
-//    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<DistrictResponseDTO> getById(@PathVariable Long id) {
         return districtService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @DeleteMapping("{id}")
-//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> delete(@PathVariable Long id) {
         districtService.delete(id);
         return ResponseEntity.ok("District deleted successfully");

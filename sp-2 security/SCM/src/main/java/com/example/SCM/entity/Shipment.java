@@ -66,7 +66,7 @@ public class Shipment {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now(); // প্রথমবার সেভ হওয়ার সময়ও যেন কারেন্ট টাইম পায়
+        this.updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate

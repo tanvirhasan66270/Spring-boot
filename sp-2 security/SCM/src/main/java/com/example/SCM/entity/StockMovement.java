@@ -17,7 +17,6 @@ public class StockMovement {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 Many-to-One Relation mappings
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
@@ -49,7 +48,6 @@ public class StockMovement {
     @Column(columnDefinition = "TEXT")
     private String remarks;
 
-    // 🎯 ডেটাবেজে প্রথমবার সেভ (Insert) হওয়ার সময় কারেন্ট টাইমস্ট্যাম্প সেট হবে
     @PrePersist
     protected void onCreate() {
         if (this.movedAt == null) {
@@ -57,7 +55,6 @@ public class StockMovement {
         }
     }
 
-    // 🎯 ফিক্স: মুভমেন্টের ডেটা আপডেট বা মডিফাই করার সময় স্বয়ংক্রিয়ভাবে টাইমস্ট্যাম্প রি-সিঙ্ক হবে
     @PreUpdate
     protected void onUpdate() {
         this.movedAt = LocalDateTime.now();
