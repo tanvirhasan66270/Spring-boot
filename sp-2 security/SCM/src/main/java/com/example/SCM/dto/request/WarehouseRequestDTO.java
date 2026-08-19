@@ -9,6 +9,9 @@ public class WarehouseRequestDTO {
     private String location;
     private double capacity;
     private Long managerId;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     private boolean isActive;
+    
     private Long policeStationId;
 }

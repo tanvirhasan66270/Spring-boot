@@ -30,179 +30,168 @@
   }
 
   <!-- ───────────────── KPI GRID (6 Cards) ───────────────── -->
-  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-6 g-3 mb-4">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
     <!-- Outbound Shipments -->
     <div class="col">
       <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
-        <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="d-flex align-items-start gap-2 mb-3">
           <div
             class="icon-box bg-primary text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-            style="width: 42px; height: 42px;">
+            style="width: 38px; height: 38px;">
             <i class="bi bi-truck fs-5"></i>
           </div>
           <div class="d-flex flex-column justify-content-center w-100">
-            <div class="text-secondary small fw-semibold lh-1 mb-2">Outbound Shipments</div>
-            <div class="d-flex align-items-center justify-content-between">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Outbound Shipments</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
               <span class="fs-4 fw-bold text-dark lh-1">{{ totalShipments }}</span>
-              <span class="badge bg-primary-subtle text-primary rounded-pill px-2">Active</span>
+              <span class="badge bg-primary-subtle text-primary rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Active</span>
             </div>
           </div>
         </div>
         <div class="small fw-semibold mt-auto"
-          [ngClass]="{'text-success': shipmentsTrend > 0, 'text-danger': shipmentsTrend < 0, 'text-secondary': shipmentsTrend === 0}">
+          [ngClass]="{'text-success': shipmentsTrend > 0, 'text-danger': shipmentsTrend < 0, 'text-secondary': shipmentsTrend === 0}" style="font-size: 11px;">
           <i class="bi"
             [ngClass]="{'bi-arrow-up-short': shipmentsTrend > 0, 'bi-arrow-down-short': shipmentsTrend < 0}"></i>
           {{ shipmentsTrend > 0 ? shipmentsTrend : (shipmentsTrend < 0 ? -shipmentsTrend : 0) }}% vs yesterday </div>
+      </div>
+    </div>
+
+    <!-- Delivery Trips -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-start gap-2 mb-3">
+          <div
+            class="icon-box bg-success text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            style="width: 38px; height: 38px;">
+            <i class="bi bi-diagram-2 fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Delivery Trips</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips }}</span>
+              <span class="badge bg-success-subtle text-success rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Active</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold mt-auto"
+          [ngClass]="{'text-success': tripsTrend > 0, 'text-danger': tripsTrend < 0, 'text-secondary': tripsTrend === 0}" style="font-size: 11px;">
+          <i class="bi" [ngClass]="{'bi-arrow-up-short': tripsTrend > 0, 'bi-arrow-down-short': tripsTrend < 0}"></i>
+          {{ tripsTrend > 0 ? tripsTrend : (tripsTrend < 0 ? -tripsTrend : 0) }}% vs yesterday </div>
+      </div>
+    </div>
+
+    <!-- Active Vehicles -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-start gap-2 mb-3">
+          <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            style="width: 38px; height: 38px; background-color: #6366f1;">
+            <i class="bi bi-car-front fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Active Vehicles</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles }}</span>
+              <span class="badge rounded-pill" style="background-color: #e0e7ff; color: #4338ca; font-size: 10px; font-weight: 600; padding: 2px 6px;">Total</span>
+            </div>
+          </div>
+        </div>
+        <div class="small fw-semibold mt-auto" style="color: #4f46e5; font-size: 11px;">
+          {{ availableVehicles }} Available
         </div>
       </div>
+    </div>
 
-      <!-- Delivery Trips -->
-      <div class="col">
-        <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
-          <div class="d-flex align-items-center gap-3 mb-3">
-            <div
-              class="icon-box bg-success text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-              style="width: 42px; height: 42px;">
-              <i class="bi bi-diagram-2 fs-5"></i>
-            </div>
-            <div class="d-flex flex-column justify-content-center w-100">
-              <div class="text-secondary small fw-semibold lh-1 mb-2">Delivery Trips</div>
-              <div class="d-flex align-items-center justify-content-between">
-                <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips }}</span>
-                <span class="badge bg-success-subtle text-success rounded-pill px-2">Active</span>
-              </div>
-            </div>
-          </div>
-          <div class="small fw-semibold mt-auto"
-            [ngClass]="{'text-success': tripsTrend > 0, 'text-danger': tripsTrend < 0, 'text-secondary': tripsTrend === 0}">
-            <i class="bi" [ngClass]="{'bi-arrow-up-short': tripsTrend > 0, 'bi-arrow-down-short': tripsTrend < 0}"></i>
-            {{ tripsTrend > 0 ? tripsTrend : (tripsTrend < 0 ? -tripsTrend : 0) }}% vs yesterday </div>
-          </div>
-        </div>
-
-        <!-- Active Vehicles -->
-        <div class="col">
-          <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-                style="width: 42px; height: 42px; background-color: #6366f1;">
-                <i class="bi bi-car-front fs-5"></i>
-              </div>
-              <div class="d-flex flex-column justify-content-center w-100">
-                <div class="text-secondary small fw-semibold lh-1 mb-2">Active Vehicles</div>
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="fs-4 fw-bold text-dark lh-1">{{ totalVehicles }}</span>
-                  <span class="badge rounded-pill px-2" style="background-color: #e0e7ff; color: #4338ca;">Total</span>
-                </div>
-              </div>
-            </div>
-            <div class="small fw-semibold mt-auto" style="color: #4f46e5;">
-              {{ availableVehicles }} Available
-            </div>
-          </div>
-        </div>
-
-        <!-- Warehouse Capacity -->
-        <div class="col">
+    <!-- Warehouse Capacity -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card d-flex flex-column justify-content-between">
+        <div class="d-flex align-items-start gap-2 mb-3">
           <div
-            class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card d-flex flex-column justify-content-between">
-            <div class="d-flex align-items-center gap-3 mb-3">
-              <div
-                class="icon-box bg-info text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-                style="width: 42px; height: 42px;">
-                <i class="bi bi-building fs-5"></i>
-              </div>
-              <div class="d-flex flex-column justify-content-center w-100">
-                <div class="text-secondary small fw-semibold lh-1 mb-2">Warehouse Capacity</div>
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="fs-4 fw-bold text-dark lh-1">{{ warehouseCapacityPercent }}%</span>
-                  <span class="badge bg-info-subtle text-info rounded-pill px-2">Utilized</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Progress Bar Section -->
-            <div class="mb-2">
-              <div class="d-flex justify-content-between small fw-bold text-muted mb-1" style="font-size: 11px;">
-                <span class="text-danger">Booked: {{ warehouseCapacityPercent }}%</span>
-                <span class="text-success">Empty: {{ 100 - warehouseCapacityPercent }}%</span>
-              </div>
-              <div class="progress" style="height: 6px; border-radius: 3px;">
-                <div class="progress-bar bg-danger" role="progressbar" [style.width.%]="warehouseCapacityPercent"></div>
-                <div class="progress-bar bg-success" role="progressbar"
-                  [style.width.%]="100 - warehouseCapacityPercent"></div>
-              </div>
-            </div>
-
-            <!-- Footer Text with mt-auto to match other cards -->
-            <div class="small text-secondary fw-semibold mt-auto pt-2 border-top">
-              <i class="bi bi-info-circle me-1"></i> Aggregate utilization
+            class="icon-box bg-info text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            style="width: 38px; height: 38px;">
+            <i class="bi bi-building fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Warehouse Capacity</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ warehouseCapacityPercent }}%</span>
+              <span class="badge bg-info-subtle text-info rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Utilized</span>
             </div>
           </div>
         </div>
 
+        <!-- Progress Bar Section -->
+        <div class="mb-2">
+          <div class="d-flex justify-content-between fw-bold text-muted mb-1" style="font-size: 10px;">
+            <span class="text-danger">Booked: {{ warehouseCapacityPercent }}%</span>
+            <span class="text-success">Empty: {{ 100 - warehouseCapacityPercent }}%</span>
+          </div>
+          <div class="progress" style="height: 6px; border-radius: 3px;">
+            <div class="progress-bar bg-danger" role="progressbar" [style.width.%]="warehouseCapacityPercent"></div>
+            <div class="progress-bar bg-success" role="progressbar"
+              [style.width.%]="100 - warehouseCapacityPercent"></div>
+          </div>
+        </div>
 
-        <!-- Inventory Movements -->
-        <div class="col">
-          <div
-            class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card d-flex flex-column justify-content-between">
-            <div class="d-flex align-items-center gap-3 mb-2">
-              <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-                style="width: 42px; height: 42px; background-color: #06b6d4;">
-                <i class="bi bi-arrow-left-right fs-5"></i>
-              </div>
-              <div class="d-flex flex-column justify-content-center w-100">
-                <div class="text-secondary small fw-semibold lh-1 mb-2">Inventory Movements</div>
-                <div class="d-flex align-items-center justify-content-between">
-                  <span class="fs-4 fw-bold text-dark lh-1">{{ totalMovements }} <small
-                      class="text-muted fs-8 fw-normal">Today</small></span>
-                </div>
-              </div>
-            </div>
+        <div class="small text-secondary fw-semibold mt-auto pt-2 border-top" style="font-size: 11px;">
+          <i class="bi bi-info-circle me-1"></i> Aggregate utilization
+        </div>
+      </div>
+    </div>
 
-            <!-- Stock Badge Row -->
-            <div class="d-flex align-items-center justify-content-between mb-2 px-1">
-              <span class="text-secondary small fw-semibold" style="font-size: 11px;">Total Stock:</span>
-              <span class="badge rounded-pill px-2 py-1"
-                style="background-color: #cffafe; color: #0891b2; font-size: 10px; font-weight: 600;">
-                {{ totalInventoryCount }} Units
+    <!-- Inventory Movements & Total Stock Card -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card d-flex flex-column justify-content-between">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <div class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            style="width: 38px; height: 38px; background-color: #06b6d4;">
+            <i class="bi bi-arrow-left-right fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Total Stock</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalInventoryCount }} <small
+                  class="text-muted fw-normal" style="font-size: 10px;">Units</small>
+              </span>
+              <span class="badge rounded-pill"
+                style="background-color: #cffafe; color: #0891b2; font-size: 10px; font-weight: 600; padding: 2px 6px;">
+                Stock
               </span>
             </div>
+          </div>
+        </div>
 
-            <!-- Footer Trend with mt-auto -->
-            <div class="small fw-semibold mt-auto pt-2 border-top"
-              [ngClass]="{'text-success': inventoryTrend > 0, 'text-danger': inventoryTrend < 0, 'text-secondary': inventoryTrend === 0}">
-              <i class="bi"
-                [ngClass]="{'bi-arrow-up-short': inventoryTrend > 0, 'bi-arrow-down-short': inventoryTrend < 0}"></i>
-              {{ inventoryTrend > 0 ? inventoryTrend : (inventoryTrend < 0 ? -inventoryTrend : 0) }}% vs yesterday
-                </div>
+        <div class="small fw-semibold mt-auto pt-2 border-top"
+          [ngClass]="{'text-success': inventoryTrend > 0, 'text-danger': inventoryTrend < 0, 'text-secondary': inventoryTrend === 0}" style="font-size: 11px;">
+          <i class="bi"
+            [ngClass]="{'bi-arrow-up-short': inventoryTrend > 0, 'bi-arrow-down-short': inventoryTrend < 0}"></i>
+          {{ inventoryTrend > 0 ? inventoryTrend : (inventoryTrend < 0 ? -inventoryTrend : 0) }}% vs yesterday
+        </div>
+      </div>
+    </div>
+
+    <!-- Available Quantity -->
+    <div class="col">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-start gap-2 mb-3">
+          <div
+            class="icon-box text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            style="width: 38px; height: 38px; background-color: #f97316 !important;">
+            <i class="bi bi-box-seam fs-5"></i>
+          </div>
+          <div class="d-flex flex-column justify-content-center w-100">
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Available Quantity</div>
+            <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
+              <span class="fs-4 fw-bold text-dark lh-1">{{ totalAvailableQuantity }}</span>
+              <span class="badge bg-success-subtle text-success rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Available</span>
             </div>
           </div>
-          <!-- Delayed Shipments -->
-          <div class="col">
-            <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
-              <div class="d-flex align-items-center gap-3 mb-3">
-                <div
-                  class="icon-box bg-danger text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-                  style="width: 42px; height: 42px; background-color: #ef4444 !important;">
-                  <i class="bi bi-clock fs-5"></i>
-                </div>
-                <div class="d-flex flex-column justify-content-center w-100">
-                  <div class="text-secondary small fw-semibold lh-1 mb-2">Delayed Shipments</div>
-                  <div class="d-flex align-items-center justify-content-between">
-                    <span class="fs-4 fw-bold text-dark lh-1">{{ delayedShipments }}</span>
-                    <span class="badge bg-danger-subtle text-danger rounded-pill px-2">Delayed</span>
-                  </div>
-                </div>
-              </div>
-              <div class="small fw-semibold mt-auto"
-                [ngClass]="{'text-success': delayedTrend < 0, 'text-danger': delayedTrend > 0, 'text-secondary': delayedTrend === 0}">
-                <i class="bi"
-                  [ngClass]="{'bi-arrow-up-short': delayedTrend > 0, 'bi-arrow-down-short': delayedTrend < 0}"></i>
-                {{ delayedTrend > 0 ? delayedTrend : (delayedTrend < 0 ? -delayedTrend : 0) }} vs yesterday </div>
-              </div>
-            </div>
-          </div>
+        </div>
+        <div class="small text-secondary fw-semibold mt-auto" style="font-size: 11px;">
+          <i class="bi bi-info-circle me-1"></i> Net available units </div>
+      </div>
+    </div>
+  </div>
 
           <!-- ───────────────── QUICK NAVIGATION CARDS ───────────────── -->
           <div class="mb-4">

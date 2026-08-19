@@ -23,7 +23,7 @@
       </div>
 
       <button class="btn btn-primary px-4 py-2 fw-bold shadow-sm d-flex align-items-center gap-2 fs-7"
-        (click)="openDrawer()" *ngIf="userRole !== 'LOGISTICS_OFFICER'">
+        (click)="openDrawer()" *ngIf="userRole === 'ADMIN' || userRole === 'SUPPLIER'">
         <i class="bi bi-truck me-2"></i>Add Shipment
       </button>
     </div>
@@ -84,12 +84,12 @@
                     <i class="bi bi-file-earmark-pdf-fill"></i>
                   </button>
 
-                  <button *ngIf="userRole !== 'LOGISTICS_OFFICER'" class="btn btn-icon btn-light text-warning"
+                  <button *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER' || userRole === 'SUPPLIER'" class="btn btn-icon btn-light text-warning"
                     title="Mutate Track Node" (click)="edit(s)">
                     <i class="bi bi-pencil-square"></i>
                   </button>
 
-                  <button *ngIf="userRole !== 'SUPPLIER' && userRole !== 'LOGISTICS_OFFICER'"
+                  <button *ngIf="userRole === 'ADMIN' || userRole === 'MANAGER'"
                     class="btn btn-icon btn-light text-danger" title="Purge Record" (click)="delete(s.id)">
                     <i class="bi bi-trash3-fill"></i>
                   </button>

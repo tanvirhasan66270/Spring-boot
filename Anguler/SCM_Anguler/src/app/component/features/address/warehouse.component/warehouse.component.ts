@@ -250,25 +250,57 @@ export class WarehouseComponent implements OnInit {
       policeStationId: w.policeStationId,
     };
 
-    this.selectedCountryId = (w as any).countryId || null;
-    this.selectedDivisionId = (w as any).divisionId || null;
-    this.selectedDistrictId = (w as any).districtId || null;
-
-    if (this.selectedCountryId) {
-      this.divisionService.getByCountryId(this.selectedCountryId).subscribe((res) => {
-        this.divisions = res || [];
-        if (this.selectedDivisionId) {
-          this.districtService.getByDivisionId(this.selectedDivisionId).subscribe((res2) => {
-            this.districts = res2 || [];
-            if (this.selectedDistrictId) {
-              this.stationService.getByDistrictId(this.selectedDistrictId).subscribe((res3) => {
-                this.policeStations = res3 || [];
-                this.cdr.markForCheck();
-              });
-            }
-          });
-        }
+    if (w.policeStationId) {
+      console.log('Fetching station for ID:', w.policeStationId);
+      this.stationService.getById(w.policeStationId).subscribe({
+        next: (station) => {
+          console.log('Station loaded:', station);
+          if (station && station.districtId) {
+            this.districtService.getById(station.districtId).subscribe({
+              next: (district) => {
+                console.log('District loaded:', district);
+                if (district && district.divisionId) {
+                  this.divisionService.getById(district.divisionId).subscribe({
+                    next: (division) => {
+                      console.log('Division loaded:', division);
+                      if (division && division.countryId) {
+                        this.selectedCountryId = Number(division.countryId);
+                        console.log('Selected Country ID set to:', this.selectedCountryId);
+                        
+                        this.divisionService.getByCountryId(division.countryId).subscribe((divs) => {
+                          this.divisions = divs || [];
+                          this.selectedDivisionId = Number(district.divisionId);
+                          console.log('Divisions loaded, selectedDivisionId:', this.selectedDivisionId);
+                          this.cdr.markForCheck();
+                        });
+                        
+                        this.districtService.getByDivisionId(district.divisionId).subscribe((dists) => {
+                          this.districts = dists || [];
+                          this.selectedDistrictId = Number(station.districtId);
+                          console.log('Districts loaded, selectedDistrictId:', this.selectedDistrictId);
+                          this.cdr.markForCheck();
+                        });
+                        
+                        this.stationService.getByDistrictId(station.districtId).subscribe((stations) => {
+                          this.policeStations = stations || [];
+                          this.warehouse.policeStationId = Number(station.id);
+                          console.log('Stations loaded, policeStationId:', this.warehouse.policeStationId);
+                          this.cdr.markForCheck();
+                        });
+                      }
+                    },
+                    error: (err) => console.error('Division fetch error:', err)
+                  });
+                }
+              },
+              error: (err) => console.error('District fetch error:', err)
+            });
+          }
+        },
+        error: (err) => console.error('Station fetch error:', err)
       });
+    } else {
+      console.log('No policeStationId on warehouse:', w);
     }
 
     this.isDrawerOpen = true;

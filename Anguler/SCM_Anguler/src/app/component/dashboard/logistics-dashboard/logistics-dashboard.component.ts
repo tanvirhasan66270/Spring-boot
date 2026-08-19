@@ -67,6 +67,7 @@ export class LogisticsDashboardComponent implements OnInit {
   warehouseTrend = 0;
 
   totalInventoryCount = 0;
+  totalAvailableQuantity = 0;
 
   // Grid Data
   dispatchSchedule: any[] = [];
@@ -504,6 +505,7 @@ this.inventoryService.findAll().subscribe({
     const all = data || [];
     // মোট ইনভেন্টরি কোয়ান্টিটি যোগ করা
     this.totalInventoryCount = all.reduce((sum: number, inv: any) => sum + (inv.quantityOnHand || inv.availableSellable || 0), 0);
+    this.totalAvailableQuantity = all.reduce((sum: number, inv: any) => sum + (inv.availableQuantity || 0), 0);
     
     this.computeWarehouseCapacity(all);
     this.cdr.markForCheck();

@@ -74,7 +74,7 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'SALES_OFFICER', 'PROCUREMENT',  'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'PROCUREMENT', 'QC_INSPECTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)

@@ -142,10 +142,6 @@
         <span>Warehouse</span>
       </a>
       <ng-container *ngIf="activeRole !== 'SUPPLIER'">
-        <a routerLink="/purchase-order" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'MANAGER'])">
-          <i class="bi bi-cart3"></i>
-          <span>Purchase Order</span>
-        </a>
         <a routerLink="/inventory" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'MANAGER'])">
           <i class="bi bi-stack"></i>
           <span>Stock</span>
@@ -172,26 +168,20 @@
     </div>
 
     <!-- Logistics -->
-    <div class="nav-section" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'DRIVER', 'MANAGER', 'SUPPLIER', 'PROCUREMENT'])">
+    <div class="nav-section" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'DRIVER', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'ADMIN', 'COMMERCIAL_OFFICER', 'QC_INSPECTOR'])">
       <div class="nav-section-label">Logistics</div>
+      <a routerLink="/shipment" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'PROCUREMENT', 'QC_INSPECTOR'])">
+        <i class="bi bi-truck"></i>
+        <span>Shipment</span>
+      </a>
       <ng-container *ngIf="activeRole !== 'SUPPLIER'">
-        <a routerLink="/shipment" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['LOGISTICS_OFFICER', 'MANAGER'])">
-          <i class="bi bi-truck"></i>
-          <span>Dispatch</span>
-        </a>
-        <a routerLink="/delivery-trip" routerLinkActive="active" class="nav-item">
+        <a routerLink="/delivery-trip" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER'])">
           <i class="bi bi-signpost"></i>
           <span>Delivery Trip</span>
         </a>
-        <a routerLink="/vehicles" routerLinkActive="active" class="nav-item">
+        <a routerLink="/vehicles" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER'])">
           <i class="bi bi-truck-front"></i>
           <span>Vehicles</span>
-        </a>
-      </ng-container>
-      <ng-container *ngIf="activeRole === 'SUPPLIER'">
-        <a routerLink="/shipment" routerLinkActive="active" class="nav-item">
-          <i class="bi bi-truck"></i>
-          <span>Shipment</span>
         </a>
       </ng-container>
       <a routerLink="/poline-item" routerLinkActive="active" class="nav-item d-flex align-items-center justify-content-between" *ngIf="showPoLineItemMenu()">

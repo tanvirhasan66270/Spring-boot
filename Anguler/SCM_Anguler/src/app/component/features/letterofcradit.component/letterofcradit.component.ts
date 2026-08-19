@@ -29,6 +29,7 @@ export class LetterOfCreditComponent implements OnInit, OnDestroy {
   isAmendMode = false;
   currentEditId: number | null = null;
   selectedFile: File | null = null;
+  selectedFilePreview: string | ArrayBuffer | null = null;
   activeRole: string = 'CUSTOMER';
   private roleSubscription!: Subscription;
 
@@ -93,6 +94,23 @@ export class LetterOfCreditComponent implements OnInit, OnDestroy {
   onFileChange(event: any) {
     if (event.target.files && event.target.files.length > 0) {
       this.selectedFile = event.target.files[0];
+      
+      // 🎯 লোকাল লাইভ ইমেজ প্রিভিউ
+      if (this.selectedFile && this.selectedFile.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.selectedFilePreview = reader.result;
+          this.cdr.markForCheck();
+        };
+        reader.readAsDataURL(this.selectedFile);
+      } else {
+        this.selectedFilePreview = null;
+        this.cdr.markForCheck();
+      }
+    } else {
+      this.selectedFile = null;
+      this.selectedFilePreview = null;
+      this.cdr.markForCheck();
     }
   }
 
@@ -213,6 +231,7 @@ export class LetterOfCreditComponent implements OnInit, OnDestroy {
       documentVaultUrl: ''
     };
     this.selectedFile = null;
+    this.selectedFilePreview = null;
     this.isEdit = false;
     this.isAmendMode = false;
     this.currentEditId = null;
@@ -227,5 +246,18 @@ export class LetterOfCreditComponent implements OnInit, OnDestroy {
 
   canModify(): boolean {
     return ['ADMIN', 'MANAGER', 'COMMERCIAL_OFFICER'].includes(this.activeRole);
+  }
+
+  isImage(url: string | undefined): boolean {
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.gif') || lowerUrl.endsWith('.webp');
+  }
+
+  getFileUrl(url: string | undefined): string {
+    if (!url) return '';
+    // DB stores 'uploads/lc/...', but Spring Boot serves via '/images/lc/...'
+    const correctedPath = url.startsWith('uploads/') ? url.replace('uploads/', 'images/') : url;
+    return 'http://localhost:8085/' + correctedPath;
   }
 }

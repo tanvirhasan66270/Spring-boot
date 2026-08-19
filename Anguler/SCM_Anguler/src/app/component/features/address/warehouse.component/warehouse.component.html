@@ -172,7 +172,7 @@
           <div class="mb-2">
             <label class="form-label text-muted small fw-medium">Country</label>
             <select class="form-select fs-7" [(ngModel)]="selectedCountryId" name="countryId" (change)="onCountryChange(); generateFullAddress()">
-              <option [ngValue]="null">-- Select Country --</option>
+              <option value="">-- Select Country --</option>
               <option *ngFor="let c of countries" [value]="c.id">{{ c.name }}</option>
             </select>
           </div>
@@ -180,7 +180,7 @@
           <div class="mb-2">
             <label class="form-label text-muted small fw-medium">Division</label>
             <select class="form-select fs-7" [(ngModel)]="selectedDivisionId" name="divisionId" (change)="onDivisionChange(); generateFullAddress()" [disabled]="!divisions || divisions.length === 0">
-              <option [ngValue]="null">-- Select Division --</option>
+              <option value="">-- Select Division --</option>
               <option *ngFor="let d of divisions" [value]="d.id">{{ d.name }}</option>
             </select>
           </div>
@@ -188,7 +188,7 @@
           <div class="mb-2">
             <label class="form-label text-muted small fw-medium">District</label>
             <select class="form-select fs-7" [(ngModel)]="selectedDistrictId" name="districtId" (change)="onDistrictChange(); generateFullAddress()" [disabled]="!districts || districts.length === 0">
-              <option [ngValue]="null">-- Select District --</option>
+              <option value="">-- Select District --</option>
               <option *ngFor="let dst of districts" [value]="dst.id">{{ dst.name }}</option>
             </select>
           </div>

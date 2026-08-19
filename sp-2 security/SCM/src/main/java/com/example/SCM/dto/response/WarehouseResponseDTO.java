@@ -12,7 +12,10 @@ public class WarehouseResponseDTO {
     private String address;
     private double capacity;
     private Long managerId;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("isActive")
     private boolean isActive;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

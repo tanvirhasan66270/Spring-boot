@@ -19,7 +19,7 @@ export class DivisionService {
   }
 
   getById(id: number): Observable<DivisionResponseModel> {
-    return this.http.get<DivisionResponseModel>(`${this.apiUrl}/${id}`);
+    return this.http.get<DivisionResponseModel>(`${this.apiUrl}${id}`);
   }
 
   save(division: DivisionRequestModel): Observable<DivisionResponseModel> {
@@ -27,11 +27,11 @@ export class DivisionService {
   }
 
   update(id: number, division: DivisionRequestModel): Observable<DivisionResponseModel> {
-    return this.http.put<DivisionResponseModel>(`${this.apiUrl}/${id}`, division);
+    return this.http.put<DivisionResponseModel>(`${this.apiUrl}${id}`, division);
   }
 
   delete(id: number): Observable<string> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { responseType: 'text' });
+    return this.http.delete(`${this.apiUrl}${id}`, { responseType: 'text' });
   }
 
   getByCountryId(id: number): Observable<any[]> {
