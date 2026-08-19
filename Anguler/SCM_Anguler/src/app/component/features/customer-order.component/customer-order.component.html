@@ -87,6 +87,7 @@
                     <i class="bi bi-shield-check fs-6"></i>
                   </button>
 
+                  @if (userRole !== 'SALES_OFFICER') {
                   <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
                     <i class="bi bi-pencil-square"></i>
                   </button>
@@ -94,6 +95,7 @@
                     (click)="delete(o.id)">
                     <i class="bi bi-trash-fill"></i>
                   </button>
+                  }
                   }
                 </div>
               </td>

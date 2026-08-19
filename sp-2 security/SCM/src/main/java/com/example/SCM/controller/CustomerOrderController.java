@@ -38,7 +38,7 @@ public class CustomerOrderController {
     }
 
     // 2. General Update Order Metadata
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') or @customerOrderSecurity.isOwner(#id, authentication)")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER') or @customerOrderSecurity.isOwner(#id, authentication)")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<CustomerOrderResponseDTO> updateOrder(
             @PathVariable Long id,

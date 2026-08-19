@@ -1,5 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { RouterModule, Router } from '@angular/router';
 import { KEYS, StorageService } from '../../../auth/auth_service/storage.service';
 import { SalesOfficerService } from '../../../service/sales-officer.service';
@@ -16,11 +18,12 @@ import Chart from 'chart.js/auto';
 import { AddProductService } from '../../../service/add-product.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
 import { PurchaseOrderResponseModel } from '../../shared/model/purchaseOrderModel';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-sales-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './sales-dashboard.component.html',
   styleUrls: ['./sales-dashboard.component.css'],
 })
@@ -53,6 +56,20 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   pipeline = { leads: 0, quotations: 0, negotiation: 0, order: 0, delivered: 0 };
 
   private ordersLoaded = false;
+  
+  // Status Modal Properties
+  isStatusModalOpen = false;
+  selectedOrderForStatus: any = null;
+  newOrderStatus = 'PENDING';
+  availableStatuses = [
+    'PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 
+    'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED', 'RETURNED', 'REFUNDED'
+  ];
+
+  // PDF Modal Properties
+  @ViewChild('orderPdfContainer') orderPdfContainer!: ElementRef;
+  isPdfModalOpen = false;
+  selectedOrderForPdf: any = null;
   private customersLoaded = false;
   
   // Charts
@@ -64,6 +81,38 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
 
   activeModal: 'orders' | 'quotations' | 'customers' | 'shipments' | 'notifications' | 'target' | 'purchase' | 'invoices' | 'payments' | 'directory' | null = null;
   modalSearchText = '';
+  
+  // Dashboard Order Table Search Properties
+  dashboardOrderSearchText = '';
+  dashboardOrderSearchDate = '';
+  dashboardOrderStatusSearch = 'ALL';
+
+  get dashboardFilteredOrders(): any[] {
+    let list = this.orders;
+    
+    if (this.dashboardOrderStatusSearch && this.dashboardOrderStatusSearch !== 'ALL') {
+      list = list.filter((o: any) => o.status === this.dashboardOrderStatusSearch);
+    }
+    
+    if (this.dashboardOrderSearchText) {
+      const q = this.dashboardOrderSearchText.toLowerCase();
+      list = list.filter((o: any) => 
+        (o.orderNumber && String(o.orderNumber).toLowerCase().includes(q)) ||
+        (o.customerName && String(o.customerName).toLowerCase().includes(q)) ||
+        (o.paymentStatus && String(o.paymentStatus).toLowerCase().includes(q)) ||
+        (o.status && String(o.status).toLowerCase().includes(q))
+      );
+    }
+    
+    if (this.dashboardOrderSearchDate) {
+      list = list.filter((o: any) => {
+        if (!o.createdAt) return false;
+        return o.createdAt.startsWith(this.dashboardOrderSearchDate);
+      });
+    }
+    return list;
+  }
+
   purchaseSelectedMonth: number | 'ALL' = 'ALL';
   purchaseSelectedDate: string = '';
   invoiceSelectedMonth: number | 'ALL' = 'ALL';
@@ -759,5 +808,74 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
       cutout: '75%'
     }];
     this.targetChart.update();
+  }
+  openStatusModal(o: any) {
+    this.selectedOrderForStatus = o;
+    this.newOrderStatus = o.status || 'PENDING';
+    this.isStatusModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeStatusModal() {
+    this.isStatusModalOpen = false;
+    this.selectedOrderForStatus = null;
+    this.cdr.markForCheck();
+  }
+
+  updateOrderStatus() {
+    if (!this.selectedOrderForStatus) return;
+
+    this.orderService.updateStatus(this.selectedOrderForStatus.id, this.newOrderStatus).subscribe({
+      next: () => {
+        alert("✔️ Order lifecycle status updated successfully!");
+        this.closeStatusModal();
+        this.loadAllData(); // Reload orders to update table
+      },
+      error: (err: any) => {
+        alert(err.error?.message || "Failed to update status.");
+      }
+    });
+  }
+
+  openPdfModal(o: any) {
+    this.selectedOrderForPdf = o;
+    this.isPdfModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closePdfModal() {
+    this.isPdfModalOpen = false;
+    this.selectedOrderForPdf = null;
+    this.cdr.markForCheck();
+  }
+
+  downloadOrderPdf() {
+    if (!this.orderPdfContainer) return;
+    const element = this.orderPdfContainer.nativeElement;
+    html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      windowHeight: element.scrollHeight
+    }).then((canvas: HTMLCanvasElement) => {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`Customer-Order-${this.selectedOrderForPdf?.orderNumber || 'Invoice'}.pdf`);
+    });
   }
 }

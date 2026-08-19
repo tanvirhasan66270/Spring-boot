@@ -12,6 +12,7 @@ public class CustomerOrderSecurity {
 
     private final CustomerOrderRepository orderRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public boolean isOwner(Long orderId, Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated() || orderId == null) {
             return false;

@@ -68,7 +68,7 @@ export class CustomerComponent implements OnInit {
     private divisionService: DivisionService,
     private districtService: DistrictService,
     private stationService: PoliceStationService,
-    private storage: StorageService, // 🌟 স্টোরেজ সার্ভিস ইনজেক্ট করুন
+    private storage: StorageService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private router: Router

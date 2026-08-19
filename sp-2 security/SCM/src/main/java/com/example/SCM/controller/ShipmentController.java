@@ -49,7 +49,7 @@ public class ShipmentController {
         return ResponseEntity.ok(shipmentService.update(id, dto, file));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER',  'PROCUREMENT',  'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER',  'PROCUREMENT',  'QC_INSPECTOR', 'SALES_OFFICER')")
     @GetMapping
     public ResponseEntity<List<ShipmentResponseDTO>> getAll() {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -74,7 +74,7 @@ public class ShipmentController {
         return ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'PROCUREMENT', 'QC_INSPECTOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'SUPPLIER', 'PROCUREMENT', 'QC_INSPECTOR', 'SALES_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<ShipmentResponseDTO> getById(@PathVariable Long id) {
         return shipmentService.getById(id)

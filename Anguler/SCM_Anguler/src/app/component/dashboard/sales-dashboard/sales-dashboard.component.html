@@ -205,6 +205,79 @@
     </div>
   </div>
 
+  <!-- Customer Order Log Table (Full Width) -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm rounded-4 bg-white" style="border-top: 4px solid #198754 !important;">
+        <div class="card-header bg-white border-0 pt-4 pb-2 px-4 d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
+            <h6 class="fw-bold text-success text-uppercase fs-6 mb-0">CUSTOMER ORDER LOG</h6>
+          </div>
+          <div class="d-flex gap-2">
+            <select class="form-select form-select-sm rounded-pill px-3 shadow-none border text-muted" [(ngModel)]="dashboardOrderStatusSearch" style="width: 140px; font-size: 0.8rem;">
+              <option value="ALL">All Status</option>
+              <ng-container *ngFor="let st of availableStatuses">
+                <option [value]="st">{{ st }}</option>
+              </ng-container>
+            </select>
+            <input type="date" class="form-control form-control-sm rounded-pill px-3 shadow-none border text-muted" [(ngModel)]="dashboardOrderSearchDate" style="width: 130px; font-size: 0.8rem;">
+            <input type="text" class="form-control form-control-sm rounded-pill px-3 shadow-none border" placeholder="Search orders..." [(ngModel)]="dashboardOrderSearchText" style="width: 220px; font-size: 0.8rem;">
+          </div>
+        </div>
+        <div class="card-body px-4 pb-4 pt-2">
+          <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover align-middle fs-8 mb-0">
+              <thead class="table-light text-uppercase text-muted fs-9 position-sticky top-0 shadow-sm" style="z-index: 1;">
+                <tr>
+                  <th class="ps-3 py-3">Order No</th>
+                  <th class="py-3">Customer</th>
+                  <th class="py-3">Total Amount</th>
+                  <th class="py-3">Status</th>
+                  <th class="py-3">Payment Status</th>
+                  <th class="py-3">Date</th>
+                  <th class="text-end pe-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of dashboardFilteredOrders">
+                  <td class="fw-bold text-primary ps-3">{{ o.orderNumber || 'SO-'+o.id }}</td>
+                  <td>
+                    <div class="fw-semibold text-dark">{{ o.customerName || 'Customer' }}</div>
+                    <small *ngIf="o.customerEmail" class="text-muted d-block font-monospace" style="font-size: 9px;">{{ o.customerEmail }}</small>
+                  </td>
+                  <td class="fw-bold text-dark">৳{{ (o.totalAmount || o.codAmount || 0) | number:'1.2-2' }}</td>
+                  <td><span class="badge {{ getStageBadgeClass(o.status) }} rounded-pill px-3">{{ o.status }}</span></td>
+                  <td>
+                    <span class="badge" [ngClass]="{
+                      'bg-success-subtle text-success': o.paymentStatus === 'PAID',
+                      'bg-warning-subtle text-warning': o.paymentStatus === 'PARTIALLY_PAID',
+                      'bg-danger-subtle text-danger': o.paymentStatus === 'UNPAID' || !o.paymentStatus
+                    }">{{ o.paymentStatus || 'UNPAID' }}</span>
+                  </td>
+                  <td class="text-muted">{{ o.createdAt | date:'dd MMM yyyy, hh:mm a' }}</td>
+                  <td class="text-end pe-4">
+                    <div class="d-flex justify-content-end gap-1">
+                      <button class="btn btn-icon btn-light text-danger border-0" title="View Order PDF" (click)="openPdfModal(o)">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                      </button>
+                      <button class="btn btn-icon btn-light text-success border-0 shadow-sm" title="Update Lifecycle Status" (click)="openStatusModal(o)">
+                        <i class="bi bi-shield-check fs-6"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="dashboardFilteredOrders.length === 0">
+                  <td colspan="7" class="text-center text-muted py-4">No matching orders found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 4. Charts & Monthly Target Row -->
   <div class="row g-4 mb-4 align-items-stretch">
     <!-- Sales Overview Chart Card -->
@@ -353,7 +426,7 @@
   <!-- 6. Tables Row (Recent Orders, Recent Quotations, Top Customers) -->
   <div class="row g-4 mb-4">
     <!-- Recent Orders -->
-    <div class="col-lg-4">
+    <!-- <div class="col-lg-4">
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Orders</h6>
@@ -378,10 +451,10 @@
           </table>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <!-- Recent Quotations -->
-    <div class="col-lg-4">
+    <div class="col-lg-6">
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Recent Quotations</h6>
@@ -412,7 +485,7 @@
     </div>
 
     <!-- Top Customers -->
-    <div class="col-lg-4">
+    <div class="col-lg-6">
       <div class="card border-0 shadow-sm p-4 rounded-4 bg-white h-100">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-extrabold text-dark text-uppercase fs-7 mb-0">Top Customers</h6>
@@ -646,6 +719,7 @@
               <th>Status</th>
               <th>Payment Status</th>
               <th>Date</th>
+              <th class="text-end">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -665,9 +739,19 @@
                 }">{{ o.paymentStatus || 'UNPAID' }}</span>
               </td>
               <td class="text-muted">{{ o.createdAt | date:'dd MMM yyyy, hh:mm a' }}</td>
+              <td class="text-end px-4">
+                <div class="d-flex justify-content-end gap-1">
+                  <button class="btn btn-icon btn-light text-danger border-0" title="View Order PDF" (click)="openPdfModal(o)">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                  </button>
+                  <button class="btn btn-icon btn-light text-success border-0 shadow-sm" title="Update Lifecycle Status" (click)="openStatusModal(o)">
+                    <i class="bi bi-shield-check fs-6"></i>
+                  </button>
+                </div>
+              </td>
             </tr>
             <tr *ngIf="filteredModalOrders.length === 0">
-              <td colspan="6" class="text-center text-muted py-4">No matching orders found</td>
+              <td colspan="7" class="text-center text-muted py-4">No matching orders found</td>
             </tr>
           </tbody>
         </table>
@@ -1001,4 +1085,251 @@
       <button type="button" class="btn btn-sm btn-secondary rounded-3 px-4" (click)="closeModal()">Close</button>
     </div>
   </div>
-</div>
+</div>  <!-- PDF Modal -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);" *ngIf="isPdfModalOpen">
+    <div class="modal-dialog modal-lg modal-dialog-centered" style="max-width: 850px;">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden">
+        
+        <div class="modal-header bg-dark text-white px-4 py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-file-earmark-pdf me-2 text-danger"></i> Customer Purchase Order PDF Preview
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closePdfModal()"></button>
+        </div>
+
+        <div class="modal-body bg-light p-4 d-flex justify-content-center">
+          <div #orderPdfContainer class="bg-white p-5 shadow-sm rounded-3 border"
+            style="width: 794px; font-family: Arial, sans-serif; color: #000; line-height: 1.6;">
+
+            <div class="text-center mb-4 pb-3 border-bottom">
+              <h1 class="fw-bold mb-0"
+                style="letter-spacing: 3px; font-size: 36px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                <span style="color: #0b2545;">S</span><span style="color: #0b2545;">C</span><span
+                  style="color: #38b000;">M</span>
+              </h1>
+              <h5 class="fw-bold text-dark mt-1 mb-2" style="letter-spacing: 4px; font-size: 13px;">
+                ENTERPRISE LOGISTICS NODE
+              </h5>
+              <div class="d-flex justify-content-center align-items-center gap-3 mt-2 text-uppercase"
+                style="font-size: 11px; font-weight: 700; color: #0b2545;">
+                <span><i class="bi bi-link-45deg text-primary fs-6 me-1 align-middle"></i> CONNECT</span>
+                <span class="text-muted">|</span>
+                <span><i class="bi bi-gear-fill text-success fs-6 me-1 align-middle"></i> OPTIMIZE</span>
+                <span class="text-muted">|</span>
+                <span><i class="bi bi-truck text-primary fs-6 me-1 align-middle"></i> DELIVER</span>
+              </div>
+            </div>
+
+            <div class="text-center mb-4">
+              <h3 class="fw-bold text-dark mb-1" style="letter-spacing: 1px;">CUSTOMER PURCHASE ORDER</h3>
+              <p class="text-muted small mb-0"><b>Order Number:</b> {{ selectedOrderForPdf?.orderNumber }} | <b>Order ID
+                  Node:</b> #{{ selectedOrderForPdf?.id }}</p>
+            </div>
+
+            <div class="row g-3 mb-4 fs-7 bg-light p-3 rounded border border-secondary-subtle">
+              <div class="col-7">
+                <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">Issued To
+                  Recipient</span>
+                <strong class="text-dark fs-6">{{ selectedOrderForPdf?.customerName }}</strong>
+                <div class="text-muted text-truncate">{{ selectedOrderForPdf?.customerEmail }}</div>
+                <div class="text-muted mt-1 small"><i class="bi bi-telephone text-primary"></i> {{
+                  selectedOrderForPdf?.deliveryPhone }}</div>
+                <div class="text-muted mt-1 small"><i class="bi bi-geo-alt text-danger"></i> {{
+                  selectedOrderForPdf?.deliveryAddress }}</div>
+              </div>
+              <div class="col-5 text-end border-start">
+                <span class="text-uppercase font-monospace text-secondary fs-8 d-block fw-bold mb-1">System Audit
+                  Matrix</span>
+                <div class="small text-muted">Created: {{ selectedOrderForPdf?.createdAt | date:'yyyy-MM-dd HH:mm' }}
+                </div>
+                <div class="small text-muted mt-1">Est. Delivery: <b class="text-primary">{{
+                    selectedOrderForPdf?.estimatedDelivery || 'N/A' }}</b></div>
+                <div class="mt-2">Lifecycle: <span class="badge bg-primary text-uppercase px-2 py-1">{{
+                    selectedOrderForPdf?.status }}</span></div>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-dark mt-4 mb-3 uppercase fs-8 border-bottom pb-2">Product Specification Allocations
+              (Line Items)</h6>
+            <table class="table table-bordered align-middle fs-8 mb-4">
+              <thead class="table-light text-uppercase">
+                <tr>
+                  <th class="py-2.5">#</th>
+                  <th class="py-2.5">Product Details</th>
+                  <th class="text-center py-2.5">Qty</th>
+                  <th class="text-end py-2.5">Unit Price</th>
+                  <th class="text-end py-2.5">Line Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let item of selectedOrderForPdf?.lineItems; let idx = index">
+                <tr>
+                  <td class="font-monospace py-2.5">{{ idx + 1 }}</td>
+                  <td class="py-2.5">
+                    <div class="fw-bold text-dark">{{ item.productName }}</div>
+                    <small class="text-muted font-monospace">Code: {{ item.productCode }} | Wt: {{ item.itemWeightTotal
+                      }}kg</small>
+                    <div *ngIf="item.remarks" class="text-info small fst-italic mt-1">Note: {{ item.remarks }}</div>
+                  </td>
+                  <td class="text-center font-monospace fw-bold py-2.5">{{ item.quantity }}</td>
+                  <td class="text-end font-monospace py-2.5">?{{ item.unitPrice | number:'1.2-2' }}</td>
+                  <td class="text-end font-monospace fw-bold text-success py-2.5">?{{ item.lineTotal | number:'1.2-2' }}
+                  </td>
+                </tr>
+                </ng-container>
+              </tbody>
+            </table>
+
+            <div class="row fs-8 mb-4 pt-2">
+              <div class="col-6">
+                <p class="mb-2">Priority: <b class="text-uppercase text-danger">{{ selectedOrderForPdf?.priority }}</b>
+                </p>
+                <p class="mb-2">Service Strategy: <b class="text-uppercase text-info">{{
+                    selectedOrderForPdf?.serviceType }}</b></p>
+                <p class="mb-2">Payment Method: <b class="text-uppercase">{{ selectedOrderForPdf?.paymentMethod }}</b>
+                </p>
+
+                <ng-container *ngIf="selectedOrderForPdf?.paymentMethod === 'BANK'">
+                <div class="p-2 mb-2 bg-light border rounded font-monospace" style="font-size: 10px;">
+                  <b class="text-primary d-block mb-1">Company Bank Details:</b>
+                  <div>Bank: City Bank PLC</div>
+                  <div>A/C: 120-3341-98234101</div>
+                </div>
+                </ng-container>
+                <ng-container *ngIf="['BKASH', 'NAGAD', 'ROCKET'].includes(selectedOrderForPdf?.paymentMethod || '')">
+                <div class="p-2 mb-2 bg-light border rounded font-monospace" style="font-size: 10px;">
+                  <b class="text-danger d-block mb-1">Company {{ selectedOrderForPdf?.paymentMethod }} Merchant:</b>
+                  <div>A/C: 01712-345678 (Personal/Merchant)</div>
+                </div>
+                </ng-container>
+
+                <p class="mb-2">Payment Status: <b class="text-uppercase text-success">{{
+                    selectedOrderForPdf?.paymentStatus }}</b></p>
+                <p class="mb-2">Currency: <b>{{ selectedOrderForPdf?.currency }}</b></p>
+                <ng-container *ngIf="selectedOrderForPdf?.remarks">
+                <p class="mb-2">Remarks: <i>{{ selectedOrderForPdf?.remarks }}</i></p>
+                </ng-container>
+              </div>
+              <div class="col-6">
+                <table class="table table-sm table-borderless mb-0 text-end font-monospace">
+                  <tr>
+                    <td class="text-muted py-1.5">Item Subtotal:</td>
+                    <td class="fw-bold py-1.5">?{{ selectedOrderForPdf?.itemSubtotal | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Total Weight:</td>
+                    <td class="py-1.5">{{ selectedOrderForPdf?.weight || 0 }} KG</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Delivery Charge:</td>
+                    <td class="py-1.5">?{{ selectedOrderForPdf?.deliveryCharge | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-muted py-1.5">Paid Amount (COD):</td>
+                    <td class="text-success py-1.5">?{{ selectedOrderForPdf?.paidAmount | number:'1.2-2' }}</td>
+                  </tr>
+                  <ng-container *ngIf="selectedOrderForPdf?.dueAmount && +selectedOrderForPdf!.dueAmount > 0">
+                  <tr>
+                    <td class="text-danger fw-bold py-1.5">Due Amount:</td>
+                    <td class="text-danger fw-bold py-1.5">?{{ selectedOrderForPdf?.dueAmount | number:'1.2-2' }}</td>
+                  </tr>
+                  </ng-container>
+                  <tr class="border-top">
+                    <td class="fw-bold text-dark fs-7 pt-2">Total Amount:</td>
+                    <td class="fw-bold text-success fs-7 pt-2">?{{ selectedOrderForPdf?.totalAmount | number:'1.2-2' }}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+
+            <div class="row pt-5 border-top text-center"
+              style="display: flex; justify-content: space-between; margin-top: 50px !important; padding-top: 25px !important;">
+              <div style="width: 30%; display: inline-block;">
+                <div
+                  style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;">
+                </div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Customer Signature</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Received & Acknowledged)</p>
+              </div>
+              <div style="width: 30%; display: inline-block;">
+                <div
+                  style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;">
+                </div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Logistics Officer</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Prepared & Verified)</p>
+              </div>
+              <div style="width: 30%; display: inline-block;">
+                <div
+                  style="border-top: 1px solid #000; margin-bottom: 5px; width: 90%; margin-left: auto; margin-right: auto;">
+                </div>
+                <p class="fw-bold mb-0" style="font-size: 11px;">Manager Signature</p>
+                <p class="text-muted small mb-0" style="font-size: 9px;">(Authorized & Approved)</p>
+              </div>
+            </div>
+
+            <div class="text-center mt-5 pt-3 border-top text-muted" style="font-size: 10px;">
+              <p class="mb-0">This is a system-generated secure electronic order confirmation and invoice manifest from
+                SCMPro Ecosystem.</p>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="modal-footer bg-white px-4 py-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 fw-bold" (click)="closePdfModal()">Close</button>
+          <button type="button" class="btn btn-danger px-4 fw-bold d-flex align-items-center gap-2"
+            (click)="downloadOrderPdf()">
+            <i class="bi bi-download"></i> Download PDF
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show" *ngIf="isPdfModalOpen"></div>
+
+  <!-- Status Update Modal Window -->
+  <div class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.6);"
+    *ngIf="isStatusModalOpen">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content shadow-lg border-0 rounded-4">
+
+        <div class="modal-header bg-dark text-white px-4 py-3">
+          <h5 class="modal-title fw-bold">
+            <i class="bi bi-gear-wide-connected me-2 text-primary"></i> Update Order Lifecycle Status
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeStatusModal()"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-light">
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Target Order Reference</label>
+            <div class="font-monospace fw-bold text-dark fs-6">{{ selectedOrderForStatus?.orderNumber }}</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase text-secondary">Select New Lifecycle State</label>
+            <select class="form-select fw-bold text-primary" [(ngModel)]="newOrderStatus">
+              <ng-container *ngFor="let st of availableStatuses">
+              <option [value]="st">{{ st }}</option>
+              </ng-container>
+            </select>
+            <small class="text-muted d-block mt-1">This will instantly modify the pipeline tracking stage for
+              logistics.</small>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-white px-4 py-3 border-top">
+          <button type="button" class="btn btn-outline-secondary px-4 fw-bold rounded-pill"
+            (click)="closeStatusModal()">Cancel</button>
+          <button type="button" class="btn btn-primary px-4 fw-bold rounded-pill d-flex align-items-center gap-2"
+            (click)="updateOrderStatus()">
+            <i class="bi bi-check2-circle"></i> Save Status
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show" *ngIf="isStatusModalOpen"></div>

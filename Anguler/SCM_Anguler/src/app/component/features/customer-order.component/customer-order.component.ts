@@ -9,6 +9,8 @@ import { CustomerOrderRequestModel, CustomerOrderResponseModel, OrderLineItemReq
 import { CustomerOrderService } from '../../../service/customer-order.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
+import { environment } from '../../../../environment/environment';
+
 
 @Component({
   selector: 'app-customer-order',
@@ -18,6 +20,8 @@ import { StorageService } from '../../../auth/auth_service/storage.service';
   styleUrl: './customer-order.component.css',
 })
 export class CustomerOrderComponent implements OnInit {
+
+  readonly imageBaseUrl = environment.imgUrl + 'customer_orders/';
 
   orders: CustomerOrderResponseModel[] = [];
   customers: any[] = [];
@@ -418,6 +422,13 @@ export class CustomerOrderComponent implements OnInit {
         remarks: item.remarks || ''
       }))
     };
+    
+    if (o.paymentCheckImage) {
+      this.imagePreview = this.imageBaseUrl + o.paymentCheckImage;
+    } else {
+      this.imagePreview = null;
+    }
+    this.selectedImage = null;
 
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
