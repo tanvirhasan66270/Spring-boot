@@ -56,27 +56,31 @@
   transform: translateY(-1px);
 }
 
-/* ==========================================
-   🎯 SLIDE DRAWER CONTAINER (RIGHT SIDE)
-   ========================================== */
+/* --- CENTER VIEW MODAL / DRAWER --- */
 .slide-drawer {
-  position: fixed;
-  top: 0;
-  right: -560px;       /* 450px থেকে বাড়িয়ে 540px ড্রয়ারের উইডথ + বাফারিং পাথ */
-  width: 540px;        /* ইনপুট ফর্মগুলো সুন্দরভাবে দেখানোর জন্য উইডথ অপ্টিমাইজ করা হয়েছে */
-  max-width: 95vw;     /* রেসপন্সিভ মোবাইল সেফগার্ড */
-  height: 100vh;
-  background-color: #ffffff;
-  z-index: 1060;       /* বুটস্ট্র্যাপ ন্যাভবারের ওপরে থাকার জন্য */
-  box-shadow: -8px 0 30px rgba(15, 23, 42, 0.15);
-  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    width: 750px;           /* ফর্মের চওড়া বাড়ানোর জন্য */
+    max-width: 95vw;        /* ছোট স্ক্রিনে রেস্পন্সিভ রাখার জন্য */
+    height: 85vh;           /* উচ্চতা বড় করার জন্য */
+    max-height: 90vh;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    border-radius: 12px;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1060;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
 }
 
-/* HTML-এর [class.show]="isDrawerOpen" এর সাথে সিঙ্কড অ্যাক্টিভেশন ক্লাস */
 .slide-drawer.show {
-  right: 0;
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    visibility: visible;
 }
 
 /* --- BACKDROP BLUR BLIND --- */

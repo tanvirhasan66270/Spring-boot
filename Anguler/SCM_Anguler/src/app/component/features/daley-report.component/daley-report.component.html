@@ -72,18 +72,22 @@
                 <td class="text-center pe-4">
                   <div class="d-flex justify-content-center gap-1">
                     @if (r.reportStatus !== 'APPROVED') {
-                      <button class="btn btn-sm btn-outline-success fs-9 px-2.5 py-1" (click)="approveReport(r.id)">
-                        <i class="bi bi-shield-check"></i> Approve
-                      </button>
+                      @if (activeRole === 'MANAGER') {
+                        <button class="btn btn-sm btn-outline-success fs-9 px-2.5 py-1" (click)="approveReport(r.id)">
+                          <i class="bi bi-shield-check"></i> Approve
+                        </button>
+                      }
                       <button class="btn btn-sm btn-action-edit fs-9" (click)="edit(r)">
                         <i class="bi bi-pencil-square"></i>
                       </button>
                     } @else {
                       <span class="text-muted small fs-9 font-monospace"><i class="bi bi-lock-fill text-success me-1"></i>Locked</span>
                     }
-                    <button class="btn btn-sm btn-action-delete fs-9" (click)="deleteReport(r.id)">
-                      <i class="bi bi-trash3"></i>
-                    </button>
+                    @if (activeRole === 'MANAGER') {
+                      <button class="btn btn-sm btn-action-delete fs-9" (click)="deleteReport(r.id)">
+                        <i class="bi bi-trash3"></i>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

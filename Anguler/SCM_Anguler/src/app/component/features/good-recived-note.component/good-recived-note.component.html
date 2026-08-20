@@ -154,7 +154,7 @@
 
         <div class="mb-3">
           <label class="form-label fw-bold small text-uppercase text-secondary">Source Purchase Order Vector</label>
-          <select class="form-select fs-7" [(ngModel)]="grn.poId" name="poId" required [disabled]="isEdit">
+          <select class="form-select fs-7" [(ngModel)]="grn.poId" name="poId" required [disabled]="isEdit" (change)="onPoChange()">
             <option [value]="0">-- Link Core Procurement PO --</option>
             @for (po of purchaseOrders; track po.id) {
             <option [value]="po.id">PO #{{ po.poNumber }} (Volume: {{ po.quantity }} Units)</option>
@@ -230,7 +230,7 @@
             <div class="col-md-5">
               <select class="form-select fs-8 py-1" [(ngModel)]="item.productId" name="itemProd_{{idx}}" required>
                 <option [value]="0">-- Select --</option>
-                @for (p of products; track p.id) {
+                @for (p of filteredProducts; track p.id) {
                 <option [value]="p.id">{{ p.name }}</option>
                 }
               </select>

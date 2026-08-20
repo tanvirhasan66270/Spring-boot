@@ -66,6 +66,8 @@ export class ManagerDashboardComponent implements OnInit {
 
   lowStockItems: any[] = [];
   activeShipments: any[] = [];
+  filteredShipments: any[] = [];
+  shipmentSearchTerm: string = '';
   dailyReports: DailyReportResponseModel[] = [];
   failedQCCount = 0;
   supplierCount = 0;
@@ -251,13 +253,33 @@ filteredRequisitions: any[] = [];
     });
   }
 
+  filterShipments(): void {
+    if (!this.shipmentSearchTerm) {
+      this.filteredShipments = [...this.activeShipments];
+      return;
+    }
+    const term = this.shipmentSearchTerm.toLowerCase();
+    this.filteredShipments = this.activeShipments.filter(s => 
+      (s.id && s.id.toString().includes(term)) ||
+      (s.supplierName && s.supplierName.toLowerCase().includes(term)) ||
+      (s.receiverName && s.receiverName.toLowerCase().includes(term)) ||
+      (s.sendByAddress && s.sendByAddress.toLowerCase().includes(term)) ||
+      (s.destination && s.destination.toLowerCase().includes(term)) ||
+      (s.origin && s.origin.toLowerCase().includes(term)) ||
+      (s.vehicleNumber && s.vehicleNumber.toLowerCase().includes(term)) ||
+      (s.captainRegistrationNumber && s.captainRegistrationNumber.toLowerCase().includes(term)) ||
+      (s.driverName && s.driverName.toLowerCase().includes(term))
+    );
+  }
+
   loadShipmentsData(done: () => void): void {
     this.shipmentService.findAll().subscribe({
-      next: (data) => {
-        const all = data || [];
-        this.activeShipments = all.filter((s: any) => s.status === 'IN_TRANSIT' || s.status === 'DELAYED' || s.status === 'DISPATCHING');
-        
-        const delivered = all.filter((s: any) => s.status === 'DELIVERED');
+        next: (data) => {
+          const all = data || [];
+          this.activeShipments = all; // Removed status filter because ShipmentResponseModel does not have a status field
+          this.filteredShipments = [...this.activeShipments];
+          
+          const delivered = all.filter((s: any) => s.status === 'DELIVERED');
         this.deptPerformance[1].score = all.length > 0 ? Math.round((delivered.length / all.length) * 100) : 0;
         
         const now = new Date();

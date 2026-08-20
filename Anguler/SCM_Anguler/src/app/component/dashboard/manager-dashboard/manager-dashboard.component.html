@@ -69,7 +69,7 @@
           style="cursor:pointer">
           <i class="bi bi-file-earmark-bar-graph fs-2 text-primary"></i>
           <div>
-            <strong class="text-dark d-block">Daily Report</strong>
+            <strong class="text-dark d-block">Daily Rept</strong>
             <small class="text-muted fw-semibold">{{ dailyReports.length }} Submitted</small>
           </div>
         </div>
@@ -148,7 +148,7 @@
               <i class="bi bi-shield-exclamation"></i>
             </div>
             <div>
-              <div class="fw-bold text-dark fs-6 lh-sm mb-1">PRQ Approvals</div>
+              <div class="fw-bold text-dark fs-6 lh-sm mb-1">Quatations Approvals </div>
               <div class="text-muted small">{{ approvals.length }} Pending</div>
             </div>
           </div>
@@ -338,10 +338,16 @@
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-success border-4"
     *ngIf="!isLoading && activeTableTab === 'GRN'" style="animation: fadeIn 0.3s ease-in-out;">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-box-arrow-in-down text-success me-2"></i> Goods Received Notes — Awaiting Decision
-      </h6>
-      <span class="badge bg-success rounded-pill" *ngIf="grns.length">{{ grns.length }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -410,10 +416,16 @@
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-info border-4"
     *ngIf="!isLoading && activeTableTab === 'SHIPMENTS'" style="animation: fadeIn 0.3s ease-in-out;">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
-      </h6>
-      <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -429,13 +441,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let s of activeShipments">
+            <tr *ngFor="let s of filteredShipments">
               <td class="ps-4 font-monospace fw-bold text-dark">#{{ s.id }}</td>
-              <td class="fw-semibold text-secondary">{{ s.receiverName }}</td>
-              <td>{{ s.destination || s.origin }}</td>
+              <td class="fw-semibold text-secondary">{{ s.supplierName || s.receiverName || 'N/A' }}</td>
+              <td>{{ s.sendByAddress || s.destination || s.origin }}</td>
               <td>
                 <div class="small fw-bold text-dark">{{ s.vehicleNumber || 'N/A' }}</div>
-                <div class="small text-muted">{{ s.driverName || 'N/A' }}</div>
+                <div class="small text-muted">{{ s.captainRegistrationNumber || s.driverName || 'N/A' }}</div>
               </td>
               <td>{{ (s.estimatedDelivery | date:'short') || 'Not Set' }}</td>
               <td class="text-end pe-4">
@@ -444,11 +456,11 @@
                     'bg-primary-subtle text-primary border-primary': s.status === 'IN_TRANSIT',
                     'bg-danger-subtle text-danger border-danger': s.status === 'DELAYED'
                   }">
-                  {{ s.status }}
+                  {{ s.status || 'ACTIVE' }}
                 </span>
               </td>
             </tr>
-            <tr *ngIf="activeShipments.length === 0">
+            <tr *ngIf="filteredShipments.length === 0">
               <td colspan="6" class="text-center py-4 text-muted font-monospace">
                 <i class="bi bi-truck d-block fs-4 mb-1 opacity-50"></i> No active or delayed shipments.
               </td>
@@ -463,10 +475,16 @@
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-danger border-4"
     *ngIf="!isLoading && activeTableTab === 'LOW_STOCK'" style="animation: fadeIn 0.3s ease-in-out;">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-exclamation-triangle text-danger me-2"></i> Critical Low Stock Alerts
-      </h6>
-      <span class="badge bg-danger rounded-pill" *ngIf="lowStockItems.length">{{ lowStockItems.length }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -507,10 +525,16 @@
   <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-secondary border-4"
     *ngIf="!isLoading && activeTableTab === 'REPORTS'" style="animation: fadeIn 0.3s ease-in-out;">
     <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-      <h6 class="mb-0 fw-bold text-dark text-uppercase">
-        <i class="bi bi-file-earmark-bar-graph text-secondary me-2"></i> Operational Daily Reports
-      </h6>
-      <span class="badge bg-secondary rounded-pill" *ngIf="dailyReports.length">{{ dailyReports.length }}</span>
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -896,12 +920,18 @@
     <div class="col-md-6">
       <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-          <h6 class="mb-0 fw-bold text-dark">
-            <i class="bi bi-bell text-warning me-2"></i> Recent Notifications
-          </h6>
-          <span class="badge bg-primary rounded-pill" *ngIf="notifications.length">{{ notifications.length }}</span>
-        </div>
-        <div class="card-body p-0">
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
+    </div>
+    <div class="card-body p-0">
           <div *ngIf="notifications.length === 0" class="text-center py-4 text-muted">
             <i class="bi bi-bell-slash fs-3 d-block mb-2 opacity-25"></i>
             <small>No recent notifications</small>
@@ -929,12 +959,18 @@
     <div class="col-md-6">
       <div class="card border-0 shadow-sm bg-white rounded-4 h-100">
         <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
-          <h6 class="mb-0 fw-bold text-dark">
-            <i class="bi bi-clock-history text-info me-2"></i> Recent Activity
-          </h6>
-          <a routerLink="/activity-log" class="text-primary small text-decoration-none fw-semibold">View All</a>
-        </div>
-        <div class="card-body p-0">
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-dark text-uppercase">
+          <i class="bi bi-truck text-info me-2"></i> Critical Logistics & Shipments
+        </h6>
+        <span class="badge bg-info rounded-pill" *ngIf="activeShipments.length">{{ activeShipments.length }}</span>
+      </div>
+      <div class="input-group" style="width: 250px;">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0 shadow-none fs-7" placeholder="Search shipments..." [(ngModel)]="shipmentSearchTerm" (input)="filterShipments()">
+      </div>
+    </div>
+    <div class="card-body p-0">
           <div *ngIf="activities.length === 0" class="text-center py-4 text-muted">
             <i class="bi bi-clock-history fs-3 d-block mb-2 opacity-25"></i>
             <small>No recent activity</small>
@@ -1028,3 +1064,4 @@
 
 <!-- ───────────────── SETTINGS PANEL ───────────────── -->
 <app-dashboard-settings [isOpen]="showSettings" (close)="showSettings = false"></app-dashboard-settings>
+

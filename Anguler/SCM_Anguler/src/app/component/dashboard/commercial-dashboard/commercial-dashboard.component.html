@@ -1096,8 +1096,11 @@
               <div class="col-md-6">
                 <label class="form-label fw-bold text-dark fs-8 mb-1">LC Initial Status</label>
                 <select class="form-select bg-white fs-7 py-2.5 rounded-3 border" [(ngModel)]="newLc.lcStatus" name="lcStatus">
-                  <option value="OPENED">OPENED - Active Financial Backing</option>
                   <option value="DRAFT">DRAFT - Pending Final Bank Audit</option>
+                  <option value="OPENED">OPENED - Active Financial Backing</option>
+                  <option value="AMENDED">AMENDED - Revisions Applied</option>
+                  <option value="EXPIRED">EXPIRED - Validity Period Passed</option>
+                  <option value="CANCELLED">CANCELLED - Terminated Operation</option>
                 </select>
               </div>
 

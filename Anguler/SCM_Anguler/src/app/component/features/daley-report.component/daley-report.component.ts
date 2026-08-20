@@ -5,6 +5,7 @@ import { DailyReportResponseModel } from '../../shared/model/daley-report';
 import { DailyReportService } from '../../../service/daley-report.service';
 import { WarehouseService } from '../../../service/warehouse.service';
 import { environment } from '../../../../environment/environment';
+import { StorageService } from '../../../auth/auth_service/storage.service';
 
 @Component({
   selector: 'app-daley-report.component',
@@ -35,11 +36,18 @@ readonly imageBaseUrl = environment.apiUrl.replace('/api/', '') + "images/report
     summary: ''
   };
 
+
+
   constructor(
     private service: DailyReportService,
     private warehouseService: WarehouseService,
+    private storageService: StorageService,
     private cdr: ChangeDetectorRef
   ) { }
+
+  get activeRole(): string {
+    return this.storageService.getActiveRole() || '';
+  }
 
   ngOnInit() {
     this.loadReports();

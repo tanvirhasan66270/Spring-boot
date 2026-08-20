@@ -12,6 +12,7 @@ import { ShipmentResponseModel } from '../../shared/model/shipmentModel';
 import { NotificationService } from '../../../system/service/notification.service';
 import { NotificationModel } from '../../../system/NotificationModel';
 import { InvoiceService } from '../../../service/invoice.service';
+import { CustomerOrderService } from '../../../service/customer-order.service';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { PaymentStatementService } from '../../../service/payment-statement.service';
@@ -41,7 +42,7 @@ export class CommercialDashboardComponent implements OnInit {
 
   kpis = [
     { label: 'Active Import LCs', value: '0 LCs', trend: 0, icon: 'bi-bank', color: 'primary' },
-    { label: 'LC Dues (BDT)', value: '৳0', trend: 0, icon: 'bi-wallet2', color: 'warning' },
+    { label: 'Customer Paid (BDT)', value: '৳ 0', trend: 0, icon: 'bi-wallet2', color: 'warning' },
     { label: 'LC Dues (USD)', value: '$0.00', trend: 0, icon: 'bi-currency-dollar', color: 'info' },
     {
       label: 'Customs Pending',
@@ -139,6 +140,7 @@ export class CommercialDashboardComponent implements OnInit {
     private shipmentService: ShipmentService,
     private notificationService: NotificationService,
     private invoiceService: InvoiceService,
+    private customerOrderService: CustomerOrderService,
     private paymentStatementService: PaymentStatementService,
     private poService: PurchaseOrderService,
     private supplierService: SupplierService,
@@ -176,7 +178,6 @@ export class CommercialDashboardComponent implements OnInit {
           .reduce((sum: number, lc) => sum + (lc.amount || 0), 0);
 
         this.kpis[0] = { ...this.kpis[0], value: `${activeLCs.length} LCs` };
-        this.kpis[1] = { ...this.kpis[1], value: `৳${this.totalLCValueBDT.toLocaleString()}` };
         this.kpis[2] = { ...this.kpis[2], value: `$${this.totalLCValueUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` };
         this.lcs = activeLCs.slice(0, 5);
         this.buildLCDocuments(all);
@@ -257,7 +258,10 @@ export class CommercialDashboardComponent implements OnInit {
   loadInvoices() {
     this.invoiceService.findAll().subscribe({
       next: (data: InvoiceResponseModel[]) => {
-        this.invoices = (data || []).slice(0, 5);
+        const allInvoices = data || [];
+        const totalPaid = allInvoices.reduce((sum, inv) => sum + (inv.paidAmount || 0), 0);
+        this.kpis[1] = { ...this.kpis[1], value: `৳ ${totalPaid.toLocaleString()}` };
+        this.invoices = allInvoices.slice(0, 5);
         this.cdr.markForCheck();
       },
     });
@@ -733,3 +737,4 @@ export class CommercialDashboardComponent implements OnInit {
     this.cdr.markForCheck();
   }
 }
+

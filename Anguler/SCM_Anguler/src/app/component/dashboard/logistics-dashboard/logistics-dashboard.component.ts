@@ -20,6 +20,7 @@ import { CustomerService } from '../../../service/customer.service';
 import { QcInspectorService } from '../../../service/qc-inspactor.service';
 import { ManagerService } from '../../../service/manager.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { QcInspectionService } from '../../../service/qc-inspection.service';
 import { NotificationModel } from '../../../system/NotificationModel';
@@ -51,6 +52,8 @@ export class LogisticsDashboardComponent implements OnInit {
   
   totalTrips = 0;
   activeTrips = 0;
+  lowStockItemsCount = 0;
+  lowStockItems: any[] = [];
   
   totalVehicles = 0;
   availableVehicles = 0;
@@ -180,6 +183,8 @@ export class LogisticsDashboardComponent implements OnInit {
 
   warehouses: any[] = [];
   purchaseOrders: any[] = [];
+  purchaseRequisitions: any[] = [];
+  filteredProducts: any[] = [];
   alerts: any[] = [];
   
   // Modal State
@@ -212,6 +217,7 @@ export class LogisticsDashboardComponent implements OnInit {
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
     private poService: PurchaseOrderService,
+    private prService: PurchaseRequisitionService,
     private qcInspectionService: QcInspectionService
   ) {}
 
@@ -232,6 +238,7 @@ export class LogisticsDashboardComponent implements OnInit {
     this.productService.findAll().subscribe({
       next: (data: any) => {
         this.productList = data || [];
+        this.filteredProducts = [...this.productList];
         this.cdr.markForCheck();
       }
     });
@@ -246,6 +253,13 @@ export class LogisticsDashboardComponent implements OnInit {
     this.poService.findAll().subscribe({
       next: (data: any) => {
         this.purchaseOrders = data || [];
+        this.cdr.markForCheck();
+      }
+    });
+
+    this.prService.findAll().subscribe({
+      next: (data: any) => {
+        this.purchaseRequisitions = data || [];
         this.cdr.markForCheck();
       }
     });
@@ -506,6 +520,8 @@ this.inventoryService.findAll().subscribe({
     // মোট ইনভেন্টরি কোয়ান্টিটি যোগ করা
     this.totalInventoryCount = all.reduce((sum: number, inv: any) => sum + (inv.quantityOnHand || inv.availableSellable || 0), 0);
     this.totalAvailableQuantity = all.reduce((sum: number, inv: any) => sum + (inv.availableQuantity || 0), 0);
+    this.lowStockItems = all.filter((inv: any) => (inv.quantityReserved || 0) <= 5);
+    this.lowStockItemsCount = this.lowStockItems.length;
     
     this.computeWarehouseCapacity(all);
     this.cdr.markForCheck();
@@ -1133,6 +1149,48 @@ this.inventoryService.findAll().subscribe({
       },
       error: (err: any) => alert(err.error?.message || 'Failed to authorize GRN entry.')
     });
+  }
+
+  onDashboardPoChange(): void {
+    const selectedPo = this.purchaseOrders.find((po: any) => Number(po.id) === Number(this.grnForm.poId));
+    if (selectedPo && selectedPo.purchaseRequisitionId) {
+      const pr = this.purchaseRequisitions.find((r: any) => Number(r.id) === Number(selectedPo.purchaseRequisitionId));
+      if (pr && pr.productIds && pr.productIds.length > 0) {
+        this.filteredProducts = this.productList.filter(p => pr.productIds.includes(Number(p.id)));
+      } else {
+        this.filteredProducts = [];
+      }
+    } else {
+      if (Number(this.grnForm.poId) !== 0) {
+        this.filteredProducts = [];
+      } else {
+        this.filteredProducts = [...this.productList];
+      }
+    }
+
+    // Reset invalid line items
+    this.grnForm.lineItems.forEach(item => {
+      if (!this.filteredProducts.find(p => p.id === Number(item.productId))) {
+        item.productId = 0;
+      }
+    });
+    this.cdr.markForCheck();
+  }
+
+  getLowStockTooltip(): string {
+    if (this.lowStockItems.length === 0) {
+      return 'No low stock items.';
+    }
+    const maxShow = 10;
+    const itemsToShow = this.lowStockItems.slice(0, maxShow);
+    let tooltip = 'Low Stock Items (Reserved <= 5):\n';
+    itemsToShow.forEach(item => {
+      tooltip += `- ${item.productName || 'Unknown Product'} (ID: #${item.productId || item.id})\n`;
+    });
+    if (this.lowStockItems.length > maxShow) {
+      tooltip += `...and ${this.lowStockItems.length - maxShow} more.`;
+    }
+    return tooltip;
   }
 
   addDashboardGrnLineItem(): void {

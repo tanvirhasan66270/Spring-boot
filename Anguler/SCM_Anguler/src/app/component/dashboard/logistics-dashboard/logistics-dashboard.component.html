@@ -56,27 +56,26 @@
       </div>
     </div>
 
-    <!-- Delivery Trips -->
+    <!-- Low Stock Alert -->
     <div class="col">
-      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card" [title]="getLowStockTooltip()" style="cursor: help;">
         <div class="d-flex align-items-start gap-2 mb-3">
           <div
-            class="icon-box bg-success text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+            class="icon-box bg-danger text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
             style="width: 38px; height: 38px;">
-            <i class="bi bi-diagram-2 fs-5"></i>
+            <i class="bi bi-exclamation-triangle fs-5"></i>
           </div>
           <div class="d-flex flex-column justify-content-center w-100">
-            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Delivery Trips</div>
+            <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Low Stock Alert</div>
             <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
-              <span class="fs-4 fw-bold text-dark lh-1">{{ totalTrips }}</span>
-              <span class="badge bg-success-subtle text-success rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Active</span>
+              <span class="fs-4 fw-bold text-dark lh-1">{{ lowStockItemsCount }}</span>
+              <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Action Req</span>
             </div>
           </div>
         </div>
-        <div class="small fw-semibold mt-auto"
-          [ngClass]="{'text-success': tripsTrend > 0, 'text-danger': tripsTrend < 0, 'text-secondary': tripsTrend === 0}" style="font-size: 11px;">
-          <i class="bi" [ngClass]="{'bi-arrow-up-short': tripsTrend > 0, 'bi-arrow-down-short': tripsTrend < 0}"></i>
-          {{ tripsTrend > 0 ? tripsTrend : (tripsTrend < 0 ? -tripsTrend : 0) }}% vs yesterday </div>
+        <div class="small fw-semibold mt-auto text-danger" style="font-size: 11px;">
+          <i class="bi bi-exclamation-circle me-1"></i> Reserved Quota &le; 5
+        </div>
       </div>
     </div>
 
@@ -1296,7 +1295,7 @@
                     <div class="mb-3">
                       <label class="custom-form-label text-uppercase text-secondary fw-bold fs-7">SOURCE PURCHASE ORDER
                         VECTOR *</label>
-                      <select class="form-select custom-form-control" [(ngModel)]="grnForm.poId" name="poId" required>
+                      <select class="form-select custom-form-control" [(ngModel)]="grnForm.poId" name="poId" required (change)="onDashboardPoChange()">
                         <option [value]="0">-- Link Core Procurement PO --</option>
                         <option *ngFor="let po of purchaseOrders" [value]="po.id">PO #{{ po.poNumber }} (Volume: {{
                           po.quantity || 0 }} Units)</option>
@@ -1382,7 +1381,7 @@
                           <select class="form-select custom-form-control py-1 fs-7" [(ngModel)]="item.productId"
                             name="itemProd_{{idx}}" required>
                             <option [value]="0">-- Select Product --</option>
-                            <option *ngFor="let p of productList" [value]="p.id">{{ p.name }}</option>
+                            <option *ngFor="let p of filteredProducts" [value]="p.id">{{ p.name }}</option>
                           </select>
                         </div>
                         <div class="col-md-3">

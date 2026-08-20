@@ -16,6 +16,7 @@ import { AddProductService } from '../../../service/add-product.service';
 import { ManagerService } from '../../../service/manager.service';
 import { QcInspectorService } from '../../../service/qc-inspactor.service';
 import { StorageService } from '../../../auth/auth_service/storage.service';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 
 @Component({
   selector: 'app-good-recived-note',
@@ -29,6 +30,8 @@ export class GoodRecivedNoteComponent implements OnInit {
   purchaseOrders: any[] = [];
   warehouses: any[] = [];
   products: any[] = [];
+  filteredProducts: any[] = [];
+  purchaseRequisitions: any[] = [];
   users: any[] = [];
 
   errorMessage: string | null = null;
@@ -71,6 +74,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     private productService: AddProductService,
     private managerService: ManagerService,
     private qcInspectorService: QcInspectorService,
+    private prService: PurchaseRequisitionService,
     public storage: StorageService,
     private cdr: ChangeDetectorRef,
   ) { }
@@ -89,6 +93,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.loadWarehouses();
     this.loadProducts();
     this.loadUsers();
+    this.loadPurchaseRequisitions();
   }
 
   loadGRNs() {
@@ -104,12 +109,45 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.poService.findAll().subscribe({ next: (data) => (this.purchaseOrders = data || []) });
   }
 
+  loadPurchaseRequisitions() {
+    this.prService.findAll().subscribe({ next: (data) => (this.purchaseRequisitions = data || []) });
+  }
+
   loadWarehouses() {
     this.warehouseService.getAll().subscribe({ next: (data) => (this.warehouses = data || []) });
   }
 
   loadProducts() {
-    this.productService.findAll().subscribe({ next: (data) => (this.products = data || []) });
+    this.productService.findAll().subscribe({ next: (data) => {
+      this.products = data || [];
+      this.filteredProducts = [...this.products];
+    }});
+  }
+
+  onPoChange() {
+    const selectedPo = this.purchaseOrders.find((po: any) => Number(po.id) === Number(this.grn.poId));
+    if (selectedPo && selectedPo.purchaseRequisitionId) {
+      const pr = this.purchaseRequisitions.find((r: any) => Number(r.id) === Number(selectedPo.purchaseRequisitionId));
+      if (pr && pr.productIds && pr.productIds.length > 0) {
+        this.filteredProducts = this.products.filter(p => pr.productIds.includes(Number(p.id)));
+      } else {
+        this.filteredProducts = [];
+      }
+    } else {
+      if (Number(this.grn.poId) !== 0) {
+        this.filteredProducts = [];
+      } else {
+        this.filteredProducts = [...this.products];
+      }
+    }
+    
+    // Reset invalid line items
+    this.grn.lineItems.forEach(item => {
+      if (!this.filteredProducts.find(p => p.id === Number(item.productId))) {
+        item.productId = 0;
+      }
+    });
+    this.cdr.markForCheck();
   }
 
   loadUsers() {
@@ -296,6 +334,7 @@ export class GoodRecivedNoteComponent implements OnInit {
       inspectionDate: o.inspectionDate,
       lineItems: [],
     };
+    this.onPoChange();
     this.isDrawerOpen = true;
     this.cdr.markForCheck();
   }
@@ -334,6 +373,7 @@ export class GoodRecivedNoteComponent implements OnInit {
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;
+    this.filteredProducts = [...this.products];
   }
 
   openStatusEdit(grn: GoodsReceivedNoteResponseModel) {

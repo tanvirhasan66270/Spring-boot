@@ -218,13 +218,13 @@
     </div>
 
     <!-- Reports & Logs -->
-    <div class="nav-section" *ngIf="hasAccess(['MANAGER'])">
+    <div class="nav-section" *ngIf="hasAccess(['MANAGER', 'LOGISTICS_OFFICER'])">
       <div class="nav-section-label">Reports & Logs</div>
-      <a routerLink="/daily-report" routerLinkActive="active" class="nav-item">
+      <a routerLink="/daily-report" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['MANAGER', 'LOGISTICS_OFFICER'])">
         <i class="bi bi-file-earmark-bar-graph"></i>
         <span>Daily Report</span>
       </a>
-      <a routerLink="/activity-log" routerLinkActive="active" class="nav-item">
+      <a routerLink="/activity-log" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['MANAGER'])">
         <i class="bi bi-journal-text"></i>
         <span>Activity Log</span>
       </a>
