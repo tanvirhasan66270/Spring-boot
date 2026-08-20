@@ -57,11 +57,19 @@
     </div>
 
     <!-- Low Stock Alert -->
+<<<<<<< Updated upstream
     <div class="col">
       <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card" [title]="getLowStockTooltip()" style="cursor: help;">
         <div class="d-flex align-items-start gap-2 mb-3">
           <div
             class="icon-box bg-danger text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+=======
+    <div class="col" [title]="lowStockTooltip">
+      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
+        <div class="d-flex align-items-start gap-2 mb-3">
+          <div
+            class="icon-box bg-warning text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
+>>>>>>> Stashed changes
             style="width: 38px; height: 38px;">
             <i class="bi bi-exclamation-triangle fs-5"></i>
           </div>
@@ -69,13 +77,22 @@
             <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Low Stock Alert</div>
             <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
               <span class="fs-4 fw-bold text-dark lh-1">{{ lowStockItemsCount }}</span>
+<<<<<<< Updated upstream
               <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Action Req</span>
+=======
+              <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Items</span>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
         <div class="small fw-semibold mt-auto text-danger" style="font-size: 11px;">
+<<<<<<< Updated upstream
           <i class="bi bi-exclamation-circle me-1"></i> Reserved Quota &le; 5
         </div>
+=======
+          <i class="bi bi-info-circle me-1"></i>
+          Requires restock </div>
+>>>>>>> Stashed changes
       </div>
     </div>
 
@@ -1104,17 +1121,21 @@
                       </div>
                     </div>
 
-                    <div class="row g-3 mb-4">
+                    <div class="row g-3 mb-3">
                       <div class="col-md-6">
-                        <label class="custom-form-label">Stock Status Grade</label>
-                        <select class="form-select custom-form-control" [(ngModel)]="stockForm.stockStatus"
-                          name="stockStatus">
-                          <option value="IN_STOCK">IN STOCK</option>
-                          <option value="LOW_STOCK">LOW STOCK</option>
-                          <option value="RESERVED">RESERVED</option>
-                        </select>
+                        <label class="custom-form-label">Location Status (Rack/Row)</label>
+                        <input type="text" class="form-control custom-form-control"
+                          [(ngModel)]="stockForm.locationStatus" name="locationStatus" placeholder="e.g. Rack-A, Row-3" />
                       </div>
                       <div class="col-md-6">
+                        <label class="custom-form-label">Expiry Date</label>
+                        <input type="date" class="form-control custom-form-control text-muted"
+                          [(ngModel)]="stockForm.expiryDate" name="expiryDate" />
+                      </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                      <div class="col-md-12">
                         <label class="custom-form-label">Updated By Officer</label>
                         <input type="text" class="form-control custom-form-control bg-light"
                           [value]="userName || 'Logistics Officer'" readonly />

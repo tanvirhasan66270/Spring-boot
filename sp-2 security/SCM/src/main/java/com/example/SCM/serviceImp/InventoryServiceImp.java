@@ -32,6 +32,7 @@ public class InventoryServiceImp implements InventoryService {
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final InventoryMapper inventoryMapper;
+    private final com.example.SCM.service.NotificationService notificationService;
 
     // Activity Log & Request Context Dependencies
     private final ActivityLogService activityLogService;
@@ -68,9 +69,14 @@ public class InventoryServiceImp implements InventoryService {
         Optional<Inventory> existingStock = inventoryRepository.findByProductIdAndWarehouseId(dto.getProductId(), dto.getWarehouseId());
         if (existingStock.isPresent()) {
             Inventory inventory = existingStock.get();
+            StockStatus oldStatus = inventory.getStockStatus();
             inventoryMapper.updateEntity(dto, inventory, product, warehouse);
             calculateAndSetStockStatus(inventory, product);
             Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);
+            
+            if (updatedInventory.getStockStatus() == StockStatus.LOW_STOCK && oldStatus != StockStatus.LOW_STOCK) {
+                notificationService.send("LOGISTICS_OFFICER", "WARNING", "Low Stock Alert", "Stock for product " + product.getName() + " has reached low levels at warehouse " + warehouse.getName());
+            }
 
             activityLogService.log(
                     resolveCurrentUserId(),
@@ -93,6 +99,10 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory savedInventory = inventoryRepository.saveAndFlush(inventory);
+        
+        if (savedInventory.getStockStatus() == StockStatus.LOW_STOCK) {
+            notificationService.send("LOGISTICS_OFFICER", "WARNING", "Low Stock Alert", "Stock for product " + product.getName() + " is critically low at warehouse " + warehouse.getName());
+        }
 
         //  ACTIVITY LOG: CREATE
         activityLogService.log(
@@ -142,6 +152,10 @@ public class InventoryServiceImp implements InventoryService {
         calculateAndSetStockStatus(inventory, product);
 
         Inventory updatedInventory = inventoryRepository.saveAndFlush(inventory);
+        
+        if (updatedInventory.getStockStatus() == StockStatus.LOW_STOCK && oldStatus != StockStatus.LOW_STOCK) {
+            notificationService.send("LOGISTICS_OFFICER", "WARNING", "Low Stock Alert", "Stock for product " + product.getName() + " has reached low levels at warehouse " + warehouse.getName());
+        }
 
         //  ACTIVITY LOG: UPDATE
         activityLogService.log(
@@ -202,11 +216,9 @@ public class InventoryServiceImp implements InventoryService {
     }
 
     private void calculateAndSetStockStatus(Inventory inventory, Product product) {
-        int availableQuantity = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
-
-        if (availableQuantity <= 0) {
+        if (inventory.getQuantityOnHand() <= 0) {
             inventory.setStockStatus(StockStatus.OUT_OF_STOCK);
-        } else if (product != null && availableQuantity <= product.getReorderPoint()) {
+        } else if (inventory.getQuantityReserved() <= 5) {
             inventory.setStockStatus(StockStatus.LOW_STOCK);
         } else {
             inventory.setStockStatus(StockStatus.IN_STOCK);

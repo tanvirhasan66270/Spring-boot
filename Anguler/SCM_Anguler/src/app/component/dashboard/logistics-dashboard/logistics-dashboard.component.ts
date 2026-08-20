@@ -50,6 +50,8 @@ export class LogisticsDashboardComponent implements OnInit {
   activeShipments = 0;
   delayedShipments = 0;
   
+  lowStockItemsCount = 0;
+  lowStockTooltip = '';
   totalTrips = 0;
   activeTrips = 0;
   lowStockItemsCount = 0;
@@ -514,6 +516,7 @@ export class LogisticsDashboardComponent implements OnInit {
     });
 
     // 5. Inventory (Only for warehouse capacity & total inventory count)
+<<<<<<< Updated upstream
 this.inventoryService.findAll().subscribe({
   next: (data) => {
     const all = data || [];
@@ -528,6 +531,29 @@ this.inventoryService.findAll().subscribe({
   },
   error: () => {},
 });
+=======
+    this.inventoryService.findAll().subscribe({
+      next: (data) => {
+        const all = data || [];
+        // মোট ইনভেন্টরি কোয়ান্টিটি যোগ করা
+        this.totalInventoryCount = all.reduce((sum: number, inv: any) => sum + (inv.quantityOnHand || inv.availableSellable || 0), 0);
+        this.totalAvailableQuantity = all.reduce((sum: number, inv: any) => sum + (inv.availableQuantity || 0), 0);
+        
+        const lowStock = all.filter((inv: any) => inv.stockStatus === 'LOW_STOCK' || inv.stockStatus === 'OUT_OF_STOCK');
+        this.lowStockItemsCount = lowStock.length;
+        
+        if (this.lowStockItemsCount > 0) {
+            this.lowStockTooltip = lowStock.map((item: any) => `[PID: ${item.productId}] ${item.productName}`).join('\n');
+        } else {
+            this.lowStockTooltip = 'All stock levels are optimal';
+        }
+        
+        this.computeWarehouseCapacity(all);
+        this.cdr.markForCheck();
+      },
+      error: () => {},
+    });
+>>>>>>> Stashed changes
 
     // 5.5 Stock Movements (For Today's Inventory Movement Donut)
     this.stockMovementService.findAll().subscribe({
