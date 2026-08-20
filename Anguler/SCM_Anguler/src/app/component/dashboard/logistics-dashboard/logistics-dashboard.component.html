@@ -1,23 +1,18 @@
 <div class="logistics-dashboard p-4 bg-light min-vh-100" style="background-color: #f8f9fa !important;">
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div
-    class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 bg-white d-flex justify-content-between align-items-center">
+  <div class="dashboard-header bg-white p-4 rounded-4 shadow-sm border mb-4 d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="fw-bold mb-1 text-dark">Logistics Command Center</h3>
-      <p class="text-secondary small mb-0">Officer Signature: <strong class="text-primary">{{ userName || 'Mst Rehana'
-          }}</strong> | Dispatch and fleet tracking console.</p>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h2 class="fw-bold text-dark fs-4 mb-0">Welcome back, <span class="text-primary">{{ userName }}</span> <span class="fs-4">👋</span></h2>
+      </div>
+      <p class="text-muted fs-8 mb-0 d-flex align-items-center gap-2">
+        <span class="text-dark fw-bold">Logistics Officer</span> &bull; Warehouse, inventory & logistics tracking.
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 fs-9"><span class="pulse-dot-green me-1"></span> Live</span>
+      </p>
     </div>
-    <div class="d-flex align-items-center gap-3">
-      <button
-        class="btn btn-outline-secondary d-flex align-items-center justify-content-center bg-white shadow-sm border-light"
-        style="width: 40px; height: 40px; border-radius: 8px;" (click)="toggleSettings()">
-        <i class="bi bi-gear text-secondary fs-5"></i>
-      </button>
-      <button
-        class="btn btn-outline-danger d-flex align-items-center gap-2 bg-white shadow-sm border-light text-danger fw-semibold"
-        style="height: 40px; border-radius: 8px;" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i> Log_Out
-      </button>
+    <div class="header-actions d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="toggleSettings()" title="Settings"><i class="bi bi-gear"></i></button>
+      <button class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
     </div>
   </div>
 
@@ -57,19 +52,11 @@
     </div>
 
     <!-- Low Stock Alert -->
-<<<<<<< Updated upstream
-    <div class="col">
-      <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card" [title]="getLowStockTooltip()" style="cursor: help;">
-        <div class="d-flex align-items-start gap-2 mb-3">
-          <div
-            class="icon-box bg-danger text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
-=======
     <div class="col" [title]="lowStockTooltip">
       <div class="card border-0 shadow-sm p-3 rounded-4 bg-white h-100 kpi-card">
         <div class="d-flex align-items-start gap-2 mb-3">
           <div
             class="icon-box bg-warning text-white rounded-3 d-flex justify-content-center align-items-center flex-shrink-0"
->>>>>>> Stashed changes
             style="width: 38px; height: 38px;">
             <i class="bi bi-exclamation-triangle fs-5"></i>
           </div>
@@ -77,22 +64,13 @@
             <div class="text-secondary fw-semibold lh-1 mb-2" style="font-size: 11px; letter-spacing: 0.2px;">Low Stock Alert</div>
             <div class="d-flex align-items-baseline justify-content-between gap-1 flex-wrap">
               <span class="fs-4 fw-bold text-dark lh-1">{{ lowStockItemsCount }}</span>
-<<<<<<< Updated upstream
-              <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Action Req</span>
-=======
               <span class="badge bg-danger-subtle text-danger rounded-pill" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Items</span>
->>>>>>> Stashed changes
             </div>
           </div>
         </div>
         <div class="small fw-semibold mt-auto text-danger" style="font-size: 11px;">
-<<<<<<< Updated upstream
-          <i class="bi bi-exclamation-circle me-1"></i> Reserved Quota &le; 5
-        </div>
-=======
           <i class="bi bi-info-circle me-1"></i>
-          Requires restock </div>
->>>>>>> Stashed changes
+          Reserved Quota &le; 5 </div>
       </div>
     </div>
 

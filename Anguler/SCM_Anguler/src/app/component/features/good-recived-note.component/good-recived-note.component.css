@@ -1,16 +1,18 @@
+/* --- CENTER VIEW DRAWER --- */
 .custom-drawer {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
-  width: 750px;           /* সেন্টারে বড় দেখানোর জন্য চওড়া বাড়ানো হলো */
+  width: 950px;           /* 🌟 চওড়া বড় করা হলো */
   max-width: 95vw;        /* রেস্পন্সিভ রাখার জন্য */
-  height: 85vh;           /* উচ্চতা বড় করার জন্য */
-  max-height: 90vh;
+  height: 90vh;           /* 🌟 উচ্চতা বড় করা হলো */
+  max-height: 95vh;
   background-color: #ffffff;
   z-index: 1060;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.25);
-  border-radius: 12px;
+  box-shadow: 0 15px 40px rgba(15, 23, 42, 0.25);
+  border-radius: 16px;    /* চারপাশের কর্নার রাউন্ড করা */
+  overflow: hidden;       /* হেডার যাতে বর্ডার ক্রস না করে */
   transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
@@ -24,111 +26,52 @@
   visibility: visible;
 }
 
-.container-fluid {
-  background-color: #f8fafc;
-  min-height: 100vh;
-}
-
-.bg-white {
-  background-color: #ffffff !important;
-}
-
-.btn-indigo {
-  background-color: #4f46e5 !important;
-  border-color: #4f46e5 !important;
-}
-
-.btn-indigo:hover {
-  background-color: #4338ca !important;
-}
-
-.text-indigo {
-  color: #4f46e5 !important;
-}
-
-.border-indigo {
-  border-color: #4f46e5 !important;
-}
-
-.btn-outline-indigo {
-  color: #4f46e5;
-  border-color: #4f46e5;
-}
-
-.btn-outline-indigo:hover {
-  background-color: #4f46e5;
-  color: white;
-}
-
-.card.shadow-sm.border-0.rounded-3 {
-  overflow: visible !important;
-}
-
-.table-responsive {
-  border-radius: 8px;
-  overflow-x: auto;
-  overflow-y: visible !important;
-}
-
-.table th {
-  background-color: #f1f5f9;
-  color: #475569;
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  padding: 14px 12px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.table td {
-  padding: 14px 12px;
-  color: #1e293b;
-  border-bottom: 1px solid #f1f5f9;
-  font-size: 13px;
-  position: relative;
-}
-
-.btn-icon {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  display: inline-flex;
+/* --- 🌟 কালারফুল এবং রাউন্ড হেডার ডিজাইন --- */
+.reg-modal-header, .drawer-header {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  color: #ffffff;
+  padding: 20px 24px;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  justify-content: space-between;
 }
 
-.btn-icon:hover {
-  background-color: #f1f5f9 !important;
-  transform: translateY(-1px);
+.reg-modal-header h5, .drawer-header h5 {
+  color: #ffffff !important;
+  font-weight: 700;
+  margin: 0;
 }
 
-.drawer-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(2px);
-  z-index: 1050;
+.reg-modal-header small, .drawer-header small {
+  color: rgba(255, 255, 255, 0.85) !important;
 }
 
-.border-dashed {
-  border-style: dashed !important;
+/* ক্লোজ বাটন সাদা করার জন্য */
+.reg-modal-header .btn-close, .drawer-header .btn-close {
+  filter: brightness(0) invert(1);
+  opacity: 0.8;
 }
 
-.fs-7 {
-  font-size: 13px !important;
+.reg-modal-header .btn-close:hover, .drawer-header .btn-close:hover {
+  opacity: 1;
 }
 
-.fs-8 {
-  font-size: 11px !important;
-}
+/* --- বাকি কোড --- */
+.container-fluid { background-color: #f8fafc; min-height: 100vh; }
+.bg-white { background-color: #ffffff !important; }
 
-.status-floating-card {
-  z-index: 99999 !important;
-  background-color: #ffffff !important;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.2) !important;
-}
+.btn-indigo { background-color: #4f46e5 !important; border-color: #4f46e5 !important; }
+.btn-indigo:hover { background-color: #4338ca !important; }
+.text-indigo { color: #4f46e5 !important; }
+.border-indigo { border-color: #4f46e5 !important; }
+
+.table-responsive { border-radius: 8px; overflow-x: auto; }
+.table th { background-color: #f1f5f9; color: #475569; font-weight: 600; font-size: 11px; padding: 14px 12px; border-bottom: 2px solid #e2e8f0; }
+.table td { padding: 14px 12px; color: #1e293b; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+
+.btn-icon { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; transition: all 0.2s ease; }
+.btn-icon:hover { background-color: #f1f5f9 !important; transform: translateY(-1px); }
+
+.drawer-backdrop { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(2px); z-index: 1050; }
+.fs-7 { font-size: 13px !important; }
+.fs-8 { font-size: 11px !important; }

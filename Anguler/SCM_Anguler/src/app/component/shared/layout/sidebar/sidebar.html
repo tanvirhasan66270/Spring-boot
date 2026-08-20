@@ -20,10 +20,30 @@
     <!-- Dashboard -->
     <div class="nav-section">
       <div class="nav-section-label">Main</div>
-      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      
+      <!-- Normal Dashboard Link for Non-Admin -->
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" *ngIf="activeRole !== 'ADMIN'">
         <i class="bi bi-grid-1x2-fill"></i>
         <span>Dashboard</span>
       </a>
+
+      <!-- Dashboards Menu for Admin -->
+      <ng-container *ngIf="activeRole === 'ADMIN'">
+        <button type="button" class="nav-item nav-toggle" (click)="toggleDashboardsMenu()">
+          <i class="bi bi-grid-1x2-fill"></i>
+          <span>Dashboards</span>
+          <i class="bi nav-chevron" [ngClass]="dashboardsOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+        </button>
+        <div class="nav-submenu" *ngIf="dashboardsOpen">
+          <a routerLink="/dashboard/admin" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Admin</a>
+          <a routerLink="/dashboard/manager" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Manager</a>
+          <a routerLink="/dashboard/sales" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Sales</a>
+          <a routerLink="/dashboard/logistics" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Logistics</a>
+          <a routerLink="/dashboard/procurement" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Procurement</a>
+          <a routerLink="/dashboard/commercial" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Commercial</a>
+          <a routerLink="/dashboard/qc-inspector" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> QC Inspector</a>
+        </div>
+      </ng-container>
     </div>
 
     <!-- User Management -->

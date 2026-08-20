@@ -478,6 +478,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadDriver(): void {
+    if (this.storage.getRole() === 'ADMIN') {
+      this.loadTrips(0);
+      this.loadVehicle(0);
+      return;
+    }
     this.driverService.getDriverByUserId(this.userId).subscribe({
       next: (res) => {
         this.driver = res;

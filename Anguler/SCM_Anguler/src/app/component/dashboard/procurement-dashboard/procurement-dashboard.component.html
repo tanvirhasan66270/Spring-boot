@@ -1,50 +1,18 @@
 <div class="procurement-dashboard px-3 py-4">
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center position-relative" style="z-index: 1050;">
+  <div class="dashboard-header bg-white p-4 rounded-4 shadow-sm border mb-4 d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="fw-bold mb-1 text-dark">Procurement Control Board</h3>
-      <p class="text-secondary small mb-0">
-        Officer Signature: <strong class="text-primary">{{ userName }}</strong> | Sourcing         operations and supplier bidding matrix.
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h2 class="fw-bold text-dark fs-4 mb-0">Welcome back, <span class="text-primary">{{ userName }}</span> <span class="fs-4">👋</span></h2>
+      </div>
+      <p class="text-muted fs-8 mb-0 d-flex align-items-center gap-2">
+        <span class="text-dark fw-bold">Procurement Officer</span> &bull; Purchase, quotations & supplier management.
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 fs-9"><span class="pulse-dot-green me-1"></span> Live</span>
       </p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-    <!-- <div class="dropdown me-2">
-      <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-3 fw-semibold" type="button" data-bs-toggle="dropdown">
-        <i class="bi bi-calendar3 me-1"></i> {{ selectedDashboardPeriod }}
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('This Month')">This Month</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('Last Month')">Last Month</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('January')">January</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('February')">February</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('March')">March</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('April')">April</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('May')">May</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('June')">June</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('July')">July</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('August')">August</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('September')">September</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('October')">October</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('November')">November</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('December')">December</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('This Year')">This Year</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('Last Year')">Last Year</a></li>
-        <li><a class="dropdown-item" href="javascript:void(0)" (click)="setDashboardPeriod('All Time')">All Time</a></li>
-      </ul>
-    </div> -->
-
-      <button
-        class="btn btn-sm btn-outline-secondary rounded-pill"
-        (click)="showSettings = !showSettings"
-        title="Dashboard Settings"
-      >
-        <i class="bi bi-gear"></i>
-      </button>
-      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i> Log_Out
-         </button>
+    <div class="header-actions d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="showSettings = !showSettings" title="Settings"><i class="bi bi-gear"></i></button>
+      <button class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
     </div>
   </div>
 
@@ -385,7 +353,7 @@
               <th>Quantity</th>
               <th>Preferred Vendor Target</th>
               <th>RFQ Lifecycle State</th>
-              <th class="text-center" *ngIf="userRole === 'PROCUREMENT'">Actions</th>
+              <th class="text-center" *ngIf="userRole === 'PROCUREMENT' || userRole === 'ADMIN'">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -408,7 +376,7 @@
                   {{ rfq.status }}
                 </span>
               </td>
-              <td class="text-center" *ngIf="userRole === 'PROCUREMENT'">
+              <td class="text-center" *ngIf="userRole === 'PROCUREMENT' || userRole === 'ADMIN'">
                 <div class="d-flex justify-content-center gap-2" *ngIf="rfq.status !== 'APPROVED' && rfq.status !== 'REJECTED'">
                   <button class="btn btn-sm btn-success fw-semibold px-3" 
                     (click)="updateQuotationStatus(rfq.id, 'APPROVED')" style="border-radius: 6px;">

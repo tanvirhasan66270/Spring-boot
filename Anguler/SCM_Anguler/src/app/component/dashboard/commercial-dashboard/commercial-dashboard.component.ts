@@ -278,6 +278,7 @@ export class CommercialDashboardComponent implements OnInit {
 
 
   loadCommercialOfficer(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.commercialOfficerService.getCommercialOfficerByUserId(this.userId).subscribe({
       next: (res) => {
         this.commercialOfficer = res;

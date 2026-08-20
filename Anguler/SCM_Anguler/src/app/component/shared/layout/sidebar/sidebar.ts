@@ -40,6 +40,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.usersOpen = !this.usersOpen;
   }
 
+  dashboardsOpen = false;
+  toggleDashboardsMenu(): void {
+    this.dashboardsOpen = !this.dashboardsOpen;
+  }
+
   hasAccess(allowedRoles: string[]): boolean {
     if (this.activeRole === 'ADMIN') return true;
     return allowedRoles.includes(this.activeRole);

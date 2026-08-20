@@ -22,7 +22,7 @@ public class SalesOfficerController {
     private final SalesOfficerService officerService;
     private final ObjectMapper objectMapper;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping
     public ResponseEntity<SalesOfficerResponseDTO> save(
             @RequestPart("salesOfficer") String officerJson,
@@ -35,7 +35,7 @@ public class SalesOfficerController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN',  'SALES_OFFICER')")
     @PutMapping( "/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> update(
             @PathVariable Long id,
@@ -49,13 +49,13 @@ public class SalesOfficerController {
         }
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping
     public ResponseEntity<List<SalesOfficerResponseDTO>> findAll() {
         return ResponseEntity.ok(officerService.findAll());
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping("/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> getById(@PathVariable Long id) {
         return officerService.getById(id)
@@ -70,7 +70,7 @@ public class SalesOfficerController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'CUSTOMER', 'SUPPLIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER')")
     @GetMapping("/user/{id}")
     public ResponseEntity<SalesOfficerResponseDTO> getByUserId(@PathVariable Long id) {
         return officerService.findUserById(id)

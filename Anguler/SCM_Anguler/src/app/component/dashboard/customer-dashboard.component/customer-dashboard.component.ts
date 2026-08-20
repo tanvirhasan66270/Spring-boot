@@ -891,6 +891,7 @@ export class CustomerDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadCustomer(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.cutomerService.getCustomerByUserId(this.userId).subscribe({
       next: (res) => {
         this.customer = res;

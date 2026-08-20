@@ -524,6 +524,7 @@ export class QCInspectorDashboardComponent implements OnInit {
   }
 
   loadQcInspector(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.qcInspectorService.getQcInspectorByUserId(this.userId).subscribe({
       next: (res) => {
         this.qcInspector = res;

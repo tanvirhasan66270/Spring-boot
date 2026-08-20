@@ -753,6 +753,7 @@ filteredRequisitions: any[] = [];
   }
 
   loadManager(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.managerService.getManagerByUserId(this.userId).subscribe({
       next: (res) => {
         this.manager = res;

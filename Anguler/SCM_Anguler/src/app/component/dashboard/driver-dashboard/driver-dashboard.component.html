@@ -6,24 +6,21 @@
   <!-- DASHBOARD MAIN CONTENT -->
   <ng-container *ngIf="!isChildRouteActive()">
     <div class="px-4 pt-4">
-    <!-- TOP BANNER CARD -->
-    <div class="d-flex justify-content-between align-items-center p-4 mb-4 shadow-sm" style="background-color: #fff8dc; border-radius: 12px; border: 1px solid #fde68a;">
-      <div>
-        <h3 class="fw-bold text-dark mb-1" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">Driver Terminal Panel</h3>
-        <p class="text-secondary small mb-0" style="font-size: 0.85rem;">
-          Driver: <strong class="text-primary">{{ userName }}</strong> <span class="mx-1 text-muted">|</span> Delivery overview and vehicle status.
-        </p>
+    <div class="dashboard-header bg-white p-4 rounded-4 shadow-sm border mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h2 class="fw-bold text-dark fs-4 mb-0">Welcome back, <span class="text-primary">{{ userName }}</span> <span class="fs-4">👋</span></h2>
       </div>
-      
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm d-flex align-items-center gap-2 bg-white" style="border: 1px solid #3b82f6; color: #3b82f6; border-radius: 4px; padding: 0.4rem 0.8rem; font-weight: 500;" (click)="showSettings = true">
-          <i class="bi bi-gear text-primary"></i> Settings
-        </button>
-        <button class="btn btn-sm d-flex align-items-center gap-2 bg-white" style="border: 1px solid #ef4444; color: #ef4444; border-radius: 4px; padding: 0.4rem 0.8rem; font-weight: 500;" (click)="logout()">
-          <i class="bi bi-box-arrow-right text-danger"></i> Log_Out
-        </button>
-      </div>
+      <p class="text-muted fs-8 mb-0 d-flex align-items-center gap-2">
+        <span class="text-dark fw-bold">Driver</span> &bull; Delivery trips & vehicle status.
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 fs-9"><span class="pulse-dot-green me-1"></span> Live</span>
+      </p>
     </div>
+    <div class="header-actions d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="showSettings = true"><i class="bi bi-gear"></i></button>
+      <button class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
+    </div>
+  </div>
 
     <!-- KPI ROW -->
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">

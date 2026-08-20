@@ -673,6 +673,7 @@ export class ProcurementDashboardComponent implements OnInit {
 
 
   loadProcurement(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.procurementService.getProcurementByUserId(this.userId).subscribe({
       next: (res) => {
         this.procurement = res;

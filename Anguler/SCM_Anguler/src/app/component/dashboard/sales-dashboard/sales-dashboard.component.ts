@@ -623,6 +623,7 @@ export class SalesDashboardComponent implements OnInit, AfterViewInit {
   }
 
   loadSalesOfficer(): void {
+    if (this.storage.getRole() === 'ADMIN') return;
     this.salesOfficerService.getSalesOfficerByUserId(this.userId).subscribe({
       next: (res) => {
         this.salesOfficer = res;

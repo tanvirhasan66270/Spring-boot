@@ -162,6 +162,10 @@ export class SupplierDashboardComponent implements OnInit {
   }
 
   loadSupplier(): void {
+    if (this.storage.getRole() === 'ADMIN') {
+      this.loadDashboardData(0);
+      return;
+    }
     // Fetch the supplier's specific ID based on their User ID
     this.supplierService.getSupplierByUserId(this.userId).subscribe({
       next: (response) => {

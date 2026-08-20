@@ -1,25 +1,18 @@
 <div class="admin-dashboard px-3 py-4">
   <!-- ───────────────── TOP BAR ───────────────── -->
-  <div class="welcome-card p-4 rounded-4 shadow-sm border-0 mb-4 d-flex justify-content-between align-items-center">
+  <div class="dashboard-header bg-white p-4 rounded-4 shadow-sm border mb-4 d-flex justify-content-between align-items-center">
     <div>
-      <h3 class="fw-bold mb-1 text-dark">
-        <i class="bi bi-shield-lock text-danger me-2"></i> Admin Command Center
-      </h3>
-      <p class="text-secondary small mb-0">
-        Root Access: <strong class="text-danger">{{ userName }}</strong> | Full system control &amp; oversight.
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <h2 class="fw-bold text-dark fs-4 mb-0">Welcome back, <span class="text-primary">{{ userName }}</span> <span class="fs-4">👋</span></h2>
+      </div>
+      <p class="text-muted fs-8 mb-0 d-flex align-items-center gap-2">
+        <span class="text-dark fw-bold">Admin</span> &bull; Root Access | Full system control &amp; oversight.
+        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 fs-9"><span class="pulse-dot-green me-1"></span> Live</span>
       </p>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <!-- <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold">
-        <i class="bi bi-shield-fill-check me-1"></i> ADMIN
-      </span>
-      <span class="text-muted small font-monospace">{{ currentTime | date:'HH:mm:ss' }}</span> -->
-      <button class="btn btn-sm btn-outline-secondary rounded-3" (click)="showSettings = !showSettings" title="Dashboard Settings">
-        <i class="bi bi-gear fs-6">Setting</i>
-      </button>
-      <button class="btn btn-sm btn-outline-danger fw-semibold" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i> Log_Out
-      </button>
+    <div class="header-actions d-flex gap-2">
+      <button class="btn btn-outline-secondary btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="showSettings = !showSettings" title="Dashboard Settings"><i class="bi bi-gear"></i></button>
+      <button class="btn btn-outline-danger btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Log Out</button>
     </div>
   </div>
 
