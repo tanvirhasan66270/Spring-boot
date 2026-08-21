@@ -32,9 +32,9 @@
         <button type="button" class="nav-item nav-toggle" (click)="toggleDashboardsMenu()">
           <i class="bi bi-grid-1x2-fill"></i>
           <span>Dashboards</span>
-          <i class="bi nav-chevron" [ngClass]="dashboardsOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          <!-- <i class="bi nav-chevron" [ngClass]="dashboardsOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i> -->
         </button>
-        <div class="nav-submenu" *ngIf="dashboardsOpen">
+        <!-- <div class="nav-submenu" *ngIf="dashboardsOpen">
           <a routerLink="/dashboard/admin" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Admin</a>
           <a routerLink="/dashboard/manager" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Manager</a>
           <a routerLink="/dashboard/sales" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Sales</a>
@@ -42,7 +42,7 @@
           <a routerLink="/dashboard/procurement" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Procurement</a>
           <a routerLink="/dashboard/commercial" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> Commercial</a>
           <a routerLink="/dashboard/qc-inspector" routerLinkActive="active" class="nav-subitem"><i class="bi bi-circle"></i> QC Inspector</a>
-        </div>
+        </div> -->
       </ng-container>
     </div>
 
@@ -139,6 +139,10 @@
       <a routerLink="/product" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['SALES_OFFICER', 'MANAGER', 'CUSTOMER'])">
         <i class="bi bi-box-seam"></i>
         <span>Products</span>
+      </a>
+      <a routerLink="/customer-requirements" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER'])">
+        <i class="bi bi-person-lines-fill"></i>
+        <span>Customer Requirements</span>
       </a>
       <a routerLink="/order" routerLinkActive="active" class="nav-item" *ngIf="hasAccess(['ADMIN', 'MANAGER', 'SALES_OFFICER', 'LOGISTICS_OFFICER', 'CUSTOMER'])">
         <i class="bi bi-bag"></i>

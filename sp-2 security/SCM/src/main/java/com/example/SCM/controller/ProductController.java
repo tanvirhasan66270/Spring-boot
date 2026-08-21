@@ -54,6 +54,12 @@ public class ProductController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/public")
+    public ResponseEntity<List<ProductResponseDTO>> getAllPublic() {
+        List<ProductResponseDTO> list = productService.findAll();
+        return ResponseEntity.ok(list);
+    }
+
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {

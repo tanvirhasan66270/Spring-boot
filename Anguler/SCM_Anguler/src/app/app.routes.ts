@@ -92,6 +92,7 @@ export const routes: Routes = [
       { path: 'network', component: PublicNetworkComponent },
       { path: 'contact', component: PublicContactComponent },
       { path: 'join-us', component: PublicJoinUsComponent },
+      { path: 'products', loadComponent: () => import('./component/public/public-products/public-products.component').then(m => m.PublicProductsComponent) },
     ],
   },
   {
@@ -189,6 +190,7 @@ export const routes: Routes = [
     ]
   },
       { path: 'product', component: AddProductComponent },
+      { path: 'customer-requirements', loadComponent: () => import('./component/features/customer-requirements/customer-requirements.component').then(m => m.CustomerRequirementsComponent) },
       { path: 'category', component: CategoryComponent },
       { path: 'order', component: CustomerOrderComponent },
       { path: 'country', component: CountryComponent },

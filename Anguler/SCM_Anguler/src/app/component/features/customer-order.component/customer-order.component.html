@@ -87,7 +87,7 @@
                     <i class="bi bi-shield-check fs-6"></i>
                   </button>
 
-                  @if (userRole !== 'SALES_OFFICER') {
+                  @if (userRole === 'ADMIN' || userRole === 'CUSTOMER') {
                   <button class="btn btn-icon btn-light text-warning border-0" title="Modify Context" (click)="edit(o)">
                     <i class="bi bi-pencil-square"></i>
                   </button>
@@ -495,21 +495,27 @@
               account:</div>
             <div><b>Bank Name:</b> City Bank PLC (Corporate Branch)</div>
             <div><b>Company A/C:</b> <span class="text-primary fw-bold">120-3341-98234101</span></div>
-            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i
+                class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days,
+              otherwise the order will be cancelled.</div>
           </div>
 
           <div class="form-group">
             <label class="small fw-semibold text-secondary mb-1">Customer Settlement Bank Account Index (Customer Bank
               account)</label>
             <input type="text" class="form-control form-control-sm font-monospace fs-7"
-              [(ngModel)]="order.customerAccountNumber" placeholder="e.g. 10214300982341" name="customerAccountNumberBank">
+              [(ngModel)]="order.customerAccountNumber" placeholder="e.g. 10214300982341"
+              name="customerAccountNumberBank">
           </div>
-          
+
           <div class="form-group mt-3 pt-3 border-top border-primary-subtle">
-            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Add Image </label>
-            <input type="file" class="form-control form-control-sm fs-7" accept="image/*" (change)="onImageSelected($event)">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Add
+              Image </label>
+            <input type="file" class="form-control form-control-sm fs-7" accept="image/*"
+              (change)="onImageSelected($event)">
             <div *ngIf="imagePreview" class="mt-2 text-center">
-              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm" style="max-height: 150px;">
+              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm"
+                style="max-height: 150px;">
             </div>
           </div>
         </div>
@@ -525,7 +531,9 @@
               number:</div>
             <div><b>{{ order.paymentMethod }} Merchant/Personal:</b> <span
                 class="text-danger fw-bold">01712-345678</span> (Send Money / Cash In)</div>
-            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days, otherwise the order will be cancelled.</div>
+            <div class="text-danger mt-2 fw-bold" style="font-size: 0.75rem;"><i
+                class="bi bi-exclamation-triangle-fill me-1"></i>Note: Payment must be completed within 7 days,
+              otherwise the order will be cancelled.</div>
           </div>
 
           <div class="form-group mb-2">
@@ -534,12 +542,15 @@
             <input type="text" class="form-control form-control-sm font-monospace fs-7"
               [(ngModel)]="order.customerAccountNumber" name="customerAccountNumberMfs" placeholder="01XXXXXXXXX">
           </div>
-          
+
           <div class="form-group mt-3 pt-3 border-top border-danger-subtle">
-            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof / Screenshot (Optional)</label>
-            <input type="file" class="form-control form-control-sm fs-7" accept="image/*" (change)="onImageSelected($event)">
+            <label class="small fw-semibold text-secondary mb-1"><i class="bi bi-image me-1"></i>Payment Proof /
+              Screenshot (Optional)</label>
+            <input type="file" class="form-control form-control-sm fs-7" accept="image/*"
+              (change)="onImageSelected($event)">
             <div *ngIf="imagePreview" class="mt-2 text-center">
-              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm" style="max-height: 150px;">
+              <img [src]="imagePreview" alt="Preview" class="img-fluid rounded border shadow-sm"
+                style="max-height: 150px;">
             </div>
           </div>
         </div>
@@ -670,7 +681,8 @@
           <button
             class="btn btn-success flex-grow-1 py-2.5 d-flex align-items-center justify-content-center gap-2 fw-semibold fs-7"
             type="submit">
-            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Metadata Mutations' : 'Dispatch Consignment            Node' }}
+            <i class="bi bi-cloud-arrow-up-fill"></i> {{ isEdit ? 'Commit Metadata Mutations' : 'Dispatch Consignment
+            Node' }}
           </button>
           <button type="button" class="btn btn-outline-secondary px-3 fs-7" (click)="reset()">Clear</button>
         </div>

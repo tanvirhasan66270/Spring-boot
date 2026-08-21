@@ -24,7 +24,7 @@ public class SupplierController {
     private final SupplierService supplierService;
     private final ObjectMapper objectMapper;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER', 'PROCUREMENT', 'COMMERCIAL_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPPLIER')")
     @PostMapping(consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public ResponseEntity<SupplierResponseDTO> save(
             @RequestPart("suppliers") String supplierJson,

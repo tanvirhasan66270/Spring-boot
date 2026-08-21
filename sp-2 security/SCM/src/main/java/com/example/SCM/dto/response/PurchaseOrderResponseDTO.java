@@ -29,4 +29,7 @@ public class PurchaseOrderResponseDTO {
 
     //Quotation Connection Details
     private Long quotationId;
+
+    private java.util.List<Long> productIds;
+    private java.util.List<String> productNames;
 }

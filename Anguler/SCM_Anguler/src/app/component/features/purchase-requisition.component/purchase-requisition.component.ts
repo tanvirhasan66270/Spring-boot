@@ -1,20 +1,22 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { purchaseRequisitionRequestModel, purchaseRequisitionResponseModel } from '../../shared/model/purchase-requisionModel';
 import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { SupplierService } from '../../../service/supplier.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
+import { ProductRequirementService } from '../../../service/product-requirement.service';
+import { ProductRequirementResponse } from '../../shared/model/productRequirementModel';
 
 @Component({
   selector: 'app-purchase-requisition',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './purchase-requisition.component.html',
-  styleUrl: './purchase-requisition.component.css'
+  styleUrls: ['./purchase-requisition.component.css']
 })
 export class PurchaseRequisitionComponent implements OnInit {
 
@@ -26,6 +28,8 @@ export class PurchaseRequisitionComponent implements OnInit {
   filteredRequisitions: purchaseRequisitionResponseModel[] = []; 
   products: any[] = [];
   suppliers: any[] = [];
+  requirements: ProductRequirementResponse[] = [];
+  selectedRequirementIds: number[] = [];
   userRole: string = '';
   currentSupplierId: number | null = null;
 
@@ -54,6 +58,7 @@ export class PurchaseRequisitionComponent implements OnInit {
   constructor(
     private service: PurchaseRequisitionService,
     private productService: AddProductService,
+    private reqService: ProductRequirementService,
     private supplierService: SupplierService,
     private storage: StorageService,
     private cdr: ChangeDetectorRef
@@ -82,24 +87,37 @@ export class PurchaseRequisitionComponent implements OnInit {
           }
           this.loadRequisitions();
           this.loadProducts();
+          this.loadRequirements();
           this.loadSuppliers();
         },
         error: () => {
           this.loadRequisitions();
           this.loadProducts();
+          this.loadRequirements();
           this.loadSuppliers();
         }
       });
     } else {
       this.loadRequisitions();
       this.loadProducts();
+      this.loadRequirements();
       this.loadSuppliers();
     }
   }
-
   loadRequisitions() { 
     this.service.findAll().subscribe({ next: (data) => {
-        const allRequisitions = data || [];
+        let allRequisitions = data || [];
+
+        // ENHANCE: Parse Remarks to extract Product Requirements and push to productNames for UI display
+        allRequisitions = allRequisitions.map((pr: any) => {
+          if (pr.remarks && pr.remarks.includes('[Fulfilling Requirements: ')) {
+            const match = pr.remarks.match(/\[Fulfilling Requirements:\s*(.*?)\]/);
+            if (match && match[1]) {
+              pr.productNames = [...(pr.productNames || []), ...match[1].split(',').map((s: string) => '[Req] ' + s.trim())];
+            }
+          }
+          return pr;
+        });
 
         if (this.userRole === 'SUPPLIER' && this.currentSupplierId) {
           this.requisitions = allRequisitions.filter((pr: any) => {
@@ -140,16 +158,35 @@ export class PurchaseRequisitionComponent implements OnInit {
   }
 
   loadProducts() { this.productService.findAll().subscribe(data => { this.products = data || []; this.cdr.markForCheck(); }); }
+  
+  loadRequirements() {
+    this.reqService.findAll().subscribe(data => {
+      this.requirements = data || [];
+      this.cdr.markForCheck();
+    });
+  }
+
   loadSuppliers() { 
     if (this.userRole === 'SUPPLIER') return; 
     this.supplierService.findAll().subscribe(data => { this.suppliers = data || []; this.cdr.markForCheck(); }); 
   }
 
   onProductSelect(event: any) {
-    const id = +event.target.value;
-    if (id && !this.requisition.productIds.includes(id)) {
-      this.requisition.productIds.push(id);
+    const val = event.target.value;
+    if (!val) return;
+    
+    if (val.startsWith('PROD_')) {
+      const id = parseInt(val.replace('PROD_', ''), 10);
+      if (id && !this.requisition.productIds.includes(id)) {
+        this.requisition.productIds.push(id);
+      }
+    } else if (val.startsWith('REQ_')) {
+      const id = parseInt(val.replace('REQ_', ''), 10);
+      if (id && !this.selectedRequirementIds.includes(id)) {
+        this.selectedRequirementIds.push(id);
+      }
     }
+    
     this.selectedProductInput = null; 
     this.cdr.markForCheck();
   }
@@ -159,8 +196,21 @@ export class PurchaseRequisitionComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  removeRequirement(id: number) {
+    this.selectedRequirementIds = this.selectedRequirementIds.filter(rId => rId !== id);
+    this.cdr.markForCheck();
+  }
+
   getProductById(id: number) {
     return this.products.find(p => p.id === id);
+  }
+
+  getRequirementById(id: number) {
+    return this.requirements.find(r => r.id === id);
+  }
+
+  isRequirementSelected(id: number): boolean {
+    return this.selectedRequirementIds.includes(id);
   }
 
   onSupplierSelect(event: any) {
@@ -210,9 +260,18 @@ export class PurchaseRequisitionComponent implements OnInit {
 
   save() {
     this.errorMessage = null;
-    if (this.requisition.productIds.length === 0 || this.requisition.supplierIds.length === 0) {
+    if ((this.requisition.productIds.length === 0 && this.selectedRequirementIds.length === 0) || this.requisition.supplierIds.length === 0) {
       this.errorMessage = "Validation Fault: Please select at least one product and supplier node.";
       return;
+    }
+
+    if (this.selectedRequirementIds.length > 0) {
+      const reqNames = this.selectedRequirementIds
+        .map(rid => this.getRequirementById(rid)?.productName)
+        .filter(Boolean)
+        .join(', ');
+      const prefix = this.requisition.remarks ? this.requisition.remarks + '\n' : '';
+      this.requisition.remarks = prefix + `[Fulfilling Requirements: ${reqNames}]`;
     }
 
     if (this.isEdit && this.currentEditId !== null) {
@@ -317,3 +376,5 @@ export class PurchaseRequisitionComponent implements OnInit {
     });
   }
 }
+
+

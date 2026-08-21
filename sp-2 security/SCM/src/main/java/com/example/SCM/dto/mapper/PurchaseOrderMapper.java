@@ -47,12 +47,20 @@ public class PurchaseOrderMapper {
             }
         } catch (Exception e) {
         }
-
         try {
+            PurchaseRequisition pr = null;
             if (po.getPurchaseRequisition() != null) {
-                dto.setPurchaseRequisitionId(po.getPurchaseRequisition().getId());
+                pr = po.getPurchaseRequisition();
             } else if (po.getQuotation() != null && po.getQuotation().getPurchaseRequisition() != null) {
-                dto.setPurchaseRequisitionId(po.getQuotation().getPurchaseRequisition().getId());
+                pr = po.getQuotation().getPurchaseRequisition();
+            }
+            
+            if (pr != null) {
+                dto.setPurchaseRequisitionId(pr.getId());
+                if (pr.getProducts() != null) {
+                    dto.setProductIds(pr.getProducts().stream().map(com.example.SCM.entity.Product::getId).collect(java.util.stream.Collectors.toList()));
+                    dto.setProductNames(pr.getProducts().stream().map(com.example.SCM.entity.Product::getName).collect(java.util.stream.Collectors.toList()));
+                }
             }
         } catch (Exception e) {
         }

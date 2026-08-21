@@ -34,6 +34,7 @@ public class POLineItemServiceImp implements POLineItemService {
     private final InventoryRepository inventoryRepository;
     private final POLineItemMapper poLineItemMapper;
     private final TrackingCodeGenerator trackingCodeGenerator;
+    private final com.example.SCM.service.NotificationService notificationService;
 
 
     @Override
@@ -127,7 +128,21 @@ public class POLineItemServiceImp implements POLineItemService {
         }
 
         inventoryRepository.save(inventory);
-        POLineItem updatedItem = poLineItemRepository.save(item);
+                POLineItem updatedItem = poLineItemRepository.save(item);
+        
+        // Notify Supplier if status changed
+        if (oldStatus != newStatus) {
+            try {
+                if (order != null && order.getSupplier() != null && order.getSupplier().getUser() != null) {
+                    notificationService.send(
+                        order.getSupplier().getUser().getId().toString(),
+                        "PO_LINE_ITEM",
+                        "Order Line Status Updated",
+                        "Line Item for PO #" + order.getPoNumber() + " is now " + newStatus
+                    );
+                }
+            } catch (Exception ignored) {}
+        }
 
         return poLineItemMapper.convertTOResponseDTO(updatedItem);
     }

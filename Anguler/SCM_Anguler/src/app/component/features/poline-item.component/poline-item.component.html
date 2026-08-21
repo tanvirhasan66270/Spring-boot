@@ -1,133 +1,145 @@
-<div class="container-fluid py-4 px-4" *ngIf="!isEmbedded">
+<div class="container-fluid py-2 px-0" *ngIf="!isEmbedded">
 
-
-
-  <!-- ───────────────── TOP BAR & ACTIONS ───────────────── -->
-  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 bg-white p-3 rounded shadow-sm border-start border-primary border-4">
-    <div>
-      <h4 class="text-dark fw-bold mb-1">Purchase Order Line Items</h4>
-      <p class="text-muted mb-0 small">Manage explicit inventory item distributions, control cargo tracking, and lock stock quotas.</p>
-    </div>
-    <div class="d-flex gap-2">
-      <div class="input-group font-monospace" style="max-width: 280px;">
-        <input type="text" class="form-control fs-7" placeholder="Enter Tracking Code..." [(ngModel)]="trackingSearchQuery">
-        <button class="btn btn-dark fs-7" type="button" (click)="trackShipment()"><i class="bi bi-geo-alt-fill"></i></button>
+  <!-- ───────────────── PO LINE ITEM LOG TABLE ───────────────── -->
+  <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 border-top border-primary border-4 bg-white">
+    <!-- Card Header -->
+    <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-2">
+        <h6 class="mb-0 fw-bold text-primary text-uppercase">
+          <i class="bi bi-list-columns-reverse me-2"></i> PO Line Item Log
+        </h6>
       </div>
-     <button class="btn btn-primary" 
-        *ngIf="['ADMIN', 'SUPPLIER'].includes(activeRole)" 
-        (click)="openDrawer()">
-  <i class="bi bi-plus-circle"></i> Add Line Item
-</button>
-    </div>
-  </div>
 
-  <!-- ───────────────── OPERATIONAL FAULT ALERT ───────────────── -->
-  @if (errorMessage) {
-    <div class="alert alert-danger shadow-sm border-2 mb-4 fs-7" role="alert">
-      <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Operational Fault:</strong> {{ errorMessage }}
-    </div>
-  }
-  <div class="card border-0 shadow-sm p-3 mb-4 rounded-3" *ngIf="activeRole === 'PROCUREMENT'">
-  <div class="row g-3">
-    <!-- Supplier Name Search -->
-    <div class="col-md-4">
-      <input type="text" class="form-control" [(ngModel)]="searchSupplier" (input)="applyFilters()" placeholder="Search by Supplier Name...">
-    </div>
-    <!-- Product Name Search -->
-    <div class="col-md-4">
-      <input type="text" class="form-control" [(ngModel)]="searchProduct" (input)="applyFilters()" placeholder="Search by Product Name...">
-    </div>
-    <!-- Status Search -->
-    <div class="col-md-4">
-      <select class="form-select" [(ngModel)]="searchStatus" (change)="applyFilters()">
-        <option value="">All Statuses</option>
-        <option value="PENDING">PENDING</option>
-        <option value="APPROVED">APPROVED</option>
-        <option value="SHIPPED">SHIPPED</option>
-        <option value="DELIVERED">DELIVERED</option>
-      </select>
-    </div>
-  </div>
-</div>
+      <!-- Header Actions: Search, Filter & Add -->
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <!-- Search Input -->
+        <div class="input-group input-group-sm" style="width: 220px;">
+          <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control border-start-0 ps-0" placeholder="Search PO Line Items..." [(ngModel)]="trackingSearchQuery">
+        </div>
+        
+        <!-- Status Filter Dropdown -->
+        <select class="form-select form-select-sm text-secondary" style="width: 140px;" [(ngModel)]="searchStatus">
+          <option value="">All Statuses</option>
+          <option value="PENDING">PENDING</option>
+          <option value="APPROVED">APPROVED</option>
+          <option value="SHIPPED">SHIPPED</option>
+          <option value="DELIVERED">DELIVERED</option>
+          <option value="CANCELLED">CANCELLED</option>
+        </select>
 
-  <!-- ───────────────── DATA TABLE GRID ───────────────── -->
-  <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
+        <!-- Add Button -->
+        <button class="btn btn-primary btn-sm px-3 fw-semibold rounded-3 d-flex align-items-center gap-1" 
+                *ngIf="['ADMIN', 'SUPPLIER'].includes(activeRole)" 
+                (click)="openDrawer()">
+          <i class="bi bi-plus-circle"></i> Add Line Item
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert error message -->
+    <div class="px-3 pt-2" *ngIf="errorMessage">
+      <div class="alert alert-danger alert-dismissible fade show shadow-sm border-2 mb-2 fs-7" role="alert">
+        <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Operational Fault:</strong> {{ errorMessage }}
+        <button type="button" class="btn-close" (click)="errorMessage = null" aria-label="Close"></button>
+      </div>
+    </div>
+
+    <!-- Table Body -->
     <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 fs-7">
-          <thead class="table-light text-uppercase fs-8">
+      <div *ngIf="displayLineItems.length === 0" class="text-center text-muted py-5">
+        <i class="bi bi-box-seam fs-1 d-block mb-2 text-secondary"></i>
+        <small class="fw-semibold">No discrete PO line items found</small>
+      </div>
+
+      <div class="table-responsive" *ngIf="displayLineItems.length > 0">
+        <table class="table table-hover align-middle mb-0 fs-8">
+          <thead class="table-light text-uppercase">
             <tr>
-              <th class="ps-4">PO Matrix Number</th>
-              <th>Product Specification</th>
-              <th>Price Plan</th>
-              <th>Shipment Vector</th>
-              <th>Tracking Reference</th>
-              <th>Item Stage</th>
-              
-              @if (activeRole !== 'PROCUREMENT' && activeRole !== 'COMMERCIAL_OFFICER') {
-  <th class="text-end px-4" width="140">Actions</th>
-}
+              <th class="ps-4">RFQ REF ID</th>
+              <th>COMPONENT SPECIFICATION</th>
+              <th>QUANTITY</th>
+              <th>PREFERRED VENDOR TARGET</th>
+              <th>RFQ LIFECYCLE STATE</th>
+              <th class="text-end px-4" *ngIf="activeRole !== 'COMMERCIAL_OFFICER'">ACTIONS</th>
             </tr>
           </thead>
           <tbody>
-            @for (i of lineItems; track i.id) {
-              <tr>
-                <td class="ps-4">
-                  <span class="badge bg-dark font-monospace tracking-wide">{{ i.poNumber }}</span>
-                  <small class="d-block text-muted font-monospace mt-1">Ref Quote: {{ i.quotationRef || 'N/A' }}</small>
-                </td>
-                <td>
-                  <div class="fw-bold text-dark">{{ i.productName }}</div>
-                  <div class="text-secondary small font-monospace"><i class="bi bi-tag-fill me-1"></i>Code: {{ i.productCode }}</div>
-                </td>
-                <td>
-                  <div class="font-monospace text-secondary">${{ i.unitPrice | number:'1.2-2' }} x {{ i.quantity }}</div>
-                  <div class="font-monospace fw-bold text-success">${{ i.lineTotal | number:'1.2-2' }}</div>
-                </td>
-                <td>
-                  <div class="fw-semibold text-dark">{{ i.shipmentMethod || 'Standard Route' }}</div>
-                  <small class="text-muted font-monospace"><i class="bi bi-clock-history"></i> {{ i.deliveryDate | date:'mediumDate' }}</small>
-                </td>
-                <td>
-                  @if (i.trackingNumber) {
-                    <span class="badge bg-light text-primary border border-primary font-monospace tracking-wide px-2 py-1.5"><i class="bi bi-truck me-1"></i>{{ i.trackingNumber }}</span>
-                  } @else {
-                    <span class="text-muted small font-monospace">Not Dispatched</span>
-                  }
-                </td>
-                <td>
-                  <span class="badge px-2.5 py-1.5 fs-8 text-uppercase border"
-                    [ngClass]="{
-                      'bg-warning-subtle text-warning border-warning': i.status === 'PENDING',
-                      'bg-info-subtle text-info border-info': i.status === 'APPROVED',
-                      'bg-primary-subtle text-primary border-primary': i.status === 'SHIPPED',
-                      'bg-success-subtle text-success border-success': i.status === 'DELIVERED',
-                      'bg-danger-subtle text-danger border-danger': i.status === 'CANCELLED'
-                    }">
-                    {{ i.status }}
-                  </span>
-                </td>
-                @if (activeRole !== 'PROCUREMENT' && activeRole !== 'COMMERCIAL_OFFICER') {
-                  <td class="text-end px-4">
-                    <div class="d-flex justify-content-end gap-2">
-                      <button class="btn btn-icon btn-light text-warning" title="Update Node" (click)="edit(i)">
-                        <i class="bi bi-pencil-square"></i>
-                      </button>
-                      <button class="btn btn-icon btn-light text-danger" title="Release Stock" (click)="delete(i.id)">
-                        <i class="bi bi-trash3-fill"></i>
-                      </button>
-                    </div>
-                  </td>
-                }
-              </tr>
-            }
-            @empty {
-              <tr>
-                <td colspan="7" class="text-center py-5 text-muted font-monospace fs-8">
-                  <i class="bi bi-box-seam fs-2 d-block mb-2 text-secondary"></i>No discrete inventory line distributions allocated.
-                </td>
-              </tr>
-            }
+            <tr *ngFor="let i of displayLineItems">
+              <!-- Column 1: RFQ REF ID / PO REF ID -->
+              <td class="ps-4 fw-bold text-primary">
+                {{ i.poNumber || ('PO #' + i.poId) }}
+                <small class="d-block text-muted font-monospace fw-normal" *ngIf="i.quotationRef">Quote: {{ i.quotationRef }}</small>
+              </td>
+
+              <!-- Column 2: COMPONENT SPECIFICATION -->
+              <td>
+                <div class="fw-semibold text-dark">{{ i.productName || 'N/A' }}</div>
+                <small class="text-secondary font-monospace" *ngIf="i.productCode"><i class="bi bi-tag-fill me-1"></i>Code: {{ i.productCode }}</small>
+              </td>
+
+              <!-- Column 3: QUANTITY -->
+              <td>
+                <div class="fw-medium text-dark">{{ i.quantity }} Units</div>
+                <small class="text-success font-monospace" *ngIf="i.unitPrice">${{ i.unitPrice | number:'1.2-2' }}/unit</small>
+              </td>
+
+              <!-- Column 4: PREFERRED VENDOR TARGET -->
+              <td>
+                <div class="fw-semibold text-secondary">{{ i.supplierName || 'Apex Logistics Group' }}</div>
+              </td>
+
+              <!-- Column 5: RFQ LIFECYCLE STATE -->
+              <td>
+                <select
+                  *ngIf="activeRole !== 'SUPPLIER'"
+                  class="form-select form-select-sm fw-bold text-uppercase border-0 shadow-sm text-center"
+                  style="width: 140px; cursor: pointer; border-radius: 50rem; padding: 0.35rem 0.75rem; font-size: 0.75rem;"
+                  [ngClass]="{
+                    'bg-warning bg-opacity-20 text-warning-emphasis border border-warning': i.status === 'PENDING',
+                    'bg-success text-white': i.status === 'APPROVED',
+                    'bg-primary text-white': i.status === 'SHIPPED',
+                    'bg-info text-white': i.status === 'DELIVERED',
+                    'bg-danger text-white': i.status === 'CANCELLED'
+                  }"
+                  [ngModel]="i.status"
+                  (ngModelChange)="onStatusChangeInline(i, $event)"
+                >
+                  <option value="PENDING" class="bg-white text-dark">PENDING</option>
+                  <option value="APPROVED" class="bg-white text-dark">APPROVED</option>
+                  <option value="SHIPPED" class="bg-white text-dark">SHIPPED</option>
+                 
+                  <option value="CANCELLED" class="bg-white text-dark">CANCELLED</option>
+                </select>
+
+                <span
+                  *ngIf="activeRole === 'SUPPLIER'"
+                  class="badge px-3 py-2 text-uppercase fw-bold shadow-sm"
+                  style="border-radius: 50rem; font-size: 0.75rem;"
+                  [ngClass]="{
+                    'bg-warning bg-opacity-20 text-warning-emphasis border border-warning': i.status === 'PENDING',
+                    'bg-success text-white': i.status === 'APPROVED',
+                    'bg-primary text-white': i.status === 'SHIPPED',
+                   
+                    'bg-danger text-white': i.status === 'CANCELLED'
+                  }"
+                >
+                  {{ i.status }}
+                </span>
+              </td>
+
+              <!-- Column 6: ACTIONS -->
+              <td class="text-end px-4" *ngIf="activeRole !== 'COMMERCIAL_OFFICER'">
+                <div class="d-flex justify-content-end gap-2">
+                  <button class="btn btn-sm btn-outline-warning p-1 px-2" title="Edit Item" (click)="edit(i)">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger p-1 px-2" title="Delete Item" (click)="delete(i.id)">
+                    <i class="bi bi-trash3-fill"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -220,19 +232,9 @@
 
         <!-- TARGET DELIVERY DATE & LIFECYCLE TARGETS -->
         <div class="row g-2 mb-3">
-          <div class="col-md-6">
+          <div class="col-md-12">
             <label class="form-label fw-bold small text-uppercase text-secondary">Target Delivery Date</label>
             <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="item.deliveryDate" name="deliveryDate" required>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label fw-bold small text-uppercase text-secondary">Distribution Lifecycle State</label>
-            <select class="form-select fs-7" [(ngModel)]="item.status" name="status" required>
-              <option value="PENDING">PENDING</option>
-              <option value="APPROVED">APPROVED</option>
-              <option value="SHIPPED">SHIPPED</option>
-              <option value="DELIVERED">DELIVERED</option>
-              <option value="CANCELLED">CANCELLED</option>
-            </select>
           </div>
         </div>
 
@@ -275,6 +277,38 @@
       <div class="modal-body p-4 bg-light custom-scroll overflow-auto" style="max-height: 580px;">
          <ng-container *ngTemplateOutlet="poLineItemFormTemplate"></ng-container>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS UPDATE MODAL FOR PROCUREMENT -->
+<div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 1060;" *ngIf="isStatusModalOpen">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 450px;">
+    <div class="modal-content shadow-lg border-0 rounded-4 bg-white animate-fade-in">
+      
+      <div class="modal-header px-4 py-3 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-arrow-repeat me-2"></i> Update Lifecycle State</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeStatusModal()"></button>
+      </div>
+      
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-uppercase text-secondary">Distribution Lifecycle State</label>
+          <select class="form-select fs-7" [(ngModel)]="statusUpdateValue">
+            <option value="PENDING">PENDING</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="SHIPPED">SHIPPED</option>
+            <option value="DELIVERED">DELIVERED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="modal-footer px-4 py-3 border-0 bg-light rounded-bottom-4 d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-outline-secondary fw-bold fs-7 px-4" (click)="closeStatusModal()">Cancel</button>
+        <button type="button" class="btn btn-info text-white fw-bold fs-7 px-4" (click)="saveStatusUpdate()"><i class="bi bi-check-circle me-1"></i> Update Status</button>
+      </div>
+      
     </div>
   </div>
 </div>

@@ -1,3 +1,4 @@
+import { ProductRequirementService } from '../../../service/product-requirement.service';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,11 +21,12 @@ import { QuotationRequestModel, QuotationResponseModel } from '../../shared/mode
 import { SupplierService } from '../../../service/supplier.service';
 import { ShipmentService } from '../../../service/shipment.service';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
+import { POLineItemComponent } from '../../features/poline-item.component/poline-item.component';
 
 @Component({
   selector: 'app-procurement-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, DashboardSettingsComponent],
+  imports: [CommonModule, FormsModule, RouterModule, DashboardSettingsComponent, POLineItemComponent],
   templateUrl: './procurement-dashboard.component.html',
   styleUrls: ['./procurement-dashboard.component.css'],
 })
@@ -166,6 +168,26 @@ export class ProcurementDashboardComponent implements OnInit {
   };
 
   selectedPrProducts: any[] = [];
+  prRequirements: any[] = [];
+  selectedPrRequirements: any[] = [];
+
+  onPrRequirementSelect(event: any) {
+    const val = event.target.value;
+    const reqId = Number(val.includes(':') ? val.split(':')[1].trim().replace('REQ_', '') : val.replace('REQ_', ''));
+    if (reqId) {
+      const req = this.prRequirements.find(r => r.id === reqId);
+      if (req && !this.selectedPrRequirements.some(r => r.id === reqId)) {
+        this.selectedPrRequirements.push(req);
+      }
+    }
+    // reset selection
+    event.target.value = '';
+  }
+
+  removePrRequirement(id: number) {
+    this.selectedPrRequirements = this.selectedPrRequirements.filter(r => r.id !== id);
+  }
+
   selectedPrSuppliers: any[] = [];
 
   newPo: PurchaseOrderRequestModel = {
@@ -422,7 +444,8 @@ export class ProcurementDashboardComponent implements OnInit {
     private notificationService: NotificationService,
     private supplierService: SupplierService,
     private shipmentService: ShipmentService,
-    private poLineItemService: PoLineItemService
+    private poLineItemService: PoLineItemService,
+      private reqService: ProductRequirementService
   ) {}
 
   ngOnInit(): void {
@@ -570,7 +593,7 @@ export class ProcurementDashboardComponent implements OnInit {
     });
 
     // Dummy Data Initializations
-    this.activeSuppliers = 15;
+    this.supplierService.findAll().subscribe({ next: (data) => { this.activeSuppliers = (data || []).length; }});
     this.allActiveSuppliersData = [
       { name: 'TechCorp Industries', rating: '4.8', activePOs: 3 },
       { name: 'Global Office Solutions', rating: '4.5', activePOs: 2 },
@@ -784,6 +807,7 @@ export class ProcurementDashboardComponent implements OnInit {
   // ================= MODAL LOGIC =================
   loadModalData() {
     this.productService.findAll().subscribe((d: any) => this.prProducts = d || []);
+    this.reqService.findAll().subscribe((d: any) => this.prRequirements = d || []);
     this.supplierService.findAll().subscribe((d: any) => this.prSuppliers = d || []);
     this.quotationService.findAll().subscribe((d: any) => {
       this.approvedQuotations = (d || []).filter((q: any) => q.status === 'APPROVED');
@@ -975,6 +999,28 @@ export class ProcurementDashboardComponent implements OnInit {
     });
   }
 
+  
+  showPoLineItemTable: boolean = false;
+  
+  get pendingPoLineItemsCount(): number {
+    return this.rawPoLineItems ? this.rawPoLineItems.filter((item: any) => item.status === 'PENDING').length : 0;
+  }
+
+  selectTab(tab: string) {
+    if (this.activeRfqTab === tab) {
+      this.activeRfqTab = 'ALL';
+      this.showPoLineItemTable = false;
+    } else {
+      this.activeRfqTab = tab;
+      this.showPoLineItemTable = (tab === 'PO_LINE_ITEM');
+    }
+    this.cdr.markForCheck();
+  }
+
+  togglePoLineItemTable() {
+    this.selectTab('PO_LINE_ITEM');
+  }
+
   openTrackingModal() {
     this.isTrackingModalOpen = true;
     this.trackedPo = null;
@@ -1150,3 +1196,6 @@ export class ProcurementDashboardComponent implements OnInit {
     this.router.navigate(['']);
   }
 }
+
+
+

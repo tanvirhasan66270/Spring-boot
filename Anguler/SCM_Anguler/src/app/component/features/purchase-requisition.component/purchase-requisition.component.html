@@ -161,21 +161,34 @@
             <div class="row g-2">
               <div class="col-md-6">
                 <select class="form-select fs-7" [(ngModel)]="selectedProductInput" name="prodSelect" (change)="onProductSelect($event)">
-                  <option [ngValue]="null">-- Select Product to Add --</option>
-                  @for (p of products; track p.id) {
-                    <option [value]="p.id" [disabled]="isProductSelected(p.id)">{{ p.name }}</option>
-                  }
+                  <option [ngValue]="null">-- Select Product or Requirement --</option>
+                  <optgroup label="Registered Products">
+                    @for (p of products; track p.id) {
+                      <option value="PROD_{{p.id}}" [disabled]="isProductSelected(p.id)">{{ p.name }}</option>
+                    }
+                  </optgroup>
+                  <optgroup label="Customer/Product Requirements">
+                    @for (r of requirements; track r.id) {
+                      <option value="REQ_{{r.id}}" [disabled]="isRequirementSelected(r.id)">[Req] {{ r.productName }}</option>
+                    }
+                  </optgroup>
                 </select>
               </div>
               <div class="col-md-6">
-                <div class="p-2 border rounded bg-light d-flex flex-wrap gap-1.5 align-content-start font-monospace fs-8 overflow-auto" style="height: 38px;">
+                <div class="p-2 border rounded bg-light d-flex flex-wrap gap-1.5 align-content-start font-monospace fs-8 overflow-auto" style="min-height: 38px;">
                   @for (pId of requisition.productIds; track pId) {
                     <span class="badge bg-dark text-white d-flex align-items-center gap-1 py-1 px-2 rounded-2">
                       {{ getProductById(pId)?.name }}
                       <i class="bi bi-x-circle text-warning cursor-pointer fs-8" (click)="removeProduct(pId)"></i>
                     </span>
                   }
-                  @if (requisition.productIds.length === 0) {
+                  @for (rId of selectedRequirementIds; track rId) {
+                    <span class="badge bg-info text-dark d-flex align-items-center gap-1 py-1 px-2 rounded-2">
+                      [Req] {{ getRequirementById(rId)?.productName }}
+                      <i class="bi bi-x-circle text-danger cursor-pointer fs-8" (click)="removeRequirement(rId)"></i>
+                    </span>
+                  }
+                  @if (requisition.productIds.length === 0 && selectedRequirementIds.length === 0) {
                     <span class="text-muted fs-8 py-0.5 px-1">Selected item chips stack here...</span>
                   }
                 </div>

@@ -178,21 +178,22 @@
 
         <div class="bg-light p-3 rounded border border-warning-subtle mb-3">
           <h6 class="fw-bold small text-warning mb-2" *ngIf="isAmendMode"><i class="bi bi-info-circle-fill me-1"></i> Active Financial Amendment Bounds</h6>
-          <h6 class="fw-bold small text-muted mb-2" *ngIf="!isAmendMode"><i class="bi bi-lock-fill me-1"></i> Financial Bounds Locked (Use Amend mode to change)</h6>
+          <h6 class="fw-bold small text-muted mb-2" *ngIf="isEdit && !isAmendMode"><i class="bi bi-lock-fill me-1"></i> Financial Bounds Locked (Use Amend mode to change)</h6>
+          <h6 class="fw-bold small text-primary mb-2" *ngIf="!isEdit"><i class="bi bi-currency-dollar me-1"></i> Financial Bounds Configuration</h6>
           
           <div class="mb-3">
             <label class="form-label fw-bold small text-uppercase text-secondary">Total Credit Value ($ Amount)</label>
-            <input type="number" class="form-control fs-7 font-monospace fw-bold text-success" [(ngModel)]="lc.amount" name="amount" min="1" required [disabled]="!isAmendMode">
+            <input type="number" class="form-control fs-7 font-monospace fw-bold text-success" [(ngModel)]="lc.amount" name="amount" min="1" required [disabled]="isEdit && !isAmendMode">
           </div>
 
           <div class="row g-2">
             <div class="col-md-6">
               <label class="form-label fw-bold small text-uppercase text-secondary">Latest Shipment Date</label>
-              <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="lc.latestShipmentDate" name="latestShipmentDate" required [disabled]="!isAmendMode">
+              <input type="date" class="form-control fs-7 font-monospace" [(ngModel)]="lc.latestShipmentDate" name="latestShipmentDate" required [disabled]="isEdit && !isAmendMode">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-bold small text-uppercase text-secondary">LC Expiry Deadline</label>
-              <input type="date" class="form-control fs-7 font-monospace text-danger" [(ngModel)]="lc.expiryDate" name="expiryDate" required [disabled]="!isAmendMode">
+              <input type="date" class="form-control fs-7 font-monospace text-danger" [(ngModel)]="lc.expiryDate" name="expiryDate" required [disabled]="isEdit && !isAmendMode">
             </div>
           </div>
         </div>

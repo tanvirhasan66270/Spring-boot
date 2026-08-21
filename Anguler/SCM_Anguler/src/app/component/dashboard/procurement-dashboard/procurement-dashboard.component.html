@@ -238,12 +238,12 @@
   </div>
 
   <!-- ───────────────── RFQ, PO & SHIPMENT LOG TABS ───────────────── -->
-  <div class="row g-3 mb-4 row-cols-1 row-cols-md-3 row-cols-lg-5">
+  <div class="row g-3 mb-4 row-cols-1 row-cols-md-3 row-cols-lg-6">
     <!-- Button 1: RFQ Log -->
     <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'RFQ' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeRfqTab = (activeRfqTab === 'RFQ' ? 'ALL' : 'RFQ')">
+           (click)="selectTab('RFQ')">
         <div class="d-flex align-items-center">
           <div class="me-3 fs-3 text-warning">
             <i class="bi bi-clock-history"></i>
@@ -260,7 +260,7 @@
     <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'APPROVED' ? 'border-success bg-success-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeRfqTab = (activeRfqTab === 'APPROVED' ? 'ALL' : 'APPROVED')">
+           (click)="selectTab('APPROVED')">
         <div class="d-flex align-items-center">
           <div class="me-3 fs-3 text-success">
             <i class="bi bi-check-circle-fill"></i>
@@ -277,7 +277,7 @@
     <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'REJECTED' ? 'border-danger bg-danger-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeRfqTab = (activeRfqTab === 'REJECTED' ? 'ALL' : 'REJECTED')">
+           (click)="selectTab('REJECTED')">
         <div class="d-flex align-items-center">
           <div class="me-3 fs-3 text-danger">
             <i class="bi bi-x-circle-fill"></i>
@@ -294,7 +294,7 @@
     <div class="col">
       <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
            [ngClass]="activeRfqTab === 'SHIPMENT' ? 'border-info bg-info-subtle' : 'bg-white border-light-subtle hover-elevate'"
-           (click)="activeRfqTab = (activeRfqTab === 'SHIPMENT' ? 'ALL' : 'SHIPMENT')">
+           (click)="selectTab('SHIPMENT')">
         <div class="d-flex align-items-center">
           <div class="me-3 fs-3 text-info">
             <i class="bi bi-truck"></i>
@@ -323,6 +323,27 @@
         </div>
       </div>
     </div>
+
+    <!-- Button 6: PO Line Item -->
+    <div class="col">
+      <div class="card border rounded-3 p-3 shadow-sm h-100 position-relative" style="cursor: pointer; transition: all 0.2s;"
+           [ngClass]="activeRfqTab === 'PO_LINE_ITEM' ? 'border-primary bg-primary-subtle' : 'bg-white border-light-subtle hover-elevate'"
+           (click)="selectTab('PO_LINE_ITEM')">
+        <div class="d-flex align-items-center">
+          <div class="me-3 fs-3 text-secondary">
+            <i class="bi bi-list-columns-reverse"></i>
+          </div>
+          <div>
+            <div class="fw-bold text-dark fs-6 lh-sm mb-1">PO Line Item</div>
+            <div class="text-muted small">{{ pendingPoLineItemsCount }} Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-4" *ngIf="activeRfqTab === 'PO_LINE_ITEM' || (activeRfqTab === 'ALL' && showPoLineItemTable)">
+      <app-poline-item [isEmbedded]="false"></app-poline-item>
   </div>
 
   <!-- ───────────────── RFQ TRACTION LOG ───────────────── -->

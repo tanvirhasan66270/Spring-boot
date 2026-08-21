@@ -50,6 +50,13 @@ public class CategoryController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/public")
+    public ResponseEntity<List<CategoryResponseDTO>> getAllPublic() {
+        List<CategoryResponseDTO> list = categoryService.findAll();
+        if (list.isEmpty()) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(list);
+    }
+
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<CategoryResponseDTO> getById(@PathVariable Long id) {

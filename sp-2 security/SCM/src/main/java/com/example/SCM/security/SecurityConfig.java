@@ -50,6 +50,9 @@ public class SecurityConfig {
                                 "/api/customerOrders/track",
                                 "/api/drivers",
                                 "/api/customers",
+                                "/api/customer-requirements/public/submit",
+                                "/api/category/public",
+                                "/api/products/public",
                                 "/images/**").permitAll()
 
                         // ── Everything else requires authentication ───────

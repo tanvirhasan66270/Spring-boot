@@ -113,10 +113,10 @@
                   </button>
 
                   <button class="btn btn-icon btn-light text-warning" title="Edit Properties" (click)="edit(q)" 
-                      *ngIf="(userRole === 'ADMIN' || userRole === 'PROCUREMENT' || userRole === 'MANAGER') || 
-                             (userRole === 'SUPPLIER' && q.supplierId == currentSupplierId && q.status !== 'APPROVED' && q.status !== 'UNDER_REVIEW')">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
+        *ngIf="userRole === 'ADMIN' || 
+               (userRole === 'SUPPLIER' && q.supplierId === currentSupplierId && q.status !== 'APPROVED' && q.status !== 'UNDER_REVIEW')">
+    <i class="bi bi-pencil-square"></i>
+</button>
 
                   <button class="btn btn-icon btn-light text-danger" title="Purge Token Index" (click)="delete(q.id)"
                     *ngIf="userRole === 'ADMIN'">

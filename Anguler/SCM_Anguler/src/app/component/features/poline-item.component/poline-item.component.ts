@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { POLineItemRequestDTO, POLineItemResponseDTO } from '../../shared/model/pOLineItemModel';
 import { PoLineItemService } from '../../../service/po-line-item.service';
 import { PurchaseOrderService } from '../../../service/purchase-orde.service';
+import { PurchaseRequisitionService } from '../../../service/purchase-requisition.service';
+import { QuotationService } from '../../../service/quatation.service';
 import { AddProductService } from '../../../service/add-product.service';
 import { StorageService, KEYS } from '../../../auth/auth_service/storage.service';
 import { SupplierService } from '../../../service/supplier.service';
@@ -17,11 +19,13 @@ import { SupplierService } from '../../../service/supplier.service';
 })
 export class POLineItemComponent implements OnInit {
   @Input() isEmbedded: boolean = false;
+  @Input() isDashboardMode: boolean = false;
   @Output() formClosed = new EventEmitter<void>();
 
   lineItems: POLineItemResponseDTO[] = [];
   purchaseOrders: any[] = [];
   products: any[] = [];
+  allProducts: any[] = [];
 
   currentSupplierId: number | null = null;
   activeRole: string = 'CUSTOMER';
@@ -54,6 +58,8 @@ filteredLineItems: POLineItemResponseDTO[] = [];
   constructor(
     private service: PoLineItemService,
     private poService: PurchaseOrderService,
+    private prService: PurchaseRequisitionService,
+    private quotationService: QuotationService,
     private productService: AddProductService,
     private supplierService: SupplierService,
     private storage: StorageService,
@@ -128,7 +134,7 @@ filteredLineItems: POLineItemResponseDTO[] = [];
             return sId === this.currentSupplierId;
           });
           
-          this.extractProductsFromSupplierPOs();
+          // this.extractProductsFromSupplierPOs();
           if (this.products.length === 0) {
             this.loadAllGlobalProducts();
           }
@@ -141,86 +147,62 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     });
   }
 
-  onPoChange(event?: any) {
+          onPoChange(event?: any) {
     const poId = Number(this.item.poId);
     const targetPo = this.purchaseOrders.find(po => po.id === poId);
     
     if (targetPo) {
       this.item.poNumber = targetPo.poNumber || '';
-      const productMap = new Map();
       
-      if (targetPo.items && Array.isArray(targetPo.items)) {
-        targetPo.items.forEach((item: any) => { 
-          if (item.product) productMap.set(item.product.id, item.product); 
+      // Fetch Quotation to auto-fill quotationRef
+      if (targetPo.quotationId) {
+        this.quotationService.getById(targetPo.quotationId).subscribe({
+          next: (q: any) => {
+            if (q && q.quotationNumber) {
+              this.item.quotationRef = q.quotationNumber;
+              this.cdr.markForCheck();
+            }
+          }
         });
-      } 
-      else if (targetPo.poLineItems && Array.isArray(targetPo.poLineItems)) {
-        targetPo.poLineItems.forEach((item: any) => { 
-          if (item.product) productMap.set(item.product.id, item.product); 
-        });
-      }
-      else if (targetPo.product) {
-        productMap.set(targetPo.product.id, targetPo.product);
+      } else {
+        this.item.quotationRef = '';
       }
       
-      if (productMap.size > 0) {
-        this.products = Array.from(productMap.values());
-      } else if (this.products.length === 0) {
-        this.loadAllGlobalProducts();
+      if (targetPo.purchaseRequisitionId) {
+        this.prService.getById(targetPo.purchaseRequisitionId).subscribe({
+          next: (pr: any) => {
+            if (pr && pr.productIds && Array.isArray(pr.productIds) && pr.productIds.length > 0) {
+              this.products = this.allProducts.filter(p => pr.productIds.includes(p.id));
+            } else {
+              this.products = [...this.allProducts];
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.products = [...this.allProducts];
+            this.cdr.markForCheck();
+          }
+        });
+      } else if (targetPo.productIds && Array.isArray(targetPo.productIds) && targetPo.productIds.length > 0) {
+        this.products = this.allProducts.filter(p => targetPo.productIds.includes(p.id));
+      } else {
+        this.products = [...this.allProducts];
       }
     } else {
       this.item.poNumber = '';
-      if (this.products.length === 0) {
-        this.loadAllGlobalProducts();
-      }
+      this.item.quotationRef = '';
+      this.products = [...this.allProducts];
     }
-
     this.cdr.markForCheck(); 
-  }
-
-  extractProductsFromSupplierPOs() {
-    const productMap = new Map();
-    
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 500);
-    
-    const recentOrders = this.purchaseOrders.filter(order => {
-      if (!order.createdAt) return true;
-      return new Date(order.createdAt) >= cutoffDate;
-    });
-    
-    recentOrders.forEach((order: any) => {
-      if (order.items && Array.isArray(order.items)) {
-        order.items.forEach((item: any) => {
-          if (item.product) {
-            productMap.set(item.product.id, item.product);
-          }
-        });
-      } 
-      else if (order.poLineItems && Array.isArray(order.poLineItems)) {
-        order.poLineItems.forEach((item: any) => {
-          if (item.product) {
-            productMap.set(item.product.id, item.product);
-          }
-        });
-      }
-      else if (order.product) {
-        productMap.set(order.product.id, order.product);
-      }
-    });
-
-    if (productMap.size > 0) { 
-      this.products = Array.from(productMap.values()); 
-    } else {
-      this.loadAllGlobalProducts();
-    }
-    this.cdr.markForCheck();
   }
 
   loadAllGlobalProducts() {
     this.productService.findAll().subscribe({
       next: (data) => {
-        this.products = data || [];
+        this.allProducts = data || [];
+        if (!this.item.poId) {
+          this.products = [...this.allProducts];
+        }
         this.cdr.markForCheck();
       }
     });
@@ -350,6 +332,103 @@ filteredLineItems: POLineItemResponseDTO[] = [];
     this.isEdit = false;
     this.currentEditId = null;
     this.errorMessage = null;
+  }
+
+  isStatusModalOpen: boolean = false;
+  statusUpdateItem: any = null;
+  statusUpdateValue: string = '';
+
+  openStatusModal(item: any) {
+    this.statusUpdateItem = item;
+    this.statusUpdateValue = item.status || 'PENDING';
+    this.isStatusModalOpen = true;
+    this.cdr.markForCheck();
+  }
+
+  closeStatusModal() {
+    this.isStatusModalOpen = false;
+    this.statusUpdateItem = null;
+    this.cdr.markForCheck();
+  }
+
+  saveStatusUpdate() {
+    if (!this.statusUpdateItem) return;
+    
+    // We update the item with the new status
+    const updatePayload = {
+      ...this.statusUpdateItem,
+      status: this.statusUpdateValue
+    };
+
+    this.service.update(this.statusUpdateItem.id, updatePayload).subscribe({
+      next: () => {
+        this.closeStatusModal();
+        this.loadLineItems();
+      },
+      error: (err: any) => {
+        this.errorMessage = err.error?.message || err.message || "Failed to update status";
+        this.closeStatusModal();
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onStatusChangeInline(item: POLineItemResponseDTO, newStatus: string) {
+    if (!item || item.status === newStatus) return;
+    const oldStatus = item.status;
+    item.status = newStatus;
+
+    const updatePayload: POLineItemRequestDTO = {
+      poId: item.poId,
+      productId: item.productId,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      quotationRef: item.quotationRef || '',
+      poNumber: item.poNumber || '',
+      deliveryDate: item.deliveryDate || '',
+      shipmentMethod: item.shipmentMethod || '',
+      notes: item.notes || '',
+      status: newStatus
+    };
+
+    this.service.update(item.id, updatePayload).subscribe({
+      next: () => {
+        this.cdr.markForCheck();
+      },
+      error: (err: any) => {
+        item.status = oldStatus;
+        this.errorMessage = err.error?.message || err.message || "Failed to update status";
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  get displayLineItems(): POLineItemResponseDTO[] {
+    let list = this.lineItems || [];
+    if (this.searchSupplier && this.searchSupplier.trim()) {
+      const sName = this.searchSupplier.toLowerCase().trim();
+      list = list.filter(i => (i.supplierName || '').toLowerCase().includes(sName));
+    }
+    if (this.searchProduct && this.searchProduct.trim()) {
+      const pName = this.searchProduct.toLowerCase().trim();
+      list = list.filter(i => (i.productName || '').toLowerCase().includes(pName));
+    }
+    if (this.searchStatus && this.searchStatus.trim()) {
+      const status = this.searchStatus.toLowerCase().trim();
+      list = list.filter(i => (i.status || '').toLowerCase() === status);
+    }
+    if (this.trackingSearchQuery && this.trackingSearchQuery.trim()) {
+      const q = this.trackingSearchQuery.toLowerCase().trim();
+      list = list.filter(i => 
+        (i.poNumber || '').toLowerCase().includes(q) ||
+        (i.productName || '').toLowerCase().includes(q) ||
+        (i.supplierName || '').toLowerCase().includes(q) ||
+        (i.trackingNumber || '').toLowerCase().includes(q) ||
+        String(i.id).includes(q) ||
+        String(i.poId).includes(q)
+      );
+    }
+    return list;
   }
 }
 
