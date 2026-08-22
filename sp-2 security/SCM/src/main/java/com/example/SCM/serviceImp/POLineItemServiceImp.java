@@ -4,12 +4,10 @@ import com.example.SCM.Util.TrakingCode.TrackingCodeGenerator;
 import com.example.SCM.dto.mapper.POLineItemMapper;
 import com.example.SCM.dto.request.POLineItemRequestDTO;
 import com.example.SCM.dto.response.POLineItemResponseDTO;
-import com.example.SCM.entity.Inventory;
 import com.example.SCM.entity.POLineItem;
 import com.example.SCM.entity.Product;
 import com.example.SCM.entity.PurchaseOrder;
 import com.example.SCM.enumClass.POLineItemStatus;
-import com.example.SCM.repository.InventoryRepository;
 import com.example.SCM.repository.POLineItemRepository;
 import com.example.SCM.repository.ProductRepository;
 import com.example.SCM.repository.PurchaseOrderRepository;
@@ -17,8 +15,6 @@ import com.example.SCM.service.POLineItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-
 
 import java.util.List;
 import java.util.Optional;
@@ -31,11 +27,9 @@ public class POLineItemServiceImp implements POLineItemService {
     private final POLineItemRepository poLineItemRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final ProductRepository productRepository;
-    private final InventoryRepository inventoryRepository;
     private final POLineItemMapper poLineItemMapper;
     private final TrackingCodeGenerator trackingCodeGenerator;
     private final com.example.SCM.service.NotificationService notificationService;
-
 
     @Override
     @Transactional
@@ -50,19 +44,6 @@ public class POLineItemServiceImp implements POLineItemService {
         Product product = productRepository.findById(dto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + dto.getProductId()));
 
-        Inventory inventory = inventoryRepository.findByProductId(product.getId())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Inventory record not found for Product ID: " + product.getId()));
-
-        int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
-        if (availableStock < dto.getQuantity()) {
-            throw new RuntimeException("InsufficientStockException: Low warehouse inventory!");
-        }
-
-        inventory.setQuantityReserved(inventory.getQuantityReserved() + dto.getQuantity());
-        inventoryRepository.save(inventory);
-
         POLineItem item = poLineItemMapper.toEntity(dto, order, product);
 
         if (POLineItemStatus.SHIPPED.name().equalsIgnoreCase(dto.getStatus())) {
@@ -73,7 +54,6 @@ public class POLineItemServiceImp implements POLineItemService {
 
         return poLineItemMapper.convertTOResponseDTO(savedItem);
     }
-
 
     @Override
     @Transactional
@@ -87,26 +67,8 @@ public class POLineItemServiceImp implements POLineItemService {
 
         Product product = item.getProduct();
         PurchaseOrder order = item.getPurchaseOrder();
-        Inventory inventory = inventoryRepository.findByProductId(product.getId())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Inventory record not found for product."));
 
         POLineItemStatus oldStatus = item.getStatus();
-        int oldQuantity = item.getQuantity();
-
-        if (dto.getQuantity() != oldQuantity) {
-            int difference = dto.getQuantity() - oldQuantity;
-            if (difference > 0) {
-                int availableStock = inventory.getQuantityOnHand() - inventory.getQuantityReserved();
-                if (availableStock < difference) {
-                    throw new RuntimeException("InsufficientStockException: Low warehouse stock to support update!");
-                }
-                inventory.setQuantityReserved(inventory.getQuantityReserved() + difference);
-            } else {
-                inventory.setQuantityReserved(inventory.getQuantityReserved() - Math.abs(difference));
-            }
-        }
 
         poLineItemMapper.updateEntity(dto, item, product);
         POLineItemStatus newStatus = item.getStatus();
@@ -116,19 +78,13 @@ public class POLineItemServiceImp implements POLineItemService {
             if (item.getTrackingNumber() == null) {
                 item.setTrackingNumber(trackingCodeGenerator.generateTrackingCode());
             }
-            inventory.setQuantityOnHand(inventory.getQuantityOnHand() - item.getQuantity());
-            inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
         }
 
         if (oldStatus != POLineItemStatus.CANCELLED && newStatus == POLineItemStatus.CANCELLED) {
-            if (oldStatus != POLineItemStatus.SHIPPED && oldStatus != POLineItemStatus.DELIVERED) {
-                inventory.setQuantityReserved(inventory.getQuantityReserved() - item.getQuantity());
-            }
             item.setLineTotal(0.0);
         }
 
-        inventoryRepository.save(inventory);
-                POLineItem updatedItem = poLineItemRepository.save(item);
+        POLineItem updatedItem = poLineItemRepository.save(item);
         
         // Notify Supplier if status changed
         if (oldStatus != newStatus) {
@@ -147,7 +103,6 @@ public class POLineItemServiceImp implements POLineItemService {
         return poLineItemMapper.convertTOResponseDTO(updatedItem);
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<POLineItemResponseDTO> findAll() {
@@ -156,7 +111,6 @@ public class POLineItemServiceImp implements POLineItemService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public Optional<POLineItemResponseDTO> getById(Long id) {
@@ -164,29 +118,14 @@ public class POLineItemServiceImp implements POLineItemService {
                 .map(poLineItemMapper::convertTOResponseDTO);
     }
 
-
     @Override
     @Transactional
     public void delete(Long id) {
         POLineItem item = poLineItemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("PO Line Item not found with ID: " + id));
 
-        PurchaseOrder order = item.getPurchaseOrder();
-
-        if (item.getStatus() != POLineItemStatus.CANCELLED && item.getStatus() != POLineItemStatus.SHIPPED) {
-            Inventory inventory = inventoryRepository.findByProductId(item.getProduct().getId())
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
-            if (inventory != null) {
-                inventory.setQuantityReserved(Math.max(0, inventory.getQuantityReserved() - item.getQuantity()));
-                inventoryRepository.save(inventory);
-            }
-        }
-
         poLineItemRepository.delete(item);
     }
-
 
     @Override
     @Transactional(readOnly = true)

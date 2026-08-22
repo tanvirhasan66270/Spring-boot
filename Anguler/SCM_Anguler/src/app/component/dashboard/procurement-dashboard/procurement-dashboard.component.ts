@@ -1081,7 +1081,18 @@ export class ProcurementDashboardComponent implements OnInit {
 
   getTrackedPoShipment(): any {
     if (!this.trackedPo) return null;
-    return (this.shipments || []).find(s => Number(s.poId) === Number(this.trackedPo.id));
+    return (this.shipments || []).find(s => 
+      Number(s.poId) === Number(this.trackedPo.id) ||
+      (s.poNumber && String(s.poNumber).toLowerCase().trim() === String(this.trackedPo.poNumber).toLowerCase().trim())
+    );
+  }
+
+  getTrackedPoShipments(): any[] {
+    if (!this.trackedPo) return [];
+    return (this.shipments || []).filter(s => 
+      (s.poId && Number(s.poId) === Number(this.trackedPo.id)) ||
+      (s.poNumber && String(s.poNumber).toLowerCase().trim() === String(this.trackedPo.poNumber).toLowerCase().trim())
+    );
   }
 
   getPoStepIndex(status: string, hasShipment: boolean): number {
@@ -1174,20 +1185,52 @@ export class ProcurementDashboardComponent implements OnInit {
   }
 
   getShippedUnitsCount(): number {
-    if (!this.getTrackedPoShipment()) return 0;
-    const shippedItems = this.getTrackedPoLineItems().filter(item => 
+    if (!this.trackedPo) return 0;
+
+    // 1. Primary: Calculate by summing shipmentQuantity from Cargo Shipment entries linked to this PO
+    const matchedShipments = this.getTrackedPoShipments();
+    let totalFromShipments = 0;
+    let hasExplicitShipmentQty = false;
+
+    for (const s of matchedShipments) {
+      const q = s.shipmentQuantity ?? s.quantity ?? s.quantityShipped ?? s.shippedQuantity;
+      if (q !== undefined && q !== null && Number(q) > 0) {
+        totalFromShipments += Number(q);
+        hasExplicitShipmentQty = true;
+      }
+    }
+
+    if (hasExplicitShipmentQty && totalFromShipments > 0) {
+      return totalFromShipments;
+    }
+
+    // 2. Secondary fallback: Sum from PO Line Items that are SHIPPED, DELIVERED, or RECEIVED
+    const lineItems = this.getTrackedPoLineItems();
+    const shippedLineItems = lineItems.filter(item => 
       ['SHIPPED', 'DELIVERED', 'RECEIVED'].includes((item.status || '').toUpperCase())
     );
-    if (shippedItems.length > 0) {
-      return shippedItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
+
+    if (shippedLineItems.length > 0) {
+      return shippedLineItems.reduce((sum, item) => sum + (item.quantity || 0), 0);
     }
-    return this.getTrackedPoAllocatedVolume();
+
+    // 3. Fallback: Check direct Cargo Shipment connection or PO status
+    const directShipment = this.getTrackedPoShipment();
+    const poStatus = (this.trackedPo.status || '').toUpperCase();
+
+    if (directShipment || ['SHIPPED', 'RECEIVED', 'COMPLETE'].includes(poStatus)) {
+      const allocated = this.getTrackedPoAllocatedVolume();
+      return allocated > 0 ? allocated : (this.trackedPo.quantity || 0);
+    }
+
+    return 0;
   }
 
   getShippedProgressPercentage(): number {
-    if (!this.trackedPo || !this.trackedPo.quantity) return 0;
-    if (!this.getTrackedPoShipment()) return 0;
-    const pct = (this.getShippedUnitsCount() / this.trackedPo.quantity) * 100;
+    if (!this.trackedPo || !this.trackedPo.quantity || this.trackedPo.quantity <= 0) return 0;
+    const shippedQty = this.getShippedUnitsCount();
+    if (shippedQty <= 0) return 0;
+    const pct = (shippedQty / this.trackedPo.quantity) * 100;
     return Math.min(Math.round(pct), 100);
   }
 
