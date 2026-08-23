@@ -1,12 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { environment } from '../../../../environment/environment';
+import { CustomerRequirementService } from '../../../service/customer-requirement.service';
 
 @Component({
   selector: 'app-public-products',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule, HttpClientModule, FormsModule],
   templateUrl: './public-products.component.html',
   styleUrls: ['./public-products.component.css']
 })
@@ -22,7 +24,21 @@ export class PublicProductsComponent implements OnInit {
   selectedProductForPdf: any = null;
   @ViewChild('pdfPreviewContainer') pdfPreviewContainer!: ElementRef;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) {}
+  // Contact for Others Product Modal state
+  showRequirementModal = false;
+  requirementForm = {
+    productName: '',
+    productDescription: '',
+    customerName: '',
+    contactNumber: '',
+    email: ''
+  };
+
+  constructor(
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef,
+    private requirementService: CustomerRequirementService
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -116,6 +132,27 @@ export class PublicProductsComponent implements OnInit {
       });
     }).catch(err => {
       console.error('Failed to load libraries', err);
+    });
+  }
+
+  // Submit Contact for Others Product Form
+  submitRequirement(): void {
+    if (!this.requirementForm.productName || !this.requirementForm.customerName) {
+      alert('Please fill out Product Name and Your Name.');
+      return;
+    }
+
+    this.requirementService.submitPublicRequirement(this.requirementForm).subscribe({
+      next: (res) => {
+        alert('Your requirement has been submitted. Our Sales and Logistics team will contact you soon.');
+        this.showRequirementModal = false;
+        this.requirementForm = { productName: '', productDescription: '', customerName: '', contactNumber: '', email: '' };
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Failed to submit requirement. Please try again.');
+      }
     });
   }
 }

@@ -56,7 +56,7 @@
       <span class="badge bg-indigo-subtle text-indigo px-3 py-1 rounded-pill font-monospace" style="font-size: 0.7rem;">6 OPERATIONAL NODES</span>
     </div>
     
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-6 g-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6 g-3">
       
       <!-- Add New LC -->
       <div class="col">
@@ -77,6 +77,17 @@
           </div>
           <strong class="text-dark d-block fs-7.5 mb-0.5">LC Registry</strong>
           <small class="text-muted fs-8">Audit LCs</small>
+        </div>
+      </div>
+
+      <!-- Customer Orders -->
+      <div class="col">
+        <div (click)="openCustomerOrdersModal()" class="quick-action-card p-3.5 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="cursor: pointer;">
+          <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-danger bg-danger bg-opacity-10" style="width: 50px; height: 50px;">
+            <i class="bi bi-bag-check-fill fs-4 text-danger"></i>
+          </div>
+          <strong class="text-dark d-block fs-7.5 mb-0.5">Customer Orders</strong>
+          <small class="text-muted fs-8">View & audit orders</small>
         </div>
       </div>
 
@@ -110,17 +121,6 @@
           </div>
           <strong class="text-dark d-block fs-7.5 mb-0.5">Customer Payment</strong>
           <small class="text-muted fs-8">Verify payment proof</small>
-        </div>
-      </div>
-
-      <!-- Line Items -->
-      <div class="col">
-        <div (click)="openLineItemsModal()" class="quick-action-card p-3.5 rounded-4 text-center h-100 d-flex flex-column align-items-center justify-content-center" style="cursor: pointer;">
-          <div class="action-icon-wrapper rounded-circle d-flex align-items-center justify-content-center mb-2 text-warning bg-warning bg-opacity-10" style="width: 50px; height: 50px;">
-            <i class="bi bi-text-indent-left fs-4 text-warning"></i>
-          </div>
-          <strong class="text-dark d-block fs-7.5 mb-0.5">Line Items</strong>
-          <small class="text-muted fs-8">Audit line distributions</small>
         </div>
       </div>
 
@@ -1308,6 +1308,129 @@
             <i class="bi bi-box-arrow-up-right"></i> Open Full PO Line Items Registry
           </a>
           <button type="button" class="btn px-4 py-2.5 fw-bold rounded-pill shadow-xs" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 0.85rem;" (click)="closeLineItemsModal()">Close Panel</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────────── MODAL: CUSTOMER ORDERS MASTER REGISTRY ───────────────── -->
+  <div class="modal fade show d-block" tabindex="-1" style="background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px);" *ngIf="isCustomerOrderModalOpen">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 1140px;">
+      <div class="modal-content shadow-lg border-0 rounded-4 overflow-hidden bg-white animate-fade-in">
+        
+        <!-- Header -->
+        <div class="modal-header px-4 py-3.5 border-0 d-flex justify-content-between align-items-center text-white" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 60%, #f87171 100%);">
+          <div class="d-flex align-items-center gap-3">
+            <div class="p-2.5 rounded-3 bg-white bg-opacity-20 backdrop-blur shadow-sm d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+              <i class="bi bi-bag-check-fill fs-4 text-white"></i>
+            </div>
+            <div>
+              <h5 class="modal-title fw-bold mb-0 text-white" style="letter-spacing: -0.01em;">Customer Purchase Orders Registry</h5>
+              <p class="text-white-50 small mb-0 fs-8">View all customer orders, payment status, settlement totals & delivery lifecycle</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close btn-close-white" (click)="closeCustomerOrdersModal()"></button>
+        </div>
+
+        <!-- Filter Search Bar -->
+        <div class="bg-light px-4 py-3 border-bottom d-flex justify-content-between align-items-center gap-3 flex-wrap">
+          <div class="input-group input-group-sm shadow-xs rounded-pill overflow-hidden border bg-white" style="max-width: 380px;">
+            <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-0 py-2 fs-7 font-monospace" [(ngModel)]="customerOrderMasterSearchTerm" placeholder="Filter by Order #, Customer Name, Email, Status..." />
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <a [routerLink]="['/order']" (click)="closeCustomerOrdersModal()" class="btn btn-sm btn-primary rounded-pill px-3 py-1.5 fw-bold fs-8">
+              <i class="bi bi-box-arrow-up-right me-1"></i> Full Orders Page
+            </a>
+            <div class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill font-monospace fs-7 fw-bold">
+              Total Orders: {{ filteredMasterCustomerOrders.length }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Master Table Body -->
+        <div class="modal-body p-0 overflow-auto custom-scroll" style="max-height: 520px;">
+          
+          <div *ngIf="customerOrderMasterLoading" class="text-center py-5">
+            <div class="spinner-border text-danger" role="status">
+              <span class="visually-hidden">Loading orders...</span>
+            </div>
+            <p class="text-muted font-monospace fs-8 mt-2">Fetching live customer purchase orders...</p>
+          </div>
+
+          <div *ngIf="!customerOrderMasterLoading && filteredMasterCustomerOrders.length === 0" class="text-center py-5 text-muted">
+            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+            <h6 class="fw-bold text-dark">No customer orders matched query parameters.</h6>
+          </div>
+
+          <div *ngIf="!customerOrderMasterLoading && filteredMasterCustomerOrders.length > 0" class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+              <thead class="table-light text-uppercase text-secondary fw-bold border-bottom" style="font-size: 0.72rem; letter-spacing: 0.05em;">
+                <tr>
+                  <th class="ps-4 py-3">Order Number</th>
+                  <th class="py-3">Customer Details</th>
+                  <th class="py-3">Total Amount</th>
+                  <th class="py-3">Payment Strategy</th>
+                  <th class="py-3">Payment Status</th>
+                  <th class="py-3">Lifecycle State</th>
+                  <th class="pe-4 text-end py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let o of filteredMasterCustomerOrders">
+                  <td class="ps-4 font-monospace text-danger fw-bold">
+                    {{ o.orderNumber }}
+                    <span class="d-block text-muted font-monospace fs-8 fw-normal">Priority: {{ o.priority || 'NORMAL' }}</span>
+                  </td>
+                  <td>
+                    <strong class="d-block text-dark mb-0.5">{{ o.customerName }}</strong>
+                    <small class="text-secondary font-monospace d-block fs-8"><i class="bi bi-envelope me-1"></i>{{ o.customerEmail }}</small>
+                    <small class="text-muted font-monospace d-block fs-8" *ngIf="o.deliveryPhone"><i class="bi bi-telephone me-1"></i>{{ o.deliveryPhone }}</small>
+                  </td>
+                  <td class="font-monospace text-success fw-bold fs-7">
+                    ৳{{ o.totalAmount | number:'1.2-2' }}
+                    <small class="d-block text-danger font-monospace fs-8" *ngIf="o.dueAmount && +o.dueAmount > 0">
+                      Due: ৳{{ o.dueAmount | number:'1.2-2' }}
+                    </small>
+                  </td>
+                  <td>
+                    <span class="badge bg-light text-dark border px-2.5 py-1 font-monospace fs-8">
+                      {{ o.paymentMethod || 'CASH' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill px-2.5 py-1 font-monospace fs-8" [ngClass]="{
+                      'bg-success-subtle text-success border border-success': o.paymentStatus === 'PAID',
+                      'bg-warning-subtle text-warning border border-warning': o.paymentStatus === 'PARTIALLY_PAID',
+                      'bg-danger-subtle text-danger border border-danger': o.paymentStatus === 'UNPAID' || !o.paymentStatus
+                    }">
+                      {{ o.paymentStatus || 'UNPAID' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge rounded-pill bg-primary px-2.5 py-1 fs-8 text-uppercase">
+                      {{ o.status }}
+                    </span>
+                  </td>
+                  <td class="pe-4 text-end">
+                    <a [routerLink]="['/order']" (click)="closeCustomerOrdersModal()" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold fs-8">
+                      Manage <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer bg-white px-4 py-3 border-top justify-content-between">
+          <a [routerLink]="['/order']" (click)="closeCustomerOrdersModal()" class="btn btn-sm text-danger fw-bold p-0 text-decoration-none d-flex align-items-center gap-1.5">
+            <i class="bi bi-box-arrow-up-right"></i> Open Customer Orders Full Module
+          </a>
+          <button type="button" class="btn px-4 py-2.5 fw-bold rounded-pill shadow-xs" style="background-color: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; font-size: 0.85rem;" (click)="closeCustomerOrdersModal()">Close Panel</button>
         </div>
 
       </div>

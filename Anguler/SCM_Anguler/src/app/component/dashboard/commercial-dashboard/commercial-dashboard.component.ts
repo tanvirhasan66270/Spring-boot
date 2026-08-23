@@ -13,6 +13,7 @@ import { NotificationService } from '../../../system/service/notification.servic
 import { NotificationModel } from '../../../system/NotificationModel';
 import { InvoiceService } from '../../../service/invoice.service';
 import { CustomerOrderService } from '../../../service/customer-order.service';
+import { CustomerOrderResponseModel } from '../../shared/model/customerOrder';
 import { InvoiceResponseModel } from '../../shared/model/invoiceModel';
 import { DashboardSettingsComponent } from '../dashboard-settings/dashboard-settings.component';
 import { PaymentStatementService } from '../../../service/payment-statement.service';
@@ -24,7 +25,6 @@ import { LCBankResponseModel } from '../../shared/model/lcbankModel';
 import { PoLineItemService } from '../../../service/po-line-item.service';
 import { POLineItemResponseDTO } from '../../shared/model/pOLineItemModel';
 import { environment } from '../../../../environment/environment';
-
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -74,6 +74,7 @@ export class CommercialDashboardComponent implements OnInit {
   dashboardBanks: LCBankResponseModel[] = [];
   dashboardShipments: ShipmentResponseModel[] = [];
   dashboardLineItems: POLineItemResponseDTO[] = [];
+  dashboardCustomerOrders: CustomerOrderResponseModel[] = [];
 
   userId!: number;
   commercialOfficer: CommercialOfficerResponseModel | null = null;
@@ -83,6 +84,12 @@ export class CommercialDashboardComponent implements OnInit {
   pendingPayments: PaymentStatementResponse[] = [];
   paymentStatusMessage: string | null = null;
   imgUrl = environment.imgUrl;
+
+  // Customer Orders Master View Modal States
+  isCustomerOrderModalOpen = false;
+  customerOrdersList: CustomerOrderResponseModel[] = [];
+  customerOrderMasterSearchTerm = '';
+  customerOrderMasterLoading = false;
 
   // Commercial Invoices Master View Modal States
   isInvoiceModalOpen = false;
@@ -225,6 +232,14 @@ export class CommercialDashboardComponent implements OnInit {
       },
       error: () => {}
     });
+
+    this.customerOrderService.findAll().subscribe({
+      next: (orders) => {
+        this.dashboardCustomerOrders = (orders || []).slice(0, 5);
+        this.cdr.markForCheck();
+      },
+      error: () => {}
+    });
   }
 
   buildLCDocuments(lcs: LetterOfCreditResponseModel[]) {
@@ -275,7 +290,6 @@ export class CommercialDashboardComponent implements OnInit {
       },
     });
   }
-
 
   loadCommercialOfficer(): void {
     if (this.storage.getRole() === 'ADMIN') return;
@@ -388,6 +402,44 @@ export class CommercialDashboardComponent implements OnInit {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  // Customer Orders Master View Modal Methods
+  openCustomerOrdersModal(): void {
+    this.isCustomerOrderModalOpen = true;
+    this.customerOrderMasterSearchTerm = '';
+    this.customerOrderMasterLoading = true;
+    this.customerOrderService.findAll().subscribe({
+      next: (res) => {
+        this.customerOrdersList = res || [];
+        this.customerOrderMasterLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.customerOrdersList = [];
+        this.customerOrderMasterLoading = false;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  closeCustomerOrdersModal(): void {
+    this.isCustomerOrderModalOpen = false;
+    this.cdr.markForCheck();
+  }
+
+  get filteredMasterCustomerOrders(): CustomerOrderResponseModel[] {
+    if (!this.customerOrderMasterSearchTerm.trim()) {
+      return this.customerOrdersList;
+    }
+    const term = this.customerOrderMasterSearchTerm.toLowerCase().trim();
+    return this.customerOrdersList.filter(o =>
+      (o.orderNumber && o.orderNumber.toLowerCase().includes(term)) ||
+      (o.customerName && o.customerName.toLowerCase().includes(term)) ||
+      (o.customerEmail && o.customerEmail.toLowerCase().includes(term)) ||
+      (o.paymentMethod && o.paymentMethod.toLowerCase().includes(term)) ||
+      (o.status && o.status.toLowerCase().includes(term))
+    );
   }
 
   // Commercial Invoices Master View Modal Methods
@@ -604,8 +656,6 @@ export class CommercialDashboardComponent implements OnInit {
     URL.revokeObjectURL(url);
   }
 
-
-
   // Add New LC Modal Methods
   openAddLcModal(): void {
     this.isAddLcModalOpen = true;
@@ -738,4 +788,3 @@ export class CommercialDashboardComponent implements OnInit {
     this.cdr.markForCheck();
   }
 }
-
