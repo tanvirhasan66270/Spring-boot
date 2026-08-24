@@ -25,8 +25,6 @@
         </div>
       </li>
 
-      
-
       <!-- Global Coverage Dropdown -->
       <li class="dropdown-wrap" (mouseenter)="toggleDropdown('coverage')" (mouseleave)="toggleDropdown('')">
         <span class="nav-item-link">Global Network <i class="bi bi-chevron-down ms-0.5"></i></span>
@@ -38,44 +36,12 @@
         </div>
       </li>
 
-     
-
-      <!-- Our Product -->
-      <li class="dropdown-wrap" (mouseenter)="toggleDropdown('products')" (mouseleave)="toggleDropdown('')">
-        <span class="nav-item-link">Our Product <i class="bi bi-chevron-down ms-0.5"></i></span>
-        <div class="dropdown-panel rounded-3 border p-2" *ngIf="activeDropdown === 'products'">
-          <a routerLink="/products" class="dropdown-item-link"><i class="bi bi-box me-2"></i> Product</a>
-          <a href="javascript:void(0)" (click)="showRequirementModal = true" class="dropdown-item-link"><i class="bi bi-telephone-plus me-2"></i> Contact for others product</a>
-        </div>
-      </li>
+      <!-- Our Products Direct Link (No Dropdown) -->
+      <li><a routerLink="/products" class="nav-item-link">Our Products</a></li>
     </ul>
 
     <!-- RIGHT CONTROLS & CTA (DESKTOP) -->
     <div class="d-none d-lg-flex align-items-center gap-3">
-      
-      <!-- Currency Switcher
-      <div class="dropdown">
-        <button class="btn btn-sm btn-light dropdown-toggle font-monospace fw-bold" type="button" data-bs-toggle="dropdown">
-          {{ currentCurrency }}
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><button class="dropdown-item" (click)="setCurrency('USD')">USD ($)</button></li>
-          <li><button class="dropdown-item" (click)="setCurrency('EUR')">EUR (€)</button></li>
-          <li><button class="dropdown-item" (click)="setCurrency('BDT')">BDT (৳)</button></li>
-        </ul>
-      </div> -->
-
-      <!-- Language Selector
-      <div class="dropdown">
-        <button class="btn btn-sm btn-light dropdown-toggle fw-semibold" type="button" data-bs-toggle="dropdown">
-          🌐 {{ currentLanguage }}
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><button class="dropdown-item" (click)="setLanguage('EN')">English</button></li>
-          <li><button class="dropdown-item" (click)="setLanguage('BN')">বাংলা</button></li>
-        </ul>
-      </div> -->
-
       <!-- Search Trigger -->
       <button class="btn btn-light rounded-circle p-2 d-flex" (click)="showSearchModal = true">
         <i class="bi bi-search"></i>
@@ -118,6 +84,8 @@
         <a routerLink="/shipment" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Freight Logistics</a>
         <a routerLink="/warehouse" class="nav-item-link py-1" (click)="mobileMenuOpen = false">Warehouse Solutions</a>
       </div>
+
+      <a routerLink="/products" class="btn btn-light text-start py-2.5" (click)="mobileMenuOpen = false">Our Products</a>
 
       <!-- Quick CTAs at bottom of Mobile Menu -->
       <hr class="my-3">
@@ -223,42 +191,5 @@
     </div>
     
     <div class="small text-secondary"><i class="bi bi-info-circle me-1"></i> Carrying Vessel: <strong>{{ trackingResult?.vessel }}</strong></div>
-  </div>
-</div>
-<!-- Customer Requirement Modal -->
-<div class="modal-backdrop-glass fade-in" *ngIf="showRequirementModal">
-  <div class="modal-wrap p-4 bg-white rounded-4 border shadow-lg" style="max-width: 500px;">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-bold text-dark mb-0"><i class="bi bi-card-text text-primary me-2"></i> Contact for Others Product</h5>
-      <button class="btn-close" (click)="showRequirementModal = false"></button>
-    </div>
-    
-    <div class="row g-3">
-      <div class="col-12">
-        <label class="form-label small fw-bold text-secondary">Product Name</label>
-        <input type="text" class="form-control" placeholder="Product you are looking for" [(ngModel)]="requirementForm.productName">
-      </div>
-      <div class="col-12">
-        <label class="form-label small fw-bold text-secondary">Product Details</label>
-        <textarea class="form-control" rows="3" placeholder="Specific requirements or details" [(ngModel)]="requirementForm.productDescription"></textarea>
-      </div>
-      <div class="col-12">
-        <label class="form-label small fw-bold text-secondary">Your Name</label>
-        <input type="text" class="form-control" placeholder="Full Name" [(ngModel)]="requirementForm.customerName">
-      </div>
-      <div class="col-6">
-        <label class="form-label small fw-bold text-secondary">Contact Number</label>
-        <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="requirementForm.contactNumber">
-      </div>
-      <div class="col-6">
-        <label class="form-label small fw-bold text-secondary">Email</label>
-        <input type="email" class="form-control" placeholder="Email Address" [(ngModel)]="requirementForm.email">
-      </div>
-    </div>
-    
-    <div class="d-flex gap-2 justify-content-end mt-4">
-      <button class="btn btn-secondary px-4 rounded-3" (click)="showRequirementModal = false">Cancel</button>
-      <button class="btn btn-primary px-4 rounded-3" (click)="submitRequirement()">Submit</button>
-    </div>
   </div>
 </div>

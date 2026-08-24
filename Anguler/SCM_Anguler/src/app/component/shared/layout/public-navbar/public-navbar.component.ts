@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { CustomerRequirementService } from '../../../../service/customer-requirement.service';
-import { CustomerRequirementModel } from '../../model/CustomerRequirementModel';
+
 
 @Component({
   selector: 'app-public-navbar',
@@ -45,8 +44,7 @@ export class PublicNavbarComponent implements OnInit {
 
   constructor(
     private cdr: ChangeDetectorRef, 
-    private router: Router, 
-    private requirementService: CustomerRequirementService
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -130,34 +128,6 @@ export class PublicNavbarComponent implements OnInit {
     }
   }
 
-  // --- Customer Requirement ---
-  showRequirementModal = false;
-  requirementForm = {
-    productName: '',
-    productDescription: '',
-    customerName: '',
-    contactNumber: '',
-    email: ''
-  };
 
-  submitRequirement(): void {
-    if (!this.requirementForm.productName || !this.requirementForm.customerName) {
-      alert('Please fill out Product Name and Your Name.');
-      return;
-    }
-
-    this.requirementService.submitPublicRequirement(this.requirementForm).subscribe({
-        next: (res) => {
-          alert('Your requirement has been submitted. Our Sales and Logistics team will contact you soon.');
-          this.showRequirementModal = false;
-          this.requirementForm = { productName: '', productDescription: '', customerName: '', contactNumber: '', email: '' };
-          this.cdr.markForCheck();
-        },
-        error: (err) => {
-          console.error(err);
-          alert('Failed to submit requirement. Please try again.');
-        }
-      });
-  }
 }
 

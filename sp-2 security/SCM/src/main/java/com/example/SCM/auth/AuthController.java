@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
@@ -65,7 +66,8 @@ public class AuthController {
         
         authService.changePassword(userId, dto);
         return ResponseEntity.ok("Password changed successfully.");
-    }    //    @GetMapping("/verify-email")
+    }
+    //    @GetMapping("/verify-email")
 //    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
 //        String result = customerService.verifyEmailToken(token);
 //        return ResponseEntity.ok(result);

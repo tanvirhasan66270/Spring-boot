@@ -120,14 +120,15 @@
           <label class="form-label fw-bold text-secondary text-uppercase fs-8">Link Customer Order Vector</label>
           <select class="form-select fs-7" 
             #customerOrderId="ngModel"
-            [(ngModel)]="formModel.customerOrderId" 
+            [(ngModel)]="formModel.customerOrderId"
+            (ngModelChange)="onCustomerOrderChange($event)" 
             name="customerOrderId" 
             required 
             [disabled]="isEdit"
             [class.is-invalid]="customerOrderId.invalid && customerOrderId.touched">
             <option [value]="null">-- Select Verified Customer Order --</option>
             @for (o of orders; track o.id) {
-              <option [value]="o.id">Order #{{ o.id }} (Customer Ref: {{ o.customer?.name || 'Walk-in' }})</option>
+              <option [value]="o.id">Order #{{ o.id }} (Customer Ref: {{ o.customerName || o.customer?.name || 'Walk-in' }}) - ৳{{ (o.totalAmount || o.itemSubtotal || 0) | number:'1.2-2' }}</option>
             }
           </select>
           @if (customerOrderId.invalid && customerOrderId.touched) {
@@ -143,7 +144,8 @@
             <input type="number" 
               class="form-control fs-7 font-monospace fw-bold" 
               #subtotal="ngModel"
-              [(ngModel)]="formModel.subtotal" 
+              [(ngModel)]="formModel.subtotal"
+              (ngModelChange)="onSubtotalChange()" 
               name="subtotal" 
               min="0" 
               required
@@ -167,11 +169,22 @@
         <div class="row g-2 mb-3">
           <div class="col-md-6">
             <label class="form-label fw-bold text-secondary text-uppercase fs-8">Discount Pct (%)</label>
-            <input type="number" class="form-control fs-7 font-monospace" [(ngModel)]="formModel.discountPercentage" name="discountPercentage" min="0" max="100">
+            <input type="number" 
+              class="form-control fs-7 font-monospace" 
+              [(ngModel)]="formModel.discountPercentage" 
+              (ngModelChange)="onDiscountPctChange()"
+              name="discountPercentage" 
+              min="0" 
+              max="100">
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold text-secondary text-uppercase fs-8">Discount Flat Amt</label>
-            <input type="number" class="form-control fs-7 font-monospace" [(ngModel)]="formModel.discountAmount" name="discountAmount" min="0">
+            <input type="number" 
+              class="form-control fs-7 font-monospace" 
+              [(ngModel)]="formModel.discountAmount" 
+              (ngModelChange)="onDiscountFlatChange()"
+              name="discountAmount" 
+              min="0">
           </div>
         </div>
 

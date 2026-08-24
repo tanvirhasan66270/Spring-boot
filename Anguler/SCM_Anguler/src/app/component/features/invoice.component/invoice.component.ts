@@ -77,6 +77,66 @@ export class InvoiceComponent implements OnInit {
     this.orderService.findAll().subscribe({ next: (data) => this.orders = data || [] });
   }
 
+  onCustomerOrderChange(selectedOrderId: any) {
+    if (!selectedOrderId) return;
+    const selectedOrder = this.orders.find(o => o.id == selectedOrderId);
+    if (selectedOrder) {
+      // Auto-fill Financial Subtotal field with order total cost
+      this.formModel.subtotal = Number(selectedOrder.totalAmount || selectedOrder.itemSubtotal) || 0;
+
+      // Auto-fill shipping fees if available
+      if (selectedOrder.deliveryCharge !== undefined && selectedOrder.deliveryCharge !== null) {
+        this.formModel.shippingFees = Number(selectedOrder.deliveryCharge) || 0;
+      }
+
+      // Auto-fill delivery address if available
+      if (selectedOrder.deliveryAddress && (!this.formModel.deliveryAddress || this.formModel.deliveryAddress.trim() === '')) {
+        this.formModel.deliveryAddress = selectedOrder.deliveryAddress;
+      }
+
+      // Auto-fill payment method if available
+      if (selectedOrder.paymentMethod) {
+        this.formModel.paymentMethod = selectedOrder.paymentMethod;
+      }
+
+      // Auto-fill paid amount if available
+      if (selectedOrder.codAmount !== undefined || selectedOrder.paidAmount !== undefined) {
+        this.formModel.paidAmount = Number(selectedOrder.codAmount || selectedOrder.paidAmount) || 0;
+      }
+
+      this.onSubtotalChange();
+      this.cdr.markForCheck();
+    }
+  }
+
+  onSubtotalChange() {
+    if (this.formModel.discountPercentage && Number(this.formModel.discountPercentage) > 0) {
+      this.onDiscountPctChange();
+    }
+  }
+
+  onDiscountPctChange() {
+    const subtotal = Number(this.formModel.subtotal) || 0;
+    const pct = Number(this.formModel.discountPercentage) || 0;
+    if (subtotal > 0 && pct >= 0) {
+      this.formModel.discountAmount = Number(((subtotal * pct) / 100).toFixed(2));
+    } else {
+      this.formModel.discountAmount = 0;
+    }
+    this.cdr.markForCheck();
+  }
+
+  onDiscountFlatChange() {
+    const subtotal = Number(this.formModel.subtotal) || 0;
+    const flat = Number(this.formModel.discountAmount) || 0;
+    if (subtotal > 0 && flat >= 0) {
+      this.formModel.discountPercentage = Number(((flat / subtotal) * 100).toFixed(2));
+    } else {
+      this.formModel.discountPercentage = 0;
+    }
+    this.cdr.markForCheck();
+  }
+
   openDrawer() { this.resetForm(); this.isEdit = false; this.isDrawerOpen = true; this.cdr.markForCheck(); }
   closeDrawer() { this.isDrawerOpen = false; this.resetForm(); this.cdr.markForCheck(); }
 
