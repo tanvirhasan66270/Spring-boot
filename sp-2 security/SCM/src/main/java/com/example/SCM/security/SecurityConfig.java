@@ -46,7 +46,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
 
                         // ── Public endpoints (no token needed) ────────────
-                        .requestMatchers("/api/auth/login",
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/reset-password",
+                                "/api/auth/verify-email",
+                                "/api/auth/send-verification",
                                 "/api/customerOrders/track",
                                 "/api/drivers",
                                 "/api/customers",
@@ -90,10 +95,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:4200",
-                "http://192.168.88.250:4200"
-        ));
+        configuration.setAllowedOriginPatterns(List.of("*"));
 
         configuration.setAllowedMethods(List.of(
                 "GET",
