@@ -92,9 +92,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://localhost:4200",
-                "http://192.168.88.250:4200",
-                "http://localhost:8086"
-
+                "http://192.168.88.250:4200"
         ));
 
         configuration.setAllowedMethods(List.of(
