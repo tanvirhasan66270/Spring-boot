@@ -45,7 +45,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(auth -> auth
 
-                        // ── Public endpoints (no token needed) ────────────
+                        // ── Public endpoints & CORS Preflight (no token needed) ────
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/forgot-password",

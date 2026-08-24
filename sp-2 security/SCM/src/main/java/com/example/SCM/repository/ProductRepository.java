@@ -17,6 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByProductCode(String productCode);
 
+    List<Product> findByCategoryId(Long categoryId);
+
 
 
     @Query("SELECT p FROM Product p WHERE p.quantity <= p.reorderPoint AND p.isActive = true")

@@ -61,6 +61,13 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductResponseDTO>> getByCategoryId(@PathVariable Long categoryId) {
+        List<ProductResponseDTO> list = productService.findByCategoryId(categoryId);
+        return ResponseEntity.ok(list);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SALES_OFFICER', 'CUSTOMER', 'PROCUREMENT', 'LOGISTICS_OFFICER', 'COMMERCIAL_OFFICER', 'DRIVER', 'QC_INSPECTOR', 'SUPPLIER')")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDTO> getById(@PathVariable Long id) {
         return productService.getById(id)

@@ -168,6 +168,14 @@ public class ProductServiceImp implements ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponseDTO> findByCategoryId(Long categoryId) {
+        return productRepository.findByCategoryId(categoryId).stream()
+                .map(productMapper::convertTOResponseDTO)
+                .collect(Collectors.toList());
+    }
+
 
     @Override
     @Transactional(readOnly = true)

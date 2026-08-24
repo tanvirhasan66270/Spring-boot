@@ -11,6 +11,7 @@ public interface ProductService {
     ProductResponseDTO save(ProductRequestDTO dto, MultipartFile image);
     ProductResponseDTO update(Long id, ProductRequestDTO dto ,MultipartFile image);
     List<ProductResponseDTO> findAll();
+    List<ProductResponseDTO> findByCategoryId(Long categoryId);
     Optional<ProductResponseDTO> getById(Long id);
     void delete(Long id);
 }
