@@ -19,7 +19,7 @@ public class GRNLineItemController {
     private final GRNLineItemService grnLineItemService;
 
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER',  'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<GRNLineItemResponseDTO> create(@RequestBody GRNLineItemRequestDTO dto) {
         GRNLineItemResponseDTO response = grnLineItemService.save(dto);

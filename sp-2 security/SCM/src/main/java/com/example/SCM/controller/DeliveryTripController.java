@@ -20,7 +20,7 @@ public class DeliveryTripController {
 
     private final DeliveryTripService tripService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'DRIVER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<DeliveryTripResponseDTO> create(@RequestBody DeliveryTripRequestDTO dto) {
         return new ResponseEntity<>(

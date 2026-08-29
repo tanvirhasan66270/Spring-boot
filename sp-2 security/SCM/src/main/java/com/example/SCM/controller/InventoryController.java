@@ -20,7 +20,7 @@ public class InventoryController {
 
     // 1. Save/Create New Inventory Stock (POST)
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER', 'SALES_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<InventoryResponseDTO> save(@RequestBody InventoryRequestDTO dto) {
         InventoryResponseDTO response = inventoryService.save(dto);

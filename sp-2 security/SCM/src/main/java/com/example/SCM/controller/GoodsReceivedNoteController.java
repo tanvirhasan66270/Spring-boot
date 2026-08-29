@@ -18,7 +18,7 @@ public class GoodsReceivedNoteController {
 
     private final GoodsReceivedNoteService goodsReceivedNoteService;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'PROCUREMENT', 'QC_INSPECTOR', 'LOGISTICS_OFFICER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'LOGISTICS_OFFICER')")
     @PostMapping
     public ResponseEntity<GoodsReceivedNoteResponseDTO> create(@RequestBody GoodsReceivedNoteRequestDTO dto) {
         GoodsReceivedNoteResponseDTO response = goodsReceivedNoteService.save(dto);
