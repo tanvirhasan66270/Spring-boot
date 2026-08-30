@@ -30,7 +30,6 @@ public class DivisionController {
         return ResponseEntity.ok(divisionService.update(id, dto));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<DivisionResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
@@ -39,14 +38,12 @@ public class DivisionController {
     }
 
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("country/{countryId}")
     public ResponseEntity<List<DivisionResponseDTO>> getByCountryId(@PathVariable Long countryId) {
         List<DivisionResponseDTO> list = divisionService.getByCountryId(countryId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("{id}")
     public ResponseEntity<DivisionResponseDTO> getById(@PathVariable Long id) {
         return divisionService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

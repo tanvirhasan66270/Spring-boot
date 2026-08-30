@@ -30,7 +30,6 @@ public class DistrictController {
         return ResponseEntity.ok(districtService.update(id, dto));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<DistrictResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
@@ -39,14 +38,12 @@ public class DistrictController {
     }
 
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("division/{divisionId}")
     public ResponseEntity<List<DistrictResponseDTO>> getByDivisionId(@PathVariable Long divisionId) {
         List<DistrictResponseDTO> list = districtService.getByDivisionId(divisionId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("{id}")
     public ResponseEntity<DistrictResponseDTO> getById(@PathVariable Long id) {
         return districtService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

@@ -3,8 +3,8 @@ package com.example.SCM.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 @Table(name = "customers")
@@ -31,8 +31,7 @@ public class Customer {
 
     private String phone;
 
-    @org.hibernate.annotations.JdbcTypeCode(java.sql.Types.DATE)
-    private Date dob;
+    private LocalDate dob;
 
     private String image;
 

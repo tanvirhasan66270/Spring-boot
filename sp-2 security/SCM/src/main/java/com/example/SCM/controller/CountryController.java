@@ -35,7 +35,6 @@ public class CountryController {
     }
 
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<CountryResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
@@ -43,7 +42,6 @@ public class CountryController {
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("{id}")
     public ResponseEntity<CountryResponseDTO> getById(@PathVariable Long id) {
         return countryService.getById(id)
