@@ -30,7 +30,7 @@ public class CustomerMapper {
 
 
         if (entity.getDob() != null) {
-            dto.setDob(dateFormat.format(entity.getDob()));
+            dto.setDob(entity.getDob().toString());
         }
 
         if (entity.getCreatedAt() != null) {
@@ -114,11 +114,11 @@ public class CustomerMapper {
 
 
 
-        if (dto.getDob() != null) {
+        if (dto.getDob() != null && !dto.getDob().isBlank()) {
             try {
-                entity.setDob(dateFormat.parse(dto.getDob()));
+                entity.setDob(java.time.LocalDate.parse(dto.getDob().trim()));
             } catch (Exception e) {
-                throw new RuntimeException("Invalid Date Format. Expected yyyy-MM-dd");
+                System.err.println("DOB parse warning: " + e.getMessage());
             }
         }
 

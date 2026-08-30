@@ -42,9 +42,30 @@ public class CustomerServiceImp implements CustomerService {
     @Override
     public CustomerResponseDTO save(CustomerRequestDTO dto, MultipartFile image) {
 
-        PoliceStation policeStation = dto.getPoliceStationId() != null ?
+        if (dto.getEmail() != null && !dto.getEmail().isBlank()) {
+            String trimmedEmail = dto.getEmail().trim();
+            if (userRepository.findByEmail(trimmedEmail).isPresent() || customerRepository.existsByEmail(trimmedEmail)) {
+                throw new RuntimeException("This email address (" + trimmedEmail + ") is already registered!");
+            }
+        }
+
+        if (dto.getNidNumber() != null && !dto.getNidNumber().isBlank()) {
+            String trimmedNid = dto.getNidNumber().trim();
+            if (customerRepository.existsByNidNumber(trimmedNid)) {
+                throw new RuntimeException("This NID number (" + trimmedNid + ") is already registered!");
+            }
+        }
+
+        if (dto.getPhone() != null && !dto.getPhone().isBlank()) {
+            String trimmedPhone = dto.getPhone().trim();
+            if (customerRepository.existsByPhone(trimmedPhone)) {
+                throw new RuntimeException("This phone number (" + trimmedPhone + ") is already registered!");
+            }
+        }
+
+        PoliceStation policeStation = (dto.getPoliceStationId() != null && dto.getPoliceStationId() > 0) ?
                 policeStationRepository.findById(dto.getPoliceStationId())
-                .orElseThrow(() -> new RuntimeException("Target location police station node not found")) : null;
+                .orElse(null) : null;
 
         User user = new User();
         user.setName(dto.getName());
@@ -68,7 +89,11 @@ public class CustomerServiceImp implements CustomerService {
 
         Customer savedCustomer = customerRepository.save(customer);
 
-        authService.sendVerificationEmail(savedCustomer.getUser().getEmail());
+        try {
+            authService.sendVerificationEmail(savedCustomer.getUser().getEmail());
+        } catch (Exception e) {
+            System.err.println("Verification email sending bypassed/failed: " + e.getMessage());
+        }
 
 
         return customerMapper.convertTOResponseDTO(savedCustomer);

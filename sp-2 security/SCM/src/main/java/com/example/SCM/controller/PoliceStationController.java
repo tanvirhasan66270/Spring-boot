@@ -30,7 +30,6 @@ public class PoliceStationController {
         return ResponseEntity.ok(policeStationService.update(id, dto));
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<PoliceStationResponseDTO>> getAll(
             @RequestParam(value = "onlyActive", defaultValue = "true") boolean onlyActive) {
@@ -40,14 +39,12 @@ public class PoliceStationController {
 
     // URL: /api/police-stations/district/1
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("district/{districtId}")
     public ResponseEntity<List<PoliceStationResponseDTO>> getByDistrictId(@PathVariable Long districtId) {
         List<PoliceStationResponseDTO> list = policeStationService.getByDistrictId(districtId);
         return list.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(list);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("{id}")
     public ResponseEntity<PoliceStationResponseDTO> getById(@PathVariable Long id) {
         return policeStationService.getById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());

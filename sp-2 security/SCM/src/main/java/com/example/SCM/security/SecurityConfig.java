@@ -55,10 +55,22 @@ public class SecurityConfig {
                                 "/api/auth/send-verification",
                                 "/api/customerOrders/track",
                                 "/api/drivers",
+                                "/api/customer",
+                                "/api/customer/**",
                                 "/api/customers",
                                 "/api/customer-requirements/public/submit",
                                 "/api/category/public",
                                 "/api/products/public",
+                                "/api/country",
+                                "/api/country/**",
+                                "/api/division",
+                                "/api/division/**",
+                                "/api/district",
+                                "/api/district/**",
+                                "/api/policestation",
+                                "/api/policestation/**",
+                                "/api/policeStation",
+                                "/api/policeStation/**",
                                 "/images/**").permitAll()
 
                         // ── Everything else requires authentication ───────

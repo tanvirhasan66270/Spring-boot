@@ -23,7 +23,7 @@ export class PublicJoinUsComponent implements OnInit {
   registrationSuccess = false;
   errorMessage: string | null = null;
   confirmPassword = '';
-  agreeTerms = false;
+  agreeTerms = true;
 
   countries: any[] = [];
   divisions: any[] = [];
@@ -165,14 +165,46 @@ export class PublicJoinUsComponent implements OnInit {
   }
 
   nextStep(): void {
+    this.errorMessage = null;
+    if (this.currentStep === 1) {
+      if (!this.customer.name || this.customer.name.trim().length < 3) {
+        this.errorMessage = 'Please enter a valid full name (minimum 3 characters).';
+        return;
+      }
+      if (!this.customer.email || !this.customer.email.includes('@')) {
+        this.errorMessage = 'Please enter a valid email address.';
+        return;
+      }
+      if (!this.customer.phone || this.customer.phone.trim().length < 11) {
+        this.errorMessage = 'Please enter a valid 11-digit phone number.';
+        return;
+      }
+      if (!this.customer.password || this.customer.password.length < 6) {
+        this.errorMessage = 'Password must be at least 6 characters long.';
+        return;
+      }
+      if (this.customer.password !== this.confirmPassword) {
+        this.errorMessage = 'Passwords do not match.';
+        return;
+      }
+    } else if (this.currentStep === 2) {
+      if (!this.customer.nidNumber || this.customer.nidNumber.trim().length < 10) {
+        this.errorMessage = 'Please enter a valid National ID (NID) number.';
+        return;
+      }
+    }
+
     if (this.currentStep < 3) {
       this.currentStep++;
+      this.cdr.markForCheck();
     }
   }
 
   prevStep(): void {
+    this.errorMessage = null;
     if (this.currentStep > 1) {
       this.currentStep--;
+      this.cdr.markForCheck();
     }
   }
 
@@ -180,13 +212,18 @@ export class PublicJoinUsComponent implements OnInit {
     this.errorMessage = null;
     this.isSubmitted = true;
 
+    if (!this.agreeTerms) {
+      this.errorMessage = 'You must agree to the Terms of Service and Privacy Policy.';
+      return;
+    }
+
     if (this.customer.password !== this.confirmPassword) {
       this.errorMessage = 'Passwords do not match.';
       return;
     }
 
-    if (this.customer.policeStationId === 0) {
-      this.errorMessage = 'Please complete the geographic mapping up to Police Station.';
+    if (!this.customer.policeStationId || Number(this.customer.policeStationId) === 0) {
+      this.errorMessage = 'Please complete the location selection (Country -> Division -> District -> Police Station).';
       return;
     }
 
@@ -196,14 +233,14 @@ export class PublicJoinUsComponent implements OnInit {
     const formData = new FormData();
 
     const requestDto: CustomerRequestModel = {
-      name: this.customer.name,
-      email: this.customer.email,
-      phone: this.customer.phone,
+      name: (this.customer.name || '').trim(),
+      email: (this.customer.email || '').trim(),
+      phone: (this.customer.phone || '').trim(),
       password: this.customer.password,
-      address: this.customer.address,
-      gender: this.customer.gender,
-      dob: this.customer.dob,
-      nidNumber: this.customer.nidNumber,
+      address: (this.customer.address || '').trim(),
+      gender: this.customer.gender || 'MALE',
+      dob: this.customer.dob ? this.customer.dob : '',
+      nidNumber: (this.customer.nidNumber || '').trim(),
       policeStationId: Number(this.customer.policeStationId),
     };
 
@@ -225,16 +262,17 @@ export class PublicJoinUsComponent implements OnInit {
       error: (err: any) => {
         this.isSubmitting = false;
         const errorContext = err.error?.message || err.message || '';
-        if (errorContext.includes('Duplicate entry')) {
-          if (errorContext.includes('@')) {
-            this.errorMessage = 'This email address is already registered!';
-          } else if (errorContext.includes('phone')) {
-            this.errorMessage = 'This phone number is already in use!';
-          } else {
-            this.errorMessage = 'This NID number is already registered!';
-          }
+        
+        if (errorContext.toLowerCase().includes('email') || errorContext.includes('@')) {
+          this.errorMessage = '⚠️ This Gmail / Email address is already registered! Please use a different email or sign in.';
+        } else if (errorContext.toLowerCase().includes('nid')) {
+          this.errorMessage = '⚠️ This NID number is already registered in our system!';
+        } else if (errorContext.toLowerCase().includes('phone')) {
+          this.errorMessage = '⚠️ This phone number is already in use!';
+        } else if (errorContext.includes('Duplicate entry')) {
+          this.errorMessage = '⚠️ Account with this Email, NID or Phone already exists!';
         } else {
-          this.errorMessage = errorContext || 'Registration failed. Please try again.';
+          this.errorMessage = errorContext || 'Registration failed. Please check your data and try again.';
         }
         this.cdr.markForCheck();
       }
