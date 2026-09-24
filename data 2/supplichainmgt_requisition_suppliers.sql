@@ -38,7 +38,7 @@ CREATE TABLE `requisition_suppliers` (
 
 LOCK TABLES `requisition_suppliers` WRITE;
 /*!40000 ALTER TABLE `requisition_suppliers` DISABLE KEYS */;
-INSERT INTO `requisition_suppliers` VALUES (1,1),(4,1),(4,2),(5,1),(5,2),(6,1),(6,2);
+INSERT INTO `requisition_suppliers` VALUES (1,1),(4,1),(4,2),(5,1),(5,2),(6,1),(6,2),(7,1),(7,2),(8,1),(8,2),(9,1),(9,2),(10,1),(10,2),(11,1),(11,2),(12,1),(12,2),(13,1),(14,1),(14,2),(15,1),(15,2);
 /*!40000 ALTER TABLE `requisition_suppliers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-20  3:13:56
+-- Dump completed on 2026-08-31 23:43:09

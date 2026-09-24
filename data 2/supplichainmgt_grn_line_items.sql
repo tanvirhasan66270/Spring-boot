@@ -33,7 +33,7 @@ CREATE TABLE `grn_line_items` (
   KEY `FK2ixa0m39a4ka3siwi4u4cukx4` (`product_id`),
   CONSTRAINT `FK2br9xqcvdjne3hsnrwj6rkbq6` FOREIGN KEY (`grn_id`) REFERENCES `goods_received_notes` (`id`),
   CONSTRAINT `FK2ixa0m39a4ka3siwi4u4cukx4` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `grn_line_items` (
 
 LOCK TABLES `grn_line_items` WRITE;
 /*!40000 ALTER TABLE `grn_line_items` DISABLE KEYS */;
-INSERT INTO `grn_line_items` VALUES (1,15,3,1,1),(2,210,100,2,1);
+INSERT INTO `grn_line_items` VALUES (1,15,3,1,1),(2,210,100,2,1),(3,420,200,3,1),(4,210,200,4,1),(5,210,0,4,2),(6,100,50,5,1),(7,100,50,5,2);
 /*!40000 ALTER TABLE `grn_line_items` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-20  3:13:56
+-- Dump completed on 2026-08-31 23:43:12

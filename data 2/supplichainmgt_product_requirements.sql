@@ -48,7 +48,7 @@ CREATE TABLE `product_requirements` (
 
 LOCK TABLES `product_requirements` WRITE;
 /*!40000 ALTER TABLE `product_requirements` DISABLE KEYS */;
-INSERT INTO `product_requirements` VALUES (1,'2026-08-18 14:39:20.936762','ORD-1782838721455','Good Productivity , Genarel color,A gread Product','for havey working duty\n','Havey Duty Machin','PRQ-11CD59F0',66,'Mst Rehana',50,'PENDING','101000','Kg','MEDIUM'),(2,'2026-08-18 16:54:00.866583','ssssss','sdgsfd','shs','sgfsfdh','PRQ-0345D226',66,'Mst Rehana',15,'PROCESSING','5876','Box','LOW'),(3,'2026-08-18 16:54:00.866583','ssssss','sdgsfd','shs','sgfsfdh','PRQ-E2675BA0',66,'Mst Rehana',15,'PENDING','5876','Box','LOW');
+INSERT INTO `product_requirements` VALUES (1,'2026-08-18 14:39:20.936762','ORD-1782838721455','Good Productivity , Genarel color,A gread Product','for havey working duty\n','Havey Duty Machin','PRQ-11CD59F0',66,'Mst Rehana',50,'APPROVED','101000','Kg','MEDIUM'),(2,'2026-08-18 16:54:00.866583','ssssss','sdgsfd','shs','sgfsfdh','PRQ-0345D226',66,'Mst Rehana',15,'PROCESSING','5876','Box','LOW'),(3,'2026-08-18 16:54:00.866583','ssssss','sdgsfd','shs','sgfsfdh','PRQ-E2675BA0',66,'Mst Rehana',15,'PENDING','5876','Box','LOW');
 /*!40000 ALTER TABLE `product_requirements` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -61,4 +61,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-20  3:13:55
+-- Dump completed on 2026-08-31 23:43:11

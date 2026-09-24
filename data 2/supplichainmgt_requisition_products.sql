@@ -38,7 +38,7 @@ CREATE TABLE `requisition_products` (
 
 LOCK TABLES `requisition_products` WRITE;
 /*!40000 ALTER TABLE `requisition_products` DISABLE KEYS */;
-INSERT INTO `requisition_products` VALUES (1,10),(1,15),(1,22),(4,1),(4,2),(5,6),(5,7),(5,8),(6,3);
+INSERT INTO `requisition_products` VALUES (1,10),(1,15),(1,22),(4,1),(4,2),(5,6),(5,7),(5,8),(6,3),(7,1),(8,1),(8,3),(9,2),(9,3),(10,2),(10,4),(11,1),(11,2),(12,1),(12,3),(13,1),(13,2),(14,1),(14,2),(15,1),(15,3);
 /*!40000 ALTER TABLE `requisition_products` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-20  3:13:56
+-- Dump completed on 2026-08-31 23:43:10

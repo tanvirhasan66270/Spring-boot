@@ -43,7 +43,7 @@ CREATE TABLE `stock_movements` (
   CONSTRAINT `FKiparp4rp4rsfsxb9y02oyxauh` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`),
   CONSTRAINT `FKjcaag8ogfjxpwmqypi1wfdaog` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`),
   CONSTRAINT `FKlaob67k5ekyx7qnir6ekb99jy` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -52,7 +52,7 @@ CREATE TABLE `stock_movements` (
 
 LOCK TABLES `stock_movements` WRITE;
 /*!40000 ALTER TABLE `stock_movements` DISABLE KEYS */;
-INSERT INTO `stock_movements` VALUES (2,'2026-07-28 16:06:44.681040','INWARD',82,1,200,'bnv  fvghvbjh','xdfgdsfgf',NULL,1,NULL),(3,'2026-08-17 02:38:32.729430','OUTWARD',66,1,20,'dfggfd','dfghh',NULL,1,NULL),(4,'2026-08-19 00:54:58.170236','ADJUSTMENT',66,1,20,'dsavasvg','vsdvsdv',NULL,1,NULL);
+INSERT INTO `stock_movements` VALUES (2,'2026-07-28 16:06:44.681040','INWARD',82,1,200,'bnv  fvghvbjh','xdfgdsfgf',NULL,1,NULL),(3,'2026-08-17 02:38:32.729430','OUTWARD',66,1,20,'dfggfd','dfghh',NULL,1,NULL),(6,'2026-08-22 00:36:04.721440','OUTWARD',66,1,5,'zxcvz','zxv zxv',NULL,1,NULL),(7,'2026-08-23 01:49:09.082895','OUTWARD',66,1,200,'sdgsd','sadbsdvv',NULL,1,NULL),(8,'2026-08-23 02:01:13.367782','OUTWARD',66,1,35,'czcdvzdxv','sdgdsvb',NULL,1,NULL),(9,'2026-08-23 03:02:00.730882','OUTWARD',66,1,20,'sdvsdd','xcvvffvvf',NULL,1,NULL);
 /*!40000 ALTER TABLE `stock_movements` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +65,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-08-20  3:13:53
+-- Dump completed on 2026-08-31 23:43:11
