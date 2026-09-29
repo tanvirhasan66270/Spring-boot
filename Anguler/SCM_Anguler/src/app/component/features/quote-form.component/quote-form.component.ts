@@ -29,6 +29,7 @@ export class QuoteFormComponent implements OnInit {
     this.initForm();
   }
 
+  // Initialize the form with required validation rules
   private initForm(): void {
     this.quoteForm = this.fb.group({
       companyName: ['', [Validators.required, Validators.minLength(2)]],
@@ -40,6 +41,7 @@ export class QuoteFormComponent implements OnInit {
     });
   }
 
+  // Submit quote request to the backend API
   onSubmit(): void {
     if (this.quoteForm.invalid) {
       this.markFormGroupTouched(this.quoteForm);
@@ -52,7 +54,8 @@ export class QuoteFormComponent implements OnInit {
 
     const payload: QuoteRequestModel = this.quoteForm.value;
 
-    this.quoteService.submitRequest(payload).subscribe({ next: (response) => {
+    this.quoteService.submitRequest(payload).subscribe({
+      next: () => {
         this.isSubmitting = false;
         this.isSuccess = true;
         this.quoteForm.reset({ requestType: '' }); 
@@ -60,18 +63,20 @@ export class QuoteFormComponent implements OnInit {
       error: (err: any) => {
         this.isSubmitting = false;
         this.isError = true;
-        this.errorMessage = err.error?.message || 'Matrix Transmission Failure. Please try again.';
-        console.error('SCM Gateway Error:', err);
+        this.errorMessage = err.error?.message || 'Unable to submit your quote request. Please try again.';
+        console.error('Quote submission error:', err);
       }
     });
   }
 
+  // Helper method to check if a field is invalid and touched
   isFieldInvalid(fieldName: string): boolean {
     const field = this.quoteForm.get(fieldName);
     return field ? field.invalid && (field.dirty || field.touched) : false;
   }
 
-  private markFormGroupTouched(formGroup: FormGroup) {
+  // Mark all controls in the form as touched to highlight validation errors
+  private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
       if ((control as any).controls) {

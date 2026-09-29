@@ -2,17 +2,19 @@
   <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
       
+      <!-- Success Alert -->
       <div *ngIf="isSuccess" class="alert alert-success alert-dismissible fade show shadow-sm border-start border-success border-4" role="alert">
         <div class="d-flex align-items-center">
           <i class="bi bi-check-circle-fill me-3 fs-4"></i>
           <div>
-            <strong class="d-block mb-1">Transmission Successful!</strong> 
-            Your request has been securely registered in the SCM Global Hub. A Commercial Officer will analyze your payload shortly.
+            <strong class="d-block mb-1">Request Submitted!</strong> 
+            Thank you for reaching out. Our commercial team will review your request and get back to you shortly.
           </div>
         </div>
         <button type="button" class="btn-close" (click)="isSuccess = false"></button>
       </div>
       
+      <!-- Error Alert -->
       <div *ngIf="isError" class="alert alert-danger alert-dismissible fade show shadow-sm border-start border-danger border-4" role="alert">
         <div class="d-flex align-items-center">
           <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
@@ -26,65 +28,65 @@
 
       <div class="card shadow-lg border-0 rounded-3 overflow-hidden">
         <div class="card-header bg-dark text-white text-center py-4">
-          <h3 class="fw-bold mb-1"><i class="bi bi-globe-asia-australia me-2 text-primary"></i>SCM Public Gateway</h3>
-          <p class="text-muted small mb-0">Request a Commercial Quote or Establish Corporate Partnership Nodes</p>
+          <h3 class="fw-bold mb-1"><i class="bi bi-globe-asia-australia me-2 text-primary"></i>Request a Quote</h3>
+          <p class="text-muted small mb-0">Get in touch with our team for pricing, partnerships, or logistics inquiries</p>
         </div>
         
         <div class="card-body p-4 bg-light">
           <form [formGroup]="quoteForm" (ngSubmit)="onSubmit()">
             
             <div class="mb-3">
-              <label class="form-label fw-semibold text-secondary small text-uppercase">Partnership Node</label>
+              <label class="form-label fw-semibold text-secondary small text-uppercase">Account Type</label>
               <select class="form-select" formControlName="requestType" [ngClass]="{'is-invalid': isFieldInvalid('requestType')}">
-                <option value="">-- Select Profile Mode --</option>
-                <option value="BUYER">Direct Importer / Buyer</option>
-                <option value="SUPPLIER">Global Exporter / Supplier</option>
-                <option value="LOGISTICS">Freight Forwarding Partner</option>
+                <option value="">-- Select Option --</option>
+                <option value="BUYER">Importer / Buyer</option>
+                <option value="SUPPLIER">Exporter / Supplier</option>
+                <option value="LOGISTICS">Logistics / Freight Partner</option>
               </select>
-              <div class="invalid-feedback">Please select a valid partnership node context.</div>
+              <div class="invalid-feedback">Please select an account type.</div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label fw-semibold text-secondary small text-uppercase">Corporate Registered Name</label>
+              <label class="form-label fw-semibold text-secondary small text-uppercase">Company Name</label>
               <div class="input-group">
                 <span class="input-group-text bg-white text-muted"><i class="bi bi-building"></i></span>
-                <input type="text" class="form-control" placeholder="e.g., Global Trade Corp" formControlName="companyName" [ngClass]="{'is-invalid': isFieldInvalid('companyName')}">
-                <div class="invalid-feedback">Corporate registered name is mandatory.</div>
+                <input type="text" class="form-control" placeholder="e.g., Acme Global Ltd" formControlName="companyName" [ngClass]="{'is-invalid': isFieldInvalid('companyName')}">
+                <div class="invalid-feedback">Company name is required.</div>
               </div>
             </div>
 
             <div class="mb-3">
-              <label class="form-label fw-semibold text-secondary small text-uppercase">Point of Contact Person</label>
+              <label class="form-label fw-semibold text-secondary small text-uppercase">Contact Person</label>
               <div class="input-group">
                 <span class="input-group-text bg-white text-muted"><i class="bi bi-person-badge"></i></span>
                 <input type="text" class="form-control" placeholder="John Doe" formControlName="contactName" [ngClass]="{'is-invalid': isFieldInvalid('contactName')}">
-                <div class="invalid-feedback">Contact person identification is required.</div>
+                <div class="invalid-feedback">Contact person name is required.</div>
               </div>
             </div>
 
             <div class="row g-3 mb-3">
               <div class="col-sm-6">
-                <label class="form-label fw-semibold text-secondary small text-uppercase">Corporate Email</label>
-                <input type="email" class="form-control" placeholder="trade@company.com" formControlName="email" [ngClass]="{'is-invalid': isFieldInvalid('email')}">
-                <div class="invalid-feedback">Provide a valid corporate email structure.</div>
+                <label class="form-label fw-semibold text-secondary small text-uppercase">Email Address</label>
+                <input type="email" class="form-control" placeholder="name@company.com" formControlName="email" [ngClass]="{'is-invalid': isFieldInvalid('email')}">
+                <div class="invalid-feedback">Please enter a valid email address.</div>
               </div>
               <div class="col-sm-6">
-                <label class="form-label fw-semibold text-secondary small text-uppercase">Phone Vector</label>
-                <input type="text" class="form-control" placeholder="+88017XXXXXXXX" formControlName="phone" [ngClass]="{'is-invalid': isFieldInvalid('phone')}">
-                <div class="invalid-feedback">Valid phone digit matrix required.</div>
+                <label class="form-label fw-semibold text-secondary small text-uppercase">Phone Number</label>
+                <input type="text" class="form-control" placeholder="+1 (555) 000-0000" formControlName="phone" [ngClass]="{'is-invalid': isFieldInvalid('phone')}">
+                <div class="invalid-feedback">Please enter a valid phone number.</div>
               </div>
             </div>
 
             <div class="mb-4">
-              <label class="form-label fw-semibold text-secondary small text-uppercase">Cargo Details & Partnership Scope</label>
-              <textarea class="form-control" rows="4" placeholder="Detail your cargo metrics, expected Incoterms (FOB, CIF), port preferences, or operational inquiries..." formControlName="productDetails" [ngClass]="{'is-invalid': isFieldInvalid('productDetails')}"></textarea>
-              <div class="invalid-feedback">Please provide detailed scope descriptions (min 10 chars).</div>
+              <label class="form-label fw-semibold text-secondary small text-uppercase">Product & Request Details</label>
+              <textarea class="form-control" rows="4" placeholder="Describe the products, quantities, shipping requirements, or terms (FOB/CIF) you need..." formControlName="productDetails" [ngClass]="{'is-invalid': isFieldInvalid('productDetails')}"></textarea>
+              <div class="invalid-feedback">Please provide at least 10 characters detailing your request.</div>
             </div>
 
             <button class="btn btn-primary w-100 py-2.5 fw-bold text-uppercase shadow-sm d-flex align-items-center justify-content-center gap-2" type="submit" [disabled]="isSubmitting">
               <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               <i *ngIf="!isSubmitting" class="bi bi-send-check-fill"></i>
-              {{ isSubmitting ? 'Transmitting Data...' : 'Transmit Partnership Payload' }}
+              {{ isSubmitting ? 'Submitting Request...' : 'Submit Quote Request' }}
             </button>
             
           </form>
