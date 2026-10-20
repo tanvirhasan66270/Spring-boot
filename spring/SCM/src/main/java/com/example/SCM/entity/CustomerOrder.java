@@ -108,12 +108,9 @@ public class CustomerOrder {
             this.customerEmail = this.customer.getEmail();
         }
     }
-
     public void executeCalculations() {
         this.itemSubtotal = ExecuteCalculations.calculateItemSubtotal(this.lineItems);
-
         this.weight = ExecuteCalculations.calculateTotalOrderWeight(this.lineItems);
-
         this.deliveryCharge = ExecuteCalculations.calculateDeliveryCharge(this.weight, this.serviceType, this.codAmount);
 
         this.totalAmount = this.itemSubtotal + this.deliveryCharge;
@@ -125,7 +122,6 @@ public class CustomerOrder {
                     .mapToDouble(PaymentStatement::getPaidAmount)
                     .sum();
         }
-
 
         double finalPaid = totalPaid + this.codAmount;
 
